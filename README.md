@@ -534,7 +534,7 @@ The card layout and buttons work identically regardless of which background mode
 
 This card started in early 2026. The original version lived under a different name and a different GitHub account. At some point, maintaining a public project stopped being fun. Most of the feedback coming in was issues and requests, and there was little to balance that out. So the old account and repository were deleted.
 
-After a break, the motivation came back, but the focus shifted. Development continued in private, with the goal of getting the core concept right before putting it out there again. This version is the result of that full rebuild. It is smaller, more focused, and built around being a layout builder first.
+After a break, the motivation came back, but the focus shifted. Development continued in private, with the goal of getting the core concept right before putting it out there again. Origami Weather is the result of that full rebuild. It is smaller, more focused, and built around being a layout builder first. 
 
 <br>
 

@@ -21,7 +21,7 @@ const LABELS = Object.freeze({
     bg_brightness: "Background Brightness", bg_saturation: "Color Intensity", bg_blur: "Background Blur",
 });
 const HELPERS = Object.freeze({
-    weather_entity: "", sun_entity: "",
+    weather_entity: "", sun_entity: "Defaults to sun.sun",
     moon_phase_entity: "Optional",
     card_height: "Content = fit contents · Fill = fill dashboard cell · Fixed = set a height in px.", card_padding: "Inner padding, e.g. 16px or 12px 20px.", card_offset: "",
     card_tap_action: "What happens when the card is tapped.",
@@ -45,7 +45,7 @@ const BUTTON_HELPERS = Object.freeze({
     icon: "MDI icon, or type 'weather' for a dynamic icon.", icon_path: "e.g. /local/weather-icons/", forecast_offset: "0 = today/now, 1 = tomorrow/next hour, etc."});
 const KEY_ORDER = Object.freeze([
     "type", "name", "entity", "weather_entity",
-    "sun_entity", "sun_moon_enabled", "moon_phase_entity", "sun_moon_size", "sun_moon_x", "sun_moon_y", "lens_flare_enabled",
+    "sun_entity", "sun_moon_enabled", "moon_phase_entity", "sun_moon_size", "sun_moon_x", "sun_moon_y",
     "color_mode", "card_height", "card_padding",
     "background_mode",
     "image_scale", "image_alignment",
@@ -747,9 +747,6 @@ class WeatherCardEditor extends LitElement {
                         <button type="button" role="radio" class=${yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
                     </div></div>
                 ${yFixed ? this._renderSlider("sun_moon_y", "", 0, 100, 1) : ""}
-                <div class="toggle-group"><label class="toggle-row"><span>Sun Lens Flare</span>
-                    <ha-switch .checked=${c.lens_flare_enabled !== false}
-                        @change=${(e) => this._updateField("lens_flare_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
                 <div class="fc-box" style="background:rgba(var(--rgb-primary-text-color,0,0,0),0.03)">
                     <div style="display:flex;align-items:center;gap:var(--origami-e-s2);font-size:var(--origami-e-f-meta);color:var(--secondary-text-color)">
                         <ha-icon icon="mdi:lightbulb-outline" style="--mdc-icon-size:16px;flex-shrink:0"></ha-icon>
@@ -922,7 +919,7 @@ class WeatherCardEditor extends LitElement {
                 for (const k of Object.keys(txt)) {
                     const v = txt[k];
                     if (k === 'format') { if (v === null || v === undefined) delete txt[k]; continue; }
-                    if (k === 'precision') { if (!out.forecast || !(v > 0)) delete txt[k]; continue; }
+                    if (k === 'precision') { if (!(v > 0)) delete txt[k]; continue; }
                     if (v === "" || v === null || v === undefined || v === false) delete txt[k];
                 }
                 return txt;
@@ -1084,11 +1081,8 @@ class WeatherCardEditor extends LitElement {
                     <ha-switch .checked=${button.icon_background === true}
                         @change=${(e) => { const n = { ...button }; if (e.target.checked) n.icon_background = true; else { if (button.icon_background !== undefined) n.icon_background = false; else delete n.icon_background; } update(n); }}></ha-switch></label></div>
                 ${button.icon_background === true ? this._renderColorPicker("Color", button.icon_background_color || "", (h, o) => { const next = { ...button }; if (!h) delete next.icon_background_color; else next.icon_background_color = this._serializeColor(h, o); update(next); }) : ""}` : ""}`;
-        const entitySection = isFc
-            ? buttonForm([{ name: "entity", selector: { entity: { domain: "weather" } } }])
-            : buttonForm([{ name: "entity", selector: { entity: {} } }]);
-        const emptyNudge = !hasEntity ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Pick an entity.</div>` : "";
-        const fcWarning = fcEntityMissing ? html`<div class="button-nudge warning"><ha-icon icon="mdi:alert-circle-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Forecast needs a weather entity.</div>` : "";
+        const entitySection = isFc ? "" : buttonForm([{ name: "entity", selector: { entity: {} } }]);
+        const emptyNudge = !hasEntity && !isFc ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Pick an entity.</div>` : "";
         /* Accordion section helpers */
         const sk = `_vcbs_${containerIdx}_${idx}`;
         const nk = `_vcbn_${containerIdx}_${idx}`;
@@ -1114,15 +1108,35 @@ class WeatherCardEditor extends LitElement {
         const txtForm = (txt, ti, key, schema, label) => html`<ha-form .hass=${this.hass} .data=${{ [key]: txt[key] || "" }}
             .schema=${schema} .computeLabel=${() => label}
             @value-changed=${(e) => { e.stopPropagation(); const v = e.detail && e.detail.value && e.detail.value[key]; const n = { ...txt }; if (v) n[key] = v; else delete n[key]; updateText(ti, n); }}></ha-form>`;
+        const _isNumericEntity = (eid) => {
+            const s = this.hass && this.hass.states && this.hass.states[eid];
+            if (!s) return false;
+            if (s.attributes && s.attributes.state_class) return true;
+            if (s.attributes && s.attributes.device_class === "temperature") return true;
+            const v = parseFloat(s.state);
+            return isFinite(v);
+        };
+        const _isNumericAttr = (eid, attr) => {
+            const s = this.hass && this.hass.states && this.hass.states[eid];
+            if (!s || !attr) return false;
+            const v = s.attributes && s.attributes[attr];
+            return v != null && isFinite(parseFloat(v));
+        };
         const textFields = (txt, ti) => {
             const txtEntityId = (txt.entity || "").toString().trim();
             const fcNumeric = isFc && !txtEntityId && txt.attribute && txt.attribute !== "condition" && txt.attribute !== "datetime";
+            let showPrecision = fcNumeric;
+            if (!showPrecision && txtEntityId) {
+                showPrecision = txt.attribute ? _isNumericAttr(txtEntityId, txt.attribute) : _isNumericEntity(txtEntityId);
+            } else if (!showPrecision && !txtEntityId && !isFc && hasEntity) {
+                showPrecision = txt.attribute ? _isNumericAttr(entityId, txt.attribute) : _isNumericEntity(entityId);
+            }
             return html`${txtField(txt, ti, "text", "Text", "Static text")}
-                ${txtForm(txt, ti, "entity", [{ name: "entity", selector: { entity: {} } }], "Entity")}
+                ${!isFc ? txtForm(txt, ti, "entity", [{ name: "entity", selector: { entity: {} } }], "Entity") : ""}
                 ${txtEntityId ? txtForm(txt, ti, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: txtEntityId } } }], "Attribute")
                     : isFc ? txtForm(txt, ti, "attribute", [{ name: "attribute", selector: { select: { mode: "dropdown", options: FC_TEXT_ATTRIBUTES } } }], "Show")
                     : hasEntity ? txtForm(txt, ti, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: entityId } } }], "Attribute") : ""}
-                ${fcNumeric ? (() => { const prec = txt.precision !== undefined ? txt.precision : 0, pc = Math.round((prec / 2) * 100);
+                ${showPrecision ? (() => { const prec = txt.precision !== undefined ? txt.precision : 0, pc = Math.round((prec / 2) * 100);
                     const setPrec = (v) => { const n = { ...txt }; if (v > 0) n.precision = v; else delete n.precision; updateText(ti, n); };
                     return html`<div class="wbk-slider"><div class="wbk-slider-head"><span class="wbk-slider-label">Decimals</span>
                         <input type="number" class="wbk-slider-num" min="0" max="2" step="1" .value=${String(prec)}
@@ -1184,7 +1198,7 @@ class WeatherCardEditor extends LitElement {
                     if (ent) n.entity = ent; update(n); }}
             ><ha-icon class="button-type-icon ${isFc ? "active-icon" : ""}" icon="mdi:calendar-clock"></ha-icon>
                 <div class="button-type-text"><span class="button-type-name">Forecast</span><span class="button-type-desc">Weather</span></div></button></div>`;
-        const forecastContent = isFc && !fcEntityMissing ? html`<div class="segmented" role="radiogroup">
+        const fcSettings = isFc && !fcEntityMissing ? html`<div class="segmented" role="radiogroup">
                     ${[{v:"daily",l:"Daily"},{v:"hourly",l:"Hourly"}].map(o=>html`<button type="button" role="radio" class=${button.forecast===o.v?"active":""}
                         @click=${()=>update({...button,forecast:o.v,forecast_offset:0})}>${o.l}</button>`)}</div>
                 ${(()=>{const mx=button.forecast==="hourly"?23:6,lb=button.forecast==="hourly"?"Hours ahead":"Days ahead",
@@ -1196,6 +1210,12 @@ class WeatherCardEditor extends LitElement {
                         <input type="range" class="wbk-slider-range" min="0" max=${mx} step="1" .value=${String(fcOff)} style="--origami-slider-pct:${pc}%"
                             @input=${(e)=>{const v=parseInt(e.target.value,10);e.target.style.setProperty('--origami-slider-pct',Math.round((v/mx)*100)+'%');const n=e.target.closest('.wbk-slider').querySelector('.wbk-slider-num');if(n)n.value=v;}}
                             @change=${(e)=>update({...button,forecast_offset:parseInt(e.target.value,10)})}><div class="wbk-slider-helper">${hp}</div></div>`;})()}` : null;
+        const fcMissingHint = isFc && fcEntityMissing ? html`<div class="button-nudge warning" style="margin-top:var(--origami-e-s2)"><ha-icon icon="mdi:alert-circle-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Forecast needs a weather entity.</div>` : null;
+        let forecastContent = null;
+        if (isFc) {
+            const fcEntity = buttonForm([{ name: "entity", selector: { entity: { domain: "weather" } } }]);
+            forecastContent = html`${fcEntity}${fcMissingHint}${fcSettings}`;
+        }
         /* Scrolling */
         const hasMarqueeText = texts.some(t => ((t && t.overflow) || "").toString().toLowerCase() === "marquee");
         const marqueeContent = hasMarqueeText ? html`<div class="toggle-group"><label class="toggle-row"><span>Right-to-left</span>
@@ -1307,8 +1327,8 @@ class WeatherCardEditor extends LitElement {
         const body = html`<div class="vcb">
             ${typePicker}
             ${entitySection}
-            ${emptyNudge}${fcWarning}
-            ${isFc && isWeatherEntity && forecastContent ? section("forecast", "mdi:calendar-clock", "Forecast", forecastContent) : ""}
+            ${emptyNudge}
+            ${isFc && forecastContent ? section("forecast", "mdi:calendar-clock", "Forecast", forecastContent) : ""}
             ${elements.map(el => el === 'icon' ? elSection("icon", "mdi:image-outline", "Icon", iconContent, isElHidden('icon'))
                 : el === 'text' ? elSection("text", "mdi:text-box-outline", "Text", textContent, isElHidden('text'))
                 : el === 'bar' ? elSection("bar", "mdi:chart-bar", "Bar", barContent, !isBarType)

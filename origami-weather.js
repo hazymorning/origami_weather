@@ -1,27 +1,21 @@
 import { CLOUD_SPRITE, MOON_SURFACE } from './image_assets.js';
 console.info(
-    "%c Origami Weather ",
-    "color: #fff; background: linear-gradient(135deg, #333 0%, #000 100%); font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; padding: 4px 8px;"
+    "%c ◪ Origami Weather ",
+    "color: #fff; border-radius: 6px; background: linear-gradient(135deg, #888 0%, #000 100%); font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; padding: 4px 8px;"
 );
 const FALLBACK_WEATHER = Object.freeze({
     state: 'cloudy',
-    attributes: {
-        temperature: '--',
-        temperature_unit: '',
-        wind_speed: 0,
-        wind_speed_unit: '',
-        friendly_name: 'Weather Unavailable'
-    }
+    attributes: { temperature: '--', temperature_unit: '', wind_speed: 0, wind_speed_unit: '', friendly_name: 'Weather Unavailable' }
 });
 
 const _SKY_FILTERS = Object.freeze({
-    'sunny':           { light: 'brightness(1.08) saturate(1.12) contrast(1.02)',                  dark: 'brightness(1.04) saturate(1.10)' },
-    'clear-night':     { light: 'brightness(1.04) saturate(1.08)',                                 dark: 'brightness(1.02) saturate(1.12)' },
-    'partlycloudy':    { light: 'brightness(1.00) saturate(0.95) contrast(0.98)',                  dark: 'brightness(0.96) saturate(0.90)' },
-    'cloudy':          { light: 'brightness(0.92) saturate(0.72) contrast(0.96)',                  dark: 'brightness(0.88) saturate(0.65) contrast(0.95)' },
-    'windy':           { light: 'brightness(1.02) saturate(1.05) hue-rotate(-3deg)',               dark: 'brightness(0.98) saturate(1.00)' },
-    'windy-variant':   { light: 'brightness(1.00) saturate(1.02) hue-rotate(-3deg)',               dark: 'brightness(0.96) saturate(0.95)' },
-    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)',      dark: 'brightness(0.94) saturate(0.35) contrast(0.88) sepia(0.04)' },
+    'sunny':           { light: 'brightness(1.08) saturate(1.12) contrast(1.02)', dark: 'brightness(1.04) saturate(1.10)' },
+    'clear-night':     { light: 'brightness(1.04) saturate(1.08)', dark: 'brightness(1.02) saturate(1.12)' },
+    'partlycloudy':    { light: 'brightness(1.00) saturate(0.95) contrast(0.98)', dark: 'brightness(0.96) saturate(0.90)' },
+    'cloudy':          { light: 'brightness(0.92) saturate(0.72) contrast(0.96)', dark: 'brightness(0.88) saturate(0.65) contrast(0.95)' },
+    'windy':           { light: 'brightness(1.02) saturate(1.05) hue-rotate(-3deg)', dark: 'brightness(0.98) saturate(1.00)' },
+    'windy-variant':   { light: 'brightness(1.00) saturate(1.02) hue-rotate(-3deg)', dark: 'brightness(0.96) saturate(0.95)' },
+    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)', dark: 'brightness(0.94) saturate(0.35) contrast(0.88) sepia(0.04)' },
     'rainy':           { light: 'brightness(0.95) saturate(0.80) contrast(0.96) hue-rotate(4deg)', dark: 'brightness(0.85) saturate(0.70) contrast(0.94) hue-rotate(3deg)' },
     'pouring':         { light: 'brightness(0.88) saturate(0.68) contrast(0.93) hue-rotate(5deg)', dark: 'brightness(0.78) saturate(0.55) contrast(0.90) hue-rotate(4deg)' },
     'lightning':       { light: 'brightness(0.89) saturate(0.62) contrast(1.10) hue-rotate(7deg)', dark: 'brightness(0.76) saturate(0.55) contrast(1.15) hue-rotate(6deg)' },
@@ -29,22 +23,12 @@ const _SKY_FILTERS = Object.freeze({
     'snowy':           { light: 'brightness(1.06) saturate(0.55) contrast(0.90) hue-rotate(-4deg) sepia(0.04)', dark: 'brightness(0.92) saturate(0.48) contrast(0.92) hue-rotate(-3deg)' },
     'snowy-rainy':     { light: 'brightness(0.95) saturate(0.58) contrast(0.92) hue-rotate(-2deg)', dark: 'brightness(0.86) saturate(0.50) contrast(0.92) hue-rotate(-2deg)' },
     'hail':            { light: 'brightness(0.86) saturate(0.55) contrast(1.04) hue-rotate(3deg)', dark: 'brightness(0.80) saturate(0.48) contrast(1.02) hue-rotate(3deg)' },
-    'exceptional':     { light: 'brightness(1.08) saturate(1.12) contrast(1.02)',                  dark: 'brightness(1.02) saturate(1.12)' },
-    'default':         { light: 'brightness(1.00) saturate(1.00)',                                 dark: 'brightness(0.95) saturate(0.90)' },
+    'exceptional':     { light: 'brightness(1.08) saturate(1.12) contrast(1.02)', dark: 'brightness(1.02) saturate(1.12)' },
+    'default':         { light: 'brightness(1.00) saturate(1.00)', dark: 'brightness(0.95) saturate(0.90)' },
 });
 const _BLOB_PALETTE = Object.freeze({
-    light: [
-        { c: [84, 132, 204, 0.58] },
-        { c: [110, 192, 220, 0.55] },
-        { core: [255, 253, 247, 0.85], c: [198, 222, 236, 0.48] },
-        { core: [218, 236, 255, 0.85], c: [178, 210, 244, 0.50] },
-    ],
-    dark: [
-        { c: [44, 74, 132, 0.60] },
-        { c: [56, 110, 158, 0.45] },
-        { core: [192, 206, 230, 0.34], c: [104, 134, 186, 0.30] },
-        { core: [214, 226, 244, 0.38], c: [120, 150, 200, 0.26] },
-    ],
+    light: [{ c: [84, 132, 204, 0.58] }, { c: [110, 192, 220, 0.55] }, { core: [255, 253, 247, 0.85], c: [198, 222, 236, 0.48] }, { core: [218, 236, 255, 0.85], c: [178, 210, 244, 0.50] }],
+    dark:  [{ c: [44, 74, 132, 0.60] }, { c: [56, 110, 158, 0.45] }, { core: [192, 206, 230, 0.34], c: [104, 134, 186, 0.30] }, { core: [214, 226, 244, 0.38], c: [120, 150, 200, 0.26] }],
 });
 const _BLOB_TUNING = Object.freeze({
     'sunny':           { light: { tone: [214, 228, 244], mix: 0.00, alpha: 1.00, core: 1.00, scale: 1.00 }, dark: { tone: [30, 52, 96],   mix: 0.15, alpha: 0.90, core: 0.80, scale: 1.00 } },
@@ -819,6 +803,15 @@ const WeatherEffects = (() => {
 
 const ESCAPE_MAP = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
 const escapeHtml = (v) => String(v).replace(/["&<>]/g, c => ESCAPE_MAP[c]);
+
+const JUSTIFY_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly' });
+const ALIGN_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch', baseline: 'baseline' });
+
+const FORECAST_CACHE = new Map();
+const FORECAST_CACHE_MAX = 50;
+const _FORECAST_UNIT_MAP = { temperature: 'temperature_unit', templow: 'temperature_unit', wind_speed: 'wind_speed_unit', precipitation: 'precipitation_unit', pressure: 'pressure_unit', visibility: 'visibility_unit', dew_point: 'temperature_unit' };
+const _FORECAST_UNIT_FALLBACK = { humidity: '%', precipitation_probability: '%', cloud_coverage: '%', wind_bearing: '°', uv_index: '' };
+
 function collectConditionEntities(conditions) {
     const out = [];
     if (!Array.isArray(conditions)) return out;
@@ -893,12 +886,7 @@ function forecastLabel(dt, daily, locale) {
     const d = new Date(dt);
     return daily ? d.toLocaleDateString(locale, { weekday: 'short' }) : d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
 }
-const FORECAST_CACHE = new Map();
-const FORECAST_CACHE_MAX = 50;
-const _FORECAST_UNIT_MAP = { temperature: 'temperature_unit', templow: 'temperature_unit', wind_speed: 'wind_speed_unit', precipitation: 'precipitation_unit', pressure: 'pressure_unit', visibility: 'visibility_unit', dew_point: 'temperature_unit' };
-const _FORECAST_UNIT_FALLBACK = { humidity: '%', precipitation_probability: '%', cloud_coverage: '%', wind_bearing: '°', uv_index: '' };
-const JUSTIFY_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly' });
-const ALIGN_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch', baseline: 'baseline' });
+
 let _sharedStyles = null;
 
 class WeatherCard extends HTMLElement {
@@ -1073,7 +1061,8 @@ class WeatherCard extends HTMLElement {
         if (this._customCardElements.length > 0) { for (const child of this._customCardElements) child.hass = hass; }
         const cfg = this._config;
         const wObj = (cfg.weather_entity && hass.states[cfg.weather_entity]) || null;
-        const sunObj = cfg.sun_entity ? hass.states[cfg.sun_entity] : null;
+        const sunId = cfg.sun_entity || 'sun.sun';
+        const sunObj = hass.states[sunId] || null;
         const moonObj = cfg.moon_phase_entity ? hass.states[cfg.moon_phase_entity] : null;
         if (this._lastSnapshot
             && wObj === this._refW && sunObj === this._refSun && moonObj === this._refMoon
@@ -1089,7 +1078,7 @@ class WeatherCard extends HTMLElement {
         this._refButtonEntities = refs;
         const isAstroNight = !!sunObj && (sunObj.state || '').toLowerCase() === 'below_horizon';
         const colorMode = (cfg.color_mode || 'sun').toLowerCase();
-        if (colorMode !== 'theme' && !cfg.sun_entity) this._warnMissingSun();
+        if (colorMode !== 'theme' && !sunObj) this._warnMissingSun();
         const schemeDark = WeatherCard._schemeDarkFromColorMode(colorMode, !!(hass.themes && hass.themes.darkMode), isAstroNight);
         const hasAstroNightChanged = this._isAstroNight !== isAstroNight;
         const hasSchemeDarkChanged = this._schemeDark !== schemeDark;
@@ -1174,7 +1163,7 @@ class WeatherCard extends HTMLElement {
     }
     static async getConfigElement() {
         if (!customElements.get("origami-weather-editor")) {
-            await import("./origami-weather-editor.js?v=1.23ori");
+            await import("./origami-weather-editor.js?v=1.23ssori");
         }
         return document.createElement("origami-weather-editor");
     }
@@ -1182,72 +1171,39 @@ class WeatherCard extends HTMLElement {
         const weatherEntity = hass ? Object.keys(hass.states).find(e => e.startsWith('weather.')) || '' : '';
         return {
             weather_entity: weatherEntity,
-            sun_entity: 'sun.sun',
-            color_mode: 'sun',
-            card_height: '130px',
+            color_mode: 'theme',
+            card_height: 'content',
+            card_padding: '20px',
             background_mode: 'default',
             button_containers: [
                 {
-                    padding: '0 4px',
-                    buttons: [
-                        { entity: weatherEntity, text_size: '30px', hide_icon: true, padding: '0px 4px', texts: [{ fancy_unit: true }] }
-                    ]
-                },
-                {
-                    padding: '0px 8px',
-                    gap: '8px',
+                    gap: '0px',
                     background: true,
-                    buttons: [
-                        {
-                            entity: weatherEntity,
-                            texts: [],
-                            icon: 'weather',
-                            icon_size: '34px',
-                            type: 'ring',
-                            ring_thresholds: [
-                                { value: '0', color: 'rgba(128, 191, 172, 0.8)' },
-                                { value: '1', color: 'rgba(145, 199, 163, 0.8)' },
-                                { value: '2', color: 'rgba(163, 206, 155, 0.8)' },
-                                { value: '3', color: 'rgba(195, 214, 141, 0.8)' },
-                                { value: '4', color: 'rgba(224, 219, 129, 0.8)' },
-                                { value: '5', color: 'rgba(235, 198, 113, 0.8)' },
-                                { value: '6', color: 'rgba(235, 168, 103, 0.8)' },
-                                { value: '7', color: 'rgba(230, 138, 99, 0.8)' },
-                                { value: '8', color: 'rgba(219, 106, 99, 0.8)' },
-                                { value: '9', color: 'rgba(201, 79, 100, 0.8)' },
-                                { value: '10', color: 'rgba(168, 64, 115, 0.8)' }
-                            ],
-                            padding: '14px',
-                            ring_gap: '10px',
-                            ring_width: '4px',
-                            ring_threshold_mode: 'gradient',
-                            ring_max: '11',
-                            attribute: 'uv_index'
-                        }
-                    ]
-                },
-                {
-                    background: true,
-                    button_text_size: '14px',
+                    button_icon_size: '34px',
+                    button_padding: '16px',
                     align: 'center',
+                    blurred_background: true,
+                    padding: '0 0 16px 0',
                     buttons: [
-                        {
-                            text_size: '12px',
-                            hide_icon: true,
-                            padding: '8px 12px',
-                            text_gap: '5px',
-                            entity: weatherEntity,
-                            forecast: 'daily',
-                            texts: [
-                                { text: 'Today: ', size: '12px' },
-                                { attribute: 'templow', format: ' –', size: '12px', weight: '700' },
-                                { attribute: 'temperature', weight: '700' }
-                            ]
-                        }
+                        { entity: weatherEntity, text_size: '42px', hide_icon: true, background: false, align: 'start', icon: 'weather', padding: '0', inner_gap: '0', texts: [{ weight: '700', attribute: 'temperature', fancy_unit: true }] }
+                    ]
+                },
+                {
+                    background: true,
+                    layout: 'wrap',
+                    gap: '4px',
+                    button_gap: '0px',
+                    button_text_gap: '6px',
+                    button_padding: '0',
+                    align: 'start',
+                    button_text_size: '13px',
+                    buttons: [
+                        { entity: weatherEntity, forecast: 'daily', hide_icon: true, background: false, align: 'start', icon: 'weather', texts: [{ text: 'Today', weight: '500' }, { attribute: 'templow', format: '° - ', weight: '700' }, { attribute: 'temperature', format: '°', weight: '700', size: '14px' }] },
+                        { entity: weatherEntity, hide_icon: true, background: false, align: 'start', texts: [{ text: '• Wind', weight: '500' }, { attribute: 'wind_speed', weight: '700' }] }
                     ]
                 }
             ],
-            grid_options: { rows: 'auto' }
+            grid_options: { rows: 'auto', columns: 12 }
         };
     }
     getCardSize() { return 4; }
@@ -1428,7 +1384,7 @@ class WeatherCard extends HTMLElement {
     _warnMissingSun() {
         if (this._sunWarned) return;
         this._sunWarned = true;
-        console.warn('WBK: color_mode "sun" needs a sun_entity (e.g. sun.sun); falling back to light.');
+        console.warn('Origami Weather: color_mode "sun" requires a sun entity. Tried sun.sun but it was not found; falling back to light. Set sun_entity if your sun entity has a custom ID.');
     }
     _resolveSensorValue(hass, entityId, attribute) {
         let value, unit = '', haFormatted = false, rawNumeric = null;
@@ -1545,10 +1501,17 @@ class WeatherCard extends HTMLElement {
         const hasFormat = txt.format !== undefined;
         if (txt.entity) {
             const r = this._resolveSensorValue(hass, txt.entity, txt.attribute);
-            let value = r.formatted;
-            if (hasFormat && r.haFormatted && r.rawNumeric != null) value = this._formatNumber(r.rawNumeric);
-            const unit = hasFormat ? txt.format : r.unit;
-            return { value, unit, tight: hasFormat, sig: `e:${txt.entity}|${txt.attribute || ''}|${value}${unit}` };
+            let value = r.formatted, unit = hasFormat ? txt.format : r.unit;
+            if (txt.precision !== undefined && r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric))) {
+                value = this._formatNumber(r.rawNumeric, this._getForecastFormat(ctx.lang, txt.precision));
+                if (!hasFormat && r.haFormatted) unit = this._extractUnit(hass, txt.entity, txt.attribute);
+            } else if (txt.fancy_unit === true && r.haFormatted && r.rawNumeric != null) {
+                value = this._formatNumber(r.rawNumeric);
+                if (!hasFormat) unit = this._extractUnit(hass, txt.entity, txt.attribute);
+            } else if (hasFormat && r.haFormatted && r.rawNumeric != null) {
+                value = this._formatNumber(r.rawNumeric);
+            }
+            return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `e:${txt.entity}|${txt.attribute || ''}|${txt.precision ?? ''}|${value}${unit}` };
         }
         if (txt.text !== undefined && txt.text !== '') {
             const value = String(txt.text);
@@ -1576,29 +1539,32 @@ class WeatherCard extends HTMLElement {
                         unit = (w && w[`${txt.attribute}_unit`]) || (_FORECAST_UNIT_MAP[txt.attribute] && w && w[_FORECAST_UNIT_MAP[txt.attribute]]) || _FORECAST_UNIT_FALLBACK[txt.attribute] || '';
                     }
                 }
-                return { value, unit, tight: hasFormat, sig: `forecast:${txt.attribute}|${value}${unit}` };
+                return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `forecast:${txt.attribute}|${value}${unit}` };
             }
             const r = this._resolveSensorValue(hass, button.entity, txt.attribute);
-            let value = r.formatted;
-            if (hasFormat && r.haFormatted && r.rawNumeric != null) value = this._formatNumber(r.rawNumeric);
-            const unit = hasFormat ? txt.format : r.unit;
-            return { value, unit, tight: hasFormat, sig: `a:${txt.attribute}|${value}${unit}` };
+            let value = r.formatted, unit = hasFormat ? txt.format : r.unit;
+            if (txt.precision !== undefined && r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric))) {
+                value = this._formatNumber(r.rawNumeric, this._getForecastFormat(ctx.lang, txt.precision));
+                if (!hasFormat && r.haFormatted) unit = this._extractUnit(hass, button.entity, txt.attribute);
+            } else if (txt.fancy_unit === true && r.haFormatted && r.rawNumeric != null) {
+                value = this._formatNumber(r.rawNumeric);
+                if (!hasFormat) unit = this._extractUnit(hass, button.entity, txt.attribute);
+            } else if (hasFormat && r.haFormatted && r.rawNumeric != null) {
+                value = this._formatNumber(r.rawNumeric);
+            }
+            return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `a:${txt.attribute}|${txt.precision ?? ''}|${value}${unit}` };
         }
         let value = ctx.formatted, unit = hasFormat ? txt.format : ctx.unit;
-        if (hasFormat && ctx.primaryResolved && ctx.primaryResolved.haFormatted && ctx.primaryResolved.rawNumeric != null) {
+        if (txt.precision !== undefined && ctx.primaryResolved && ctx.primaryResolved.rawNumeric != null && isFinite(parseFloat(ctx.primaryResolved.rawNumeric))) {
+            value = this._formatNumber(ctx.primaryResolved.rawNumeric, this._getForecastFormat(ctx.lang, txt.precision));
+            if (!hasFormat && ctx.primaryResolved.haFormatted) unit = this._extractUnit(hass, button.entity, button.attribute);
+        } else if (txt.fancy_unit === true && !ctx.isForecast && ctx.primaryResolved && ctx.primaryResolved.haFormatted && ctx.primaryResolved.rawNumeric != null) {
+            value = this._formatNumber(ctx.primaryResolved.rawNumeric);
+            if (!hasFormat) unit = this._extractUnit(hass, button.entity, button.attribute);
+        } else if (hasFormat && ctx.primaryResolved && ctx.primaryResolved.haFormatted && ctx.primaryResolved.rawNumeric != null) {
             value = this._formatNumber(ctx.primaryResolved.rawNumeric);
         }
-        if (txt.fancy_unit === true && !ctx.isForecast) {
-            const sensor = hass.states[button.entity];
-            const isWeather = sensor && sensor.attributes && sensor.attributes.temperature !== undefined;
-            if (!button.attribute || button.attribute === 'temperature') {
-                const rawTemp = isWeather ? sensor.attributes.temperature : (sensor && sensor.state);
-                const rawUnit = isWeather ? (sensor.attributes.temperature_unit || '') : (sensor && sensor.attributes && sensor.attributes.unit_of_measurement || '');
-                value = (rawTemp != null && this._numFmt) ? this._numFmt.format(rawTemp) : (rawTemp != null ? rawTemp : value);
-                if (!hasFormat) unit = rawUnit;
-            }
-        }
-        return { value, unit, tight: hasFormat, sig: `v:${value}${unit}` };
+        return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `v:${value}${unit}` };
     }
     _getForecastFormat(lang, precision) {
         const key = `${lang}|${precision}`;
@@ -1618,6 +1584,12 @@ class WeatherCard extends HTMLElement {
         if (raw === null || raw === '' || isNaN(parseFloat(raw)) || !isFinite(raw)) return String(raw ?? '');
         const f = fmt || this._numFmt;
         return f ? f.format(raw) : String(raw);
+    }
+    _extractUnit(hass, entityId, attribute) {
+        const sensor = hass && hass.states[entityId];
+        if (!sensor) return '';
+        if (attribute) return sensor.attributes[`${attribute}_unit`] || sensor.attributes.unit_of_measurement || '';
+        return sensor.attributes.unit_of_measurement || '';
     }
     _evaluateCondition(c, hass) {
         if (!c || !c.condition) return true;
@@ -1885,15 +1857,15 @@ class WeatherCard extends HTMLElement {
             .button .button-icon svg.weather-icon { display: block; width: var(--weather-icon-size, 1.1em); height: var(--weather-icon-size, 1.1em); opacity: 0.9; }
             .button .button-icon img.custom-bottom-icon { display: block; height: var(--weather-icon-size, 1.1em); width: var(--weather-icon-size, 1.1em); object-fit: contain; }
             
-            .button .button-content { display: flex; flex-direction: row; align-items: center; gap: var(--origami-button-text-gap, 0.35em); min-width: 0; flex: 1 1 auto; }
-            .button.text-vertical .button-content { flex-direction: column; align-items: flex-start; gap: var(--origami-button-text-gap, 4px); }
+            .button .button-content { display: flex; flex-direction: row; align-items: center; gap: var(--origami-button-text-gap, 0.40em); min-width: 0; flex: 1 1 auto; }
+            .button.text-vertical .button-content { flex-direction: column; align-items: flex-start; gap: var(--origami-button-text-gap, 6px); }
             .button.text-vertical.align-center .button-content { align-items: center; }
             .button.text-vertical.align-end .button-content { align-items: flex-end; }
             
-            .button .button-text { flex: 0 1 auto; min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: var(--_button-no-bg-shadow, none); }
+            .button .button-text { flex: 0 1 auto; min-width: 0; max-width: 100%; line-height: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: var(--_button-no-bg-shadow, none); }
             .button .button-text:empty { display: none; }
             .button .button-text.marquee-host { flex: 1 1 auto; }
-            .button.text-vertical .button-text { flex: 0 0 auto; line-height: 1.2; }
+            .button.text-vertical .button-text { flex: 0 0 auto; }
             .button.text-vertical .button-text.marquee-host { width: 100%; }
             .button .button-text .fancy-unit { font-size: 0.55em; font-weight: 500; opacity: 0.7; vertical-align: baseline; position: relative; top: -0.45em; margin-left: 3px; }
             
@@ -1917,7 +1889,6 @@ class WeatherCard extends HTMLElement {
             .button.format-vertical .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.6em); }
             .button.format-vertical .button-icon img.custom-bottom-icon { height: var(--weather-icon-size, 1.6em); width: var(--weather-icon-size, 1.6em); }
             .button.format-vertical .button-icon svg.weather-icon { width: var(--weather-icon-size, 1.6em); height: var(--weather-icon-size, 1.6em); }
-            .button.format-vertical .button-text { line-height: 1.2; }
             .button.format-vertical.with-bg { padding: var(--origami-buttons-padding, 6px 10px); }
             .button.format-vertical:not(.has-icon-bg) .button-icon { background: none; border: none; box-shadow: none; aspect-ratio: unset; border-radius: 0; overflow: visible; padding: var(--weather-icon-padding, 0); }
             

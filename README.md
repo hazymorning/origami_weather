@@ -10,7 +10,7 @@ A Home Assistant weather card focused on design and flexibility.
 
 **How It Works** · [Building Your Layout](#building-your-layout) · [Background & Sky](#background--sky)
 
-**Reference** · [All Options](#all-options) · [History](#history)
+**Reference** · [All Options](#all-options) · [Performance](#performance) · [History](#history)
 
 <br>
 
@@ -52,7 +52,7 @@ A Home Assistant weather card focused on design and flexibility.
 | `sun_entity` | `string` | — | **Required.** Tracks the sun to switch between day and night. Without it the card stays in permanent day mode. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in the current moon phase |
 
-The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging containers and buttons (see [Building Your Layout](#building-your-layout)), or just use one of the examples below and adjust it.
+The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging containers and buttons (see [Building Your Layout](#building-your-layout)), or just grab one of the examples below and adjust it.
 
 <br>
 
@@ -63,7 +63,7 @@ These are starting points, not fixed designs. Everything can be changed, mixed, 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/PLACEHOLDER-DEFAULT" />
 
 <details>
-<summary><b>Weather Forecast Card (Show YAML)</b></summary>
+<summary><b>Default Card YAML</b></summary>
 
 <br>
 
@@ -319,28 +319,33 @@ The default background is an animated sky that reacts to the weather and time of
 
 You can replace the animated background with your own images or videos by changing `background_mode` to `images` and pointing at a folder of files named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card layout and buttons work the same either way.
 
-<details>
-<summary><b>Performance tips</b></summary>
-
 <br>
 
-The background is lightweight on most devices, but if you want to cut things down:
+## Performance
 
-- `weather_animations: false` removes rain/snow/hail but keeps the sky, clouds, and sun/moon.
-- `background_blobs: false` turns off the ambient color blobs.
-- `night_sky_effects: false` turns off stars.
-- `background_mode: images` skips all canvas rendering entirely.
+The background runs on a single canvas at a capped 24fps. When the card scrolls out of view or the browser tab is in the background, all animation stops entirely (canvas loop, CSS animations, marquee text). It picks back up when the card becomes visible again. The canvas resolution is also capped at roughly 960,000 pixels, and DPR is limited to 2x, so high-density screens don't end up pushing huge buffers.
 
-</details>
+Cloud textures and the star field are pre-rendered to offscreen canvases once and then just drawn each frame, so the per-frame cost is mostly compositing rather than generating new shapes. Particle counts for rain, snow, and hail scale with the card area but have hard upper limits.
+
+That said, this is still a card with a lot going on. The animated sky, moving blobs, weather particles, and sun/moon effects all run at the same time during conditions like rain or snow. On a modern phone or desktop this shouldn't be noticeable. On older hardware, cheap tablets, or something like a wall-mounted panel with a weak browser, you might feel it. If things seem sluggish, the most effective steps are:
+
+- `weather_animations: false` kills rain/snow/hail particles (the heaviest part). Sky, clouds, and sun/moon stay.
+- `background_blobs: false` stops the four moving color blobs (these are CSS-animated but still add up on weak GPUs).
+- `night_sky_effects: false` removes the star field.
+- `background_mode: images` turns off all canvas rendering and just shows a static image. Everything else about the card still works.
+
+You can combine these. For example, keeping the animated sky but turning off particles and blobs gives you a good-looking card with very little rendering cost.
 
 <br>
 
 ## All Options
 
 <details>
-<summary><b>Card options</b></summary>
+<summary><b>Show all card options</b></summary>
 
 <br>
+
+### Card
 
 **Layout**
 
@@ -374,12 +379,9 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_rays_enabled` | `boolean` | `true` | Show or hide the sun rays. |
 | `moon_phase_entity` | `string` | — | Entity for moon phase. When set, the moon shows the current phase. |
 
-</details>
+---
 
-<details>
-<summary><b>Container options</b></summary>
-
-<br>
+### Container
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -415,12 +417,9 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `button_background_color` | `string` | — | Default button background color. |
 | `button_text_layout` | `string` | — | Set to `vertical` to stack text segments vertically instead of inline. |
 
-</details>
+---
 
-<details>
-<summary><b>Button options</b></summary>
-
-<br>
+### Button
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -459,12 +458,9 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
 | `position_y` | `string` | `0` | Vertical offset from anchor. |
 
-</details>
+---
 
-<details>
-<summary><b>Gauge options</b></summary>
-
-<br>
+### Gauges
 
 **Ring**
 
@@ -491,12 +487,9 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `bar_threshold_mode` | `string` | — | `solid`, `segments`, or `gradient`. |
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
 
-</details>
+---
 
-<details>
-<summary><b>Background options</b></summary>
-
-<br>
+### Background
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |

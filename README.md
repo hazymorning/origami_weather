@@ -1,8 +1,8 @@
 # ◪ Origami Weather
 
-A weather card for Home Assistant with animated backgrounds and a flexible layout builder.
+A weather card for Home Assistant with a focus on design and flexibility.
 
-<img width="400" alt="Screenshot_20260719-171430" src="https://github.com/user-attachments/assets/88fc3e13-9044-4abc-832e-cc660845a94f" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/7e8bd143-822e-4b77-8457-b3ece0712b14" />
 
 <br>
 

@@ -1,2 +1,2 @@
-# origami_weather
-A flexible Home Assistant Weather Card
+# ◪ Origami Weather
+A flexible Home Assistant Weather Forecast Card

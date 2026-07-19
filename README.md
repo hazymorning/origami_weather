@@ -8,7 +8,7 @@ A Home Assistant weather card focused on design and flexibility.
 
 **Getting Started** · [Installation](#installation) · [Setup](#setup) · [Examples](#examples)
 
-**How It Works** · [Building Your Layout](#building-your-layout) · [Background & Sky](#background--sky)
+**How It Works** · [Layouts](#layouts) · [Backgrounds](#backgrounds)
 
 **Reference** · [All Options](#all-options) · [Performance](#performance) · [History](#history)
 
@@ -127,7 +127,7 @@ button_containers:
 
 <br>
 
-## Building Your Layout
+## Layouts
 
 <details>
 <summary><b>Containers</b></summary>
@@ -313,7 +313,7 @@ icon_path: /local/weather-icons/
 
 <br>
 
-## Background & Sky
+## Backgrounds
 
 The default background is an animated sky that reacts to the weather and time of day. It renders clouds, precipitation (rain, snow, hail), stars at night, and a sun/moon that follows the actual sun elevation.
 

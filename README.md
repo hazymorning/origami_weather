@@ -2,7 +2,7 @@
 
 A weather card for Home Assistant with animated backgrounds and a flexible layout builder.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/PLACEHOLDER-HERO" />
+<img width="400" alt="Screenshot_20260719-171430" src="https://github.com/user-attachments/assets/88fc3e13-9044-4abc-832e-cc660845a94f" />
 
 <br>
 
@@ -54,8 +54,9 @@ A weather card for Home Assistant with animated backgrounds and a flexible layou
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). Drives the background and forecast data. |
 | `sun_entity` | `string` | — | **Required.** Tracks the sun to switch between day and night. Without it the card stays in permanent day mode. |
+| `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in the current moon phase |
 
-The card has a visual editor. When you add it, a small default layout is set up with a temperature, a UV ring, and today's high/low. From there you build your own layout by adding, removing, and rearranging [containers](#containers) and [buttons](#buttons).
+The card has a visual editor. When you add it, a small default layout is set up . From there you can build your own layout by adding, removing, and rearranging [containers](#containers) and [buttons](#buttons) or just copy one of the examples below and adapt it to your needs.
 
 <br>
 

@@ -1,8 +1,16 @@
 # ◪ Origami Weather
 
-A weather card for Home Assistant that's built around layout flexibility.
+A Home Assistant weather card focused on design and flexibility.
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/7e8bd143-822e-4b77-8457-b3ece0712b14" />
+
+<br>
+
+**Getting Started** · [Installation](#installation) · [Setup](#setup) · [Examples](#examples)
+
+**How It Works** · [Building Your Layout](#building-your-layout) · [Background & Sky](#background--sky)
+
+**Reference** · [All Options](#all-options) · [History](#history)
 
 <br>
 
@@ -44,7 +52,7 @@ A weather card for Home Assistant that's built around layout flexibility.
 | `sun_entity` | `string` | — | **Required.** Tracks the sun to switch between day and night. Without it the card stays in permanent day mode. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in the current moon phase |
 
-The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging [containers](#containers) and [buttons](#buttons), or just copy one of the examples below and tweak it.
+The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging containers and buttons (see [Building Your Layout](#building-your-layout)), or just use one of the examples below and adjust it.
 
 <br>
 
@@ -55,7 +63,7 @@ These are starting points, not fixed designs. Everything can be changed, mixed, 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/PLACEHOLDER-DEFAULT" />
 
 <details>
-<summary><b>Default Card YAML</b></summary>
+<summary><b>Weather Forecast Card (Show YAML)</b></summary>
 
 <br>
 
@@ -144,7 +152,7 @@ button_containers:
       - entity: sensor.wind_speed
 ```
 
-You can also embed other HA cards instead of buttons using `custom_cards`:
+Containers can also hold other HA cards instead of buttons using `custom_cards`:
 
 ```yaml
 button_containers:
@@ -163,7 +171,7 @@ button_containers:
 
 Buttons are the elements inside a container. Each one shows live data from any HA entity: a sensor value, weather attribute, forecast entry, or just an icon.
 
-They can be styled individually or inherit defaults from their container. They support gauges ([ring and bar](#gauges)), conditional visibility, free positioning, tap actions, and marquee overflow.
+They can be styled individually or inherit defaults from their container. They support gauges (ring and bar), conditional visibility, free positioning, tap actions, and marquee overflow.
 
 ```yaml
 buttons:
@@ -186,7 +194,7 @@ buttons:
 
 State, numeric state, screen size, user, and `and`/`or`/`not` conditions are supported. Visibility also works at the container level.
 
-**Free positioning** — pull any button out of its container and place it anywhere on the card:
+**Free positioning** — any button can be pulled out of its container and placed anywhere on the card:
 
 ```yaml
 buttons:
@@ -205,7 +213,7 @@ buttons:
 
 <br>
 
-Buttons use a `texts` array to display values. Each entry can pull from a different entity or attribute, have its own size and weight, and they render inline together. This makes it easy to compose things like "Today: 8° – 14°" in a single button.
+Buttons use a `texts` array to display values. Each entry can pull from a different entity or attribute, have its own size and weight, and they all render inline together. This makes it easy to compose things like "Today: 8° – 14°" in a single button.
 
 ```yaml
 buttons:
@@ -287,9 +295,9 @@ Any button can also use `color_thresholds` to tint itself based on a value, even
 
 <br>
 
-The card ships with its own animated weather icons. Use them by setting `icon: weather` on a button.
+The card includes its own animated weather icons. Use them by setting `icon: weather` on a button.
 
-To bring your own, point at a folder of SVGs with `icon_path`. Name them after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). You can set `icon_path` once at the card level so every `icon: weather` button picks it up.
+To use your own, point at a folder of SVGs with `icon_path`. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). You can set `icon_path` once at the card level so every `icon: weather` button uses it.
 
 ```yaml
 # Per button
@@ -309,16 +317,14 @@ icon_path: /local/weather-icons/
 
 The default background is an animated sky that reacts to the weather and time of day. It renders clouds, precipitation (rain, snow, hail), stars at night, and a sun/moon that follows the actual sun elevation.
 
-You can swap it out for your own images or videos by switching the background mode and pointing at a folder of files named after weather states (e.g. `sunny.jpg`, `rainy.mp4`).
-
-The card layout and buttons work the same regardless of which background mode you use.
+You can replace the animated background with your own images or videos by changing `background_mode` to `images` and pointing at a folder of files named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card layout and buttons work the same either way.
 
 <details>
 <summary><b>Performance tips</b></summary>
 
 <br>
 
-The background is lightweight on most devices, but if you want to trim things down:
+The background is lightweight on most devices, but if you want to cut things down:
 
 - `weather_animations: false` removes rain/snow/hail but keeps the sky, clouds, and sun/moon.
 - `background_blobs: false` turns off the ambient color blobs.
@@ -329,9 +335,7 @@ The background is lightweight on most devices, but if you want to trim things do
 
 <br>
 
-## Reference
-
-All the option tables live here. Click to expand whichever section you need.
+## All Options
 
 <details>
 <summary><b>Card options</b></summary>
@@ -458,9 +462,11 @@ The card renders a sun during the day and a moon at night, positioned within the
 </details>
 
 <details>
-<summary><b>Ring gauge options</b></summary>
+<summary><b>Gauge options</b></summary>
 
 <br>
+
+**Ring**
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -474,12 +480,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `gauge_entity` | `string` | — | Use a different entity for the gauge value. |
 | `gauge_attribute` | `string` | — | Attribute to read for the gauge value. |
 
-</details>
-
-<details>
-<summary><b>Bar gauge options</b></summary>
-
-<br>
+**Bar**
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |

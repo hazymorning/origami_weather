@@ -1,6 +1,6 @@
 # ◪ Origami Weather
 
-A weather card for Home Assistant with a focus on design and flexibility.
+A Home Assistant weather card focused on design and flexibility.
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/7e8bd143-822e-4b77-8457-b3ece0712b14" />
 

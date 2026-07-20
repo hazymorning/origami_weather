@@ -58,7 +58,7 @@ The card has a visual editor. When you add it, a small default layout is set up.
 
 ## Examples
 
-These are starting points, not fixed designs. Everything can be changed, mixed, and combined with other HA cards.
+These are starting points. Everything can be changed, mixed, and combined.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/PLACEHOLDER-DEFAULT" />
 

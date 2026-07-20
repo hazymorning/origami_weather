@@ -10,7 +10,7 @@ A Home Assistant weather card focused on design and flexibility.
 
 **How It Works** · [Layouts](#layouts) · [Backgrounds](#backgrounds)
 
-**Reference** · [All Options](#all-options) · [Performance](#performance) · [History](#history)
+**Reference** · [Options](#options) · [Performance](#performance) · [History](#history)
 
 <br>
 
@@ -48,11 +48,11 @@ A Home Assistant weather card focused on design and flexibility.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). Drives the background and forecast data. |
-| `sun_entity` | `string` | — | **Required.** Tracks the sun to switch between day and night. Without it the card stays in permanent day mode. |
+| `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
+| `sun_entity` | `string` | — | **Required.** Tracks the sun. Without it the card stays in permanent day mode. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in the current moon phase |
 
-The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging containers and buttons (see [Building Your Layout](#building-your-layout)), or just grab one of the examples below and adjust it.
+The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging containers and buttons (see [Layout](#layout)), or just use one of the examples below and adjust it.
 
 <br>
 
@@ -338,7 +338,7 @@ You can combine these. For example, keeping the animated sky but turning off par
 
 <br>
 
-## All Options
+## Options
 
 <details>
 <summary><b>Show all card options</b></summary>

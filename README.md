@@ -1,6 +1,8 @@
 # ◪ Origami Weather
 
-A weather forecast card with a focus on design and flexibility.
+A weather forecast card for Home Assistant with a focus on design and flexibility.
+
+<br>
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/7e8bd143-822e-4b77-8457-b3ece0712b14" />
 
@@ -52,7 +54,7 @@ A weather forecast card with a focus on design and flexibility.
 | `sun_entity` | `string` | — | **Required.** For the day/night cycle (defaults to `sun.sun`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in the current moon phase |
 
-The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging containers and buttons (see [Layout](#layout)), or just use one of the examples below and adjust it.
+The card has a visual editor.   When you add it, a small default layout is set up. From there you can build pretty much whatever layout you have in mind by adding, removing, and rearranging containers and buttons (see [Layout](#layout)), or just use one of the examples below and adjust it.
 
 <br>
 
@@ -82,7 +84,7 @@ button_containers:
         texts:
           - fancy_unit: true
   - padding: 0px 8px
-    gap: 8px
+gap: 8px
     background: true
     buttons:
       - entity: weather.home
@@ -315,15 +317,15 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-The default background is an animated sky that reacts to the weather and time of day. It renders clouds, precipitation (rain, snow, hail), stars at night, and a sun/moon that follows the actual sun elevation.
+The default background is an animated sky that reacts to the weather and time of day. It shows clouds, precipitation (rain, snow, hail), stars at night, and a sun/moon that follows the sun elevation.
 
-You can replace the animated background with your own images or videos by changing `background_mode` to `images` and pointing at a folder of files named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card layout and buttons work the same either way.
+You can replace the animated background with your own images or videos by changing `background_mode` to `images` and pointing at a folder of files named after weather states (e.g. `sunny.jpg` or `rainy.mp4`).
 
 <br>
 
 ## Performance
 
-This weather card is not exactly minimalistic regarding its effects and features, but it tries to be lightweight regarding the power it needs. Every single detail is built around the goal "nice look but with minimum performance need" and also pretty much every possible optimization is added on top.
+This card is not exactly minimalistic regarding its effects and features, but it tries to be regarding the power it needs. Every single detail is built around the goal "nice look but with minimum performance need" and also pretty much every possible optimization gets used. The performance is tested regularly after changes and I'm a bit proud how reasonable it is. 
 
 That said, this is still a card with a lot going on. On a somewhat modern phone or desktop this shouldn't be noticeable. On older hardware you might feel it. If effects like rain seem like in slow motion, you have many ways to lower the performance need:
 

@@ -1,6 +1,6 @@
 # ◪ Origami Weather
 
-A Home Assistant weather card focused on design and flexibility.
+A weather forecast card with a focus on design and flexibility.
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/7e8bd143-822e-4b77-8457-b3ece0712b14" />
 
@@ -323,18 +323,16 @@ You can replace the animated background with your own images or videos by changi
 
 ## Performance
 
-The background runs on a single canvas at a capped 24fps. When the card scrolls out of view or the browser tab is in the background, all animation stops entirely (canvas loop, CSS animations, marquee text). It picks back up when the card becomes visible again. The canvas resolution is also capped at roughly 960,000 pixels, and DPR is limited to 2x, so high-density screens don't end up pushing huge buffers.
+This weather card is not exactly minimalistic regarding its effects and features, but it tries to be lightweight regarding the power it needs. Every single detail is built around the goal "nice look but with minimum performance need" and also pretty much every possible optimization is added on top.
 
-Cloud textures and the star field are pre-rendered to offscreen canvases once and then just drawn each frame, so the per-frame cost is mostly compositing rather than generating new shapes. Particle counts for rain, snow, and hail scale with the card area but have hard upper limits.
+That said, this is still a card with a lot going on. On a somewhat modern phone or desktop this shouldn't be noticeable. On older hardware you might feel it. If effects like rain seem like in slow motion, you have many ways to lower the performance need:
 
-That said, this is still a card with a lot going on. The animated sky, moving blobs, weather particles, and sun/moon effects all run at the same time during conditions like rain or snow. On a modern phone or desktop this shouldn't be noticeable. On older hardware, cheap tablets, or something like a wall-mounted panel with a weak browser, you might feel it. If things seem sluggish, the most effective steps are:
-
-- `weather_animations: false` kills rain/snow/hail particles (the heaviest part). Sky, clouds, and sun/moon stay.
-- `background_blobs: false` stops the four moving color blobs (these are CSS-animated but still add up on weak GPUs).
+- `weather_animations: false` disabled rain/snow/hail effects.
+- `background_blobs: false` stops the moving color blobs (these are CSS-animated but still add up on weak GPUs).
 - `night_sky_effects: false` removes the star field.
 - `background_mode: images` turns off all canvas rendering and just shows a static image. Everything else about the card still works.
 
-You can combine these. For example, keeping the animated sky but turning off particles and blobs gives you a good-looking card with very little rendering cost.
+You can combine these. For example, keeping the animated sky but turning off weather effects gives you a good-looking card with very little rendering cost.
 
 <br>
 
@@ -509,13 +507,11 @@ The card renders a sun during the day and a moon at night, positioned within the
 
 ## History
 
-This card started in early 2026. The original version lived under a different name and a different GitHub account. At some point, maintaining a public project stopped being fun. Most of the feedback was issues and requests, and there was little to balance that out. So the old account and repo were deleted.
-
-After a break, the motivation came back, but the focus shifted. Development continued in private, with the goal of getting the core right before putting it out there again. Origami Weather is that full rebuild. It's smaller, more focused, and built around being a layout builder first.
+This card originally launched under the name Atmospheric Weather Card on a previous GitHub account. After maintaining it for over six months, I stepped away from the project. Origami Weather is a full rebuild from the ground up — informed by everything I learned from that first version, but with cleaner code, a clearer scope, and a fresh start.
 
 <br>
 
-> **Note on AI:** AI is part of the workflow here. It helps test ideas and get through the tedious parts faster.
+> **Note on AI:** AI mostly defaults to the easiest or most generic solution, and that is rarely the best one. It has its place though — without it, a solo project like this would take significantly more time. It's used in this card to write cleaner code, debug issues, and test out new ideas.
 
 <br>
 

@@ -49,7 +49,7 @@ A Home Assistant weather card focused on design and flexibility.
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
-| `sun_entity` | `string` | — | **Required.** Tracks the sun. Without it the card stays in permanent day mode. |
+| `sun_entity` | `string` | — | **Required.** For the day/night cycle (defaults to `sun.sun`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in the current moon phase |
 
 The card has a visual editor. When you add it, a small default layout is set up. From there you can build your own layout by adding, removing, and rearranging containers and buttons (see [Layout](#layout)), or just use one of the examples below and adjust it.

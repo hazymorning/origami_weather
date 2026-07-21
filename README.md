@@ -2,9 +2,7 @@
 
 A weather forecast card for Home Assistant with a focus on design and flexibility.
 
-<br>
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/8acccb4b-1388-4324-83e0-b5739053ac1c" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a55be93-df73-4fae-a79b-eb3289b21f25" />
 
 <br>
 

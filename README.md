@@ -533,7 +533,7 @@ This card started out as the Atmospheric Weather Card on a previous GitHub accou
 
 <br>
 
-> **Note on AI:** AI tends to reach for the easiest or most generic solution, which usually isn't the best one. It still earns its place here, though. As a solo project this would take a lot longer without it. I use it to tidy up code, fix bugs, and try out ideas.
+> **Note on AI:** As a solo project this would take a lot longer without it. Ai is used here to tidy up code, fix bugs, and try out ideas.
 
 <br>
 

@@ -4,7 +4,7 @@ A weather forecast card for Home Assistant with a focus on design and flexibilit
 
 <br>
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/7e8bd143-822e-4b77-8457-b3ece0712b14" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/8acccb4b-1388-4324-83e0-b5739053ac1c" />
 
 <br>
 
@@ -62,7 +62,7 @@ The card has a visual editor. When you add it, you get a small default layout to
 
 These are just starting points. Anything here can be changed, mixed, or combined.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/PLACEHOLDER-DEFAULT" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/7e8bd143-822e-4b77-8457-b3ece0712b14" />
 
 <details>
 <summary><b>Default Card YAML</b></summary>

@@ -51,16 +51,16 @@ A weather forecast card for Home Assistant with a focus on design and flexibilit
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
-| `sun_entity` | `string` | — | **Required.** For the day/night cycle (defaults to `sun.sun`). |
-| `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in the current moon phase |
+| `sun_entity` | `string` | — | **Required.** Drives the day/night cycle (defaults to `sun.sun`). |
+| `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
-The card has a visual editor.   When you add it, a small default layout is set up. From there you can build pretty much whatever layout you have in mind by adding, removing, and rearranging containers and buttons (see [Layout](#layout)), or just use one of the examples below and adjust it.
+The card has a visual editor. When you add it, you get a small default layout to start from. From there you can rearrange it however you like by adding, removing, and moving containers and buttons (see [Layouts](#layouts)), or start from one of the examples below and adjust it.
 
 <br>
 
 ## Examples
 
-These are starting points. Everything can be changed, mixed, and combined.
+These are just starting points. Anything here can be changed, mixed, or combined.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/PLACEHOLDER-DEFAULT" />
 
@@ -84,7 +84,7 @@ button_containers:
         texts:
           - fancy_unit: true
   - padding: 0px 8px
-gap: 8px
+    gap: 8px
     background: true
     buttons:
       - entity: weather.home
@@ -132,11 +132,16 @@ gap: 8px
 ## Layouts
 
 <details>
+<summary><b>Layout options</b></summary>
+
+<br>
+
+<details>
 <summary><b>Containers</b></summary>
 
 <br>
 
-Containers are the top-level layout blocks. Each one holds a list of buttons and controls how they're arranged. Stack multiple containers to build the card layout.
+Containers are the top-level layout blocks. Each one holds a list of buttons and controls how they're arranged. Stack a few containers to build up the card.
 
 They flow vertically by default. Set `content_direction: row` at the card level for horizontal, or use `custom_width` on individual containers.
 
@@ -215,7 +220,7 @@ buttons:
 
 <br>
 
-Buttons use a `texts` array to display values. Each entry can pull from a different entity or attribute, have its own size and weight, and they all render inline together. This makes it easy to compose things like "Today: 8° – 14°" in a single button.
+Buttons use a `texts` array to display values. Each entry can pull from a different entity or attribute, have its own size and weight, and they all render inline together. That makes it easy to build something like "Today: 8° – 14°" inside a single button.
 
 ```yaml
 buttons:
@@ -234,7 +239,7 @@ buttons:
 
 Each text entry supports: `entity`, `attribute`, `text` (static string), `format` (appended to the value), `size`, `weight`, `overflow` (ellipsis, clip, wrap, marquee), and `fancy_unit` (superscript unit).
 
-If you don't set a `texts` array, the button falls back to showing the entity state with a single default text.
+If you don't set a `texts` array, the button just shows the entity state with a single default text.
 
 </details>
 
@@ -297,7 +302,7 @@ Any button can also use `color_thresholds` to tint itself based on a value, even
 
 <br>
 
-The card includes its own animated weather icons. Use them by setting `icon: weather` on a button.
+The card comes with its own animated weather icons. Turn them on by setting `icon: weather` on a button.
 
 To use your own, point at a folder of SVGs with `icon_path`. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). You can set `icon_path` once at the card level so every `icon: weather` button uses it.
 
@@ -313,28 +318,45 @@ icon_path: /local/weather-icons/
 
 </details>
 
+</details>
+
 <br>
 
 ## Backgrounds
 
-The default background is an animated sky that reacts to the weather and time of day. It shows clouds, precipitation (rain, snow, hail), stars at night, and a sun/moon that follows the sun elevation.
+By default the card draws a live sky behind your content on a canvas. It reads your weather entity and `sun_entity` and paints the scene to match: a color gradient that shifts with the condition, drifting clouds whose density and darkness follow the current weather, and a sun during the day or a moon at night that tracks the sun's elevation. If you set a `moon_phase_entity`, the moon is drawn in its actual phase.
 
-You can replace the animated background with your own images or videos by changing `background_mode` to `images` and pointing at a folder of files named after weather states (e.g. `sunny.jpg` or `rainy.mp4`).
+On top of that base scene sit a few layers you can toggle:
+
+- **Weather effects** — rain, snow, hail, sleet, and lightning, matched to the current condition.
+- **Color blobs** — soft ambient color that drifts behind everything and shifts with the weather. This is what gives the card its mood in calm conditions.
+- **Night sky** — a star field that fades in after dark, denser on clear nights and gone during rain.
+
+If you'd rather use your own artwork, set `background_mode: images` and point `weather_image_path` at a folder of images or videos named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition and swaps it as the weather changes. You can supply a separate `weather_image_path_dark` folder for dark mode.
+
+See the [Background options](#options) for the full list, including brightness, saturation, and blur controls that apply in both modes.
 
 <br>
 
 ## Performance
 
-This card is not exactly minimalistic regarding its effects and features, but it tries to be regarding the power it needs. Every single detail is built around the goal "nice look but with minimum performance need" and also pretty much every possible optimization gets used. The performance is tested regularly after changes and I'm a bit proud how reasonable it is. 
+<details>
+<summary><b>Notes on performance and how to lighten it</b></summary>
 
-That said, this is still a card with a lot going on. On a somewhat modern phone or desktop this shouldn't be noticeable. On older hardware you might feel it. If effects like rain seem like in slow motion, you have many ways to lower the performance need:
+<br>
 
-- `weather_animations: false` disabled rain/snow/hail effects.
-- `background_blobs: false` stops the moving color blobs (these are CSS-animated but still add up on weak GPUs).
-- `night_sky_effects: false` removes the star field.
-- `background_mode: images` turns off all canvas rendering and just shows a static image. Everything else about the card still works.
+The card does a fair amount visually, so I've spent a lot of effort keeping the cost down. I re-test it after changes and I'm happy with where it sits.
 
-You can combine these. For example, keeping the animated sky but turning off weather effects gives you a good-looking card with very little rendering cost.
+Still, there's a lot going on. On a reasonably modern phone or desktop you shouldn't notice it. On older hardware you might. If effects like rain look like they're in slow motion, you can turn layers off to reduce the load:
+
+- `weather_animations: false` — disables rain/snow/hail effects.
+- `background_blobs: false` — stops the moving color blobs (CSS-animated, but they add up on weak GPUs).
+- `night_sky_effects: false` — removes the star field.
+- `background_mode: images` — turns off all canvas rendering and shows a static image instead. Everything else about the card still works.
+
+These stack. Keeping the animated sky but turning off weather effects, for example, gives you a good-looking card at very little rendering cost.
+
+</details>
 
 <br>
 
@@ -431,7 +453,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `icon_background` | `boolean` | — | Background behind the icon. |
 | `icon_background_color` | `string` | — | Icon background color. |
 | `hide_icon` | `boolean` | `false` | Hide the icon. |
-| `texts` | `list` | — | Array of text segments. See [Texts](#texts). |
+| `texts` | `list` | — | Array of text segments. See [Texts](#layouts). |
 | `text_size` | `string` | — | Overall text size for this button. |
 | `text_gap` | `string` | — | Gap between text segments. |
 | `text_layout` | `string` | — | `vertical` to stack texts vertically. |
@@ -509,14 +531,14 @@ The card renders a sun during the day and a moon at night, positioned within the
 
 ## History
 
-This card originally launched under the name Atmospheric Weather Card on a previous GitHub account. After maintaining it for over six months, I stepped away from the project. Origami Weather is a full rebuild from the ground up — informed by everything I learned from that first version, but with cleaner code, a clearer scope, and a fresh start.
+This card started out as the Atmospheric Weather Card on a previous GitHub account. I maintained it for about six months and then stepped away. Origami Weather is a rebuild from scratch: same ideas, but cleaner code, a tighter scope, and a fresh start with what I'd learned.
 
 <br>
 
-> **Note on AI:** AI mostly defaults to the easiest or most generic solution, and that is rarely the best one. It has its place though — without it, a solo project like this would take significantly more time. It's used in this card to write cleaner code, debug issues, and test out new ideas.
+> **Note on AI:** AI tends to reach for the easiest or most generic solution, which usually isn't the best one. It still earns its place here, though. As a solo project this would take a lot longer without it. I use it to tidy up code, fix bugs, and try out ideas.
 
 <br>
 
 ## Support the project
 
-If you find this card useful, consider leaving a star. It helps more than you'd think.
+If the card is useful to you, a star goes a long way. Thanks.

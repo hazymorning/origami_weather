@@ -14,6 +14,9 @@ A weather forecast card for Home Assistant with a focus on design and flexibilit
 
 <br>
 
+> **Note on AI:** Being a solo project, development would take a lot longer without AI. I mainly use it to tidy up code, fix bugs, and test out new ideas.
+
+
 ## Installation
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PLACEHOLDER&repository=origami-weather&category=plugin)
@@ -529,11 +532,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 
 ## History
 
-This card started out as the Atmospheric Weather Card on a previous GitHub account. I maintained it for about six months and then stepped away. Origami Weather is a rebuild from scratch: same ideas, but cleaner code, a tighter scope, and a fresh start with what I'd learned.
-
-<br>
-
-> **Note on AI:** As a solo project this would take a lot longer without it. Ai is used here to tidy up code, fix bugs, and try out ideas.
+Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been totally reworked since then, with a new structure and different approaches to almost everything. I don't really like the public maintenance part, but I enjoy tinkering with this enough that I think it's worth sharing.
 
 <br>
 

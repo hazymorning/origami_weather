@@ -14,8 +14,7 @@ A weather forecast card for Home Assistant with a focus on design and flexibilit
 
 <br>
 
-> **Note on AI:** Being a solo project, development would take a lot longer without AI. I mainly use it to tidy up code, fix bugs, and test out new ideas.
-
+> **Note:** AI is used as a tool in this project to get tedious tasks done faster (leaving me more time for the enjoyable parts).
 
 ## Installation
 

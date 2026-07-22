@@ -335,7 +335,7 @@ See the [Background options](#options) for the full list.
 ## Performance
 
 <details>
-<summary><b>Notes on performance and how to lighten it</b></summary>
+<summary><b>Notes on performance</b></summary>
 
 <br>
 

@@ -60,7 +60,7 @@ The card has a visual editor. When you add it, you get a small default layout to
 
 ## Examples
 
-These are just starting points. Anything here can be changed, mixed, or combined.
+These are just starting points. Almost anything in these layouts can be changed, mixed, or combined with other Home Assistant cards.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/74d4a14d-3973-418b-a4a2-6254094b0a9b" />
 
@@ -324,17 +324,11 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-By default the card draws a live sky behind your content on a canvas. It reads your weather entity and `sun_entity` and paints the scene to match: a color gradient that shifts with the condition, drifting clouds whose density and darkness follow the current weather, and a sun during the day or a moon at night that tracks the sun's elevation. If you set a `moon_phase_entity`, the moon is drawn in its actual phase.
+By default the card reads your weather entity and `sun_entity` and shows the scene to match, like a color gradient, drifting clouds and the sun during the day or the moon at night. **Most of these effects can be toggled separately.**
 
-On top of that base scene sit a few layers you can toggle:
+If you'd rather use your own weather artwork, set `background_mode: images` and point `weather_image_path` at a folder of images or videos named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition.
 
-- **Weather effects** — rain, snow, hail, sleet, and lightning, matched to the current condition.
-- **Color blobs** — soft ambient color that drifts behind everything and shifts with the weather. This is what gives the card its mood in calm conditions.
-- **Night sky** — a star field that fades in after dark, denser on clear nights and gone during rain.
-
-If you'd rather use your own artwork, set `background_mode: images` and point `weather_image_path` at a folder of images or videos named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition and swaps it as the weather changes. You can supply a separate `weather_image_path_dark` folder for dark mode.
-
-See the [Background options](#options) for the full list, including brightness, saturation, and blur controls that apply in both modes.
+See the [Background options](#options) for the full list.
 
 <br>
 
@@ -345,9 +339,7 @@ See the [Background options](#options) for the full list, including brightness, 
 
 <br>
 
-The card does a fair amount visually, so I've spent a lot of effort keeping the cost down. I re-test it after changes and I'm happy with where it sits.
-
-Still, there's a lot going on. On a reasonably modern phone or desktop you shouldn't notice it. On older hardware you might. If effects like rain look like they're in slow motion, you can turn layers off to reduce the load:
+Because this card is quite visually active, a lot of effort goes into keeping performance smooth. It should run perfectly on any reasonably modern phone or desktop. While it should also perform well on older hardware, the wide variety of devices and browsers makes it hard to guarantee. If you notice any performance issues, you can turn off individual effects to reduce the load:
 
 - `weather_animations: false` — disables rain/snow/hail effects.
 - `background_blobs: false` — stops the moving color blobs (CSS-animated, but they add up on weak GPUs).
@@ -531,10 +523,4 @@ The card renders a sun during the day and a moon at night, positioned within the
 
 ## History
 
-Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been totally reworked since then, with a new structure and different approaches to almost everything. I don't really like the public maintenance part, but I enjoy tinkering with this enough that I think it's worth sharing.
-
-<br>
-
-## Support the project
-
-If the card is useful to you, a star goes a long way. Thanks.
+Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked since then, with  different approaches... to almost everything. I don't really like the public maintenance part, but I enjoy tinkering with this enough that I think it's worth sharing.

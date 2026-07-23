@@ -60,7 +60,7 @@ The card has a visual editor. When you add it, you get a small default layout to
 
 ## Examples
 
-These are just starting points. Almost anything in these layouts can be changed, mixed, or combined with other Home Assistant cards.
+These are just starting points. Almost anything in these layouts can be changed or combined.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/74d4a14d-3973-418b-a4a2-6254094b0a9b" />
 

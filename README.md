@@ -14,8 +14,6 @@ A versatile weather card for Home Assistant.
 
 <br>
 
-> **Note:** AI is used as a tool in this project to get tedious tasks done faster (leaving me more time for the enjoyable parts).
-
 ## Installation
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PLACEHOLDER&repository=origami-weather&category=plugin)
@@ -324,11 +322,11 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-By default the card reads your weather entity and `sun_entity` and shows the scene to match, like a color gradient, drifting clouds and the sun during the day or the moon at night. **Most of these effects can be toggled separately.**
+By default the card shows different background effects, like a color gradient, drifting clouds and the sun during the day or the moon at night. **Most of these effects can be toggled separately.**
 
 If you'd rather use your own weather artwork, set `background_mode: images` and point `weather_image_path` at a folder of images or videos named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition.
 
-See the [Background options](#options) for the full list.
+See [Background options](#options).
 
 <br>
 
@@ -524,3 +522,5 @@ The card renders a sun during the day and a moon at night, positioned within the
 ## History
 
 Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked since then, with  different approaches... to almost everything. I don't really like the public maintenance part, but I enjoy tinkering with this enough that I think it's worth sharing.
+
+> **Note:** AI is used as a tool in this project to get tedious tasks done faster (leaving me more time for the enjoyable parts).

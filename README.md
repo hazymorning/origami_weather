@@ -49,10 +49,27 @@ A versatile weather card for Home Assistant.
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
-| `sun_entity` | `string` | — | **Required.** Drives the day/night cycle (defaults to `sun.sun`). |
+| `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only set this if your sun entity has a different ID. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
 The card has a visual editor. When you add it, you get a small default layout to start from. From there you can rearrange it however you like by adding, removing, and moving containers and buttons (see [Layouts](#layouts)), or start from one of the examples below and adjust it.
+
+<br>
+
+### Color mode
+
+The card has a light and a dark version. You decide when it switches between them, and it doesn't have to happen based on the sun.
+
+| Value | What it does |
+| :--- | :--- |
+| `color_mode: theme` | The card follows your Home Assistant theme. Theme goes dark, card goes dark. This is what new cards start with. |
+| `color_mode: sun` | The card is light while the sun is up and dark after sunset, using your `sun_entity`. |
+
+```yaml
+color_mode: theme
+```
+
+**Tip:** if you run a theme that stays dark all day, a light card in the middle of the day will sit next to your other cards with a fairly harsh contrast. With a permanently dark theme, a permanently dark card usually looks better. Your call though.
 
 <br>
 
@@ -70,32 +87,105 @@ These are just starting points. Almost anything in these layouts can be changed 
 ```yaml
 type: custom:origami-weather
 weather_entity: weather.home
-sun_entity: sun.sun
+color_mode: theme
+card_height: content
+card_padding: 20px
+background_mode: default
+button_containers:
+  - gap: 0px
+    background: true
+    blurred_background: true
+    button_icon_size: 34px
+    button_padding: 16px
+    align: center
+    padding: 0 0 16px 0
+    buttons:
+      - entity: weather.home
+        text_size: 42px
+        background: false
+        align: start
+        padding: "0"
+        inner_gap: "0"
+        elements:
+          - kind: text
+            attribute: temperature
+            weight: "700"
+            fancy_unit: true
+  - background: true
+    layout: wrap
+    gap: 4px
+    button_gap: 0px
+    button_text_gap: 6px
+    button_padding: "0"
+    button_text_size: 13px
+    align: start
+    buttons:
+      - entity: weather.home
+        forecast: daily
+        background: false
+        align: start
+        elements:
+          - kind: text
+            text: Today
+            weight: "500"
+          - kind: text
+            attribute: templow
+            format: "° - "
+            weight: "700"
+          - kind: text
+            attribute: temperature
+            format: "°"
+            weight: "700"
+            size: 14px
+      - entity: weather.home
+        background: false
+        align: start
+        elements:
+          - kind: text
+            text: "• Wind"
+            weight: "500"
+          - kind: text
+            attribute: wind_speed
+            weight: "700"
+```
+
+</details>
+
+<details>
+<summary><b>Big temperature with a UV ring</b></summary>
+
+<br>
+
+```yaml
+type: custom:origami-weather
+weather_entity: weather.home
+color_mode: sun
 card_height: 130px
 button_containers:
   - padding: 0 4px
     buttons:
       - entity: weather.home
         text_size: 30px
-        hide_icon: true
         padding: 0px 4px
-        texts:
-          - fancy_unit: true
+        elements:
+          - kind: text
+            fancy_unit: true
   - padding: 0px 8px
     gap: 8px
     background: true
     buttons:
       - entity: weather.home
         attribute: uv_index
-        icon: weather
-        icon_size: 34px
         type: ring
         ring_width: 4px
         ring_gap: 10px
         ring_max: "11"
         ring_threshold_mode: gradient
+        icon_size: 34px
         padding: 14px
-        texts: []
+        elements:
+          - kind: icon
+            icon: weather
         ring_thresholds:
           - value: "0"
             color: rgba(128, 191, 172, 0.8)
@@ -109,17 +199,19 @@ button_containers:
       - entity: weather.home
         forecast: daily
         text_size: 12px
-        hide_icon: true
         padding: 8px 12px
         text_gap: 5px
-        texts:
-          - text: "Today: "
+        elements:
+          - kind: text
+            text: "Today: "
             size: 12px
-          - attribute: templow
+          - kind: text
+            attribute: templow
             format: " –"
             size: 12px
             weight: "700"
-          - attribute: temperature
+          - kind: text
+            attribute: temperature
             weight: "700"
 ```
 
@@ -149,7 +241,6 @@ button_containers:
     buttons:
       - entity: weather.home
         text_size: 30px
-        hide_icon: true
   - background: true
     gap: 8px
     buttons:
@@ -174,16 +265,17 @@ button_containers:
 
 <br>
 
-Buttons are the elements inside a container. Each one shows live data from any HA entity: a sensor value, weather attribute, forecast entry, or just an icon.
+Buttons are the items inside a container. Each one is tied to an entity and shows live data from it: a sensor value, a weather attribute, a forecast entry, or just an icon.
 
-They can be styled individually or inherit defaults from their container. They support gauges (ring and bar), conditional visibility, free positioning, tap actions, and marquee overflow.
+They can be styled individually or inherit defaults from their container. They support ring gauges, conditional visibility, free positioning, tap actions, and scrolling text.
 
 ```yaml
 buttons:
   - entity: sensor.outside_temperature
-    icon: mdi:thermometer
-    texts:
-      - attribute: temperature
+    elements:
+      - kind: icon
+        icon: mdi:thermometer
+      - kind: text
 ```
 
 **Conditional visibility** — show a button only when conditions are met, using standard HA visibility conditions:
@@ -214,30 +306,51 @@ buttons:
 </details>
 
 <details>
-<summary><b>Texts</b></summary>
+<summary><b>Elements</b></summary>
 
 <br>
 
-Buttons use a `texts` array to display values. Each entry can pull from a different entity or attribute, have its own size and weight, and they all render inline together. That makes it easy to build something like "Today: 8° – 14°" inside a single button.
+Everything inside a button is an element. A button holds a flat `elements` list, and the order of that list is the order things are drawn in. There are three kinds: `text`, `icon` and `bar`. You can use as many of each as you want and mix them freely, so a bar can sit between two texts, or an icon can sit after the value instead of before it.
 
 ```yaml
 buttons:
   - entity: weather.home
     forecast: daily
-    hide_icon: true
-    texts:
-      - text: "Today: "
+    elements:
+      - kind: text
+        text: "Today: "
         size: 12px
-      - attribute: templow
+      - kind: text
+        attribute: templow
         format: " –"
         weight: "700"
-      - attribute: temperature
+      - kind: text
+        attribute: temperature
         weight: "700"
 ```
 
-Each text entry supports: `entity`, `attribute`, `text` (static string), `format` (appended to the value), `size`, `weight`, `overflow` (ellipsis, clip, wrap, marquee), and `fancy_unit` (superscript unit).
+That gives you something like "Today: 8 – 14°" inside a single button.
 
-If you don't set a `texts` array, the button just shows the entity state with a single default text.
+If you leave `elements` out completely, the button shows one text element with the entity state.
+
+**Text elements** take `entity`, `attribute`, `text` (a fixed string), `format` (glued to the end of the value, usually a unit), `precision` (decimal places), `size`, `weight`, `overflow` and `fancy_unit`. A text element without `entity`, `attribute` or `text` falls back to the button's own entity and attribute.
+
+**Icon elements** take `icon`, `icon_path`, `icon_size`, `icon_padding`, `icon_background` and `icon_background_color`. Leave `icon` empty and the entity's own icon is used. Set `icon: weather` for the animated icon that matches the current weather.
+
+**Bar elements** are horizontal gauges. They take `bar_min`, `bar_max`, `bar_height`, `bar_color`, `bar_threshold_mode`, `bar_thresholds`, and `gauge_entity` / `gauge_attribute` if the bar should read a different value than the button.
+
+```yaml
+buttons:
+  - entity: sensor.humidity
+    elements:
+      - kind: icon
+        icon: mdi:water-percent
+      - kind: text
+        format: "%"
+      - kind: bar
+        bar_max: 100
+        bar_height: 5px
+```
 
 </details>
 
@@ -246,16 +359,18 @@ If you don't set a `texts` array, the button just shows the entity state with a 
 
 <br>
 
-Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. The button generates a label automatically (day name or time). With `icon: weather`, the icon matches the forecasted condition.
+Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. A text element with `attribute: datetime` prints the matching label (day name or time). With `icon: weather` on an icon element, the icon matches the forecasted condition.
 
 ```yaml
 buttons:
   - entity: weather.home
     forecast: hourly
     forecast_offset: 3
-    icon: weather
-    texts:
-      - attribute: temperature
+    elements:
+      - kind: icon
+        icon: weather
+      - kind: text
+        attribute: temperature
         format: "°"
 ```
 
@@ -266,7 +381,7 @@ buttons:
 
 <br>
 
-Set `type: ring` for a circular gauge or `type: bar` for a horizontal bar. Both fill based on a value within a min/max range.
+There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you drop into the `elements` list with `kind: bar`. Both fill based on a value inside a min/max range.
 
 ```yaml
 buttons:
@@ -276,6 +391,8 @@ buttons:
     ring_max: 100
     ring_width: 4px
     ring_color: "#03a9f4"
+    elements:
+      - kind: text
 ```
 
 Color thresholds change the gauge color as the value rises. `solid` fills the whole gauge with the matched color, `segments` draws each range as its own section, and `gradient` blends between the colors.
@@ -291,7 +408,7 @@ ring_thresholds:
     color: "#f44336"
 ```
 
-Any button can also use `color_thresholds` to tint itself based on a value, even without a gauge.
+Any button can also use `color_thresholds` to tint itself based on a value, with no gauge involved.
 
 </details>
 
@@ -300,15 +417,16 @@ Any button can also use `color_thresholds` to tint itself based on a value, even
 
 <br>
 
-The card comes with its own animated weather icons. Turn them on by setting `icon: weather` on a button.
+The card comes with its own animated weather icons. Turn them on with `icon: weather` on an icon element.
 
-To use your own, point at a folder of SVGs with `icon_path`. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). You can set `icon_path` once at the card level so every `icon: weather` button uses it.
+To use your own, point at a folder of SVGs with `icon_path`. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). You can set `icon_path` once at the card level so every `icon: weather` element uses it.
 
 ```yaml
-# Per button
-- entity: weather.home
-  icon: weather
-  icon_path: /local/weather-icons/
+# Per element
+elements:
+  - kind: icon
+    icon: weather
+    icon_path: /local/weather-icons/
 
 # Or card level
 icon_path: /local/weather-icons/
@@ -325,6 +443,8 @@ icon_path: /local/weather-icons/
 By default the card shows different background effects, like a color gradient, drifting clouds and the sun during the day or the moon at night. **Most of these effects can be toggled separately.**
 
 If you'd rather use your own weather artwork, set `background_mode: images` and point `weather_image_path` at a folder of images or videos named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition.
+
+With `background_mode: none` the card draws no background at all, and everything you build sits on whatever is behind it.
 
 See [Background options](#options).
 
@@ -357,9 +477,10 @@ These stack. Keeping the animated sky but turning off weather effects, for examp
 
 <br>
 
-### Card
+<details>
+<summary><b>Card · Layout</b></summary>
 
-**Layout**
+<br>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -367,18 +488,31 @@ These stack. Keeping the animated sky but turning off weather effects, for examp
 | `card_padding` | `string` | `16px` | Inner padding around the content. |
 | `card_offset` | `string` | — | Shifts the card via CSS margin. Useful when layering cards. |
 | `content_direction` | `string` | `column` | Set to `row` to lay out containers horizontally instead of vertically. |
-| `content_align` | `string` | — | Vertical alignment of the containers within the card. |
+| `content_align` | `string` | — | How containers are spread along the card: `start`, `center`, `end`, `between`, `around`, `evenly`. |
+| `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
 | `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. |
+| `icon_path` | `string` | — | Folder of custom SVG weather icons, used by every `icon: weather` element that doesn't set its own path. |
 
-**Color & Theme**
+</details>
+
+<details>
+<summary><b>Card · Color & frame</b></summary>
+
+<br>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `color_mode` | `string` | `sun` | Controls light/dark colors. `sun` follows your `sun_entity`, `theme` follows your HA theme's dark mode. |
-| `shadow` | `boolean` | `true` | Show card shadow. |
-| `shadow_color` | `string` | — | Custom shadow color. |
+| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows your `sun_entity`, `theme` follows your HA theme. See [Color mode](#color-mode). |
+| `card_frame` | `boolean` | `true` | Set to `false` to drop the rounded corners and border of the card itself. |
+| `shadow` | `boolean` | `true` | Shadow under button and container backgrounds. |
+| `shadow_color` | `string` | — | Replaces that shadow with your own CSS box-shadow, e.g. `0 2px 8px rgba(0,0,0,0.4)`. |
 
-**Sun & Moon**
+</details>
+
+<details>
+<summary><b>Card · Sun & Moon</b></summary>
+
+<br>
 
 The card renders a sun during the day and a moon at night, positioned within the background.
 
@@ -391,9 +525,12 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_rays_enabled` | `boolean` | `true` | Show or hide the sun rays. |
 | `moon_phase_entity` | `string` | — | Entity for moon phase. When set, the moon shows the current phase. |
 
----
+</details>
 
-### Container
+<details>
+<summary><b>Container</b></summary>
+
+<br>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -420,47 +557,52 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `button_style` | `string` | `inline` | Default button format: `inline` (icon and text side by side) or `vertical` (icon above text). |
 | `button_padding` | `string` | — | Default padding for buttons in this container. |
 | `button_gap` | `string` | — | Gap between icon and text in buttons. |
-| `button_text_gap` | `string` | — | Gap between text segments. |
+| `button_text_gap` | `string` | — | Gap between text elements. |
 | `button_text_size` | `string` | — | Default text size. |
 | `button_icon_size` | `string` | — | Default icon size. |
 | `button_icon_padding` | `string` | — | Default icon padding. |
 | `button_icon_background` | `boolean` | `false` | Add backgrounds behind button icons. |
 | `button_icon_background_color` | `string` | — | Color for icon backgrounds. |
 | `button_background_color` | `string` | — | Default button background color. |
-| `button_text_layout` | `string` | — | Set to `vertical` to stack text segments vertically instead of inline. |
+| `button_text_layout` | `string` | — | Set to `vertical` to stack text elements vertically instead of inline. |
 
----
+</details>
 
-### Button
+<details>
+<summary><b>Button</b></summary>
+
+<br>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `entity` | `string` | — | **Required.** Any sensor, binary_sensor, or weather entity. |
 | `attribute` | `string` | — | Read a specific attribute instead of the state. |
-| `icon` | `string` | *auto* | An `mdi:` icon, or `weather` to show the animated icon matching the current condition. |
-| `icon_path` | `string` | — | Folder for custom SVG weather icons. |
-| `icon_size` | `string` | — | Icon size. |
-| `icon_background` | `boolean` | — | Background behind the icon. |
-| `icon_background_color` | `string` | — | Icon background color. |
-| `hide_icon` | `boolean` | `false` | Hide the icon. |
-| `texts` | `list` | — | Array of text segments. See [Texts](#layouts). |
-| `text_size` | `string` | — | Overall text size for this button. |
-| `text_gap` | `string` | — | Gap between text segments. |
-| `text_layout` | `string` | — | `vertical` to stack texts vertically. |
+| `elements` | `list` | — | What the button contains. See [Elements](#layouts). |
+| `type` | `string` | — | Set to `ring` for a circular gauge around the button. |
 | `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`). |
-| `type` | `string` | — | `ring` for a circular gauge, `bar` for a horizontal bar gauge. |
+| `text_size` | `string` | — | Text size for this button. |
+| `text_gap` | `string` | — | Gap between text elements. |
+| `text_layout` | `string` | — | `vertical` to stack texts vertically. |
+| `text_shadow` | `boolean` | `false` | Keep the text shadow even when the button has no background. |
+| `inner_gap` | `string` | — | Gap between icon and text. |
+| `icon_size` | `string` | — | Size for the icons in this button. |
+| `icon_padding` | `string` | — | Padding around those icons. |
+| `icon_background` | `boolean` | — | Background behind the icons. |
+| `icon_background_color` | `string` | — | Icon background color. |
 | `background` | `boolean` | — | Override the container's background setting. |
 | `background_color` | `string` | — | Custom background color. |
 | `blurred_background` | `boolean` | — | Override the container's blur setting. |
 | `button_round` | `boolean` | `false` | Fully rounded pill shape. |
-| `width` | `string` | — | Button width. Required for marquee overflow. |
+| `shadow` | `boolean` | — | Set to `false` to remove the shadow from this button. |
+| `width` | `string` | — | Button width. Required for scrolling text. |
 | `height` | `string` | — | Button height. |
 | `padding` | `string` | — | Inner padding. |
 | `align` | `string` | — | Content alignment: `start`, `center`, `end`, `spread`. |
-| `element_order` | `string` | — | Comma-separated order of parts (e.g. `icon,text,bar`). |
-| `overflow` | `string` | `ellipsis` | How overflow is handled: `ellipsis`, `clip`, `wrap`, `marquee`. |
-| `marquee_speed` | `number` | `30` | Scroll speed in px/s when using `overflow: marquee`. |
-| `marquee_rtl` | `boolean` | `false` | Reverse marquee direction. |
+| `color_thresholds` | `list` | — | List of `{ value, color }` entries that tint the whole button as the value rises. |
+| `color_threshold_entity` | `string` | — | Read the tint value from a different entity. |
+| `color_threshold_attribute` | `string` | — | Attribute to read for the tint value. |
+| `marquee_speed` | `number` | `30` | Scroll speed in px/s for text elements using `overflow: marquee`. |
+| `marquee_rtl` | `boolean` | `false` | Reverse the scroll direction. |
 | `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). |
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
@@ -470,50 +612,208 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
 | `position_y` | `string` | `0` | Vertical offset from anchor. |
 
----
+</details>
 
-### Gauges
+<details>
+<summary><b>Elements</b></summary>
 
-**Ring**
+<br>
+
+Every entry in a button's `elements` list needs a `kind`, which is `text`, `icon` or `bar`.
+
+**Text** (`kind: text`)
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `ring_min` | `number` | `0` | Minimum of the range. |
-| `ring_max` | `number` | `100` | Maximum of the range. |
-| `ring_width` | `string` | — | Thickness of the ring. |
-| `ring_gap` | `string` | — | Gap between the ring and the button content. |
-| `ring_color` | `string` | — | Color of the filled part. |
-| `ring_threshold_mode` | `string` | — | `solid`, `segments`, or `gradient`. |
-| `ring_thresholds` | `list` | — | List of `{ value, color }` entries. |
-| `gauge_entity` | `string` | — | Use a different entity for the gauge value. |
-| `gauge_attribute` | `string` | — | Attribute to read for the gauge value. |
+| `entity` | `string` | — | Read from a different entity than the button. |
+| `attribute` | `string` | — | Read a specific attribute. |
+| `text` | `string` | — | A fixed string instead of a value. |
+| `format` | `string` | — | Glued to the end of the value, usually a unit. |
+| `precision` | `number` | — | Decimal places. |
+| `size` | `string` | — | Font size. |
+| `weight` | `string` | — | Font weight. |
+| `overflow` | `string` | `ellipsis` | What happens when the text doesn't fit: `ellipsis`, `clip`, `wrap`, `marquee`. |
+| `fancy_unit` | `boolean` | `false` | Print the unit small and raised. |
 
-**Bar**
+**Icon** (`kind: icon`)
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `icon` | `string` | *entity icon* | An `mdi:` icon, or `weather` for the animated icon matching the current condition. |
+| `icon_path` | `string` | — | Folder of custom SVG weather icons. |
+| `icon_size` | `string` | — | Icon size. |
+| `icon_padding` | `string` | — | Padding around the icon. |
+| `icon_background` | `boolean` | — | Background behind this icon. |
+| `icon_background_color` | `string` | — | Color of that background. |
+
+**Bar** (`kind: bar`)
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `bar_min` | `number` | `0` | Minimum of the range. |
 | `bar_max` | `number` | `100` | Maximum of the range. |
-| `bar_height` | `string` | — | Height of the bar. |
+| `bar_height` | `string` | `4px` | Height of the bar. |
 | `bar_color` | `string` | — | Color of the filled part. |
-| `bar_threshold_mode` | `string` | — | `solid`, `segments`, or `gradient`. |
+| `bar_threshold_mode` | `string` | `solid` | `solid`, `segments`, or `gradient`. |
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
+| `gauge_entity` | `string` | — | Use a different entity for the bar value. |
+| `gauge_attribute` | `string` | — | Attribute to read for the bar value. |
 
----
+</details>
 
-### Background
+<details>
+<summary><b>Ring gauge</b></summary>
+
+<br>
+
+Set on the button, not on an element. Needs `type: ring`.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `background_mode` | `string` | `default` | `default` for the animated sky, `images` to use your own background files. |
+| `ring_min` | `number` | `0` | Minimum of the range. |
+| `ring_max` | `number` | `100` | Maximum of the range. |
+| `ring_width` | `string` | `4px` | Thickness of the ring. |
+| `ring_gap` | `string` | `3px` | Gap between the ring and the button content. |
+| `ring_color` | `string` | — | Color of the filled part. |
+| `ring_threshold_mode` | `string` | `solid` | `solid`, `segments`, or `gradient`. |
+| `ring_thresholds` | `list` | — | List of `{ value, color }` entries. |
+| `gauge_entity` | `string` | — | Use a different entity for the ring value. |
+| `gauge_attribute` | `string` | — | Attribute to read for the ring value. |
+
+</details>
+
+<details>
+<summary><b>Background</b></summary>
+
+<br>
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `background_mode` | `string` | `default` | `default` for the animated sky, `images` to use your own background files, `none` for no background at all. |
 | `weather_image_path` | `string` | — | Folder of images or videos named after weather states. Used when `background_mode: images`. |
-| `weather_image_path_dark` | `string` | — | Separate folder for dark scheme. Falls back to `weather_image_path`. |
+| `weather_image_path_dark` | `string` | — | Separate folder for dark mode. Falls back to `weather_image_path`. |
 | `weather_animations` | `boolean` | `true` | Show weather particle effects (rain, snow, etc.). |
 | `background_blobs` | `boolean` | `true` | Show the ambient color blobs that shift with the weather. |
 | `night_sky_effects` | `boolean` | `true` | Show stars at night. |
 | `bg_brightness` | `number` | `1` | Brightness multiplier (e.g. `0.8` to darken). |
 | `bg_saturation` | `number` | `1` | Saturation multiplier (e.g. `0` for grayscale). |
 | `bg_blur` | `number` | — | Background blur in pixels. |
+
+</details>
+
+</details>
+
+<details>
+<summary><b>Show all CSS-Variables</b></summary>
+
+<br>
+
+These are for theming. None of them are needed to use the card, they're there if you want to push the look further than the options allow. Put them in your theme file, or set them on a single card with card-mod. Anything the visual editor already covers is left out of this list, since setting it twice only causes confusion.
+
+<details>
+<summary><b>Text and colors</b></summary>
+
+<br>
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--origami-text-light` | `#2c2c2e` | Text color while the card is in light mode. |
+| `--origami-text-dark` | `#ffffff` | Text color while the card is in dark mode. |
+| `--origami-text-shadow-light` | white glow | Shadow behind text in light mode. |
+| `--origami-text-shadow-dark` | dark glow | Shadow behind text in dark mode. |
+| `--origami-button-text-shadow` | — | Replaces both of the above with one value for both modes. |
+| `--origami-bottom-font-weight` | `500` | Font weight of button text. |
+
+</details>
+
+<details>
+<summary><b>Sky and sun</b></summary>
+
+<br>
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--origami-default-bg-light` | blue gradient | The sky behind everything in light mode. Takes any background value, including your own gradient. |
+| `--origami-default-bg-dark` | dark blue gradient | Same for dark mode. |
+| `--origami-sun-ray-shine` | `rgba(255,250,240,0.17)` | Color of the rays around the sun. The card sets its own value in dark mode, so this mostly affects daytime. |
+
+</details>
+
+<details>
+<summary><b>Card frame</b></summary>
+
+<br>
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--origami-card-border-radius` | `--ha-card-border-radius`, or `12px` | Corner radius of the card. |
+| `--origami-card-border-width` | `--ha-card-border-width`, or `0px` | Border thickness of the card. |
+| `--origami-stack-order` | `1` | The card's z-index. Handy when you stack cards with `card_offset`. |
+
+</details>
+
+<details>
+<summary><b>Backgrounds behind containers, buttons and icons</b></summary>
+
+<br>
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--origami-bg-border` | `1px solid transparent` | Border on those backgrounds. Takes a full CSS border value. |
+| `--origami-bottom-bg-radius` | card radius minus 5px | Corner radius of container and button backgrounds. |
+| `--origami-bottom-bg-filter` | `blur(10px)` | The filter used by `blurred_background`. |
+| `--origami-icon-bg-radius` | button radius minus the inset | Corner radius of icon backgrounds. |
+| `--origami-icon-bg-inset` | `3px` | How much rounder the icon background is than the button around it. |
+
+</details>
+
+<details>
+<summary><b>Dividers</b></summary>
+
+<br>
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--origami-separator-color` | 10% of the text color | Color of the dividers you get with `separator: true`. |
+| `--origami-separator-width` | `2px` | Thickness of those dividers. |
+
+</details>
+
+<details>
+<summary><b>Scrolling text</b></summary>
+
+<br>
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--origami-marquee-fade` | `12px` | Width of the soft fade at both ends of scrolling text. |
+| `--marquee-separator` | `"•"` | The character printed between repeats. Needs quotes. |
+| `--marquee-sep-gap` | `0.4em` | Space around that character. |
+
+</details>
+
+<details>
+<summary><b>Scroll containers</b></summary>
+
+<br>
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--origami-row-height` | `auto` | Fixed height for a container using `horizontal-scroll` or `vertical-scroll`. |
+
+</details>
+
+<br>
+
+Example, set once for a whole theme:
+
+```yaml
+my_theme:
+  origami-text-dark: "#e8eef7"
+  origami-default-bg-dark: "linear-gradient(160deg, #05060a 0%, #0d1424 100%)"
+  origami-separator-color: "rgba(255,255,255,0.12)"
+  origami-bottom-bg-radius: "18px"
+```
 
 </details>
 

@@ -2,7 +2,7 @@
 
 A weather card for Home Assistant. The background reacts to the actual conditions, and you can build the layout however you want.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/cf2fda03-ead2-49c0-9dbb-b886bbeef9cb" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/7715ce04-d179-485c-8349-6f2efedb1e7b" />
 
 <br>
 

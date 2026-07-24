@@ -1,8 +1,8 @@
 # ◪ Origami Weather
 
-A weather card for Home Assistant.
+A weather card for Home Assistant. The background reacts to the actual conditions, and you can build the layout however you want.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a55be93-df73-4fae-a79b-eb3289b21f25" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/cf2fda03-ead2-49c0-9dbb-b886bbeef9cb" />
 
 <br>
 
@@ -52,24 +52,22 @@ A weather card for Home Assistant.
 | `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only set this if your sun entity has a different ID. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
-The card has a visual editor. When you add it, you get a small default layout to start from. From there you can rearrange it however you like by adding, removing, and moving containers and buttons (see [Layouts](#layouts)), or start from one of the examples below and adjust it.
+The card has a visual editor. When you add it, you get a default layout which you can rearrange however you like (see [Layouts](#layouts)).
 
 <br>
 
 ### Color mode
 
-The card has a light and a dark version. You decide when it switches between them, and it doesn't have to happen based on the sun.
+You can change when the card switches between dark and light, and it doesn't have to happen based on the sun.
 
-| Value | What it does |
+| Option | Behaviour |
 | :--- | :--- |
-| `color_mode: theme` | The card follows your Home Assistant theme. Theme goes dark, card goes dark. This is what new cards start with. |
-| `color_mode: sun` | The card is light while the sun is up and dark after sunset, using your `sun_entity`. |
+| `color_mode: sun` | The card is light while the sun is up and dark after sunset, using your `sun_entity`. This is the default. |
+| `color_mode: theme` | The card follows your Home Assistant theme. Theme goes dark, card goes dark. |
 
-```yaml
-color_mode: theme
-```
 
-**Tip:** if you run a theme that stays dark all day, a light card in the middle of the day will sit next to your other cards with a fairly harsh contrast. With a permanently dark theme, a permanently dark card usually looks better. Your call though.
+>[!TIP]
+>With a permanently dark theme, a permanently dark card usually looks better because of the harsh contrast at day.
 
 <br>
 

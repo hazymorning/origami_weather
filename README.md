@@ -58,7 +58,7 @@ The card has a visual editor. When you add it, you get a default layout which yo
 
 > [!TIP]
 > <details>
-> <summary><b>Card is too bright during the day?</b></summary>
+> <summary><b>Dark Mode</b></summary>
 >
 > By default the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
 >

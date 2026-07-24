@@ -457,7 +457,7 @@ See [Background options](#options).
 
 <br>
 
-Because this card is quite visually active, a lot of effort goes into keeping performance smooth. It should run perfectly on any reasonably modern phone or desktop. While it should also perform well on older hardware, the wide variety of devices and browsers makes it hard to guarantee. If you notice any performance issues, you can turn off individual effects to reduce the load:
+This card is visually active, and a lot of effort goes into keeping it smooth. On a modern desktop or phone it should feel fluid. The animated background, weather effects, and star field are GPU/paint-heavy by nature, so on older or low-power devices — and when running several cards on one dashboard — you may want to disable individual effects:
 
 - `weather_animations: false` — disables rain/snow/hail effects.
 - `background_blobs: false` — stops the moving color blobs (CSS-animated, but they add up on weak GPUs).

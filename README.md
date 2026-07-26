@@ -1,9 +1,8 @@
 # ◪ Origami Weather
 
-A weather card for Home Assistant. The background reacts to the actual conditions, and you can build the layout however you want.
-
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/7715ce04-d179-485c-8349-6f2efedb1e7b" />
 
+<br>
 <br>
 
 **Getting Started** · [Installation](#installation) · [Setup](#setup) · [Examples](#examples)

@@ -68,7 +68,7 @@ The card has a visual editor. When you add it, you get a default layout which yo
 
 This is the default card you get when you add it. Almost anything in this layout can be changed or combined differently.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/74d4a14d-3973-418b-a4a2-6254094b0a9b" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/ca11dbaa-0773-445c-9e53-608f0b0e0c53" />
 
 <details>
 <summary><b>Default Card YAML</b></summary>

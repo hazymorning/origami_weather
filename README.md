@@ -1,5 +1,7 @@
 # ◪ Origami Weather
 
+A Home Assistant card that tries to visualize the weather and related data in a nice way. It can be customized however you like, from a minimalist setup to a complex weather overview card.
+
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/7715ce04-d179-485c-8349-6f2efedb1e7b" />
 
 <br>

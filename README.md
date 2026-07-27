@@ -48,7 +48,6 @@
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
-| `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only set this if your sun entity has a different ID. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
 The card has a visual editor. When you add it, you get a default layout which you can rearrange however you like (see [Layouts](#layouts)).
@@ -59,7 +58,7 @@ The card has a visual editor. When you add it, you get a default layout which yo
 > <details>
 > <summary><b>Dark Mode</b></summary>
 >
-> By default the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
+> By default, the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
 >
 > </details>
 
@@ -67,7 +66,7 @@ The card has a visual editor. When you add it, you get a default layout which yo
 
 ## Examples
 
-These are just starting points. Almost anything in these layouts can be changed or combined.
+This is the default card you get when you add it. Almost anything in this layout can be changed or combined differently.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/74d4a14d-3973-418b-a4a2-6254094b0a9b" />
 
@@ -79,132 +78,168 @@ These are just starting points. Almost anything in these layouts can be changed 
 ```yaml
 type: custom:origami-weather
 weather_entity: weather.home
-color_mode: theme
 card_height: content
-card_padding: 20px
+card_padding: 16px
 background_mode: default
 button_containers:
-  - gap: 0px
-    background: true
-    blurred_background: true
+  - position: custom
+    position_anchor: top-left
+    padding: 8px
+    buttons:
+      - entity: weather.home
+        attribute: temperature
+        text_size: 42px
+        align: start
+        padding: 4px 0 0 0
+        background: false
+        elements:
+          - kind: text
+            weight: "700"
+            fancy_unit: true
+            attribute: temperature
+            precision: 0
+  - background: true
     button_icon_size: 34px
     button_padding: 16px
     align: center
-    padding: 0 0 16px 0
+    button_background_color: "rgba(255,255,255,0.1)"
+    button_blurred_background: true
+    justify_content: end
+    align_items: start
+    padding: 8px
     buttons:
       - entity: weather.home
-        text_size: 42px
-        background: false
-        align: start
-        padding: "0"
-        inner_gap: "0"
+        attribute: temperature
+        type: ring
+        ring_gap: 8px
+        ring_width: 4px
+        ring_min: "-20"
+        ring_max: "40"
+        ring_threshold_mode: gradient
+        ring_thresholds:
+          - value: "-20"
+            color: "rgba(124, 142, 184, 0.8)"
+          - value: "-16"
+            color: "rgba(132, 156, 196, 0.8)"
+          - value: "-12"
+            color: "rgba(140, 172, 206, 0.8)"
+          - value: "-8"
+            color: "rgba(150, 188, 214, 0.8)"
+          - value: "-4"
+            color: "rgba(165, 202, 218, 0.8)"
+          - value: "0"
+            color: "rgba(183, 213, 216, 0.8)"
+          - value: "4"
+            color: "rgba(198, 218, 205, 0.8)"
+          - value: "8"
+            color: "rgba(206, 218, 188, 0.8)"
+          - value: "12"
+            color: "rgba(214, 214, 168, 0.8)"
+          - value: "16"
+            color: "rgba(224, 207, 152, 0.8)"
+          - value: "20"
+            color: "rgba(232, 195, 140, 0.8)"
+          - value: "24"
+            color: "rgba(232, 178, 130, 0.8)"
+          - value: "28"
+            color: "rgba(228, 158, 124, 0.8)"
+          - value: "32"
+            color: "rgba(220, 138, 120, 0.8)"
+          - value: "36"
+            color: "rgba(208, 120, 118, 0.8)"
+          - value: "40"
+            color: "rgba(194, 104, 114, 0.8)"
+        blurred_background: true
+        padding: 16px
         elements:
-          - kind: text
-            attribute: temperature
-            weight: "700"
-            fancy_unit: true
-  - background: true
-    layout: wrap
-    gap: 4px
+          - kind: icon
+            icon: weather
+            icon_background: false
+            icon_background_color: "rgba(0,0,0,0)"
+            icon_size: 42px
+  - gap: 4px
     button_gap: 0px
     button_text_gap: 6px
     button_padding: "0"
-    button_text_size: 13px
     align: start
+    button_text_size: 14px
+    padding: 0 0 16px 8px
+    margin: -14px 0 0 0
     buttons:
       - entity: weather.home
-        forecast: daily
-        background: false
         align: start
         elements:
+          - kind: icon
+            icon: mdi:weather-windy
           - kind: text
-            text: Today
             weight: "500"
+            text: Wind
           - kind: text
-            attribute: templow
-            format: "° - "
-            weight: "700"
-          - kind: text
-            attribute: temperature
-            format: "°"
-            weight: "700"
-            size: 14px
-      - entity: weather.home
-        background: false
-        align: start
-        elements:
-          - kind: text
-            text: "• Wind"
+            text: "•"
             weight: "500"
           - kind: text
             attribute: wind_speed
             weight: "700"
-```
-
-</details>
-
-<details>
-<summary><b>Big temperature with a UV ring</b></summary>
-
-<br>
-
-```yaml
-type: custom:origami-weather
-weather_entity: weather.home
-color_mode: sun
-card_height: 130px
-button_containers:
-  - padding: 0 4px
-    buttons:
-      - entity: weather.home
-        text_size: 30px
-        padding: 0px 4px
-        elements:
-          - kind: text
-            fancy_unit: true
-  - padding: 0px 8px
-    gap: 8px
+  - layout: horizontal-scroll
+    scroll_count: 5
+    gap: 2px
+    button_icon_background_color: "rgba(255,255,255,0.05)"
+    button_style: vertical
+    button_text_layout: vertical
+    button_gap: 6px
+    button_icon_size: 24px
+    button_padding: 12px
+    align: center
+    button_text_size: 13px
+    background_color: "rgba(255,255,255,0.05)"
+    blurred_background: true
+    button_background_color: "rgba(255,255,255,0.1)"
+    separator: true
+    button_icon_padding: 0 0 6px 0
+    grouped: true
     background: true
     buttons:
       - entity: weather.home
-        attribute: uv_index
-        type: ring
-        ring_width: 4px
-        ring_gap: 10px
-        ring_max: "11"
-        ring_threshold_mode: gradient
-        icon_size: 34px
-        padding: 14px
+        forecast: daily
         elements:
           - kind: icon
             icon: weather
-        ring_thresholds:
-          - value: "0"
-            color: rgba(128, 191, 172, 0.8)
-          - value: "5"
-            color: rgba(235, 198, 113, 0.8)
-          - value: "10"
-            color: rgba(168, 64, 115, 0.8)
-  - background: true
-    align: center
-    buttons:
-      - entity: weather.home
-        forecast: daily
-        text_size: 12px
-        padding: 8px 12px
-        text_gap: 5px
-        elements:
           - kind: text
-            text: "Today: "
             size: 12px
+            weight: "500"
+            attribute: datetime
           - kind: text
-            attribute: templow
-            format: " –"
-            size: 12px
             weight: "700"
-          - kind: text
             attribute: temperature
-            weight: "700"
+          - kind: bar
+            gauge_attribute: precipitation_probability
+            bar_min: "0"
+            bar_max: "100"
+            bar_height: "8"
+            bar_threshold_mode: gradient
+            margin: 6px 0 0 0
+            bar_thresholds:
+              - value: "0"
+                color: "rgba(214, 224, 230, 0.8)"
+              - value: "10"
+                color: "rgba(190, 210, 224, 0.8)"
+              - value: "20"
+                color: "rgba(166, 197, 219, 0.8)"
+              - value: "30"
+                color: "rgba(142, 184, 214, 0.8)"
+              - value: "40"
+                color: "rgba(118, 170, 210, 0.8)"
+              - value: "50"
+                color: "rgba(96, 156, 204, 0.8)"
+              - value: "60"
+                color: "rgba(76, 141, 196, 0.8)"
+              - value: "70"
+                color: "rgba(58, 125, 186, 0.8)"
+              - value: "80"
+                color: "rgba(42, 108, 174, 0.8)"
+              - value: "90"
+                color: "rgba(30, 90, 160, 0.8)"
+      # Repeat with forecast_offset: 1 through 6 for the remaining days
 ```
 
 </details>
@@ -373,7 +408,7 @@ buttons:
 
 <br>
 
-There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you drop into the `elements` list with `kind: bar`. Both fill based on a value inside a min/max range.
+There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you can add in the `elements` list with `kind: bar`. Both fill based on a value inside a min/max range.
 
 ```yaml
 buttons:
@@ -409,7 +444,7 @@ Any button can also use `color_thresholds` to tint itself based on a value, with
 
 <br>
 
-The card comes with its own animated weather icons. Turn them on with `icon: weather` on an icon element.
+The card comes with animated weather icons. Turn them on with `icon: weather` on an icon element.
 
 To use your own, point at a folder of SVGs with `icon_path`. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). You can set `icon_path` once at the card level so every `icon: weather` element uses it.
 
@@ -432,9 +467,9 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-By default the card shows different background effects, like a color gradient, drifting clouds and the sun during the day or the moon at night. **Most of these effects can be toggled separately.**
+By default, the card renders animated background effects — a color gradient, clouds, and the sun during the day or the moon at night. **Most of these effects can be toggled separately.**
 
-If you'd rather use your own weather artwork, set `background_mode: images` and point `weather_image_path` at a folder of images or videos named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition.
+If you'd rather use your own weather images, set `background_mode: images` and point `weather_image_path` at a folder of images (or videos) named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition.
 
 With `background_mode: none` the card draws no background at all, and everything you build sits on whatever is behind it.
 
@@ -449,7 +484,7 @@ See [Background options](#options).
 
 <br>
 
-This card is visually active, and a lot of effort goes into keeping it fast. On a somewhat modern desktop or phone it should feel smooth. The animated background effects are a bit heavy by nature, so on older or low-power devices you may want to disable individual effects:
+This card is visually active. While a lot of effort goes into keeping it fast, on older or low-power devices you may want to turn off individual effects:
 
 - `weather_animations: false` — disables rain/snow/hail effects.
 - `background_blobs: false` — stops the moving color blobs (CSS-animated, but they add up on weak GPUs).
@@ -510,6 +545,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
+| `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only set this if your sun entity has a different ID. |
 | `sun_moon_enabled` | `boolean` | `true` | Show or hide the sun/moon. |
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
 | `sun_moon_x` | `string` | `50%` | Horizontal position (percentage). |
@@ -556,7 +592,12 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `button_icon_background` | `boolean` | `false` | Add backgrounds behind button icons. |
 | `button_icon_background_color` | `string` | — | Color for icon backgrounds. |
 | `button_background_color` | `string` | — | Default button background color. |
+| `button_blurred_background` | `boolean` | `false` | Frosted glass effect on button backgrounds in this container. |
 | `button_text_layout` | `string` | — | Set to `vertical` to stack text elements vertically instead of inline. |
+| `position` | `string` | — | Set to `custom` to detach the container and place it freely. |
+| `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
+| `position_x` | `string` | `0` | Horizontal offset from anchor. |
+| `position_y` | `string` | `0` | Vertical offset from anchor. |
 
 </details>
 
@@ -700,7 +741,7 @@ Set on the button, not on an element. Needs `type: ring`.
 
 <br>
 
-These are for theming. None of them are needed to use the card, they're there if you want to push the look further than the options allow. Put them in your theme file, or set them on a single card with card-mod. Anything the visual editor already covers is left out of this list, since setting it twice only causes confusion.
+These are for theming. None of them are needed to use the card, they're there if you want to change the look further than the options allow. Put them in your theme file, or set them on a single card with card-mod. Anything the visual editor already covers is left out of this list, since setting it twice only causes confusion.
 
 <details>
 <summary><b>Text and colors</b></summary>
@@ -813,6 +854,6 @@ my_theme:
 
 ## History
 
-Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked since then, with  different approaches... to almost everything. I don't really like the public maintenance part, but I enjoy tinkering with this enough that I think it's worth sharing.
+Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked since then, with different approaches... to almost everything. I don't really like the public maintenance part, but I enjoy tinkering with this enough that I think it's worth sharing.
 
 > **Note:** AI is used as a tool in this project to get tedious tasks done faster (leaving me more time for the enjoyable parts).

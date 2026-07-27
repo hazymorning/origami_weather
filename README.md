@@ -52,7 +52,7 @@ A Home Assistant card that tries to visualize the weather and related data in a 
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
-The card has a visual editor. When you add it, you get a default layout which you can rearrange however you like (see [Layouts](#layouts)).
+The card has a visual editor. When you add it, you get a default card. Almost everything in this card can be changed or combined differently (see [Layouts](#layouts)). You can also just use one of the following examples, which show different possible layouts.
 
 <br>
 
@@ -67,8 +67,6 @@ The card has a visual editor. When you add it, you get a default layout which yo
 <br>
 
 ## Examples
-
-This is the default card you get when you add it. Almost anything in this layout can be changed or combined differently.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/ca11dbaa-0773-445c-9e53-608f0b0e0c53" />
 

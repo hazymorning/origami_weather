@@ -469,13 +469,13 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-By default, the card renders animated background effects — a color gradient, clouds, and the sun during the day or the moon at night. **Most of these effects can be toggled separately.**
+**The default setting:** The card shows animated effects like a color gradient, clouds, and the sun during the day or the moon at night.
 
-If you'd rather use your own weather images, set `background_mode: images` and point `weather_image_path` at a folder of images (or videos) named after weather states (e.g. `sunny.jpg`, `rainy.mp4`). The card picks the file matching the current condition.
+**Custom weather images:** If you'd rather use your own images instead of the weather effects (or combine both), set `background_mode: images` and point `weather_image_path` at a folder of images (or videos) named after weather states (e.g. `sunny.jpg`, `rainy.mp4`).
 
-With `background_mode: none` the card draws no background at all, and everything you build sits on whatever is behind it.
+**Mnimalist:** With `background_mode: none` the card shows no background at all, and everything you build sits on whatever is behind it.
 
-See [Background options](#options).
+It's also possible to combine or disable individual effects. See [Background options](#options).
 
 <br>
 

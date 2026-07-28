@@ -476,13 +476,9 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-**The default setting:** The card shows animated effects like a color gradient, clouds, and the sun during the day or the moon at night.
+By default, the card shows animated effects depending on your weather, the sun, and other related data. You can change which effects are shown and how, so they match your dashboard and the style you are going for.
 
-**Custom weather images:** If you'd rather use your own images instead of the weather effects (or combine both), set `background_mode: images` and point `weather_image_path` at a folder of images (or videos) named after weather states (e.g. `sunny.jpg`, `rainy.mp4`).
-
-**Mnimalist:** With `background_mode: none` the card shows no background at all, and everything you build sits on whatever is behind it.
-
-It's also possible to combine or disable individual effects. See [Background options](#options).
+It's also possible to combine individual effects, use custom background images, and let the card blend into your dashboard. See [Background options](#options) for the full list of possibilities, or play around with the features in the visual editor.
 
 <br>
 
@@ -493,14 +489,14 @@ It's also possible to combine or disable individual effects. See [Background opt
 
 <br>
 
-This card is visually active. While a lot of effort goes into keeping it fast, on older or low-power devices you may want to turn off individual effects:
+This card is visually active. While a lot of effort goes into keeping it fast, on older or low-power devices you may want to turn off individual effects if you notice your device struggling:
 
 - `weather_animations: false` — disables rain/snow/hail effects.
 - `background_blobs: false` — stops the moving color blobs (CSS-animated, but they add up on weak GPUs).
 - `night_sky_effects: false` — removes the star field.
 - `background_mode: images` — turns off all canvas rendering and shows a static image instead. Everything else about the card still works.
 
-These stack. Keeping the animated sky but turning off weather effects, for example, gives you a good-looking card at very little rendering cost.
+These stack. Keeping the animated background color but turning off weather effects, for example, gives you a good-looking card at very little rendering cost.
 
 </details>
 

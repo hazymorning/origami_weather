@@ -52,15 +52,15 @@ A Home Assistant card that tries to visualize the weather and related data in a 
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
-The card has a visual editor. When you add it, you get a default card. Almost everything in this card can be changed or combined differently (see [Layouts](#layouts)). You can also just use one of the following examples, which show different possible layouts.
+The card has a visual editor. When you add it, you get a default card. Almost everything in this card can be changed or combined differently (see [Layouts](#layouts)).
 
 <br>
 
 > [!TIP]
 > <details>
-> <summary><b>Dark Mode</b></summary>
+> <summary><b>Options specific to Dark Themes</b></summary>
 >
-> By default, the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
+> By default, the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card follows your theme and stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
 >
 > </details>
 

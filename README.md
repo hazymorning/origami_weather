@@ -4,6 +4,8 @@ A Home Assistant card that tries to visualize the weather and related data in a 
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/a13299cd-0cbd-4912-9bf8-a131d6308ea9" />
 
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/28750ceb-7c89-4930-a096-51cd1e52b614" />
 <br>
 <br>
 

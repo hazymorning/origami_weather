@@ -2,7 +2,7 @@
 
 A Home Assistant card that tries to visualize the weather and related data in a nice way. It can be customized however you like, from a minimalist setup to a complex weather overview card.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/20b8b88a-d863-4f6e-92b1-8c87558aeb3e" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a13299cd-0cbd-4912-9bf8-a131d6308ea9" />
 
 <br>
 <br>
@@ -67,6 +67,8 @@ The card has a visual editor. When you add it, you get a default card. Almost ev
 <br>
 
 ## Examples
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/20b8b88a-d863-4f6e-92b1-8c87558aeb3e" />
 
 | Light Mode | Dark Mode |
 | --- | --- |

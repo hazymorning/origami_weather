@@ -240,15 +240,13 @@ button_containers:
 
 The card shows an animated sky behind your content and follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night and so on.
 
-There are three choices for the general background:
+The background options:
 
 - **Animated sky:** The built-in sky described above.
 - **Your own images:** Use a folder of pictures (or looping videos) named after weather conditions and show these as weather backgrounds.
 - **None:** A transparent card, if you'd rather blend into your dashboard or use a solid color.
 
-Different effects are added on top of this to add some realism and drama. You can also disable individual (or all) effects.
-
-All the actual settings (which effects, image folders, brightness and so on) are [here](#options).
+Different effects are added on top of this to add some realism and drama. You can also disable individual (or all) effects. See [Options](#options).
 
 <br>
 

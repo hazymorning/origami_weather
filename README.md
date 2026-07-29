@@ -2,7 +2,7 @@
 
 A Home Assistant card that tries to visualize the weather and related data in a nice way. The content uses a flexbox approach which allows pretty flexible layouts.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/041a3979-3af4-48c0-b940-57bdb0cd13ff" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/c9ab48a5-3298-43e8-bd1e-fce373ae0daf" />
 
 <details>
 <summary><b> Demo Video</b></summary>

@@ -1,17 +1,9 @@
 # ◪ Origami Weather
 
-A Home Assistant card that tries to visualize the weather and related data in a nice and pleasant way. The content uses a flexbox approach which allows many types of setups.
+A flexible card that tries to visualize the weather and related data in a nice way.
+
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/c9ab48a5-3298-43e8-bd1e-fce373ae0daf" />
-
-<details>
-<summary><b> Demo Video</b></summary>
-
-<br>
-
-https://github.com/user-attachments/assets/fe93ba11-ed50-4fc6-88ae-b5479ba06bce
-
-</details>
 
 <br>
 <br>
@@ -61,7 +53,7 @@ https://github.com/user-attachments/assets/fe93ba11-ed50-4fc6-88ae-b5479ba06bce
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
-The card has a visual editor. When you add it, you get a default card with an example layout already set up. It can be customized however you like, from a minimalist setup to a complex weather overview card (see [Examples](#examples) below and [Layout Options](#layouts)).
+When you add this card, you get an example layout already set up. It can be customized however you like. See [Examples](#examples) below and [Layout Options](#layouts).
 
 <br>
 

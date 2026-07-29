@@ -58,7 +58,7 @@ A flexible card that tries to visualize the weather and related data in a nice w
 
 ## Examples
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a13299cd-0cbd-4912-9bf8-a131d6308ea9" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/f7624bb6-87ed-4954-8269-77cc8de74152" /> 
 
 <details>
 <summary><b>Default Card YAML</b></summary>

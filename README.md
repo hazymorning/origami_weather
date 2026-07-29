@@ -44,10 +44,10 @@ https://github.com/user-attachments/assets/fe93ba11-ed50-4fc6-88ae-b5479ba06bce
 
 <br>
 
-1. Download `origami-weather.js` from the latest release.
-2. Place the file in `config/www/`.
+1. Download `origami-weather.js`, `origami-weather-editor.js` and `image-assets.js` from the latest release.
+2. Put all three in `config/www/`, in the same folder. The card loads the other two itself, so it breaks if they are missing or sitting somewhere else.
 3. Go to **Settings** → **Dashboards** → **⋮** → **Resources**.
-4. Add `/local/origami-weather.js` as a JavaScript Module.
+4. Add `/local/origami-weather.js` as a JavaScript Module. Only this one file gets registered as a resource.
 5. Hard-refresh your browser.
 
 </details>
@@ -77,13 +77,14 @@ The card has a visual editor. When you add it, you get a default card with an ex
 ```yaml
 type: custom:origami-weather
 weather_entity: weather.home
+sun_entity: sun.sun
 card_height: content
 card_padding: 16px
 background_mode: default
 button_containers:
   - position: custom
     position_anchor: top-left
-    padding: 8px
+    padding: 4px 8px
     buttons:
       - entity: weather.home
         attribute: temperature
@@ -184,7 +185,6 @@ button_containers:
     gap: 2px
     button_icon_background_color: "rgba(255,255,255,0.05)"
     button_style: vertical
-    button_text_layout: vertical
     button_gap: 6px
     button_icon_size: 24px
     button_padding: 12px
@@ -304,7 +304,7 @@ buttons:
       - kind: text
 ```
 
-**Conditional visibility** — show a button only when conditions are met, using standard HA visibility conditions:
+**Conditional visibility.** A button can show up only when certain conditions are met, using the same visibility conditions HA uses everywhere else:
 
 ```yaml
 buttons:
@@ -315,9 +315,9 @@ buttons:
         above: 40
 ```
 
-State, numeric state, screen size, user, and `and`/`or`/`not` conditions are supported. Visibility also works at the container level.
+State, numeric state, screen size, user, and `and`/`or`/`not` conditions are supported. A `numeric_state` condition can read an `attribute` instead of the state. If you list several conditions, all of them have to pass. Visibility also works at the container level.
 
-**Free positioning** — any button can be pulled out of its container and placed anywhere on the card:
+**Free positioning.** Any button can be pulled out of its container and placed anywhere on the card:
 
 ```yaml
 buttons:
@@ -359,7 +359,9 @@ That gives you something like "Today: 8 – 14°" inside a single button.
 
 If you leave `elements` out completely, the button shows one text element with the entity state.
 
-**Text elements** take `entity`, `attribute`, `text` (a fixed string), `format` (glued to the end of the value, usually a unit), `precision` (decimal places), `size`, `weight`, `overflow` and `fancy_unit`. A text element without `entity`, `attribute` or `text` falls back to the button's own entity and attribute.
+All three kinds take `margin` and `padding`, which is the usual way to nudge one element around without touching the rest of the button.
+
+**Text elements** take `entity`, `attribute`, `text` (a fixed string), `format` (glued to the end of the value, usually a unit), `precision` (decimal places), `size`, `weight`, `overflow` and `fancy_unit`. A text element without `entity`, `attribute` or `text` falls back to the button's own entity and attribute. Note that `weight` also sets the opacity: light weights are drawn faded, heavy ones fully opaque. That is why a `weight: 300` label looks softer than the value next to it.
 
 **Icon elements** take `icon`, `icon_path`, `icon_size`, `icon_padding`, `icon_background` and `icon_background_color`. Leave `icon` empty and the entity's own icon is used. Set `icon: weather` for the animated icon that matches the current weather.
 
@@ -447,6 +449,8 @@ The card comes with animated weather icons. Turn them on with `icon: weather` on
 
 To use your own, point at a folder of SVGs with `icon_path`. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). You can set `icon_path` once at the card level so every `icon: weather` element uses it.
 
+Set `icon_path` on a single element and it applies to whatever that element's `icon` says, not just to `weather`, so it doubles as a way to pull in one-off custom graphics. The card appends `.svg` unless the name already has a file extension.
+
 ```yaml
 # Per element
 elements:
@@ -466,9 +470,32 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-By default, the card shows animated effects depending on your weather, the sun, and other related data. You can change which effects are shown and how, so they match your dashboard and the style you are going for.
+The card builds its background in layers, and it is easier to work with once you split it into three parts: the background itself, the things drawn on top of it, and the treatments laid over the whole stack.
 
-It's also possible to combine individual effects, use custom background images, and let the card blend into your dashboard. See [Background options](#options) for the full list of possibilities, or play around with the features in the visual editor.
+<br>
+
+**The background itself**
+
+`background_mode` decides what sits at the very bottom. There are three choices:
+
+- `default` draws an animated sky. A CSS gradient makes the base color and three soft color blobs drift across it, both reacting to the current weather and to sunrise and sunset. The gradient is plain CSS, so you can replace it with your own using `--origami-default-bg-light` and `--origami-default-bg-dark`. The blobs have their own switch, `background_blobs`.
+- `images` shows your own files instead. Point `weather_image_path` at a folder and name the files after the weather conditions (`sunny.jpg`, `rainy.png` and so on, using the [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). The card tries `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.svg` and `.mp4` in that order, so an mp4 gives you a looping video background. `weather_image_path_dark` points at a second folder for after sunset.
+- `none` leaves the card transparent. Handy if you want it to blend into the dashboard, or if you are stacking it on top of another card.
+
+**What gets drawn on top**
+
+These layers sit above the background and none of them care which mode you picked. Rain falling over your own photos works, and so does a fully transparent card with nothing but stars on it.
+
+- Sun and moon, with rays during the day. The sun climbs and sinks with your `sun_entity`, and the moon shows its real phase once you set `moon_phase_entity`. Switches: `sun_moon_enabled` and `sun_rays_enabled`.
+- Stars at night, thinned out when it's cloudy. Switch: `night_sky_effects`.
+- A drifting cloud layer that gets denser and darker the worse the weather is. Switch: `cloud_effects`.
+- Precipitation: rain, downpour, thunderstorms, snow, sleet and hail, picked from the current condition. Switch: `precipitation_effects`.
+
+**Treatments over everything**
+
+`bg_brightness` and `bg_saturation` scale the background layer, whether that is the animated sky or your own images. `bg_blur` only touches image backgrounds. `edge_fade` fades the top and bottom edges into your dashboard background, and `card_frame: false` drops the rounded corners and the border.
+
+See [Background options](#options) for the full list, or play around with the features in the visual editor.
 
 <br>
 
@@ -489,14 +516,15 @@ It's also possible to combine individual effects, use custom background images, 
 
 <br>
 
-This card is visually active. While a lot of effort goes into keeping it fast, on older or low-power devices you may want to turn off individual effects if you notice your device struggling:
+This card draws a lot. Plenty of effort goes into keeping it fast, but on older or low-power devices you may want to switch off individual pieces if you notice your device struggling:
 
-- `weather_animations: false` — disables rain/snow/hail effects.
-- `background_blobs: false` — stops the moving color blobs (CSS-animated, but they add up on weak GPUs).
-- `night_sky_effects: false` — removes the star field.
-- `background_mode: images` — turns off all canvas rendering and shows a static image instead. Everything else about the card still works.
+- `precipitation_effects: false` stops the rain, snow, sleet and hail particles.
+- `cloud_effects: false` stops the drifting cloud layer. Set this and the one above to `false` and the effects canvas goes idle completely.
+- `night_sky_effects: false` removes the star field.
+- `background_blobs: false` stops the moving color blobs. They are CSS-animated rather than canvas, but they still add up on weak GPUs.
+- `background_mode: images` swaps the animated sky for a static file. Keep in mind this only replaces the background layer: clouds, precipitation, stars and the sun keep running on top of it, so switch those off too if that was the goal.
 
-These stack. Keeping the animated background color but turning off weather effects, for example, gives you a good-looking card at very little rendering cost.
+These stack. Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card at very little rendering cost.
 
 </details>
 
@@ -519,6 +547,8 @@ These stack. Keeping the animated background color but turning off weather effec
 | `card_height` | `string` | `200px` | Height of the card. Numbers are treated as px. `auto` fills available height in grid layouts, `content` sizes to fit the content. |
 | `card_padding` | `string` | `16px` | Inner padding around the content. |
 | `card_offset` | `string` | — | Shifts the card via CSS margin. Useful when layering cards. |
+| `full_width` | `boolean` | `false` | Lets the card bleed past the column gutter so it runs edge to edge in a sections view. |
+| `full_width_margin` | `string` | *column gap* | How far it bleeds on each side. Only used with `full_width`. |
 | `content_direction` | `string` | `column` | Set to `row` to lay out containers horizontally instead of vertically. |
 | `content_align` | `string` | — | How containers are spread along the card: `start`, `center`, `end`, `between`, `around`, `evenly`. |
 | `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
@@ -534,8 +564,10 @@ These stack. Keeping the animated background color but turning off weather effec
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows your `sun_entity`, `theme` follows your HA theme. See [Color mode](#color-mode). |
+| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows your `sun_entity`, `theme` follows your HA theme. |
 | `card_frame` | `boolean` | `true` | Set to `false` to drop the rounded corners and border of the card itself. |
+| `edge_fade` | `boolean` | `false` | Fades the top and bottom edge of the card into the dashboard background. |
+| `edge_fade_size` | `string` | `10%` | How deep that fade reaches in from each edge. |
 | `shadow` | `boolean` | `true` | Shadow under button and container backgrounds. |
 | `shadow_color` | `string` | — | Replaces that shadow with your own CSS box-shadow, e.g. `0 2px 8px rgba(0,0,0,0.4)`. |
 
@@ -553,8 +585,8 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only set this if your sun entity has a different ID. |
 | `sun_moon_enabled` | `boolean` | `true` | Show or hide the sun/moon. |
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
-| `sun_moon_x` | `string` | `50%` | Horizontal position (percentage). |
-| `sun_moon_y` | `string` | — | Vertical position. When unset, it follows the sun's elevation. |
+| `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, or you can pass a CSS length. |
+| `sun_moon_y` | `string` | — | Vertical position, as a percentage from the top, clamped to 0-100. When unset it follows the sun's elevation. |
 | `sun_rays_enabled` | `boolean` | `true` | Show or hide the sun rays. |
 | `moon_phase_entity` | `string` | — | Entity for moon phase. When set, the moon shows the current phase. |
 
@@ -573,8 +605,8 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `columns` | `number` | — | Number of columns when `layout: grid`. |
 | `scroll_count` | `number` | — | Buttons visible at once in a scroll layout. Enables snap scrolling. |
 | `align` | `string` | `start` | Button alignment: `start`, `center`, `end`, `spread`. |
-| `justify_content` | `string` | — | CSS justify-content for the button row. |
-| `align_items` | `string` | — | CSS align-items for the button row. |
+| `justify_content` | `string` | — | How buttons spread along the row: `start`, `center`, `end`, `between`, `around`, `evenly`. These are short keys, not raw CSS values. |
+| `align_items` | `string` | — | How buttons line up across the row: `start`, `center`, `end`, `stretch`, `baseline`. Short keys again. |
 | `gap` | `string` | — | Space between buttons. |
 | `padding` | `string` | — | Inner padding of the container. |
 | `margin` | `string` | — | Outer margin of the container. |
@@ -583,7 +615,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `background_color` | `string` | — | Custom background color. |
 | `blurred_background` | `boolean` | `false` | Frosted glass effect on the container background. |
 | `grouped` | `boolean` | `false` | Wrap buttons into a single shared background. Requires `background: true`. |
-| `separator` | `boolean` | `false` | Thin divider between buttons. Only shows when `grouped` is on. |
+| `separator` | `boolean` | `false` | Thin divider between buttons. Works on its own, `grouped` is not required. In a `grid` layout it draws both row and column dividers, in `vertical-scroll` it draws horizontal ones. |
 | `shadow` | `boolean` | — | Set to `false` to remove shadow from this container. |
 | `hide` | `boolean` | `false` | Hide the container. |
 | `visibility` | `list` | — | Standard HA visibility conditions. |
@@ -598,7 +630,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `button_icon_background_color` | `string` | — | Color for icon backgrounds. |
 | `button_background_color` | `string` | — | Default button background color. |
 | `button_blurred_background` | `boolean` | `false` | Frosted glass effect on button backgrounds in this container. |
-| `button_text_layout` | `string` | — | Set to `vertical` to stack text elements vertically instead of inline. |
+| `button_shadow` | `boolean` | — | Set to `false` to drop the shadow from every button in this container. Scroll layouts drop it anyway. |
 | `position` | `string` | — | Set to `custom` to detach the container and place it freely. |
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
@@ -620,7 +652,6 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`). |
 | `text_size` | `string` | — | Text size for this button. |
 | `text_gap` | `string` | — | Gap between text elements. |
-| `text_layout` | `string` | — | `vertical` to stack texts vertically. |
 | `text_shadow` | `boolean` | `false` | Keep the text shadow even when the button has no background. |
 | `inner_gap` | `string` | — | Gap between icon and text. |
 | `icon_size` | `string` | — | Size for the icons in this button. |
@@ -669,20 +700,24 @@ Every entry in a button's `elements` list needs a `kind`, which is `text`, `icon
 | `format` | `string` | — | Glued to the end of the value, usually a unit. |
 | `precision` | `number` | — | Decimal places. |
 | `size` | `string` | — | Font size. |
-| `weight` | `string` | — | Font weight. |
+| `weight` | `string` | — | Font weight. This also drives opacity: light weights are drawn faded, heavy ones fully opaque. |
 | `overflow` | `string` | `ellipsis` | What happens when the text doesn't fit: `ellipsis`, `clip`, `wrap`, `marquee`. |
 | `fancy_unit` | `boolean` | `false` | Print the unit small and raised. |
+| `margin` | `string` | — | Outer margin of this element. |
+| `padding` | `string` | — | Inner padding of this element. |
 
 **Icon** (`kind: icon`)
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `icon` | `string` | *entity icon* | An `mdi:` icon, or `weather` for the animated icon matching the current condition. |
-| `icon_path` | `string` | — | Folder of custom SVG weather icons. |
+| `icon_path` | `string` | — | Folder of custom SVGs. Applies to whatever this element's `icon` is set to, not only to `weather`. |
 | `icon_size` | `string` | — | Icon size. |
 | `icon_padding` | `string` | — | Padding around the icon. |
 | `icon_background` | `boolean` | — | Background behind this icon. |
 | `icon_background_color` | `string` | — | Color of that background. |
+| `margin` | `string` | — | Outer margin of this element. |
+| `padding` | `string` | — | Inner padding of this element. |
 
 **Bar** (`kind: bar`)
 
@@ -696,6 +731,8 @@ Every entry in a button's `elements` list needs a `kind`, which is `text`, `icon
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
 | `gauge_entity` | `string` | — | Use a different entity for the bar value. |
 | `gauge_attribute` | `string` | — | Attribute to read for the bar value. |
+| `margin` | `string` | — | Outer margin of this element. |
+| `padding` | `string` | — | Inner padding of this element. |
 
 </details>
 
@@ -725,17 +762,36 @@ Set on the button, not on an element. Needs `type: ring`.
 
 <br>
 
+**The background itself**
+
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `background_mode` | `string` | `default` | `default` for the animated sky, `images` to use your own background files, `none` for no background at all. |
-| `weather_image_path` | `string` | — | Folder of images or videos named after weather states. Used when `background_mode: images`. |
-| `weather_image_path_dark` | `string` | — | Separate folder for dark mode. Falls back to `weather_image_path`. |
-| `weather_animations` | `boolean` | `true` | Show weather particle effects (rain, snow, etc.). |
-| `background_blobs` | `boolean` | `true` | Show the ambient color blobs that shift with the weather. |
-| `night_sky_effects` | `boolean` | `true` | Show stars at night. |
-| `bg_brightness` | `number` | `1` | Brightness multiplier (e.g. `0.8` to darken). |
-| `bg_saturation` | `number` | `1` | Saturation multiplier (e.g. `0` for grayscale). |
-| `bg_blur` | `number` | — | Background blur in pixels. |
+| `background_mode` | `string` | `default` | `default` for the animated sky, `images` for your own background files, `none` for a transparent card. |
+| `background_blobs` | `boolean` | `true` | The drifting color blobs that shift with the weather. Part of the `default` sky, so it has no effect in the other two modes. |
+| `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. |
+| `weather_image_path_dark` | `string` | — | Second folder used after sunset. Falls back to `weather_image_path`. |
+
+**Layers drawn on top**
+
+These run on top of whichever background you picked, including `images` and `none`.
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `precipitation_effects` | `boolean` | `true` | Rain, downpour, thunderstorms, snow, sleet and hail particles. |
+| `cloud_effects` | `boolean` | `true` | The drifting cloud layer. |
+| `night_sky_effects` | `boolean` | `true` | Stars at night, thinned out when it's cloudy. |
+
+The sun and moon sit in this group too. Their options live under [Card · Sun & Moon](#options).
+
+**Treatments over the whole thing**
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `bg_brightness` | `number` | `1` | Brightness multiplier (e.g. `0.8` to darken). Applies to the animated sky and to your own images. |
+| `bg_saturation` | `number` | `1` | Saturation multiplier (e.g. `0` for grayscale). Applies to both as well. |
+| `bg_blur` | `number` | — | Blur in pixels. Only applies to image backgrounds. |
+
+`edge_fade` and `card_frame` also change how the background meets the dashboard. Both are under [Card · Color & frame](#options).
 
 </details>
 
@@ -787,6 +843,7 @@ These are for theming. None of them are needed to use the card, they're there if
 | `--origami-card-border-radius` | `--ha-card-border-radius`, or `12px` | Corner radius of the card. |
 | `--origami-card-border-width` | `--ha-card-border-width`, or `0px` | Border thickness of the card. |
 | `--origami-stack-order` | `1` | The card's z-index. Handy when you stack cards with `card_offset`. |
+| `--origami-edge-fade-color` | `--primary-background-color` | The color `edge_fade` fades into. Set it if your card sits on something other than the dashboard background. |
 
 </details>
 

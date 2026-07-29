@@ -242,6 +242,8 @@ The card shows an animated sky behind your content that follows whatever the wea
 
 You can disable the sky or individual effects, or combine them with different background styles. If you prefer the minimalism, you can also use the card in the simple default HA style with just the content and nothing else going on.
 
+The different settings are shown [below](#layouts)
+
 <br>
 
 ## Layouts

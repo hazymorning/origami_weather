@@ -52,7 +52,7 @@ A flexible card that tries to visualize the weather and related data in a nice w
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
-When you add this card, you get an example layout already set up. It can be customized however you like. See [Examples](#examples) below and [Layout Options](#layouts).
+The actual content of the card is up to you. When you add the card to your dashboard, it comes with an example layout already set up, which you can customize however you like. See the [Examples](#examples) below for inspiration, and [Layout Options](#layouts) for an explanation of how building layouts works.
 
 <br>
 

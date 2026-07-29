@@ -240,20 +240,15 @@ button_containers:
 
 The card shows an animated sky behind your content and follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night and so on.
 
-You can disable individual effects, and there are three choices for the general background:
+There are three choices for the general background:
 
 - **Animated sky:** The built-in sky described above.
 - **Your own images:** Use a folder of pictures (or looping videos) named after weather conditions and show these as weather backgrounds.
 - **None:** A transparent card, if you'd rather blend into your dashboard or use a solid color.
 
-The weather effects sit on top and keep running whichever base you pick, so you can use your own weather image and still get rain falling over it. Every one of them can be turned on or off on its own.
+Different effects are added on top of this to add some realism and drama. You can also disable individual (or all) effects.
 
-Two small things worth knowing:
-
-- **Fewer effects = lighter card.** If your device struggles, switching some effects off is the easy fix. See [Performance](#performance).
-- **Dark themes.** By default the card is light during the day and dark at night, which can clash if you run a permanently dark theme. You can set `color_mode: theme` so the card follows your theme and stays dark during the day instead of switching to its light look. Or just lower the brightness in the background settings to darken it overall. Both are in [Options → Card · Color & frame](#options) and [Options → Background](#options).
-
-This is just a general overview; all the actual settings (which effects, image folders, brightness and so on) are in [Options → Background](#options).
+All the actual settings (which effects, image folders, brightness and so on) are [here](#options).
 
 <br>
 

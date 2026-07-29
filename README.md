@@ -2,8 +2,7 @@
 
 A flexible card that tries to visualize the weather and related data in a nice way.
 
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/c9ab48a5-3298-43e8-bd1e-fce373ae0daf" />
+<img width="1080" height="855" alt="Image" src="https://github.com/user-attachments/assets/3f7c7cf2-264b-4a21-b2e6-0ce592f24997" />
 
 <br>
 <br>

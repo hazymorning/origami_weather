@@ -238,15 +238,9 @@ button_containers:
 
 ## Backgrounds
 
-The card shows an animated sky behind your content and follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night and so on.
+The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, and so on. Different effects are layered on top of this sky to add realism and drama.
 
-The background options:
-
-- **Animated sky:** The built-in sky described above.
-- **Your own images:** Use a folder of pictures (or looping videos) named after weather conditions and show these as weather backgrounds.
-- **None:** A transparent card, if you'd rather blend into your dashboard or use a solid color.
-
-Different effects are added on top of this to add some realism and drama. You can also disable individual (or all) effects. See [Options](#options).
+You can disable the sky or individual effects, or combine them with different background styles. If you prefer the minimalism, you can also use the card in the simple default HA style with just the content and nothing else going on.
 
 <br>
 
@@ -480,7 +474,7 @@ icon_path: /local/weather-icons/
 
 <br>
 
-This card draws a lot. Plenty of effort goes into keeping it fast, but on older or low-power devices you may want to switch off individual pieces if you notice your device struggling:
+This card is pretty active visually. A lot of effort goes into keeping it fast, but on older or low-power devices you may want to switch off individual options if you notice your device struggling:
 
 - `precipitation_effects: false` stops the rain, snow, sleet and hail particles.
 - `cloud_effects: false` stops the drifting cloud layer. Set this and the one above to `false` and the effects canvas goes idle completely.
@@ -488,7 +482,7 @@ This card draws a lot. Plenty of effort goes into keeping it fast, but on older 
 - `background_haze: false` stops the drifting haze layers. They are CSS-animated rather than canvas, but they still add up on weak GPUs.
 - `background_mode: images` swaps the animated sky for a static file. Keep in mind this only replaces the background layer: clouds, precipitation, stars and the sun keep running on top of it, so switch those off too if that was the goal.
 
-These stack. Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card at very little rendering cost.
+These stack. Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card at little rendering cost.
 
 </details>
 

@@ -236,6 +236,57 @@ button_containers:
 
 <br>
 
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30" />
+
+A simple card stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest of the dashboard. This can look nice, but mostly in specific cases, like a header for a popup.
+
+<details>
+<summary><b>Show YAML</b></summary>
+
+<br>
+
+```yaml
+type: custom:origami-weather
+weather_entity: weather.home
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
+sun_moon_x: 28
+card_height: auto
+card_padding: 16px
+background_mode: none
+card_frame: false
+full_width: true
+content_align: end
+content_align_items: start
+button_containers:
+  - buttons:
+      - entity: weather.home
+        elements:
+          - kind: icon
+            icon: weather
+            icon_size: "22"
+            icon_padding: 0 8px 0 0
+          - kind: text
+            precision: 0
+            format: °
+            entity: weather.home
+            attribute: temperature
+            weight: "700"
+          - kind: text
+            weight: "500"
+            entity: weather.home
+        style: inline
+    padding: "4"
+    button_text_size: 18px
+    button_gap: 8px
+grid_options:
+  rows: 2
+```
+
+</details>
+
+<br>
+
 ## Backgrounds
 
 The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, and so on. Different effects are layered on top of this sky to add realism and drama.

@@ -10,7 +10,7 @@ A flexible card that tries to visualize the weather and related data in a nice w
 
 **Getting Started** · [Installation](#installation) · [Setup](#setup) · [Examples](#examples)
 
-**How It Works** · [Layouts](#layouts) · [Backgrounds](#backgrounds)
+**How It Works** · [Backgrounds](#backgrounds) · [Layouts](#layouts)
 
 **Reference** · [Options](#options) · [Performance](#performance) · [History](#history)
 
@@ -237,6 +237,27 @@ button_containers:
 
 <br>
 
+## Backgrounds
+
+The card shows an animated sky behind your content and follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night and so on.
+
+You can disable individual effects, and there are three choices for the general background:
+
+- **Animated sky:** The built-in sky described above.
+- **Your own images:** Use a folder of pictures (or looping videos) named after weather conditions and show these as weather backgrounds.
+- **None:** A transparent card, if you'd rather blend into your dashboard or use a solid color.
+
+The weather effects sit on top and keep running whichever base you pick, so you can use your own weather image and still get rain falling over it. Every one of them can be turned on or off on its own.
+
+Two small things worth knowing:
+
+- **Fewer effects = lighter card.** If your device struggles, switching some effects off is the easy fix. See [Performance](#performance).
+- **Dark themes.** By default the card is light during the day and dark at night, which can clash if you run a permanently dark theme. You can set `color_mode: theme` so the card follows your theme and stays dark during the day instead of switching to its light look. Or just lower the brightness in the background settings to darken it overall. Both are in [Options → Card · Color & frame](#options) and [Options → Background](#options).
+
+This is just a general overview; all the actual settings (which effects, image folders, brightness and so on) are in [Options → Background](#options).
+
+<br>
+
 ## Layouts
 
 <details>
@@ -457,33 +478,6 @@ icon_path: /local/weather-icons/
 </details>
 
 </details>
-
-<br>
-
-## Backgrounds
-
-<details>
-<summary><b>The background stack</b></summary>
-
-<br>
-
-**Base** — `background_mode`: `default` (animated sky: weather- and sun-aware gradient plus drifting `background_haze`), `images` (your own files from `weather_image_path`, named after the [HA conditions](https://www.home-assistant.io/integrations/weather/#condition-mapping); `.mp4` loops as video), or `none` (transparent).
-
-**On top, over any base** — `sun_moon_enabled`, `sun_rays_enabled`, `night_sky_effects`, `cloud_effects`, `precipitation_effects`.
-
-**Over everything** — `bg_brightness`, `bg_saturation`, `bg_blur` (images only), `edge_fade`, `card_frame`.
-
-</details>
-
-<br>
-
-> [!TIP]
-> <details>
-> <summary><b>Options specific to Dark Themes</b></summary>
->
-> By default, the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card follows your theme and stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
->
-> </details>
 
 <br>
 

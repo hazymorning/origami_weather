@@ -469,27 +469,6 @@ icon_path: /local/weather-icons/
 
 <br>
 
-## Performance
-
-<details>
-<summary><b>Notes on performance</b></summary>
-
-<br>
-
-This card is pretty active visually. A lot of effort goes into keeping it fast, but on older or low-power devices you may want to switch off individual options if you notice your device struggling:
-
-- `precipitation_effects: false` stops the rain, snow, sleet and hail particles.
-- `cloud_effects: false` stops the drifting cloud layer. Set this and the one above to `false` and the effects canvas goes idle completely.
-- `night_sky_effects: false` removes the star field.
-- `background_haze: false` stops the drifting haze layers. They are CSS-animated rather than canvas, but they still add up on weak GPUs.
-- `background_mode: images` swaps the animated sky for a static file. Keep in mind this only replaces the background layer: clouds, precipitation, stars and the sun keep running on top of it, so switch those off too if that was the goal.
-
-These stack. Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card at little rendering cost.
-
-</details>
-
-<br>
-
 ## Options
 
 <details>
@@ -873,6 +852,28 @@ my_theme:
 </details>
 
 <br>
+
+## Performance
+
+<details>
+<summary><b>Notes on performance</b></summary>
+
+<br>
+
+This card is pretty active visually. A lot of effort goes into keeping it fast, but on older or low-power devices you may want to switch off individual options if you notice your device struggling:
+
+- `precipitation_effects: false` stops the rain, snow, sleet and hail particles.
+- `cloud_effects: false` stops the drifting cloud layer. Set this and the one above to `false` and the effects canvas goes idle completely.
+- `night_sky_effects: false` removes the star field.
+- `background_haze: false` stops the drifting haze layers. They are CSS-animated rather than canvas, but they still add up on weak GPUs.
+- `background_mode: images` swaps the animated sky for a static file. Keep in mind this only replaces the background layer: clouds, precipitation, stars and the sun keep running on top of it, so switch those off too if that was the goal.
+
+These stack. Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card at little rendering cost.
+
+</details>
+
+<br>
+
 
 ## History
 

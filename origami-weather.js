@@ -1,4 +1,4 @@
-import { CLOUD_SPRITE, MOON_SURFACE } from './image_assets.js';
+import { CLOUD_SPRITE, MOON_SURFACE } from './image-assets.js';
 console.info(
     "%c ◪ Origami Weather ",
     "color: #fff; border-radius: 6px; background: linear-gradient(135deg, #888 0%, #000 100%); font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; padding: 4px 8px;"
@@ -14,7 +14,7 @@ const _SKY_FILTERS = Object.freeze({
     'cloudy':          { light: 'brightness(0.92) saturate(0.72) contrast(0.96)', dark: 'brightness(0.88) saturate(0.65) contrast(0.95)' },
     'windy':           { light: 'brightness(1.02) saturate(1.05) hue-rotate(-3deg)', dark: 'brightness(0.98) saturate(1.00)' },
     'windy-variant':   { light: 'brightness(1.00) saturate(1.02) hue-rotate(-3deg)', dark: 'brightness(0.96) saturate(0.95)' },
-    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)', dark: 'brightness(0.94) saturate(0.35) contrast(0.88) sepia(0.04)' },
+    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)', dark: 'brightness(1.12) saturate(0.30) contrast(0.80) hue-rotate(-6deg)' },
     'rainy':           { light: 'brightness(0.95) saturate(0.80) contrast(0.96) hue-rotate(4deg)', dark: 'brightness(0.85) saturate(0.70) contrast(0.94) hue-rotate(3deg)' },
     'pouring':         { light: 'brightness(0.88) saturate(0.68) contrast(0.93) hue-rotate(5deg)', dark: 'brightness(0.78) saturate(0.55) contrast(0.90) hue-rotate(4deg)' },
     'lightning':       { light: 'brightness(0.89) saturate(0.62) contrast(1.10) hue-rotate(7deg)', dark: 'brightness(0.76) saturate(0.55) contrast(1.15) hue-rotate(6deg)' },
@@ -25,18 +25,18 @@ const _SKY_FILTERS = Object.freeze({
     'exceptional':     { light: 'brightness(1.08) saturate(1.12) contrast(1.02)', dark: 'brightness(1.02) saturate(1.12)' },
     'default':         { light: 'brightness(1.00) saturate(1.00)', dark: 'brightness(0.95) saturate(0.90)' },
 });
-const _BLOB_PALETTE = Object.freeze({
-    light: [{ c: [70, 118, 196, 0.42] }, { c: [96, 182, 214, 0.40] }, { core: [255, 255, 252, 0.92], c: [222, 238, 250, 0.62] }, { core: [232, 244, 255, 0.90], c: [200, 224, 250, 0.60] }],
-    dark:  [{ c: [30, 58, 116, 0.68] }, { c: [40, 96, 146, 0.52] }, { core: [206, 220, 244, 0.46], c: [120, 152, 206, 0.40] }, { core: [226, 236, 252, 0.50], c: [138, 168, 220, 0.36] }],
+const _HAZE_PALETTE = Object.freeze({
+    light: [{ c: [88, 176, 220, 0.62] }, { core: [255, 255, 250, 0.98], c: [214, 234, 250, 0.80] }, { c: [96, 140, 214, 0.60] }],
+    dark:  [{ c: [58, 150, 190, 0.70] }, { core: [224, 236, 255, 0.60], c: [130, 168, 224, 0.50] }, { c: [46, 82, 168, 0.72] }],
 });
-const _BLOB_TUNING = Object.freeze({
+const _HAZE_TUNING = Object.freeze({
     'sunny':           { light: { tone: [255, 236, 198], mix: 0.30, alpha: 0.72, core: 1.00, scale: 1.00 }, dark: { tone: [90, 116, 176],  mix: 0.22, alpha: 0.80, core: 0.85, scale: 1.00 } },
     'clear-night':     { light: { tone: [120, 150, 200], mix: 0.28, alpha: 0.64, core: 0.70, scale: 1.00 }, dark: { tone: [40, 66, 128],   mix: 0.30, alpha: 0.78, core: 0.55, scale: 1.00 } },
     'partlycloudy':    { light: { tone: [244, 240, 232], mix: 0.22, alpha: 0.72, core: 0.95, scale: 1.05 }, dark: { tone: [70, 96, 148],   mix: 0.28, alpha: 0.80, core: 0.70, scale: 1.05 } },
     'cloudy':          { light: { tone: [222, 224, 230], mix: 0.34, alpha: 0.66, core: 0.82, scale: 1.10 }, dark: { tone: [66, 80, 108],   mix: 0.38, alpha: 0.76, core: 0.55, scale: 1.10 } },
     'windy':           { light: { tone: [232, 240, 240], mix: 0.18, alpha: 0.70, core: 1.00, scale: 1.05 }, dark: { tone: [58, 90, 138],   mix: 0.24, alpha: 0.80, core: 0.75, scale: 1.05 } },
     'windy-variant':   { light: { tone: [232, 240, 240], mix: 0.18, alpha: 0.70, core: 1.00, scale: 1.05 }, dark: { tone: [58, 90, 138],   mix: 0.24, alpha: 0.80, core: 0.75, scale: 1.05 } },
-    'fog':             { light: { tone: [236, 236, 234], mix: 0.52, alpha: 0.60, core: 0.88, scale: 1.35 }, dark: { tone: [92, 100, 116], mix: 0.55, alpha: 0.72, core: 0.60, scale: 1.35 } },
+    'fog':             { light: { tone: [236, 236, 234], mix: 0.52, alpha: 0.60, core: 0.88, scale: 1.35 }, dark: { tone: [150, 162, 180], mix: 0.68, alpha: 0.78, core: 0.60, scale: 1.35 } },
     'rainy':           { light: { tone: [138, 158, 190], mix: 0.36, alpha: 0.68, core: 0.66, scale: 1.08 }, dark: { tone: [40, 58, 92],    mix: 0.42, alpha: 0.78, core: 0.45, scale: 1.08 } },
     'pouring':         { light: { tone: [108, 128, 166], mix: 0.44, alpha: 0.70, core: 0.58, scale: 1.10 }, dark: { tone: [30, 44, 74],    mix: 0.50, alpha: 0.80, core: 0.40, scale: 1.10 } },
     'lightning':       { light: { tone: [120, 128, 168], mix: 0.44, alpha: 0.68, core: 0.62, scale: 1.10 }, dark: { tone: [40, 46, 80],    mix: 0.46, alpha: 0.76, core: 0.45, scale: 1.10 } },
@@ -52,7 +52,7 @@ const WEATHER_TUNING = Object.freeze({
     'clear-night':     { icon: 'mdi:weather-night',            precipitation: null,    lightning: false, sunVisibility: 1.00, sunSaturation: 1.00, cloudDensity: 0.00, cloudDarkness: 0.00, cloudSpeed: 0.0, starCount: 800, starOpacity: 1.00 },
     'partlycloudy':    { icon: 'mdi:weather-partly-cloudy',    precipitation: null,    lightning: false, sunVisibility: 0.78, sunSaturation: 0.85, cloudDensity: 0.55, cloudDarkness: 0.20, cloudSpeed: 1.0, starCount: 450, starOpacity: 0.70 },
     'cloudy':          { icon: 'mdi:weather-cloudy',           precipitation: null,    lightning: false, sunVisibility: 0.42, sunSaturation: 0.50, cloudDensity: 1.00, cloudDarkness: 0.55, cloudSpeed: 1.0, starCount: 300, starOpacity: 0.50 },
-    'windy':           { icon: 'mdi:weather-windy',            precipitation: null,    lightning: false, sunVisibility: 0.92, sunSaturation: 0.95, cloudDensity: 0.50, cloudDarkness: 0.12, cloudSpeed: 3.2, starCount: 500, starOpacity: 0.80 },
+    'windy':           { icon: 'mdi:weather-windy',            precipitation: null,    lightning: false, sunVisibility: 0.60, sunSaturation: 0.68, cloudDensity: 0.50, cloudDarkness: 0.12, cloudSpeed: 3.2, starCount: 500, starOpacity: 0.80 },
     'windy-variant':   { icon: 'mdi:weather-windy-variant',    precipitation: null,    lightning: false, sunVisibility: 0.85, sunSaturation: 0.90, cloudDensity: 0.55, cloudDarkness: 0.18, cloudSpeed: 3.2, starCount: 600, starOpacity: 0.80 },
     'fog':             { icon: 'mdi:weather-fog',              precipitation: null,    lightning: false, sunVisibility: 0.26, sunSaturation: 0.12, cloudDensity: 1.25, cloudDarkness: 0.42, cloudSpeed: 0.5, starCount: 250, starOpacity: 0.35 },
     'rainy':           { icon: 'mdi:weather-rainy',            precipitation: 'rain',  lightning: false, sunVisibility: 0.34, sunSaturation: 0.45, cloudDensity: 0.95, cloudDarkness: 0.60, cloudSpeed: 1.35, starCount:   0, starOpacity: 0.00 },
@@ -873,10 +873,25 @@ function normalizeLength(v) {
     }).join(' ');
 }
 function cssLength(v) { return cssValue(normalizeLength(v)); }
+function _elBoxStyle(el) {
+    let s = '';
+    if (el && el.margin !== undefined && el.margin !== '') s += `;margin:${cssLength(el.margin)}`;
+    if (el && el.padding !== undefined && el.padding !== '') s += `;padding:${cssLength(el.padding)}`;
+    return s;
+}
 function parseAnchor(anchor) {
     if (anchor === 'center') return ['center', 'center']; if (anchor === 'left') return ['center', 'left'];
     if (anchor === 'right') return ['center', 'right'];
     return anchor.includes('-') ? anchor.split('-') : ['top', anchor];
+}
+function pickThreshold(thresholds, value) {
+    if (isNaN(value)) return '';
+    let color = '';
+    const sorted = thresholds
+        .filter(t => t.value !== '' && t.value !== undefined && t.color)
+        .sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
+    for (const t of sorted) { if (value >= parseFloat(t.value)) color = t.color; }
+    return color;
 }
 function computeGauge(rawVal, min, max, colorRaw, thresholds, mode) {
     const range = max - min || 1;
@@ -913,8 +928,7 @@ function computeGauge(rawVal, min, max, colorRaw, thresholds, mode) {
         if (barStops.length) { barGradient = barStops.join(', '); }
     }
     if (valid.length && !isNaN(rawVal) && mode === 'solid') {
-        const sorted = [...valid].sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
-        for (const t of sorted) { if (rawVal >= parseFloat(t.value)) effectiveColor = t.color; }
+        effectiveColor = pickThreshold(valid, rawVal) || effectiveColor;
     }
     return { pct, gradient, barGradient, hasSegments, effectiveColor };
 }
@@ -980,7 +994,7 @@ class WeatherCard extends HTMLElement {
         this._defaultBgActive = false;
         this._defaultBgSchemeDark = null;
         this._weatherFilterSig = null;
-        this._blobStyleSig = null;
+        this._hazeStyleSig = null;
         this._refMoon = null;
         this._sunMoonSig = null;
         this._sunMoonActive = false;
@@ -1048,10 +1062,11 @@ class WeatherCard extends HTMLElement {
         this._containers = this._deriveContainers(this._config);
         this._allButtonsCache = null;
         this._containerVisEntitiesCache = null;
+        this._trackedIdsCache = null;
         if (this._containers.length !== prevContainerCount) this._containerRenderCache = null;
         this._initDOM();
         const heightMode = String(config.card_height == null ? '' : config.card_height).toLowerCase();
-        const rootEl = this._elements && this._elements.root;
+        const rootEl = this._elements?.root;
         if (heightMode === 'content') {
             this.style.height = 'auto'; this.style.minHeight = '0'; this.style.aspectRatio = 'auto';
             if (rootEl) rootEl.classList.remove('fixed-height');
@@ -1087,8 +1102,8 @@ class WeatherCard extends HTMLElement {
         this._weatherBgState = null;
         this._defaultBgSchemeDark = null;
         this._weatherFilterSig = null;
-        this._blobStyleSig = null;
-        if (this._backgroundMode() !== 'default' && this._elements && this._elements.root) {
+        this._hazeStyleSig = null;
+        if (this._backgroundMode() !== 'default' && this._elements?.root) {
             this._elements.root.classList.remove('has-default-bg');
             this._defaultBgActive = false;
         }
@@ -1112,15 +1127,7 @@ class WeatherCard extends HTMLElement {
             && !this._trackedEntitiesChanged(hass)) return;
         this._refW = wObj; this._refSun = sunObj; this._refMoon = moonObj;
         const refs = new Map(), allButtons = this._allButtons();
-        for (const s of allButtons) {
-            if (s.entity) refs.set(s.entity, hass.states[s.entity]);
-            if (Array.isArray(s.elements)) { for (const el of s.elements) {
-                if (el && el.kind === 'text' && el.entity) refs.set(el.entity, hass.states[el.entity]);
-                if (el && el.kind === 'bar' && el.gauge_entity) refs.set(el.gauge_entity, hass.states[el.gauge_entity]);
-            } }
-            for (const ve of s._visEntities) refs.set(ve, hass.states[ve]);
-        }
-        for (const ve of this._containerVisibilityEntities()) refs.set(ve, hass.states[ve]);
+        for (const id of this._trackedEntityIds()) refs.set(id, hass.states[id]);
         this._refButtonEntities = refs;
         const isAstroNight = !!sunObj && (sunObj.state || '').toLowerCase() === 'below_horizon';
         const colorMode = (cfg.color_mode || 'sun').toLowerCase();
@@ -1187,7 +1194,7 @@ class WeatherCard extends HTMLElement {
         this._updateWeatherBackground(weatherState, schemeDark);
         this._updateDefaultBackground(schemeDark);
         this._updateWeatherFilter(weatherState, schemeDark);
-        this._updateBlobStyles(weatherState, schemeDark);
+        this._updateHazeStyles(weatherState, schemeDark);
         this._syncEffects(weatherState);
         if (!this._hasReceivedFirstHass) {
             this._hasReceivedFirstHass = true;
@@ -1201,63 +1208,40 @@ class WeatherCard extends HTMLElement {
         if (stateChanged || hasAstroNightChanged || hasSchemeDarkChanged) this._startAnimation();
     }
     _trackedEntitiesChanged(hass) {
-        const refs = this._refButtonEntities;
-        for (const s of this._allButtons()) {
-            if (s.entity && hass.states[s.entity] !== refs.get(s.entity)) return true;
-            if (Array.isArray(s.elements)) {
-                for (const el of s.elements) {
-                    if (el && el.kind === 'text' && el.entity && hass.states[el.entity] !== refs.get(el.entity)) return true;
-                    if (el && el.kind === 'bar' && el.gauge_entity && hass.states[el.gauge_entity] !== refs.get(el.gauge_entity)) return true;
-                }
-            }
-            for (const ve of s._visEntities) if (hass.states[ve] !== refs.get(ve)) return true;
+        const refs = this._refButtonEntities, ids = this._trackedEntityIds(), states = hass.states;
+        for (let i = 0; i < ids.length; i++) {
+            if (states[ids[i]] !== refs.get(ids[i])) return true;
         }
-        for (const ve of this._containerVisibilityEntities()) if (hass.states[ve] !== refs.get(ve)) return true;
         return false;
     }
     static async getConfigElement() {
         if (!customElements.get("origami-weather-editor")) {
-            await import("./origami-weather-editor.js?v=origami-1.3");
+            await import("./origami-weather-editor.js?v=origami-1.4ahjjhggssssggjizg");
         }
         return document.createElement("origami-weather-editor");
     }
     static getStubConfig(hass) {
         const weatherEntity = hass ? Object.keys(hass.states).find(e => e.startsWith('weather.')) || '' : '';
+        const rainBar = { kind: 'bar', gauge_attribute: 'precipitation_probability', bar_min: '0', bar_max: '100', bar_height: '8', bar_threshold_mode: 'gradient', margin: '6px 0 0 0', bar_thresholds: [{ value: '0', color: 'rgba(214, 224, 230, 0.8)' }, { value: '10', color: 'rgba(190, 210, 224, 0.8)' }, { value: '20', color: 'rgba(166, 197, 219, 0.8)' }, { value: '30', color: 'rgba(142, 184, 214, 0.8)' }, { value: '40', color: 'rgba(118, 170, 210, 0.8)' }, { value: '50', color: 'rgba(96, 156, 204, 0.8)' }, { value: '60', color: 'rgba(76, 141, 196, 0.8)' }, { value: '70', color: 'rgba(58, 125, 186, 0.8)' }, { value: '80', color: 'rgba(42, 108, 174, 0.8)' }, { value: '90', color: 'rgba(30, 90, 160, 0.8)' }] };
+        const fc = off => ({ entity: weatherEntity, forecast: 'daily', ...(off ? { forecast_offset: off } : {}), elements: [{ kind: 'icon', icon: 'weather' }, { kind: 'text', size: '12px', weight: '500', attribute: 'datetime' }, { kind: 'text', weight: '700', attribute: 'temperature' }, { ...rainBar }] });
         return {
             weather_entity: weatherEntity,
-            color_mode: 'theme',
+            sun_entity: 'sun.sun',
             card_height: 'content',
-            card_padding: '20px',
+            card_padding: '16px',
             background_mode: 'default',
             button_containers: [
-                {
-                    gap: '0px',
-                    background: true,
-                    button_icon_size: '34px',
-                    button_padding: '16px',
-                    align: 'center',
-                    blurred_background: true,
-                    padding: '0 0 16px 0',
-                    buttons: [
-                        { entity: weatherEntity, text_size: '42px', background: false, align: 'start', padding: '0', inner_gap: '0', elements: [{ kind: 'text', weight: '700', attribute: 'temperature', fancy_unit: true }] }
-                    ]
-                },
-                {
-                    background: true,
-                    layout: 'wrap',
-                    gap: '4px',
-                    button_gap: '0px',
-                    button_text_gap: '6px',
-                    button_padding: '0',
-                    align: 'start',
-                    button_text_size: '13px',
-                    buttons: [
-                        { entity: weatherEntity, forecast: 'daily', background: false, align: 'start', elements: [{ kind: 'text', text: 'Today', weight: '500' }, { kind: 'text', attribute: 'templow', format: '° - ', weight: '700' }, { kind: 'text', attribute: 'temperature', format: '°', weight: '700', size: '14px' }] },
-                        { entity: weatherEntity, background: false, align: 'start', elements: [{ kind: 'text', text: '• Wind', weight: '500' }, { kind: 'text', attribute: 'wind_speed', weight: '700' }] }
-                    ]
-                }
-            ],
-            grid_options: { rows: 'auto', columns: 12 }
+                { position: 'custom', position_anchor: 'top-left', padding: '4px 8px', buttons: [
+                    { entity: weatherEntity, attribute: 'temperature', text_size: '42px', align: 'start', padding: '4px 0 0 0', background: false, elements: [{ kind: 'text', weight: '700', fancy_unit: true, attribute: 'temperature', precision: 0 }] }
+                ] },
+                { background: true, button_icon_size: '34px', button_padding: '16px', align: 'center', button_background_color: 'rgba(255,255,255,0.1)', button_blurred_background: true, justify_content: 'end', align_items: 'start', padding: '8px', buttons: [
+                    { entity: weatherEntity, attribute: 'temperature', type: 'ring', ring_gap: '8px', ring_width: '4px', ring_min: '-20', ring_max: '40', ring_threshold_mode: 'gradient', ring_thresholds: [{ value: '-20', color: 'rgba(124, 142, 184, 0.8)' }, { value: '-16', color: 'rgba(132, 156, 196, 0.8)' }, { value: '-12', color: 'rgba(140, 172, 206, 0.8)' }, { value: '-8', color: 'rgba(150, 188, 214, 0.8)' }, { value: '-4', color: 'rgba(165, 202, 218, 0.8)' }, { value: '0', color: 'rgba(183, 213, 216, 0.8)' }, { value: '4', color: 'rgba(198, 218, 205, 0.8)' }, { value: '8', color: 'rgba(206, 218, 188, 0.8)' }, { value: '12', color: 'rgba(214, 214, 168, 0.8)' }, { value: '16', color: 'rgba(224, 207, 152, 0.8)' }, { value: '20', color: 'rgba(232, 195, 140, 0.8)' }, { value: '24', color: 'rgba(232, 178, 130, 0.8)' }, { value: '28', color: 'rgba(228, 158, 124, 0.8)' }, { value: '32', color: 'rgba(220, 138, 120, 0.8)' }, { value: '36', color: 'rgba(208, 120, 118, 0.8)' }, { value: '40', color: 'rgba(194, 104, 114, 0.8)' }], blurred_background: true, padding: '16px', elements: [{ kind: 'icon', icon: 'weather', icon_background: false, icon_background_color: 'rgba(0,0,0,0)', icon_size: '42px' }] }
+                ] },
+                { gap: '4px', button_gap: '0px', button_text_gap: '6px', button_padding: '0', align: 'start', button_text_size: '14px', padding: '0 0 16px 8px', margin: '-14px 0 0 0', buttons: [
+                    { entity: weatherEntity, align: 'start', elements: [{ kind: 'icon', icon: 'mdi:weather-windy' }, { kind: 'text', weight: '500', text: 'Wind' }, { kind: 'text', text: '•', weight: '500' }, { kind: 'text', attribute: 'wind_speed', weight: '700' }] }
+                ] },
+                { layout: 'horizontal-scroll', position: 'bottom-left', scroll_count: 5, gap: '2px', button_icon_background_color: 'rgba(255,255,255,0.05)', button_style: 'vertical', button_text_layout: 'vertical', button_gap: '6px', button_icon_size: '24px', button_padding: '12px', align: 'center', button_text_size: '13px', background_color: 'rgba(255,255,255,0.05)', width: '100%', blurred_background: true, button_background_color: 'rgba(255,255,255,0.1)', separator: true, button_icon_padding: '0 0 6px 0', grouped: true, background: true, buttons: [fc(0), fc(1), fc(2), fc(3), fc(4), fc(5), fc(6)] }
+            ]
         };
     }
     getCardSize() { return 4; }
@@ -1299,6 +1283,23 @@ class WeatherCard extends HTMLElement {
         }
         this._containerVisEntitiesCache = [...set];
         return this._containerVisEntitiesCache;
+    }
+    _trackedEntityIds() {
+        if (this._trackedIdsCache) return this._trackedIdsCache;
+        const ids = [];
+        for (const button of this._allButtons()) {
+            if (button.entity) ids.push(button.entity);
+            if (Array.isArray(button.elements)) {
+                for (const el of button.elements) {
+                    if (el && el.kind === 'text' && el.entity) ids.push(el.entity);
+                    if (el && el.kind === 'bar' && el.gauge_entity) ids.push(el.gauge_entity);
+                }
+            }
+            for (const ve of button._visEntities) ids.push(ve);
+        }
+        for (const ve of this._containerVisibilityEntities()) ids.push(ve);
+        this._trackedIdsCache = ids;
+        return ids;
     }
     _updateSunMoon(sun, moon, weather) {
         const els = this._elements;
@@ -1400,7 +1401,7 @@ class WeatherCard extends HTMLElement {
     _applyMoonPhase(p) {
         if (this._moonPhaseApplied === p) return;
         this._moonPhaseApplied = p;
-        const litPath = this._elements && this._elements.moonLitPath;
+        const litPath = this._elements?.moonLitPath;
         if (!litPath) return;
         const lit = WeatherCard._moonLitPath(p);
         litPath.setAttribute('d', lit || '');
@@ -1547,21 +1548,27 @@ class WeatherCard extends HTMLElement {
         if (entry.condition && typeof hass.localize === 'function') label = hass.localize(`component.weather.entity_component._.state.${entry.condition}`) || label;
         return { formatted: label, unit: '', condition: entry.condition, datetime: entry.datetime, entry };
     }
+    _reshapeValue(hass, r, txt, hasFormat, lang, unitEntity, unitAttr) {
+        let value = r.formatted, unit = hasFormat ? txt.format : r.unit;
+        const numeric = r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric));
+        if (txt.precision !== undefined && numeric) {
+            value = this._formatNumber(r.rawNumeric, this._getForecastFormat(lang, txt.precision));
+            if (!hasFormat && r.haFormatted) unit = this._extractUnit(hass, unitEntity, unitAttr);
+        } else if (txt.fancy_unit === true && r.haFormatted && r.rawNumeric != null) {
+            value = this._formatNumber(r.rawNumeric);
+            if (!hasFormat) unit = this._extractUnit(hass, unitEntity, unitAttr);
+        } else if (hasFormat && r.haFormatted && r.rawNumeric != null) {
+            value = this._formatNumber(r.rawNumeric);
+        }
+        return { value, unit };
+    }
     _resolveButtonText(hass, button, txt, ctx) {
         const hasFormat = txt.format !== undefined;
+        const tight = hasFormat || txt.fancy_unit === true;
         if (txt.entity) {
             const r = this._resolveSensorValue(hass, txt.entity, txt.attribute);
-            let value = r.formatted, unit = hasFormat ? txt.format : r.unit;
-            if (txt.precision !== undefined && r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric))) {
-                value = this._formatNumber(r.rawNumeric, this._getForecastFormat(ctx.lang, txt.precision));
-                if (!hasFormat && r.haFormatted) unit = this._extractUnit(hass, txt.entity, txt.attribute);
-            } else if (txt.fancy_unit === true && r.haFormatted && r.rawNumeric != null) {
-                value = this._formatNumber(r.rawNumeric);
-                if (!hasFormat) unit = this._extractUnit(hass, txt.entity, txt.attribute);
-            } else if (hasFormat && r.haFormatted && r.rawNumeric != null) {
-                value = this._formatNumber(r.rawNumeric);
-            }
-            return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `e:${txt.entity}|${txt.attribute || ''}|${txt.precision ?? ''}|${value}${unit}` };
+            const { value, unit } = this._reshapeValue(hass, r, txt, hasFormat, ctx.lang, txt.entity, txt.attribute);
+            return { value, unit, tight, sig: `e:${txt.entity}|${txt.attribute || ''}|${txt.precision ?? ''}|${value}${unit}` };
         }
         if (txt.text !== undefined && txt.text !== '') {
             const value = String(txt.text);
@@ -1592,29 +1599,13 @@ class WeatherCard extends HTMLElement {
                 return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `forecast:${txt.attribute}|${value}${unit}` };
             }
             const r = this._resolveSensorValue(hass, button.entity, txt.attribute);
-            let value = r.formatted, unit = hasFormat ? txt.format : r.unit;
-            if (txt.precision !== undefined && r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric))) {
-                value = this._formatNumber(r.rawNumeric, this._getForecastFormat(ctx.lang, txt.precision));
-                if (!hasFormat && r.haFormatted) unit = this._extractUnit(hass, button.entity, txt.attribute);
-            } else if (txt.fancy_unit === true && r.haFormatted && r.rawNumeric != null) {
-                value = this._formatNumber(r.rawNumeric);
-                if (!hasFormat) unit = this._extractUnit(hass, button.entity, txt.attribute);
-            } else if (hasFormat && r.haFormatted && r.rawNumeric != null) {
-                value = this._formatNumber(r.rawNumeric);
-            }
-            return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `a:${txt.attribute}|${txt.precision ?? ''}|${value}${unit}` };
+            const { value, unit } = this._reshapeValue(hass, r, txt, hasFormat, ctx.lang, button.entity, txt.attribute);
+            return { value, unit, tight, sig: `a:${txt.attribute}|${txt.precision ?? ''}|${value}${unit}` };
         }
-        let value = ctx.formatted, unit = hasFormat ? txt.format : ctx.unit;
-        if (txt.precision !== undefined && ctx.primaryResolved && ctx.primaryResolved.rawNumeric != null && isFinite(parseFloat(ctx.primaryResolved.rawNumeric))) {
-            value = this._formatNumber(ctx.primaryResolved.rawNumeric, this._getForecastFormat(ctx.lang, txt.precision));
-            if (!hasFormat && ctx.primaryResolved.haFormatted) unit = this._extractUnit(hass, button.entity, button.attribute);
-        } else if (txt.fancy_unit === true && !ctx.isForecast && ctx.primaryResolved && ctx.primaryResolved.haFormatted && ctx.primaryResolved.rawNumeric != null) {
-            value = this._formatNumber(ctx.primaryResolved.rawNumeric);
-            if (!hasFormat) unit = this._extractUnit(hass, button.entity, button.attribute);
-        } else if (hasFormat && ctx.primaryResolved && ctx.primaryResolved.haFormatted && ctx.primaryResolved.rawNumeric != null) {
-            value = this._formatNumber(ctx.primaryResolved.rawNumeric);
-        }
-        return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `v:${value}${unit}` };
+        const { value, unit } = ctx.primaryResolved
+            ? this._reshapeValue(hass, ctx.primaryResolved, txt, hasFormat, ctx.lang, button.entity, button.attribute)
+            : { value: ctx.formatted, unit: hasFormat ? txt.format : ctx.unit };
+        return { value, unit, tight, sig: `v:${value}${unit}` };
     }
     _getForecastFormat(lang, precision) {
         const key = `${lang}|${precision}`;
@@ -1719,7 +1710,10 @@ class WeatherCard extends HTMLElement {
             #card-root.scheme-dark { --origami-text-color: var(--origami-text-dark, #ffffff); --_button-shadow-avail: var(--origami-button-text-shadow, var(--origami-text-shadow-dark, 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.6))); --_button-no-bg-shadow: none; --_text-bg: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); --_text-bg-border: var(--ha-card-border-color, var(--divider-color, rgba(255,255,255,0.08))); --_origami-shadow-preset: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.45); }
             #card-root.has-custom-shadow { --_origami-shadow: var(--origami-shadow, var(--_origami-shadow-preset)); }
             #card-root:not(.has-custom-shadow) { --_origami-shadow: var(--origami-shadow, none); }
+            #card-root { --_origami-button-shadow: var(--_origami-shadow); }
             #card-root.no-card-frame { border-radius: 0; box-shadow: none; border-width: 0; }
+            :host(.full-width) { --origami-fw-gap: var(--origami-full-width-margin, var(--ha-view-sections-column-gap, var(--column-gap, 32px))); width: calc(100% + 2 * var(--origami-fw-gap)); max-width: none; }
+            #card-root.edge-fade::before { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; background: linear-gradient(to bottom, var(--origami-edge-fade-color, var(--primary-background-color, #111)) 0%, transparent var(--origami-edge-fade-size, 10%), transparent calc(100% - var(--origami-edge-fade-size, 10%)), var(--origami-edge-fade-color, var(--primary-background-color, #111)) 100%); }
             #card-root.is-offscreen .marquee-host .marquee-track { animation-play-state: paused; }
             #weather-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
             #weather-bg > img, #weather-bg > video { display: block; width: 100%; height: 100%; object-fit: cover; border: none; outline: none; filter: brightness(var(--origami-bg-brightness, 1)) saturate(var(--origami-bg-saturation, 1)) blur(var(--origami-bg-blur, 0px)); }
@@ -1729,26 +1723,22 @@ class WeatherCard extends HTMLElement {
             #sky-base { position: absolute; inset: 0; border-radius: inherit; transition: background 1.5s ease; }
             #card-root.scheme-light #sky-base { background: var(--origami-default-bg-light, linear-gradient(125deg, #bdd8ee 0%, #d3e6f2 55%, #e4f0f7 100%)); }
             #card-root.scheme-dark #sky-base { background: var(--origami-default-bg-dark, linear-gradient(125deg, #0b1830 0%, #10203c 55%, #152a4c 100%)); }
-            .sky-blobs { position: absolute; inset: -25%; border-radius: inherit; transform: scale(var(--origami-blob-scale, 1)); transition: transform 2.5s ease; }
-            #card-root.no-blobs .sky-blobs { display: none; }
-            @property --origami-blob-c { syntax: '<color>'; inherits: false; initial-value: transparent; }
-            @property --origami-blob-core { syntax: '<color>'; inherits: false; initial-value: transparent; }
-            .sky-blob { position: absolute; border-radius: 50%; transition: --origami-blob-c 1.5s ease, --origami-blob-core 1.5s ease; background: radial-gradient(ellipse 55% 75% at 50% 50%, var(--origami-blob-core) 0%, color-mix(in srgb, var(--origami-blob-c) 93%, transparent) 36%, color-mix(in srgb, var(--origami-blob-c) 77%, transparent) 46%, color-mix(in srgb, var(--origami-blob-c) 51%, transparent) 56%, color-mix(in srgb, var(--origami-blob-c) 25%, transparent) 66%, color-mix(in srgb, var(--origami-blob-c) 8%, transparent) 76%, transparent 88%); }
-            #card-root.is-offscreen .sky-blob { animation-play-state: paused; }
-            .sky-blob.b1 { width: 92%; height: 88%; left: -20%; top: -24%; --origami-blob-core: var(--origami-blob1-core, rgba(84,132,204,0.58)); --origami-blob-c: var(--origami-blob1-c, rgba(84,132,204,0.58)); animation: wbkW1 34s ease-in-out infinite, wbkS1 22s ease-in-out infinite, wbkO1 23s ease-in-out infinite; }
-            .sky-blob.b2 { width: 78%; height: 92%; left: 50%; top: 36%; --origami-blob-core: var(--origami-blob2-core, rgba(110,192,220,0.55)); --origami-blob-c: var(--origami-blob2-c, rgba(110,192,220,0.55)); animation: wbkW2 27s ease-in-out infinite, wbkS2 31s ease-in-out infinite, wbkO2 31s ease-in-out infinite; }
-            .sky-blob.b3 { width: 64%; height: 62%; left: 46%; top: -22%; --origami-blob-core: var(--origami-blob3-core, rgba(255,253,247,0.85)); --origami-blob-c: var(--origami-blob3-c, rgba(198,222,236,0.48)); animation: wbkW3 20s ease-in-out infinite, wbkR3 24s ease-in-out infinite, wbkS3 14s ease-in-out infinite, wbkO3 26s ease-in-out infinite; }
-            .sky-blob.b4 { width: 46%; height: 52%; left: -10%; top: 48%; --origami-blob-core: var(--origami-blob4-core, rgba(218,236,255,0.85)); --origami-blob-c: var(--origami-blob4-c, rgba(178,210,244,0.5)); animation: wbkW4 17s ease-in-out infinite, wbkR4 19s ease-in-out infinite, wbkO4 15s ease-in-out infinite; }
-            @keyframes wbkW1 { 0% { translate: 0% 0%; } 30% { translate: 14% 10%; } 55% { translate: 26% 2%; } 80% { translate: 8% 14%; } 100% { translate: 0% 0%; } }
-            @keyframes wbkW2 { 0% { translate: 0% 0%; } 25% { translate: -22% -12%; } 50% { translate: -38% 4%; } 70% { translate: -16% -16%; } 100% { translate: 0% 0%; } }
-            @keyframes wbkW3 { 0% { translate: 0% 0%; } 20% { translate: -26% 14%; } 45% { translate: -46% 4%; } 75% { translate: -18% 20%; } 100% { translate: 0% 0%; } }
-            @keyframes wbkW4 { 0% { translate: 0% 0%; } 30% { translate: 40% -14%; } 60% { translate: 72% 8%; } 82% { translate: 30% -18%; } 100% { translate: 0% 0%; } }
+            .sky-haze { position: absolute; inset: -25%; border-radius: inherit; transform: scale(var(--origami-haze-scale, 1)); transition: transform 2.5s ease; }
+            #card-root.no-haze .sky-haze { display: none; }
+            @property --origami-haze-c { syntax: '<color>'; inherits: false; initial-value: transparent; }
+            @property --origami-haze-core { syntax: '<color>'; inherits: false; initial-value: transparent; }
+            .haze-layer { position: absolute; border-radius: 50%; transition: --origami-haze-c 1.5s ease, --origami-haze-core 1.5s ease; background: radial-gradient(ellipse closest-side at 50% 50%, var(--origami-haze-core) 0%, color-mix(in srgb, var(--origami-haze-c) 90%, transparent) 16%, color-mix(in srgb, var(--origami-haze-c) 65%, transparent) 32%, color-mix(in srgb, var(--origami-haze-c) 50%, transparent) 48%, color-mix(in srgb, var(--origami-haze-c) 36%, transparent) 64%, color-mix(in srgb, var(--origami-haze-c) 24%, transparent) 78%, color-mix(in srgb, var(--origami-haze-c) 13%, transparent) 88%, color-mix(in srgb, var(--origami-haze-c) 5%, transparent) 95%, transparent 100%); }
+            #card-root.is-offscreen .haze-layer { animation-play-state: paused; }
+            .haze-layer.h1 { width: 88%; height: 82%; left: -22%; top: -20%; --origami-haze-core: var(--origami-haze1-core, rgba(88,176,220,0.62)); --origami-haze-c: var(--origami-haze1-c, rgba(88,176,220,0.62)); animation: wbkW1 19s ease-in-out infinite, wbkS1 15s ease-in-out infinite, wbkO1 17s ease-in-out infinite; }
+            .haze-layer.h2 { width: 72%; height: 78%; left: 52%; top: 30%; --origami-haze-core: var(--origami-haze2-core, rgba(255,255,250,0.98)); --origami-haze-c: var(--origami-haze2-c, rgba(214,234,250,0.80)); animation: wbkW2 16s ease-in-out infinite, wbkS2 21s ease-in-out infinite, wbkR3 20s ease-in-out infinite, wbkO2 19s ease-in-out infinite; }
+            .haze-layer.h3 { width: 80%; height: 74%; left: 8%; top: 44%; --origami-haze-core: var(--origami-haze3-core, rgba(96,140,214,0.60)); --origami-haze-c: var(--origami-haze3-c, rgba(96,140,214,0.60)); animation: wbkW3 22s ease-in-out infinite, wbkS3 18s ease-in-out infinite, wbkO3 24s ease-in-out infinite; }
+            @keyframes wbkW1 { 0% { translate: 0% 0%; } 30% { translate: 22% 16%; } 55% { translate: 40% 4%; } 80% { translate: 14% 22%; } 100% { translate: 0% 0%; } }
+            @keyframes wbkW2 { 0% { translate: 0% 0%; } 25% { translate: -34% -18%; } 50% { translate: -56% 8%; } 70% { translate: -24% -24%; } 100% { translate: 0% 0%; } }
+            @keyframes wbkW3 { 0% { translate: 0% 0%; } 20% { translate: -38% 20%; } 45% { translate: -64% 6%; } 75% { translate: -26% 28%; } 100% { translate: 0% 0%; } }
             @keyframes wbkS1 { 0%, 100% { scale: 1; } 50% { scale: 1.14; } }
             @keyframes wbkS2 { 0%, 100% { scale: 1.06; } 40% { scale: 0.9; } 75% { scale: 1.02; } }
             @keyframes wbkS3 { 0%, 100% { scale: 0.94; } 35% { scale: 1.22; } 70% { scale: 1.0; } }
             @keyframes wbkR3 { 0%, 100% { rotate: -13deg; } 50% { rotate: 21deg; } }
-            @keyframes wbkR4 { 0%, 100% { rotate: 9deg; } 50% { rotate: -14deg; } }
-            @keyframes wbkO4 { 0%, 100% { opacity: 0.68; } 50% { opacity: 1; } }
             @keyframes wbkO1 { 0%, 100% { opacity: 0.82; } 45% { opacity: 1; } }
             @keyframes wbkO2 { 0%, 100% { opacity: 1; } 55% { opacity: 0.78; } }
             @keyframes wbkO3 { 0%, 100% { opacity: 0.88; } 40% { opacity: 1; } 72% { opacity: 0.8; } }
@@ -1758,13 +1748,20 @@ class WeatherCard extends HTMLElement {
             #sun-moon { position: absolute; z-index: 1; left: var(--origami-sun-moon-x, 50%); top: clamp(calc(var(--origami-sun-moon-size, 80px) / 2 + 6px), var(--origami-sun-moon-y, 100%), 100%); width: var(--origami-sun-moon-size, 80px); height: var(--origami-sun-moon-size, 80px); transform: translate(-50%, -50%); transition: top 2.5s cubic-bezier(0.33, 0, 0.2, 1), --origami-sun-core 2.5s linear, --origami-sun-inner 2.5s linear, --origami-sun-mid 2.5s linear, --origami-sun-edge 2.5s linear, --origami-sun-glow-inner 2.5s linear, --origami-sun-glow-outer 2.5s linear; }
             #sun-moon .sun, #sun-moon .moon { position: absolute; inset: 0; transition: opacity 1.6s ease; }
             #sun-moon .sun-glow, #sun-moon .moon-glow { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; will-change: transform; opacity: var(--origami-sun-moon-glow-opacity, 1); transition: opacity 2s ease; }
-            #sun-moon .sun-glow { width: 300%; height: 300%;
-                background: radial-gradient(circle,
+            #sun-moon .sun-glow { width: 380%; height: 380%; filter: blur(5px);
+                background: radial-gradient(circle farthest-side at 50% 50%,
                     var(--origami-sun-glow-inner) 0%,
-                    color-mix(in srgb, var(--origami-sun-glow-inner) 70%, transparent) 22%,
-                    color-mix(in srgb, var(--origami-sun-glow-outer) 38%, transparent) 38%,
-                    color-mix(in srgb, var(--origami-sun-glow-outer) 16%, transparent) 55%,
-                    transparent 78%);
+                    color-mix(in srgb, var(--origami-sun-glow-inner) 90%, transparent) 12%,
+                    color-mix(in srgb, var(--origami-sun-glow-inner) 78%, transparent) 20%,
+                    color-mix(in srgb, var(--origami-sun-glow-inner) 68%, transparent) 26%,
+                    color-mix(in srgb, var(--origami-sun-glow-inner) 49%, transparent) 34%,
+                    color-mix(in srgb, var(--origami-sun-glow-outer) 35%, transparent) 42%,
+                    color-mix(in srgb, var(--origami-sun-glow-outer) 22%, transparent) 52%,
+                    color-mix(in srgb, var(--origami-sun-glow-outer) 14%, transparent) 62%,
+                    color-mix(in srgb, var(--origami-sun-glow-outer) 8%, transparent) 72%,
+                    color-mix(in srgb, var(--origami-sun-glow-outer) 4%, transparent) 82%,
+                    color-mix(in srgb, var(--origami-sun-glow-outer) 1.5%, transparent) 91%,
+                    transparent 100%);
                 animation: wbkSunGlow 6s ease-in-out infinite; }
             #sun-moon .sun-disc { position: absolute; inset: 0; border-radius: 50%;
                 background:
@@ -1785,17 +1782,20 @@ class WeatherCard extends HTMLElement {
             #sun-moon .sun-disc::after { content: ""; position: absolute; left: 50%; top: 50%; width: 54%; height: 54%; transform: translate(-50%, -50%); border-radius: 50%;
                 background: radial-gradient(circle, #ffffff 0%, rgba(255,255,255,0.9) 38%, rgba(255,253,246,0) 74%);
                 mix-blend-mode: screen; animation: wbkSunCore 4s ease-in-out infinite; will-change: transform, opacity; }
-            #sun-moon .moon-glow { width: 260%; height: 260%; --_moon-glow: rgba(220,232,252,0.40); opacity: calc(var(--origami-moon-phase-glow, 1) * var(--origami-sun-moon-glow-opacity, 1));
-                background: radial-gradient(circle,
-                    color-mix(in srgb, var(--_moon-glow) 88%, transparent) 0%,
-                    color-mix(in srgb, var(--_moon-glow) 62%, transparent) 20%,
-                    color-mix(in srgb, var(--_moon-glow) 38%, transparent) 34%,
-                    color-mix(in srgb, var(--_moon-glow) 20%, transparent) 48%,
-                    color-mix(in srgb, var(--_moon-glow) 9%, transparent) 64%,
-                    color-mix(in srgb, var(--_moon-glow) 3%, transparent) 80%,
+            #sun-moon .moon-glow { width: 280%; height: 280%; --_moon-glow: rgba(220,232,252,0.46); opacity: calc(var(--origami-moon-phase-glow, 1) * var(--origami-sun-moon-glow-opacity, 1));
+                background: radial-gradient(circle farthest-side at 50% 50%,
+                    color-mix(in srgb, var(--_moon-glow) 92%, transparent) 0%,
+                    color-mix(in srgb, var(--_moon-glow) 78%, transparent) 15%,
+                    color-mix(in srgb, var(--_moon-glow) 64%, transparent) 26%,
+                    color-mix(in srgb, var(--_moon-glow) 50%, transparent) 36%,
+                    color-mix(in srgb, var(--_moon-glow) 36%, transparent) 47%,
+                    color-mix(in srgb, var(--_moon-glow) 24%, transparent) 58%,
+                    color-mix(in srgb, var(--_moon-glow) 13%, transparent) 70%,
+                    color-mix(in srgb, var(--_moon-glow) 6%, transparent) 81%,
+                    color-mix(in srgb, var(--_moon-glow) 2%, transparent) 91%,
                     transparent 100%);
                 animation: wbkMoonGlow 14s ease-in-out infinite; }
-            #card-root.scheme-light #sun-moon .moon-glow { --_moon-glow: rgba(190,208,234,0.30); }
+            #card-root.scheme-light #sun-moon .moon-glow { --_moon-glow: rgba(190,208,234,0.34); }
             #sun-moon .moon-disc { position: absolute; inset: 0; width: 100%; height: 100%; }
             #sun-moon .moon-image { display: none; }
             #sun-moon.has-moon-image .moon-image { display: inline; filter: brightness(1.6) contrast(1.35) saturate(0.1) sepia(0.12); mix-blend-mode: luminosity; opacity: 0.88; }
@@ -1853,15 +1853,16 @@ class WeatherCard extends HTMLElement {
             #content-layer > .buttons-group.has-custom-width, #content-layer > .cards-group.has-custom-width { flex: 0 0 auto; width: var(--origami-container-width); align-self: auto; }
             #card-root.fixed-height #content-layer { position: absolute; inset: 0; height: 100%; }
             #card-root.fixed-height { --_origami-vscroll-fill: calc(100% - var(--_origami-pad-v, var(--origami-card-padding, 16px)) * 2); }
-            #free-layer { position: absolute; inset: 0; pointer-events: none; box-sizing: border-box; overflow: visible; z-index: 6; }
+            #free-layer { position: absolute; inset: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); pointer-events: none; box-sizing: border-box; overflow: visible; z-index: 6; }
+            #free-layer > .buttons-group.free-positioned { position: absolute; max-width: 100%; }
+            #free-layer > .buttons-group.free-positioned.has-custom-width { width: var(--origami-container-width); }
             .buttons-group { pointer-events: none; font-family: var(--primary-font-family, sans-serif); transition: color 0.3s ease, text-shadow 0.3s ease; min-width: 0; box-sizing: border-box; }
-            .buttons-row,
-            .button-free { color: var(--origami-text-color); }
+            .buttons-row { color: var(--origami-text-color); }
             .buttons-group { pointer-events: auto; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
             .buttons-group.has-row-horizontal-scroll { height: var(--origami-row-height, auto); }
             .buttons-group.has-row-vertical-scroll { height: var(--origami-row-height, var(--_origami-vscroll-fill, auto)); }
             .buttons-group.grouped { border-radius: var(--origami-bottom-bg-radius, calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)); }
-            .buttons-group.grouped.with-bg { --_bg: var(--origami-container-bg-color, var(--origami-bottom-bg-color, var(--_text-bg))); background: var(--_bg); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-shadow); }
+            .buttons-group.grouped.with-bg { --_bg: var(--origami-container-bg-color, var(--origami-bottom-bg-color, var(--_text-bg))); background: var(--_bg); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-group-shadow, var(--_origami-shadow)); }
             :where(.buttons-group.grouped, .button).with-bg.blurred { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .buttons-group.grouped.with-bg > .buttons-row .button.with-bg { background: none; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 0; padding: var(--origami-buttons-padding, 0); }
             .buttons-row.has-separator:not(.row-grid) > .button { position: relative; overflow: visible; }
@@ -1903,7 +1904,7 @@ class WeatherCard extends HTMLElement {
             .button .button-text.marquee-host { flex: 1 1 auto; }
             .button .button-text .fancy-unit { font-size: 0.55em; font-weight: 500; opacity: 0.7; vertical-align: baseline; position: relative; top: -0.45em; margin-left: 3px; }
             .button.icon-only { column-gap: 0; row-gap: 0; }
-            .button.with-bg { --_bg: var(--origami-bottom-bg-color, var(--_text-bg)); background: var(--_bg); padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-shadow); }
+            .button.with-bg { --_bg: var(--origami-bottom-bg-color, var(--_text-bg)); background: var(--_bg); padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
             .button.with-bg.blurred { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .button.with-bg .button-text { text-shadow: none; }
             #weather-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: 3; display: none; }
@@ -1929,14 +1930,13 @@ class WeatherCard extends HTMLElement {
             .button.align-end.format-vertical { align-items: flex-end; text-align: end; }
             .button.no-icon-bg .button-icon { background: none !important; border: none !important; box-shadow: none !important; aspect-ratio: unset !important; border-radius: 0 !important; overflow: visible !important; padding: var(--weather-icon-padding, 0) !important; }
             .button.has-icon-bg .button-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); align-self: stretch; }
-            .button.has-icon-bg:not(.with-bg) .button-icon { background: var(--_bg, var(--origami-bottom-bg-color, var(--_text-bg))); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-shadow); }
+            .button.has-icon-bg:not(.with-bg) .button-icon { background: var(--_bg, var(--origami-bottom-bg-color, var(--_text-bg))); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
             .button.has-icon-bg:not(.with-bg).blurred .button-icon { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
-            .button.has-icon-bg.with-bg .button-icon { background: var(--origami-icon-bg-color, color-mix(in srgb, var(--ha-card-background, var(--card-background-color, var(--primary-background-color))) 20%, transparent)); border: none; box-shadow: var(--_origami-shadow); }
+            .button.has-icon-bg.with-bg .button-icon { background: var(--origami-icon-bg-color, color-mix(in srgb, var(--ha-card-background, var(--card-background-color, var(--primary-background-color))) 20%, transparent)); border: none; box-shadow: var(--_origami-button-shadow); }
             .button .button-icon.el-no-icon-bg { background: none !important; border: none !important; box-shadow: none !important; aspect-ratio: unset !important; border-radius: 0 !important; overflow: visible !important; padding: var(--weather-icon-padding, 0) !important; }
             .button .button-icon.el-icon-bg { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); align-self: stretch; }
-            .button:not(.with-bg) .button-icon.el-icon-bg { background: var(--_bg, var(--origami-bottom-bg-color, var(--_text-bg))); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-shadow); }
-            .button.with-bg .button-icon.el-icon-bg { background: var(--origami-icon-bg-color, color-mix(in srgb, var(--ha-card-background, var(--card-background-color, var(--primary-background-color))) 20%, transparent)); border: none; box-shadow: var(--_origami-shadow); }
-            .button-free { position: absolute; pointer-events: auto; z-index: 99; font-family: var(--primary-font-family, sans-serif); font-size: var(--origami-bottom-font-size, 16px); font-weight: var(--origami-bottom-font-weight, 500); max-width: calc(100% - var(--_origami-pad-h, var(--origami-card-padding, 16px)) * 2); box-sizing: border-box; text-shadow: var(--_button-no-bg-shadow, none); }
+            .button:not(.with-bg) .button-icon.el-icon-bg { background: var(--_bg, var(--origami-bottom-bg-color, var(--_text-bg))); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
+            .button.with-bg .button-icon.el-icon-bg { background: var(--origami-icon-bg-color, color-mix(in srgb, var(--ha-card-background, var(--card-background-color, var(--primary-background-color))) 20%, transparent)); border: none; box-shadow: var(--_origami-button-shadow); }
             .button.button-round.with-bg { border-radius: 999px; }
             .button.button-round .button-icon { border-radius: 999px; }
             .button.button-ring { position: relative; border-radius: 50%; aspect-ratio: 1; justify-content: center; align-content: center; z-index: 1; padding: var(--origami-buttons-padding, 10px); }
@@ -1986,14 +1986,13 @@ class WeatherCard extends HTMLElement {
     _initDOM() {
         if (this._initialized) return;
         this._initialized = true;
-        if (this._config.card_offset) this.style.margin = this._config.card_offset;
         if (!_sharedStyles) {
             _sharedStyles = new CSSStyleSheet();
             _sharedStyles.replaceSync(WeatherCard._buildStyles());
         }
         this.shadowRoot.adoptedStyleSheets = [_sharedStyles];
         const root = document.createElement('div'); root.id = 'card-root';
-        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-blobs"><div class="sky-blob b1"></div><div class="sky-blob b2"></div><div class="sky-blob b3"></div><div class="sky-blob b4"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><svg class="moon-disc" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="wbk-moon-surface" cx="38%" cy="34%" r="78%"><stop offset="0%" stop-color="#eef0f4"/><stop offset="45%" stop-color="#dce0e8"/><stop offset="100%" stop-color="#b8bcc6"/></radialGradient><clipPath id="wbk-moon-clip"><circle cx="50" cy="50" r="48"/></clipPath><clipPath id="wbk-moon-lit"><path class="moon-lit-path" d=""/></clipPath></defs><g clip-path="url(#wbk-moon-lit)"><circle class="moon-surface" cx="50" cy="50" r="48" fill="url(#wbk-moon-surface)"/><image class="moon-image" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid slice" clip-path="url(#wbk-moon-clip)"/></g></svg></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
+        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><svg class="moon-disc" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="wbk-moon-surface" cx="38%" cy="34%" r="78%"><stop offset="0%" stop-color="#eef0f4"/><stop offset="45%" stop-color="#dce0e8"/><stop offset="100%" stop-color="#b8bcc6"/></radialGradient><clipPath id="wbk-moon-clip"><circle cx="50" cy="50" r="48"/></clipPath><clipPath id="wbk-moon-lit"><path class="moon-lit-path" d=""/></clipPath></defs><g clip-path="url(#wbk-moon-lit)"><circle class="moon-surface" cx="50" cy="50" r="48" fill="url(#wbk-moon-surface)"/><image class="moon-image" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid slice" clip-path="url(#wbk-moon-clip)"/></g></svg></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
         this.shadowRoot.append(root);
         const q = (sel) => root.querySelector(sel);
         const contentLayer = q('#content-layer');
@@ -2100,8 +2099,36 @@ class WeatherCard extends HTMLElement {
         root.classList.toggle('has-bg-filter', !!bgB || !!bgS);
         const cardFrame = cfg.card_frame !== false;
         root.classList.toggle('no-card-frame', !cardFrame);
+        const fw = cfg.full_width === true;
+        this.classList.toggle('full-width', fw);
+        const fwMargin = fw ? (cfg.full_width_margin || '').toString().trim() : '';
+        this._cssVar(this, '--origami-full-width-margin', fwMargin ? normalizeLength(fwMargin) : '', '_prevFwMargin');
+        const offsetRaw = (cfg.card_offset || '').toString().trim();
+        const offsetParts = offsetRaw ? offsetRaw.split(/\s+/) : [];
+        const oTop = offsetParts[0] || '0';
+        const oRight = offsetParts[1] || offsetParts[0] || '0';
+        const oBottom = offsetParts[2] || offsetParts[0] || '0';
+        const oLeft = offsetParts[3] || offsetParts[1] || offsetParts[0] || '0';
+        let marginVal;
+        if (fw) {
+            const gap = fwMargin ? normalizeLength(fwMargin) : 'var(--ha-view-sections-column-gap, var(--column-gap, 32px))';
+            marginVal = `${oTop} calc(-1 * ${gap}) ${oBottom} calc(-1 * ${gap})`;
+        } else if (offsetRaw) {
+            marginVal = offsetRaw;
+        } else {
+            marginVal = '';
+        }
+        if (this._prevHostMargin !== marginVal) {
+            this._prevHostMargin = marginVal;
+            if (marginVal) this.style.margin = marginVal;
+            else this.style.removeProperty('margin');
+        }
+        const ef = cfg.edge_fade === true;
+        root.classList.toggle('edge-fade', ef);
+        const efSize = ef ? (cfg.edge_fade_size || '').toString().trim() : '';
+        this._cssVar(root, '--origami-edge-fade-size', efSize ? normalizeLength(efSize) : '', '_prevEdgeFadeSize');
         root.classList.toggle('has-custom-shadow', cfg.shadow !== false);
-        root.classList.toggle('no-blobs', cfg.background_blobs === false);
+        root.classList.toggle('no-haze', cfg.background_haze === false);
         this._cssVar(root, '--origami-shadow', (cfg.shadow_color || '').toString().trim(), '_prevShadow');
         const caKey = (cfg.content_align || '').toString().toLowerCase();
         const caVal = JUSTIFY_MAP[caKey] || '';
@@ -2165,10 +2192,31 @@ class WeatherCard extends HTMLElement {
             cssVarContainer(cg, prop, key === 'background_color' ? raw : normalizeLength(raw), ck);
         }
         const containerShadow = container.shadow === false ? 'none' : '';
-        cssVarContainer(cg, '--_origami-shadow', containerShadow, 'containerShadow');
+        cssVarContainer(cg, '--_origami-group-shadow', containerShadow, 'containerShadow');
         const customWidth = normalizeLength((container.custom_width || '').toString().trim());
         cssVarContainer(cg, '--origami-container-width', customWidth, 'containerWidth');
         if (cache.hasCustomWidth !== !!customWidth) { cache.hasCustomWidth = !!customWidth; cg.classList.toggle('has-custom-width', !!customWidth); }
+        const isFree = (container.position || '').toString().toLowerCase() === 'custom';
+        const posAnchor = isFree ? (container.position_anchor || 'top-left') : '';
+        const posX = isFree ? String(container.position_x == null ? '' : container.position_x).trim() : '';
+        const posY = isFree ? String(container.position_y == null ? '' : container.position_y).trim() : '';
+        const freeSig = `${isFree}|${posAnchor}|${posX}|${posY}`;
+        if (cache.freeSig !== freeSig) {
+            cache.freeSig = freeSig;
+            cg.classList.toggle('free-positioned', isFree);
+            for (const p of ['left', 'right', 'top', 'bottom', 'transform']) cg.style.removeProperty(p);
+            if (isFree) {
+                const [anchorV, anchorH] = parseAnchor(posAnchor || 'top-left');
+                const ox = normalizeLength(posX) || '0', oy = normalizeLength(posY) || '0', tx = [];
+                if (anchorH === 'left') cg.style.left = ox;
+                else if (anchorH === 'right') cg.style.right = ox;
+                else { cg.style.left = '50%'; tx.push('translateX(-50%)'); }
+                if (anchorV === 'top') cg.style.top = oy;
+                else if (anchorV === 'bottom') cg.style.bottom = oy;
+                else { cg.style.top = '50%'; tx.push('translateY(-50%)'); }
+                if (tx.length) cg.style.transform = tx.join(' ');
+            }
+        }
         const cols = parseInt(container.columns, 10);
         cssVarContainer(cg, '--origami-row-columns', Number.isFinite(cols) && cols > 0 ? String(cols) : '', 'rowCols');
         let rowLayout = (container.layout || 'wrap').toString().toLowerCase();
@@ -2255,7 +2303,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             this._numFmt = new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
         }
         if (!this._containerRenderCache) this._containerRenderCache = [];
-        let anyRowRebuilt = false, anyFreeRebuilt = false;
+        let anyRowRebuilt = false;
         const allRendered = [];
         for (let ai = 0; ai < this._containers.length; ai++) {
             const container = this._containers[ai];
@@ -2272,23 +2320,22 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             }
             const bt = els.row;
             const showBottomBg = container.background === true;
-            const containerBlurred = container.blurred_background === true;
+            const containerBlurred = container.button_blurred_background === true;
             const buttonFormat = (container.button_style || 'inline').toLowerCase() === 'vertical' ? 'vertical' : 'inline';
             const rowLayout = (container.layout || 'wrap').toString().toLowerCase();
             const visCount = parseInt(container.scroll_count, 10), hasVis = Number.isFinite(visCount) && visCount > 0;
-            const containerCtx = { button_icon_background: container.button_icon_background, button_background_color: container.button_background_color || '', button_icon_background_color: container.button_icon_background_color || '' };
+            const containerCtx = { button_icon_background: container.button_icon_background, button_background_color: container.button_background_color || '', button_icon_background_color: container.button_icon_background_color || '', button_shadow: container.button_shadow };
             const rendered = container.buttons.map((button, idx) =>
                 this._renderButton(button, idx, hass, weatherState, lang, showBottomBg, containerBlurred, buttonFormat, ai, containerCtx)
             );
             allRendered.push(...rendered.filter(r => !r.hidden));
             if (!this._containerRenderCache[ai]) this._containerRenderCache[ai] = {};
             const ac = this._containerRenderCache[ai];
-            const rowButtons = rendered.filter(r => !r.isFree), freeButtons = rendered.filter(r => r.isFree);
-            const rowSig = rowButtons.map(r => r.sig).join('§');
+            const rowSig = rendered.map(r => r.sig).join('§');
             const rowRebuilt = ac.lastLocStr !== rowSig;
             if (rowRebuilt) {
                 ac.lastLocStr = rowSig;
-                bt.innerHTML = rowButtons.map(r => r.html).join('');
+                bt.innerHTML = rendered.map(r => r.html).join('');
                 this._animateRings(bt, `a${ai}`);
                 if (!hasVis && rowLayout === 'vertical-scroll') { requestAnimationFrame(() => this._computeVerticalVisHeight(ai)); }
                 anyRowRebuilt = true;
@@ -2298,43 +2345,18 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             } else {
                 ac.hadVertVis = true;
             }
-            const freeSig = freeButtons.map(r => r.sig).join('§'), freeRebuilt = ac.lastFreeSig !== freeSig;
-            if (freeRebuilt) {
-                ac.lastFreeSig = freeSig;
-                const tw = this._elements.freeLayer;
-                tw.querySelectorAll(`.button-free[data-container="${ai}"]`).forEach(el => el.remove());
-                for (const r of freeButtons) {
-                    const wrapper = document.createElement('div'); wrapper.className = 'button-free';
-                    wrapper.dataset.container = String(ai);
-                    const [anchorV, anchorH] = parseAnchor(r.posAnchor || 'top-left'); const padH = 'var(--_origami-pad-h, var(--origami-card-padding, 16px))';
-                    const padV = 'var(--_origami-pad-v, var(--origami-card-padding, 16px))', ox = r.posX === 'pad' ? padH : normalizeLength(r.posX);
-                    const oy = r.posY === 'pad' ? padV : normalizeLength(r.posY), tx = [];
-                    if (anchorH === 'left') wrapper.style.left = ox;
-                    else if (anchorH === 'right') wrapper.style.right = ox;
-                    else { wrapper.style.left = '50%'; tx.push('translateX(-50%)'); }
-                    if (anchorV === 'top') wrapper.style.top = oy;
-                    else if (anchorV === 'bottom') wrapper.style.bottom = oy;
-                    else { wrapper.style.top = '50%'; tx.push('translateY(-50%)'); }
-                    if (tx.length) wrapper.style.transform = tx.join(' ');
-                    if (r.width) { wrapper.style.width = `calc(${r.width})`; wrapper.style.maxWidth = `calc(100% - var(--_origami-pad-h, var(--origami-card-padding, 16px)) * 2)`; }
-                    wrapper.innerHTML = r.html;
-                    this._animateRings(wrapper, `f${ai}`);
-                    tw.appendChild(wrapper);
-                }
-                anyFreeRebuilt = true;
-            }
-            if (!els.group.parentNode || els.group.parentNode !== this._elements.contentLayer) {
-                this._elements.contentLayer.appendChild(els.group);
-            }
+            const isFreeContainer = (container.position || '').toString().toLowerCase() === 'custom';
+            const targetLayer = isFreeContainer ? this._elements.freeLayer : this._elements.contentLayer;
+            if (els.group.parentNode !== targetLayer) targetLayer.appendChild(els.group);
         }
-        if (anyRowRebuilt || anyFreeRebuilt) {
+        if (anyRowRebuilt) {
             this._nativeIconCache = null;
             this._refreshMarqueeObservation();
         }
         const hasNativeIcons = allRendered.some(r => r.showIcon && r.iconStrategy === 'native');
         if (hasNativeIcons) {
-            if (!this._nativeIconCache || anyRowRebuilt || anyFreeRebuilt) {
-                const allContainers = [...this._elements.buttonContainerEls.map(e => e.row), ...this._elements.freeLayer.querySelectorAll('.button-free')];
+            if (!this._nativeIconCache || anyRowRebuilt) {
+                const allContainers = this._elements.buttonContainerEls.map(e => e.row);
                 this._nativeIconCache = [];
                 for (let i = 0; i < allRendered.length; i++) {
                     const r = allRendered[i]; if (!r.showIcon || r.iconStrategy !== 'native') continue;
@@ -2402,7 +2424,23 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const fillStyles = [`--origami-bar-scale:${scale}`];
         if (g.barGradient) fillStyles.push(`--origami-bar-gradient:linear-gradient(to right, ${g.barGradient})`);
         else if (g.effectiveColor) fillStyles.push(`--origami-bar-color:${g.effectiveColor}`);
-        return `<div class="button-bar" style="--origami-bar-h:${barH}px"><div class="button-bar-track"></div><div class="button-bar-fill" data-bar-idx="${barKey}" style="${fillStyles.join(';')}"></div></div>`;
+        const box = _elBoxStyle(el);
+        return `<div class="button-bar" style="--origami-bar-h:${barH}px${box}"><div class="button-bar-track"></div><div class="button-bar-fill" data-bar-idx="${barKey}" style="${fillStyles.join(';')}"></div></div>`;
+    }
+    _buildIconElement(el, resolved) {
+        const styleParts = [];
+        if (el.icon_size) styleParts.push(`--weather-icon-size:${cssLength(el.icon_size)}`);
+        if (el.icon_padding !== undefined && el.icon_padding !== '') styleParts.push(`--weather-icon-padding:${cssLength(el.icon_padding)}`);
+        const iconClasses = ['button-icon'];
+        if (el.icon_background === true) {
+            iconClasses.push('el-icon-bg');
+            if (el.icon_background_color) styleParts.push(`--origami-icon-bg-color:${cssValue(el.icon_background_color)}`);
+        } else if (el.icon_background === false) {
+            iconClasses.push('el-no-icon-bg');
+        }
+        const iconBox = _elBoxStyle(el);
+        const st = (styleParts.length || iconBox) ? ` style="${styleParts.join(';')}${iconBox}"` : '';
+        return `<span class="${iconClasses.join(' ')}"${st}>${this._buttonIconInner(resolved.strategy, resolved.value)}</span>`;
     }
     _resolveButtonElements(button) {
         if (Array.isArray(button.elements)) {
@@ -2412,11 +2450,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
         return [{ kind: 'text' }];
     }
+    _numericSensorValue(hass, entity, attribute) {
+        const r = this._resolveSensorValue(hass, entity, attribute);
+        return parseFloat(r.rawNumeric != null ? r.rawNumeric : r.formatted);
+    }
     _resolveGaugeValue(hass, button, el, isForecast, forecastEntry, forecastTextAttr, formatted) {
         let gaugeVal = parseFloat(formatted);
         if (el.gauge_entity) {
-            const gr = this._resolveSensorValue(hass, el.gauge_entity, el.gauge_attribute);
-            gaugeVal = parseFloat(gr.rawNumeric != null ? gr.rawNumeric : gr.formatted);
+            gaugeVal = this._numericSensorValue(hass, el.gauge_entity, el.gauge_attribute);
         } else if (isForecast && forecastEntry) {
             const gAttr = el.gauge_attribute || forecastTextAttr;
             const gRaw = gAttr ? forecastEntry[gAttr] : null;
@@ -2443,14 +2484,43 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (txt.weight) { txtStyles.push(`font-weight:${cssValue(txt.weight)}`); const o = _wOp(txt.weight); if (o) txtStyles.push(`opacity:${o}`); }
         if (overflow === 'clip') txtStyles.push('text-overflow:clip');
         else if (overflow === 'wrap') txtStyles.push('white-space:normal;overflow:visible;text-overflow:clip');
-        const txtStyle = txtStyles.length ? ` style="${txtStyles.join(';')}"` : '';
+        const txtBox = _elBoxStyle(txt);
+        const txtStyle = (txtStyles.length || txtBox) ? ` style="${txtStyles.join(';')}${txtBox}"` : '';
         if (overflow === 'marquee') {
             return { html: `<span class="button-text marquee-host"${txtStyle} data-speed="${marqueeSpeed}" data-rtl="${marqueeRtl ? 1 : 0}"><span class="marquee-track"><span class="marquee-text">${content}</span></span></span>`, hasMarquee: true };
         }
         return { html: `<span class="button-text"${txtStyle}>${content}</span>`, hasMarquee: false };
     }
+    _resolveButtonData(button, hass, textEls) {
+        const isForecast = !!button.forecast;
+        if (isForecast) {
+            const forecastTextAttr = (textEls.find(t => !t.entity && t.attribute && t.attribute !== 'condition' && t.attribute !== 'datetime') || {}).attribute || null;
+            const f = this._resolveForecastValue(hass, button);
+            let iconValue = f.condition ? _weatherTuning(f.condition).icon : 'mdi:information-outline';
+            if (forecastTextAttr) iconValue = FORECAST_ATTR_ICONS[forecastTextAttr] || iconValue;
+            return {
+                sensorObj: null, iconStrategy: 'static', iconValue, primaryResolved: null,
+                formatted: f.formatted, unit: f.unit, isForecast: true,
+                forecastCondition: f.condition, forecastDatetime: f.datetime,
+                forecastLoading: !!f.loading, forecastEntry: f.entry || null, forecastTextAttr,
+            };
+        }
+        const primaryResolved = this._resolveSensorValue(hass, button.entity, button.attribute);
+        const sensor = hass.states[button.entity];
+        let iconValue = 'mdi:information-outline', iconStrategy = 'static', sensorObj = null;
+        if (sensor) {
+            if (button.attribute) iconValue = WEATHER_ATTR_ICONS[button.attribute] || iconValue;
+            else { sensorObj = sensor; iconStrategy = 'native'; }
+        }
+        return {
+            sensorObj, iconStrategy, iconValue, primaryResolved,
+            formatted: primaryResolved.formatted, unit: primaryResolved.unit, isForecast: false,
+            forecastCondition: null, forecastDatetime: null,
+            forecastLoading: false, forecastEntry: null, forecastTextAttr: null,
+        };
+    }
     _renderButton(button, idx, hass, weatherState, lang, rowBg, containerBlurred, buttonFormat, containerIdx, containerCtx) {
-        const skip = (sig, hidden) => ({ html: '', sig, sensorObj: null, iconStrategy: 'static', showIcon: false, isFree: false, posAnchor: '', posX: '0', posY: '0', containerIdx, buttonIdx: idx, hidden });
+        const skip = (sig, hidden) => ({ html: '', sig, sensorObj: null, iconStrategy: 'static', showIcon: false, width: '', containerIdx, buttonIdx: idx, hidden });
         if (!button.entity) return skip(`skip-${idx}`, false);
         if (!this._checkButtonVisibility(button, hass)) return skip(`hidden-${idx}-${JSON.stringify(button.visibility)}`, true);
         const elements = this._resolveButtonElements(button);
@@ -2459,21 +2529,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const barEls = elements.filter(e => e.kind === 'bar');
         const effectiveFormat = (button.style || buttonFormat) === 'vertical' ? 'vertical' : 'inline';
         const isRingType = button.type === 'ring';
-        let sensorObj = null, iconStrategy = 'static', iconValue = 'mdi:information-outline', formatted, unit, primaryResolved = null;
-        const isForecast = !!button.forecast; let forecastCondition = null, forecastDatetime = null, forecastLoading = false, forecastEntry = null, forecastTextAttr = null;
-        if (isForecast) {
-            forecastTextAttr = (textEls.find(t => !t.entity && t.attribute && t.attribute !== 'condition' && t.attribute !== 'datetime') || {}).attribute || null;
-            const forecast = this._resolveForecastValue(hass, button);
-            formatted = forecast.formatted; unit = forecast.unit; forecastCondition = forecast.condition; forecastDatetime = forecast.datetime;
-            forecastLoading = !!forecast.loading; forecastEntry = forecast.entry || null;
-            iconValue = forecastCondition ? _weatherTuning(forecastCondition).icon : iconValue;
-            if (forecastTextAttr) iconValue = FORECAST_ATTR_ICONS[forecastTextAttr] || iconValue;
-        } else {
-            primaryResolved = this._resolveSensorValue(hass, button.entity, button.attribute);
-            formatted = primaryResolved.formatted; unit = primaryResolved.unit;
-            const sensor = hass.states[button.entity];
-            if (sensor) { if (button.attribute) iconValue = WEATHER_ATTR_ICONS[button.attribute] || 'mdi:information-outline'; else { sensorObj = sensor; iconStrategy = 'native'; } }
-        }
+        const {
+            sensorObj, iconStrategy, iconValue, formatted, unit, primaryResolved,
+            isForecast, forecastCondition, forecastDatetime, forecastLoading, forecastEntry, forecastTextAttr,
+        } = this._resolveButtonData(button, hass, textEls);
         const resolveIconEl = (el) => {
             const configIcon = el.icon || (iconStrategy === 'native' ? '' : iconValue);
             const strat0 = configIcon ? 'static' : iconStrategy;
@@ -2503,24 +2562,13 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             } else if (el.kind === 'icon') {
                 const r = resolveIconEl(el);
                 if (!firstIconSet) { firstIconStrategy = r.strategy; firstIconSet = true; }
-                const styleParts = [];
-                if (el.icon_size) styleParts.push(`--weather-icon-size:${cssLength(el.icon_size)}`);
-                if (el.icon_padding !== undefined && el.icon_padding !== '') styleParts.push(`--weather-icon-padding:${cssLength(el.icon_padding)}`);
-                const iconBgLocal = el.icon_background;
-                const iconClasses = ['button-icon'];
-                if (iconBgLocal === true) { iconClasses.push('el-icon-bg'); if (el.icon_background_color) styleParts.push(`--origami-icon-bg-color:${cssValue(el.icon_background_color)}`); }
-                else if (iconBgLocal === false) iconClasses.push('el-no-icon-bg');
-                const st = styleParts.length ? ` style="${styleParts.join(';')}"` : '';
-                elementsHtml += `<span class="${iconClasses.join(' ')}"${st}>${this._buttonIconInner(r.strategy, r.value)}</span>`;
+                elementsHtml += this._buildIconElement(el, r);
             } else if (el.kind === 'bar') {
                 const gaugeVal = this._resolveGaugeValue(hass, button, el, isForecast, forecastEntry, forecastTextAttr, formatted);
                 elementsHtml += this._buildBar(el, gaugeVal, `${idx}-${barCount}`);
                 barCount++;
             }
         }
-        const isFree = (button.position || '').toString().toLowerCase() === 'custom';
-        const posAnchor = isFree ? (button.position_anchor || 'top-left') : '', posX = isFree ? String(button.position_x || 0).trim() : '0';
-        const posY = isFree ? String(button.position_y || 0).trim() : '0';
         const effectiveBg = button.background !== undefined ? button.background : rowBg;
         const showIcon = iconEls.length > 0;
         const classes = ['button'];
@@ -2533,7 +2581,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const iconBg = button.icon_background !== undefined ? button.icon_background : containerCtx.button_icon_background;
         if (iconBg === true) classes.push('has-icon-bg');
         else if (iconBg === false) classes.push('no-icon-bg');
-        const effectiveBlurred = button.blurred_background !== undefined ? button.blurred_background === true : containerBlurred;
+        const effectiveBlurred = button.blurred_background !== undefined
+            ? button.blurred_background === true
+            : containerBlurred;
         if (effectiveBg) {
             classes.push('with-bg');
             if (effectiveBlurred) classes.push('blurred');
@@ -2544,28 +2594,22 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const effectiveIconBgColor = button.icon_background_color || containerCtx.button_icon_background_color || '';
         let buttonTintColor = '';
         if (Array.isArray(button.color_thresholds) && button.color_thresholds.length) {
-            const ctEntity = button.color_threshold_entity || button.entity;
-            const ctAttr = button.color_threshold_attribute || button.attribute;
             let ctVal;
             if (isForecast && forecastEntry) {
                 if (button.color_threshold_entity) {
-                    const ctr = this._resolveSensorValue(hass, button.color_threshold_entity, button.color_threshold_attribute);
-                    ctVal = parseFloat(ctr.rawNumeric != null ? ctr.rawNumeric : ctr.formatted);
+                    ctVal = this._numericSensorValue(hass, button.color_threshold_entity, button.color_threshold_attribute);
                 } else {
                     const thresholdAttr = button.color_threshold_attribute || forecastTextAttr;
                     if (thresholdAttr) ctVal = parseFloat(forecastEntry[thresholdAttr]);
                 }
-            } else if (ctEntity) {
-                const ctr = this._resolveSensorValue(hass, ctEntity, ctAttr);
-                ctVal = parseFloat(ctr.rawNumeric != null ? ctr.rawNumeric : ctr.formatted);
+            } else {
+                const ctEntity = button.color_threshold_entity || button.entity;
+                if (ctEntity) ctVal = this._numericSensorValue(hass, ctEntity, button.color_threshold_attribute || button.attribute);
             }
-            if (!isNaN(ctVal)) {
-                const sorted = [...button.color_thresholds].filter(t => t.value !== '' && t.value !== undefined && t.color).sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
-                for (const t of sorted) { if (ctVal >= parseFloat(t.value)) buttonTintColor = t.color; }
-            }
+            buttonTintColor = pickThreshold(button.color_thresholds, ctVal);
         }
         const inlineStyles = [];
-        if (width) { const wv = cssLength(width); inlineStyles.push(isFree ? 'width:100%;max-width:100%' : `width:${wv};max-width:${wv}`); }
+        if (width) { const wv = cssLength(width); inlineStyles.push(`width:${wv};max-width:${wv}`); }
         if (height) inlineStyles.push(`height:${cssLength(height)}`);
         if (effectiveBgColor) inlineStyles.push(`--origami-bottom-bg-color:${cssValue(effectiveBgColor)}`);
         if (effectiveIconBgColor) inlineStyles.push(`--origami-icon-bg-color:${cssValue(effectiveIconBgColor)}`);
@@ -2577,18 +2621,13 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         ]) { if (button[k]) inlineStyles.push(`${v}:${cssLength(button[k])}`); }
         if (button.text_size) inlineStyles.push(`font-size:${cssLength(button.text_size)}`);
         if (button.text_shadow === true) inlineStyles.push('--_button-no-bg-shadow:var(--_button-shadow-avail)');
-        if (button.shadow === false) inlineStyles.push('--_origami-shadow:none');
+        const containerLayout = (this._containers[containerIdx] && this._containers[containerIdx].layout || '').toString().toLowerCase();
+        const containerScrollable = containerLayout === 'horizontal-scroll' || containerLayout === 'vertical-scroll';
+        const effectiveButtonShadow = (button.shadow !== undefined ? button.shadow : containerCtx.button_shadow) !== false;
+        if (!effectiveButtonShadow || containerScrollable) inlineStyles.push('--_origami-button-shadow:none');
         let ringHtml = '', ringWrapStyle = '', hasSegments = false;
         if (isRingType) {
-            let gaugeVal = parseFloat(formatted);
-            if (button.gauge_entity) {
-                const gr = this._resolveSensorValue(hass, button.gauge_entity, button.gauge_attribute);
-                gaugeVal = parseFloat(gr.rawNumeric != null ? gr.rawNumeric : gr.formatted);
-            } else if (isForecast && forecastEntry) {
-                const gAttr = button.gauge_attribute || forecastTextAttr;
-                const gRaw = gAttr ? forecastEntry[gAttr] : null;
-                if (gRaw != null) gaugeVal = parseFloat(gRaw);
-            }
+            const gaugeVal = this._resolveGaugeValue(hass, button, button, isForecast, forecastEntry, forecastTextAttr, formatted);
             const r = this._buildRing(button, gaugeVal);
             ringHtml = r.ringHtml; ringWrapStyle = r.ringWrapStyle; hasSegments = r.hasSegments;
         }
@@ -2601,18 +2640,16 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (isRingType) {
             buttonHtml = `<div class="button-ring-wrap${hasSegments ? ' has-segments' : ''}${forecastLoading ? ' button-loading' : ''}" data-idx="${idx}" data-container="${containerIdx}" style="${ringWrapStyle}">${ringHtml}${buttonHtml}</div>`;
         }
-                                                                const sig = isFree
-            ? `${buttonHtml}|${posAnchor}|${posX}|${posY}|${width}`
-            : buttonHtml;
-        return { html: buttonHtml, sig, sensorObj, iconStrategy: firstIconStrategy, showIcon, isFree, posAnchor, posX, posY, width, containerIdx, buttonIdx: idx, hidden: false };
+        const sig = width ? `${buttonHtml}|${width}` : buttonHtml;
+        return { html: buttonHtml, sig, sensorObj, iconStrategy: firstIconStrategy, showIcon, width, containerIdx, buttonIdx: idx, hidden: false };
     }
     _backgroundMode(cfg) {
         const c = cfg || this._config || {};
         return typeof c.background_mode === 'string' ? c.background_mode : 'default';
     }
     _updateWeatherBackground(weatherState, schemeDark) {
-        const container = this._elements && this._elements.weatherBg;
-        const root = this._elements && this._elements.root;
+        const container = this._elements?.weatherBg;
+        const root = this._elements?.root;
         if (!container || !root) return;
         const cfg = this._config || {};
         const lightSchemePath = (cfg.weather_image_path || '').trim();
@@ -2682,8 +2719,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
     }
     _updateDefaultBackground(schemeDark) {
-        const container = this._elements && this._elements.defaultBg;
-        const root = this._elements && this._elements.root;
+        const container = this._elements?.defaultBg;
+        const root = this._elements?.root;
         if (!container || !root) return;
         const cfg = this._config || {};
         const on = this._backgroundMode(cfg) === 'default';
@@ -2703,7 +2740,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (!wasActive) this._startAnimation();
     }
     _updateWeatherFilter(weatherState, schemeDark) {
-        const defaultBg = this._elements && this._elements.defaultBg;
+        const defaultBg = this._elements?.defaultBg;
         if (!defaultBg) return;
         if (this._backgroundMode() !== 'default') {
             if (this._weatherFilterSig) { defaultBg.style.removeProperty('filter'); this._weatherFilterSig = null; }
@@ -2723,25 +2760,25 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const sat = cfg.bg_saturation != null && String(cfg.bg_saturation) !== '' ? `saturate(${cfg.bg_saturation})` : '';
         defaultBg.style.filter = [weatherFilter, sunsetFilter, bri, sat].filter(Boolean).join(' ');
     }
-    _updateBlobStyles(weatherState, schemeDark) {
-        const root = this._elements && this._elements.root;
+    _updateHazeStyles(weatherState, schemeDark) {
+        const root = this._elements?.root;
         if (!root || this._backgroundMode() !== 'default') return;
         const scheme = schemeDark ? 'dark' : 'light';
         const sig = `${weatherState}|${scheme}`;
-        if (this._blobStyleSig === sig) return;
-        this._blobStyleSig = sig;
-        const bt = (_BLOB_TUNING[weatherState] || _BLOB_TUNING.default)[scheme];
-        const pal = _BLOB_PALETTE[scheme];
+        if (this._hazeStyleSig === sig) return;
+        this._hazeStyleSig = sig;
+        const ht = (_HAZE_TUNING[weatherState] || _HAZE_TUNING.default)[scheme];
+        const pal = _HAZE_PALETTE[scheme];
         const toned = (c, aMul) => {
-            const ch = i => Math.round(c[i] + (bt.tone[i] - c[i]) * bt.mix);
+            const ch = i => Math.round(c[i] + (ht.tone[i] - c[i]) * ht.mix);
             return `rgba(${ch(0)},${ch(1)},${ch(2)},${Math.min(1, c[3] * aMul).toFixed(3)})`;
         };
         for (let i = 0; i < pal.length; i++) {
             const p = pal[i];
-            root.style.setProperty(`--origami-blob${i + 1}-c`, toned(p.c, bt.alpha));
-            root.style.setProperty(`--origami-blob${i + 1}-core`, toned(p.core || p.c, bt.alpha * (p.core ? bt.core : 1)));
+            root.style.setProperty(`--origami-haze${i + 1}-c`, toned(p.c, ht.alpha));
+            root.style.setProperty(`--origami-haze${i + 1}-core`, toned(p.core || p.c, ht.alpha * (p.core ? ht.core : 1)));
         }
-        root.style.setProperty('--origami-blob-scale', bt.scale);
+        root.style.setProperty('--origami-haze-scale', ht.scale);
     }
     _refreshMarqueeObservation() {
         if (!this._marqueeObserver) {
@@ -2753,16 +2790,11 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             });
         }
         this._marqueeObserver.disconnect();
-        for (const els of (this._elements && this._elements.buttonContainerEls) || []) {
+        for (const els of this._elements?.buttonContainerEls || []) {
             if (els.row) {
                 els.row.querySelectorAll('.button.overflow-marquee')
                   .forEach(button => this._marqueeObserver.observe(button));
             }
-        }
-        const tw = this._elements && this._elements.freeLayer;
-        if (tw) {
-            tw.querySelectorAll('.button-free .button.overflow-marquee')
-              .forEach(button => this._marqueeObserver.observe(button));
         }
     }
     _measureMarqueeOne(host) {
@@ -2789,7 +2821,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
     }
     _computeVerticalVisHeight(containerIdx) {
-        const els = this._elements && this._elements.buttonContainerEls && this._elements.buttonContainerEls[containerIdx];
+        const els = this._elements?.buttonContainerEls?.[containerIdx];
         const bt = els && els.row;
         if (!bt || !bt.children.length) return;
         const container = this._containers[containerIdx];
@@ -2804,7 +2836,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     _handleVisibilityChange(entries) {
         const entry = entries[0], wasVisible = this._isVisible;
         this._isVisible = entry.isIntersecting;
-        if (this._elements && this._elements.root) this._elements.root.classList.toggle('is-offscreen', !this._isVisible);
+        if (this._elements?.root) this._elements.root.classList.toggle('is-offscreen', !this._isVisible);
         if (this._isVisible && !wasVisible) {
             this._startAnimation();
         } else if (!this._isVisible && wasVisible) {
@@ -2865,11 +2897,6 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             this._syncEffects(this._lastState);
         }, 300);
     }
-    _effectsEnabled() {
-        const cfg = this._config || {};
-        if (cfg.weather_animations === false) return false;
-        return true;
-    }
     _sizeEffectsCanvas() {
         const els = this._elements;
         if (!els || !els.effectsCanvas || !els.root) return false;
@@ -2910,48 +2937,38 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     _syncEffects(weatherState) {
         const els = this._elements;
         if (!els || !els.root || !els.effectsCanvas) return;
-        const enabled = this._effectsEnabled() && !!weatherState;
+        const cfg = this._config || {};
+        const on = !!weatherState;
         const tuning = _weatherTuning(weatherState);
-        const recipe = (enabled && tuning.precipitation) || null;
-        const hasCloud = enabled && WeatherEffects.cloudDensity(weatherState) > 0;
-        const starsOn = enabled && this._isAstroNight && tuning.starCount > 0 && tuning.starOpacity > 0 && (this._config || {}).night_sky_effects !== false;
+        const recipe = (on && cfg.precipitation_effects !== false && tuning.precipitation) || null;
+        const cloudState = (on && cfg.cloud_effects !== false && WeatherEffects.cloudDensity(weatherState) > 0) ? weatherState : null;
+        const starsOn = on && cfg.night_sky_effects !== false && this._isAstroNight && tuning.starCount > 0 && tuning.starOpacity > 0;
         const stars = starsOn ? { count: tuning.starCount, opacity: tuning.starOpacity } : null;
-        const active = !!recipe || hasCloud || !!stars;
+        const active = !!recipe || !!cloudState || !!stars;
         if (active && !this._sizeEffectsCanvas()) {
             this._effectsActive = false;
             els.root.classList.remove('has-weather-effects');
             return;
         }
-        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, active ? weatherState : null, stars);
+        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars);
         this._effectsActive = active;
         els.root.classList.toggle('has-weather-effects', active);
         els.root.classList.toggle('has-star-canvas', !!stars);
         if (active) this._startAnimation();
     }
     _effectsEnv(w, h) {
+        const cfg = this._config || {};
+        const num = (v, dflt) => { const n = parseFloat(v); return Number.isFinite(n) ? n : dflt; };
+        const sunX = num(cfg.sun_moon_x, 50), sunSize = num(cfg.sun_moon_size, 80);
+        const cx = sunX / 100 * w, cy = this._sunGlowY / 100 * h;
         let glow = null;
         if (this._sunMoonActive && this._sunGlowY != null && this._sunGlowVisibility > 0.05) {
-            const cfg = this._config || {};
-            const xr = cfg.sun_moon_x != null && cfg.sun_moon_x !== '' ? parseFloat(cfg.sun_moon_x) : 50;
-            const size = cfg.sun_moon_size != null && cfg.sun_moon_size !== '' ? parseFloat(cfg.sun_moon_size) : 80;
-            const r = (Number.isFinite(size) ? size : 80) * 2.4;
-            glow = {
-                x: (Number.isFinite(xr) ? xr : 50) / 100 * w,
-                y: this._sunGlowY / 100 * h,
-                r2: r * r,
-                s: 0.55 * this._sunGlowVisibility * (this._sunGlowIsNight ? 0.5 : 1)
-            };
+            const r = sunSize * 2.4;
+            glow = { x: cx, y: cy, r2: r * r, s: 0.55 * this._sunGlowVisibility * (this._sunGlowIsNight ? 0.5 : 1) };
         }
         let moon = null;
         if (this._sunMoonActive && this._isAstroNight && this._sunGlowY != null) {
-            const cfg = this._config || {};
-            const xr = cfg.sun_moon_x != null && cfg.sun_moon_x !== '' ? parseFloat(cfg.sun_moon_x) : 50;
-            const size = cfg.sun_moon_size != null && cfg.sun_moon_size !== '' ? parseFloat(cfg.sun_moon_size) : 80;
-            moon = {
-                x: (Number.isFinite(xr) ? xr : 50) / 100 * w,
-                y: this._sunGlowY / 100 * h,
-                r: (Number.isFinite(size) ? size : 80) / 2
-            };
+            moon = { x: cx, y: cy, r: sunSize / 2 };
         }
         return { schemeDark: this._schemeDark, glow, moon, backgroundRGB: this._backgroundColor(this._schemeDark) };
     }
@@ -2960,7 +2977,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (this._backgroundColorCache && this._backgroundColorCache.key === key) return this._backgroundColorCache.v;
         let v = schemeDark ? [16, 33, 61] : [209, 229, 242];
         try {
-            const sky = this._elements && this._elements.root && this._elements.root.querySelector('#sky-base');
+            const sky = this._elements?.root?.querySelector('#sky-base');
             if (sky) {
                 const bg = getComputedStyle(sky).backgroundImage || '';
                 const hexes = bg.match(/#([0-9a-f]{6})/gi);

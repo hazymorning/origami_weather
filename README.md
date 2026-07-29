@@ -1,6 +1,6 @@
 # ◪ Origami Weather
 
-A Home Assistant card that tries to visualize the weather and related data in a nice way. The content uses a flexbox approach which allows pretty flexible layouts.
+A Home Assistant card that tries to visualize the weather and related data in a nice and pleasant way. The content uses a flexbox approach which allows many types of setups.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/c9ab48a5-3298-43e8-bd1e-fce373ae0daf" />
 
@@ -61,17 +61,7 @@ https://github.com/user-attachments/assets/fe93ba11-ed50-4fc6-88ae-b5479ba06bce
 | `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
-The card has a visual editor. When you add it, you get a default card with an example layout already set up. It can be customized however you like, from a minimalist setup to a complex weather overview card (see [Layouts](#layouts)).
-
-<br>
-
-> [!TIP]
-> <details>
-> <summary><b>Options specific to Dark Themes</b></summary>
->
-> By default, the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card follows your theme and stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
->
-> </details>
+The card has a visual editor. When you add it, you get a default card with an example layout already set up. It can be customized however you like, from a minimalist setup to a complex weather overview card (see [Examples](#examples) below and [Layout Options](#layouts)).
 
 <br>
 
@@ -479,6 +469,16 @@ icon_path: /local/weather-icons/
 By default, the card shows animated effects depending on your weather, the sun, and other related data. You can change which effects are shown and how, so they match your dashboard and the style you are going for.
 
 It's also possible to combine individual effects, use custom background images, and let the card blend into your dashboard. See [Background options](#options) for the full list of possibilities, or play around with the features in the visual editor.
+
+<br>
+
+> [!TIP]
+> <details>
+> <summary><b>Options specific to Dark Themes</b></summary>
+>
+> By default, the card is light while the sun is up and dark after sunset. If you use a permanently dark theme, this can cause a fairly extreme contrast during the day. As a workaround, you can set `color_mode: theme` so the card follows your theme and stays dark during the day, or lower the brightness in the color settings so the card is generally darker.
+>
+> </details>
 
 <br>
 

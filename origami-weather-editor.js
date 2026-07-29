@@ -1,36 +1,27 @@
 import { LitElement, html, css } from "https://esm.sh/lit@3.2.1";
 const LABELS = Object.freeze({
-    weather_entity: "", sun_entity: "Sun Entity",
-    moon_phase_entity: "Moon Phase Entity", sun_moon_size: "Diameter", sun_moon_x: "Horizontal Position", sun_moon_y: "Vertical Position",
-    color_mode: "Light / dark mode", card_height: "Card Height",
-    background_mode: "Card Background",
-    card_padding: "Card Padding", card_offset: "Card Offset", card_tap_action: "Tap Action",
+    weather_entity: "", sun_entity: "Sun entity",
+    moon_phase_entity: "Moon phase entity", sun_moon_size: "Diameter", sun_moon_x: "Horizontal position", sun_moon_y: "Vertical position",
+    color_mode: "Light / dark mode", card_height: "Card height",
+    background_mode: "Card background",
+    card_padding: "Card padding", card_offset: "Card offset", card_tap_action: "Tap action",
     weather_image_path: "Light mode folder", weather_image_path_dark: "Dark mode folder",
     button_text_size: "Text size",
-    button_style: "Button style", button_container_columns: "Columns", button_container_scroll_count: "Show at once",
+    button_style: "Button style", button_container_columns: "Columns",
     button_padding: "Button padding",
-    button_container_padding: "Container padding", button_container_margin: "Container offset", button_container_gap: "Gap between Buttons", button_gap: "Icon/text gap", button_text_gap: "Text gap", button_icon_size: "Icon size",
+    button_container_padding: "Inner padding", button_container_margin: "Outer offset", button_container_gap: "Gap between buttons", button_gap: "Icon / text gap", button_text_gap: "Text gap", button_icon_size: "Icon size",
     button_container_grouped: "One shared background", button_container_separator: "Divider between buttons",
     button_icon_background: "Icon background", button_icon_padding: "Padding around icon",
-    content_align: "Content Alignment", content_direction: "Content Direction", button_container_width: "Container width",
-    icon_path: "Custom SVG Icon Folder",
-    bg_brightness: "Background Brightness", bg_saturation: "Color Intensity", bg_blur: "Background Blur",
+    content_align: "Content alignment", content_direction: "Content direction", button_container_width: "Container width",
+    icon_path: "Custom SVG icon folder",
+    bg_brightness: "Background brightness", bg_saturation: "Color intensity", bg_blur: "Background blur",
 });
-const HELPERS = Object.freeze({
-    weather_entity: "", sun_entity: "Defaults to sun.sun",
-    moon_phase_entity: "Optional",
-    card_height: "", card_padding: "", card_offset: "",
-    card_tap_action: "",
-    weather_image_path: "sunny.jpg, rainy.png, …",
-    weather_image_path_dark: "Optional",
-    button_container_columns: "",
-    bg_brightness: "", bg_saturation: "", bg_blur: "",
-    icon_path: "e.g. /local/weather-icons/"});
+const HELPERS = Object.freeze({});
 const BUTTON_LABELS = Object.freeze({
     entity: "", attribute: "Attribute",
-    gauge_entity: "Value Entity", gauge_attribute: "Value Attribute",
+    gauge_entity: "Value entity", gauge_attribute: "Value attribute",
     icon: "Icon", icon_path: "Icon folder",
-    tap_action: "Tap Action"});
+    tap_action: "Tap action"});
 const BUTTON_HELPERS = Object.freeze({
     icon: "MDI icon, or type 'weather' for a dynamic icon.", icon_path: "e.g. /local/weather-icons/"});
 const KEY_ORDER = Object.freeze([
@@ -40,10 +31,10 @@ const KEY_ORDER = Object.freeze([
     "background_mode",
     "weather_image_path", "weather_image_path_dark",
     "card_tap_action", "card_offset",
-    "card_frame", "shadow", "shadow_color",
+    "card_frame", "full_width", "full_width_margin", "edge_fade", "edge_fade_size", "shadow", "shadow_color",
     "icon_path",
     "bg_brightness", "bg_saturation", "bg_blur",
-    "background_blobs",
+    "background_haze", "precipitation_effects", "cloud_effects", "night_sky_effects",
     "button_containers"]);
 const DISPLAY_DEFAULTS = Object.freeze({
     color_mode: "sun",
@@ -123,14 +114,25 @@ class WeatherCardEditor extends LitElement {
                 display: block; margin-top: var(--origami-e-s3); --ha-card-border-radius: var(--origami-e-r-box);
                 & ha-form { margin-top: var(--origami-e-s2); }}
             ha-form + ha-form { margin-top: var(--origami-e-s1); }
-            .button-accordion-body > * + *,
             .settings-group > * + *,
             .disclosure-body > * + * { margin-top: var(--origami-e-s2); }
-            .button-accordion-body > :first-child,
             .settings-group > :first-child,
             .disclosure-body > :first-child { margin-top: 0; }
             .settings-group > .settings-group-label + *,
-            .settings-group > .section-title + * { margin-top: 0; }
+            .settings-group > .section-title + *,
+            .disclosure-body > .settings-group-label + *,
+            .disclosure-body > .section-title + *,
+            .vcb > .settings-group-label + *,
+            .vcb-section-body > .settings-group-label + *,
+            .vcb .settings-group-label + * { margin-top: 0; }
+            .settings-group > .settings-group-label:first-child,
+            .settings-group > .section-title:first-child,
+            .disclosure-body > .settings-group-label:first-child,
+            .disclosure-body > .section-title:first-child,
+            .vcb > .settings-group-label:first-child,
+            .vcb-section-body > .settings-group-label:first-child,
+            .free-pos-layout > div > .settings-group-label:first-child,
+            .field-group > .field-group-label:first-child { padding-top: 0; }
             /* Panel headers */
             .panel-header {
                 display: flex; align-items: center; gap: var(--origami-e-s2);
@@ -142,28 +144,18 @@ class WeatherCardEditor extends LitElement {
             details.disclosure details.disclosure,
             details.disclosure .card-row {
                 background: linear-gradient(rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05), rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05)), var(--secondary-background-color);}
-            .composite{
-                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09); border-radius: var(--origami-e-r-box);}
-            .composite:last-child{ margin-bottom: 0; }
             .disclosure-body > :last-child { margin-bottom: 0; }
             /* Info blocks */
             .info {
                 padding: var(--origami-e-s3) var(--origami-e-s4); margin: 0 0 var(--origami-e-s3) 0;
                 font-size: var(--origami-e-f-label); line-height: 1.5; color: var(--secondary-text-color);
                 & b { color: var(--primary-text-color); font-weight: 500; }
-                & code { background: var(--primary-background-color); padding: 1px 6px; border-radius: 4px; font-size: var(--origami-e-f-meta); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-                &.inline-action { display: flex; align-items: center; gap: var(--origami-e-s3); justify-content: space-between; & > span { flex: 1; } }}
-            /* Labels & helpers */
-             .composite-helper {
-                margin-top: var(--origami-e-s2); font-size: var(--origami-e-f-meta);
-                color: var(--secondary-text-color); line-height: 1.5;}
+                & code { background: var(--primary-background-color); padding: 1px 6px; border-radius: 4px; font-size: var(--origami-e-f-meta); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }}
             /* Grid layouts */
             .card-size-row {
                 display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--origami-e-s2);
                 & ha-textfield { display: block; width: 100%; min-width: 0; }}
-            .field-group .grid-picker { margin: 0; background: transparent; padding: 0; }
             /* Composite field groups */
-            .composite { margin: var(--origami-e-s3) 0 var(--origami-e-s4) 0; padding: var(--origami-e-s3) var(--origami-e-s4); }
              .composite-grid-4 input {
                 flex: 1; min-width: 120px; padding: var(--origami-e-s2) var(--origami-e-s3);
                 border: 1px solid transparent; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07);
@@ -172,7 +164,8 @@ class WeatherCardEditor extends LitElement {
                 &:focus { outline: none; border-color: var(--primary-color); }}
             .composite-grid-4 {
                 display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--origami-e-s2);
-                & label { display: flex; flex-direction: column; gap: var(--origami-e-s1); font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); }
+                & label { display: flex; flex-direction: column; gap: var(--origami-e-s1); }
+                & > label > span { margin-bottom: 0; padding-left: 2px; }
                 & input { flex: none; min-width: 0; width: 100%; }}
             /* Segmented controls */
             .segmented {
@@ -184,9 +177,7 @@ class WeatherCardEditor extends LitElement {
                     cursor: pointer; transition: background var(--origami-e-t), color var(--origami-e-t);
                     text-align: center; border-radius: var(--origami-e-r-ctrl);
                     &:hover:not(.active) { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); }
-                    &.active { background: var(--primary-color); color: var(--text-primary-color, white); }}
-                &.segmented-2col { display: grid; grid-template-columns: 1fr 1fr; }}
-            .composite-row .segmented { flex: 1; min-width: 0; }
+                    &.active { background: var(--primary-color); color: var(--text-primary-color, white); }}}
             .segmented.segmented-compact { & button { min-width: 0; padding: var(--origami-e-s2) var(--origami-e-s1); font-size: var(--origami-e-f-meta); } }
             /* Disclosure / details */
             details.disclosure {
@@ -253,8 +244,8 @@ class WeatherCardEditor extends LitElement {
             .compact-fields {
                 display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); margin: var(--origami-e-s3) 0;}
             .compact-field {
-                display: flex; flex-direction: column; gap: 2px;
-                & .compact-field-label { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); padding-left: 2px; }
+                display: flex; flex-direction: column; gap: var(--origami-e-s1);
+                & .compact-field-label { margin-bottom: 0; }
                 & input, & ha-textfield { width: 100%; min-width: 0; box-sizing: border-box; }
                 & input {
                     padding: var(--origami-e-s2) var(--origami-e-s3); border: 1px solid transparent;
@@ -284,9 +275,6 @@ class WeatherCardEditor extends LitElement {
                     --switch-unchecked-button-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.35);
                     --switch-checked-track-color: var(--primary-color);
                     --switch-checked-button-color: var(--text-primary-color, #fff); }}
-            /* Section boxes */
-            .section-box.no-pad > .sensor-list { margin-top: 0; }
-            .section-box .compact-fields { margin: 0; }
             .fc-box {
                 margin: var(--origami-e-s3) 0; padding: var(--origami-e-s3) var(--origami-e-s4); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08);
                 border: 1px solid rgba(var(--rgb-primary-color, 0, 120, 212), 0.18);
@@ -320,35 +308,45 @@ class WeatherCardEditor extends LitElement {
             /* Button type picker */
             .button-type-picker { display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); margin: 0 0 var(--origami-e-s3) 0; }
             .button-type-btn { display: flex; align-items: center; gap: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); border: 1.5px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.12); border-radius: var(--origami-e-r-box); background: transparent; color: var(--primary-text-color); text-align: left; cursor: pointer; transition: border-color var(--origami-e-t), background var(--origami-e-t); &:hover { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.05); } &.active { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08); } & .button-type-icon { --mdc-icon-size: 18px; color: var(--secondary-text-color); flex-shrink: 0; } & .button-type-icon.active-icon { color: var(--primary-color); } & .button-type-text { display: flex; flex-direction: column; gap: 1px; } & .button-type-name { font-size: var(--origami-e-f-label); font-weight: 500; line-height: 1.2; } & .button-type-desc { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); line-height: 1.2; } }
-            /* Button header badges */
-            .button-badge-row { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 4px; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); color: var(--secondary-text-color); flex-shrink: 0; & ha-icon { --mdc-icon-size: 13px; } }
-            .button-badge-free { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 4px; background: var(--primary-color, rgba(76, 140, 110, 0.85)); color: #fff; flex-shrink: 0; & ha-icon { --mdc-icon-size: 13px; } }
             /* CSS value fields */
             .css-field-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: var(--origami-e-s2); margin-top: var(--origami-e-s2); }
             .css-field-row.cols-2 { grid-template-columns: 1fr 1fr; }
-            .css-field { display: flex; flex-direction: column; gap: 3px; & .css-field-label { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); font-weight: 500; padding-left: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; } & input { width: 100%; box-sizing: border-box; height: 36px; padding: 0 10px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); background: var(--mdc-text-field-fill-color, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06)); color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit; transition: border-color var(--origami-e-t); &:focus { outline: none; border-color: var(--primary-color); } &::placeholder { color: var(--secondary-text-color); opacity: 0.7; } } }
-            /* Overridden fields: a value set here replaces an inherited one.
-               The dot reverts to inheriting; no label needed. */
+            .css-field { display: flex; flex-direction: column; gap: var(--origami-e-s1); & .css-field-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; margin-bottom: 0; } & input { width: 100%; box-sizing: border-box; height: 36px; padding: 0 10px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); background: var(--mdc-text-field-fill-color, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06)); color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit; transition: border-color var(--origami-e-t); &:focus { outline: none; border-color: var(--primary-color); } &::placeholder { color: var(--secondary-text-color); opacity: 0.7; } } }
+            /* Overridden fields */
             .css-field.overridden > input { border-color: rgba(var(--rgb-primary-color, 0, 120, 212), 0.55); }
             .revert-dot { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: var(--primary-color); cursor: pointer; flex-shrink: 0; opacity: 0.75; transition: opacity var(--origami-e-t), transform var(--origami-e-t); }
             .revert-dot:hover { opacity: 1; transform: scale(1.35); }
             /* Section headings */
-            .settings-group { margin-top: 16px; }
+            .settings-group { margin-top: var(--origami-e-s4); }
             .settings-group:first-child { margin-top: 0; }
-            .settings-group-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--secondary-text-color); margin-bottom: var(--origami-e-s2); display: flex; align-items: center; gap: var(--origami-e-s1); }
-            .section-title { font-size: var(--origami-e-f-label); font-weight: 600; color: var(--primary-text-color); margin-bottom: var(--origami-e-s2); display: flex; align-items: center; gap: var(--origami-e-s1); }
+            /* Unified label system */
+            .settings-group-label,
+            .section-title,
+            .field-group-label {
+                font-size: var(--origami-e-f-label); font-weight: 600; text-transform: none; letter-spacing: normal;
+                color: var(--primary-text-color);
+                margin: 0; padding: var(--origami-e-s3) 0 var(--origami-e-s1) 0;
+                display: flex; align-items: center; gap: var(--origami-e-s1); line-height: 1.3;}
+            .field-group-label { padding: 0; }
+            .field-label,
+            .compact-field-label,
+            .css-field-label,
+            .offset-field-label,
+            .wbk-slider-label,
+            .button-color-label,
+            .button-color-opacity-label,
+            .threshold-label,
+            .vcb-section-title,
+            .composite-grid-4 > label > span {
+                font-size: var(--origami-e-f-label); font-weight: 500; text-transform: none; letter-spacing: normal;
+                color: var(--primary-text-color); line-height: 1.3;
+                margin: 0 0 var(--origami-e-s1) 0; padding-left: 2px;}
             .field-group {
                 background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05);
                 border-radius: var(--origami-e-r-box); padding: var(--origami-e-s3);
                 margin-top: var(--origami-e-s2);}
             .field-group > .toggle-group:first-child { margin-top: 0; }
             .field-group > .toggle-group:last-child { margin-bottom: 0; }
-            .field-group-label {
-                font-size: var(--origami-e-f-meta); font-weight: 500; color: var(--secondary-text-color);
-                margin-bottom: var(--origami-e-s2);}
-            /* Button accordions */
-            .button-accordion-body > .settings-group:first-child { margin-top: 0; }
-            .button-accordion-body .settings-group + .settings-group { margin-top: var(--origami-e-s3); }
             /* Button nudge strips */
             .button-nudge { display: flex; align-items: flex-start; gap: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); margin: var(--origami-e-s1) 0; border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); line-height: 1.5; & code { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.08); padding: 0 4px; border-radius: 3px; } }
             .button-nudge.warning { background: rgba(var(--rgb-warning-color, 255, 152, 0), 0.10); border: 1px solid rgba(var(--rgb-warning-color, 255, 152, 0), 0.25); }
@@ -356,11 +354,11 @@ class WeatherCardEditor extends LitElement {
             /* Button color picker */
             .button-color-box { margin-top: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); border-radius: var(--origami-e-r-ctrl); background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.03); }
             .button-color-row { display: flex; align-items: center; gap: var(--origami-e-s2); }
-            .button-color-label { flex: 1; font-size: var(--origami-e-f-label); color: var(--primary-text-color); }
+            .button-color-label { flex: 1; margin-bottom: 0; }
             .button-color-swatch { width: 36px; height: 28px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); border-radius: var(--origami-e-r-inline); padding: 1px 2px; background: none; cursor: pointer; flex-shrink: 0; }
             .button-color-clear { width: 24px; height: 24px; border: 0; border-radius: 50%; padding: 0; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.08); color: var(--secondary-text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background var(--origami-e-t); &:hover { background: rgba(var(--rgb-error-color, 211, 47, 47), 0.15); color: var(--error-color); } }
             .button-color-opacity-row { display: flex; align-items: center; gap: var(--origami-e-s2); margin-top: var(--origami-e-s2); }
-            .button-color-opacity-label { font-size: 11px; color: var(--secondary-text-color); white-space: nowrap; }
+            .button-color-opacity-label { white-space: nowrap; margin-bottom: 0; }
             .button-color-opacity { flex: 1; height: 4px; accent-color: var(--primary-color); cursor: pointer; }
             .button-color-opacity-val { font-size: 11px; color: var(--secondary-text-color); width: 32px; text-align: right; flex-shrink: 0; }
             /* Sliders */
@@ -369,7 +367,7 @@ class WeatherCardEditor extends LitElement {
                 background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05);
                 border-radius: var(--origami-e-r-box);}
             .wbk-slider-head { display: flex; align-items: center; justify-content: space-between; gap: var(--origami-e-s2); margin-bottom: var(--origami-e-s1); }
-            .wbk-slider-label { font-size: var(--origami-e-f-label); color: var(--primary-text-color); font-weight: 400; flex: 1; }
+            .wbk-slider-label { flex: 1; margin-bottom: 0; }
             .wbk-slider-num {
                 width: 48px; flex-shrink: 0; text-align: right; border: none; background: none;
                 color: var(--primary-color); font-size: var(--origami-e-f-label); font-weight: 600;
@@ -384,10 +382,10 @@ class WeatherCardEditor extends LitElement {
                 &::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: none; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }}
             .wbk-slider-helper { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); margin-top: var(--origami-e-s1); line-height: 1.4; }
             .wbk-slider-status { font-size: var(--origami-e-f-meta); color: var(--primary-color); margin-top: 2px; line-height: 1.4; font-weight: 500; }
-            /* Free button positioning */
+            /* Free container positioning */
             .free-pos-layout { display: grid; grid-template-columns: auto 1fr; gap: var(--origami-e-s3); align-items: start; }
             .offset-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); }
-            .offset-field { display: flex; flex-direction: column; gap: 3px; & .offset-field-label { font-size: 11px; color: var(--secondary-text-color); font-weight: 500; padding-left: 2px; } & input { width: 100%; box-sizing: border-box; height: 36px; padding: 0 10px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); background: var(--mdc-text-field-fill-color, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06)); color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit; &:focus { outline: none; border-color: var(--primary-color); } &::placeholder { color: var(--secondary-text-color); opacity: 0.7; } } }
+            .offset-field { display: flex; flex-direction: column; gap: var(--origami-e-s1); & .offset-field-label { margin-bottom: 0; } & input { width: 100%; box-sizing: border-box; height: 36px; padding: 0 10px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); background: var(--mdc-text-field-fill-color, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06)); color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit; &:focus { outline: none; border-color: var(--primary-color); } &::placeholder { color: var(--secondary-text-color); opacity: 0.7; } } }
             .anchor-grid { display: grid; grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); gap: 4px; }
             .anchor-cell { width: 30px; height: 30px; border: 1.5px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.15); border-radius: var(--origami-e-r-ctrl); background: transparent; cursor: pointer; transition: border-color var(--origami-e-t), background var(--origami-e-t); &:hover:not(.active) { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.07); } &.active { border-color: var(--primary-color); background: var(--primary-color); } }
             .clearable-field { position: relative; & ha-form { padding-right: 0; } & .clear-btn { position: absolute; top: 8px; right: 4px; width: 24px; height: 24px; padding: 0; margin: 0; border: none; background: transparent; color: var(--secondary-text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; opacity: 0.6; transition: opacity var(--origami-e-t), color var(--origami-e-t); z-index: 1; &:hover { opacity: 1; color: var(--error-color); } & ha-icon { --mdc-icon-size: 16px; } } }
@@ -402,7 +400,7 @@ class WeatherCardEditor extends LitElement {
                 background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); color: var(--primary-text-color);
                 border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit;
                 &:focus { outline: none; border-color: var(--primary-color); } }
-            .ring-threshold-row .threshold-label { font-size: 11px; color: var(--secondary-text-color); white-space: nowrap; }
+            .ring-threshold-row .threshold-label { white-space: nowrap; margin-bottom: 0; padding-left: 0; }
             .ring-threshold-del {
                 width: 22px; height: 22px; border: 0; border-radius: 50%; padding: 0;
                 background: transparent; color: var(--secondary-text-color); cursor: pointer;
@@ -418,15 +416,6 @@ class WeatherCardEditor extends LitElement {
                 & ha-icon { --mdc-icon-size: 16px; }}
             /* Visual Button Builder */
             .vcb { display: flex; flex-direction: column; gap: var(--origami-e-s2); }
-            /* Format picker: refined mini diagrams */
-            .vcb-format-card.active { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08); }
-            .vcb-fmt.vertical { flex-direction: column; gap: 3px; align-items: center; height: auto; }
-            .vcb-format-card.active .vcb-fmt-sq { opacity: 0.55; }
-            .vcb-fmt-bar.sm { width: 14px; background: var(--secondary-text-color); opacity: 0.25; }
-            .vcb-fmt-bar.lg { width: 18px; background: var(--primary-text-color); opacity: 0.4; }
-            .vcb-format-card.active .vcb-fmt-bar.sm { opacity: 0.35; }
-            .vcb-format-card.active .vcb-fmt-bar.lg { opacity: 0.55; }
-            .vcb-format-card.active .vcb-format-name { color: var(--primary-color); font-weight: 600; }
             /* Layout picker: icon placement x text stacking, as pictures */
             .layout-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--origami-e-s2); }
             .layout-card { border: 1.5px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); border-radius: var(--origami-e-r-box); padding: 9px 4px; cursor: pointer; background: transparent; transition: border-color 0.12s, background 0.12s; display: flex; align-items: center; justify-content: center; min-height: 42px; }
@@ -448,7 +437,7 @@ class WeatherCardEditor extends LitElement {
             .vcb-section-head ha-icon { --mdc-icon-size: 16px; color: var(--secondary-text-color); }
             .vcb-section-head ha-icon.chevron { transition: transform 0.12s; }
             .vcb-section-head.open ha-icon.chevron { transform: rotate(90deg); }
-            .vcb-section-title { font-size: var(--origami-e-f-label); font-weight: 500; color: var(--primary-text-color); flex: 1; }
+            .vcb-section-title { flex: 1; margin-bottom: 0; padding-left: 0; }
             .vcb-section-body { padding: var(--origami-e-s2) 0 var(--origami-e-s3); }
             .vcb-section-body > * + * { margin-top: 6px; }
             .vcb-section-head .vcb-reorder { display: flex; gap: 2px; margin-left: auto; }
@@ -603,6 +592,17 @@ class WeatherCardEditor extends LitElement {
                 .computeHelper=${this._computeHelper}
                 @value-changed=${this._valueChanged}
             ></ha-form>`;}
+    _renderEntityField(name, opts) {
+        const o = opts || {};
+        const value = (this._formData || {})[name] || "";
+        const selector = { entity: o.domain ? { domain: o.domain } : {} };
+        return html`<ha-selector
+                .hass=${this.hass}
+                .selector=${selector}
+                .value=${value}
+                .label=${o.label != null ? o.label : (LABELS[name] || "")}
+                @value-changed=${(e) => { e.stopPropagation(); this._updateField(name, (e.detail && e.detail.value) || ""); }}
+            ></ha-selector>`;}
     _renderClearableText(name) {
         const val = (this._formData || {})[name];
         return html`<div class="clearable-field">
@@ -650,16 +650,15 @@ class WeatherCardEditor extends LitElement {
                 <ha-switch .checked=${enabled}
                     @change=${(e) => this._updateField("sun_moon_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
             ${enabled ? html`
-                ${this._renderForm([
-                    { name: "sun_entity", selector: { entity: { domain: "sun" } } },
-                    { name: "moon_phase_entity", selector: { entity: { domain: "sensor" } } }])}
+                ${this._renderEntityField("sun_entity", { domain: "sun" })}
+                ${this._renderEntityField("moon_phase_entity", { domain: "sensor" })}
                 ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
                 ${this._renderSlider("sun_moon_x", LABELS.sun_moon_x, 0, 100, 1)}
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_y}</span>
-                    <div class="segmented segmented-compact" role="radiogroup" aria-label=${LABELS.sun_moon_y}>
-                        <button type="button" role="radio" class=${!yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", "")}>Dynamic</button>
-                        <button type="button" role="radio" class=${yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
+                    <div class="segmented segmented-compact">
+                        <button type="button" class=${!yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", "")}>Dynamic</button>
+                        <button type="button" class=${yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
                     </div></div>
                 ${yFixed ? this._renderSlider("sun_moon_y", "", 0, 100, 1) : ""}` : ""}</div>`;}
     _renderCardStyleSegmented() {
@@ -679,8 +678,8 @@ class WeatherCardEditor extends LitElement {
         const modes = [{ v: "content", l: "Content" }, { v: "auto", l: "Fill" }, { v: "fixed", l: "Fixed" }];
         return html`<div class="compact-field">
                 <span class="compact-field-label">${LABELS.card_height}</span>
-                <div class="segmented segmented-compact" role="radiogroup" aria-label=${LABELS.card_height}>
-                    ${modes.map(o => html`<button type="button" role="radio" class=${mode === o.v ? "active" : ""}
+                <div class="segmented segmented-compact">
+                    ${modes.map(o => html`<button type="button" class=${mode === o.v ? "active" : ""}
                         @click=${() => setMode(o.v)}>${o.l}</button>`)}</div>
                 ${mode === "fixed" ? html`<input class="card-height-value" type="text" placeholder="e.g. 220"
                         .value=${fixedVal}
@@ -709,9 +708,7 @@ class WeatherCardEditor extends LitElement {
                                     .value=${String(parts[i])}
                                     @change=${(e) =>
                                         this._setOffsetPart(i, e.target.value)}
-                                ></label>`)}</div>
-                ${HELPERS.card_offset
-                    ? html`<div class="composite-helper">${HELPERS.card_offset}</div>`: ""}`;}
+                                ></label>`)}</div>`;}
     _renderContainerCustomCardsEditor(containerIdx) {
         const container = this._getContainers()[containerIdx] || {};
         const cards = Array.isArray(container.custom_cards) ? container.custom_cards : [];
@@ -736,14 +733,14 @@ class WeatherCardEditor extends LitElement {
         const title = html`<span class="row-title-main">${(card && card.type) ? String(card.type).replace(/^custom:/, "") : "card"}</span>`;
         const body = html`<div class="card-size-row">
                 <div class="offset-field">
-                    <span class="offset-field-label">Custom Width</span>
+                    <span class="offset-field-label">Custom width</span>
                     <input type="text"
                         placeholder="e.g. 140px or 60%"
                         .value=${card.custom_width || ""}
                         @change=${(e)=>{const v=e.target.value.trim(); const nc={...card}; if(v) nc.custom_width=v; else delete nc.custom_width; this._updateContainerCardAt(containerIdx,idx,nc);}}
                     ></div>
                 <div class="offset-field">
-                    <span class="offset-field-label">Custom Height</span>
+                    <span class="offset-field-label">Custom height</span>
                     <input type="text"
                         placeholder="e.g. 110px"
                         .value=${card.custom_height || ""}
@@ -866,7 +863,7 @@ class WeatherCardEditor extends LitElement {
         }
                         for (const k of Object.keys(out)) {
             const v = out[k];
-            if ((k === "shadow" || k === "button_icon_background") && v === false) continue;
+            if ((k === "shadow" || k === "button_shadow" || k === "button_icon_background") && v === false) continue;
             if (Array.isArray(v)) { if (v.length === 0) delete out[k]; continue; }
             if (v === "" || v === null || v === undefined || v === false) delete out[k];
         }
@@ -969,15 +966,11 @@ class WeatherCardEditor extends LitElement {
     }
     _renderButtonRow(button, idx, total, containerIdx) {
         const expanded = this._expandedButton === idx;
-        const isFree = (button.position || "").toString().toLowerCase() === "custom";
         const isFc = !!button.forecast;
         const buttonType = button.type || "";
-        const posBadge = isFree
-            ? html`<span class="button-badge-free"><ha-icon icon="mdi:cursor-move"></ha-icon></span>`
-            : html`<span class="button-badge-row"><ha-icon icon="mdi:view-grid-outline"></ha-icon></span>`;
         if (!expanded) {
             return this._renderListRow({
-                idx, total, expanded, body: "", badge: posBadge, title: this._buttonTitle(button),
+                idx, total, expanded, body: "", title: this._buttonTitle(button),
                 onToggle: () => this._toggleButtonExpanded(idx), onMoveUp: () => this._moveButton(containerIdx, idx, -1),
                 onMoveDown: () => this._moveButton(containerIdx, idx, 1), onDuplicate: () => this._duplicateButton(containerIdx, idx), onRemove: () => this._removeButton(containerIdx, idx)});}
                 const entityId = (button.entity || "").toString().trim();
@@ -989,6 +982,7 @@ class WeatherCardEditor extends LitElement {
                 .schema=${schema} .computeLabel=${this._buttonLabel} .computeHelper=${this._buttonHelper}
                 @value-changed=${(e) => { e.stopPropagation(); update((e.detail && e.detail.value) || {}); }}></ha-form>`;
                 const container = this._getContainers()[containerIdx] || {};
+                const containerScrollable = ["horizontal-scroll", "vertical-scroll"].includes((container.layout || "").toString().toLowerCase());
                 const BTN_INHERIT = { text_size: "button_text_size", icon_size: "button_icon_size",
             padding: "button_padding", icon_padding: "button_icon_padding",
             inner_gap: "button_gap", text_gap: "button_text_gap" };
@@ -1041,7 +1035,7 @@ class WeatherCardEditor extends LitElement {
             <button type="button" ?disabled=${ei === 0} @click=${() => moveEl(ei, -1)} title="Move up"><ha-icon icon="mdi:chevron-up"></ha-icon></button>
             <button type="button" ?disabled=${ei === elements.length - 1} @click=${() => moveEl(ei, 1)} title="Move down"><ha-icon icon="mdi:chevron-down"></ha-icon></button>
             <button type="button" @click=${() => removeEl(ei)} title="Remove"><ha-icon icon="mdi:close"></ha-icon></button></span>`;
-                const iconElContent = (el, ei) => {
+                const iconElContent = (el, ei, spacing) => {
             const isWeatherIcon = (el.icon || "").toString().trim().toLowerCase() === "weather";
             const patchEl = (patch, strip) => { const n = { ...el, ...patch }; if (strip) for (const k of strip) delete n[k]; updateEl(ei, n); };
             const EL_INHERIT = { icon_size: ["icon_size", "button_icon_size"], icon_padding: ["icon_padding", "button_icon_padding"] };
@@ -1066,6 +1060,7 @@ class WeatherCardEditor extends LitElement {
                         @value-changed=${(e) => { e.stopPropagation(); const v = (e.detail && e.detail.value && e.detail.value.icon_path) || ""; const n = { ...el }; if (v) n.icon_path = v; else delete n.icon_path; updateEl(ei, n); }}></ha-form>
                     ${el.icon_path ? html`<button type="button" class="clear-btn" title="Clear" @click=${() => patchEl({}, ["icon_path"])}><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</div>
                 <div class="vcb-grid">${elCss("icon_size", "Size", "auto")}${elCss("icon_padding", "Padding", "auto")}</div>
+                ${spacing || ""}
                 <div class="toggle-group"><label class="toggle-row"><span>Background</span>
                     <ha-switch .checked=${el.icon_background === true}
                         @change=${(e) => { const n = { ...el }; if (e.target.checked) n.icon_background = true; else { if (el.icon_background !== undefined) n.icon_background = false; else delete n.icon_background; } updateEl(ei, n); }}></ha-switch></label></div>
@@ -1101,7 +1096,7 @@ class WeatherCardEditor extends LitElement {
             const v = s.attributes && s.attributes[attr];
             return v != null && isFinite(parseFloat(v));
         };
-        const textElContent = (txt, ei) => {
+        const textElContent = (txt, ei, spacing) => {
             const txtEntityId = (txt.entity || "").toString().trim();
             const fcNumeric = isFc && !txtEntityId && txt.attribute && txt.attribute !== "condition" && txt.attribute !== "datetime";
             let showPrecision = fcNumeric;
@@ -1112,10 +1107,10 @@ class WeatherCardEditor extends LitElement {
             }
             const wantsEntity = txtEntityId || txt.source === "entity";
             return html`${txtField(txt, ei, "text", "Text", "Static text")}
-                ${isFc ? html`<div class="segmented segmented-compact" role="radiogroup" aria-label="Source">
-                    <button type="button" role="radio" class=${!wantsEntity ? "active" : ""}
+                ${isFc ? html`<div class="segmented segmented-compact">
+                    <button type="button" class=${!wantsEntity ? "active" : ""}
                         @click=${() => { const n = { ...txt }; delete n.entity; delete n.attribute; delete n.source; updateEl(ei, n); }}>Forecast</button>
-                    <button type="button" role="radio" class=${wantsEntity ? "active" : ""}
+                    <button type="button" class=${wantsEntity ? "active" : ""}
                         @click=${() => { const n = { ...txt }; n.source = "entity"; delete n.attribute; updateEl(ei, n); }}>Entity</button></div>` : ""}
                 ${!isFc || wantsEntity ? txtForm(txt, ei, "entity", [{ name: "entity", selector: { entity: {} } }], "Entity") : ""}
                 ${txtEntityId ? txtForm(txt, ei, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: txtEntityId } } }], "Attribute")
@@ -1126,10 +1121,11 @@ class WeatherCardEditor extends LitElement {
                     return this._slider({ value: prec, fallback: 0, min: 0, max: 2, step: 1, int: true, label: "Decimals", onCommit: setPrec });
                 })() : ""}
                 <div class="vcb-grid">${txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
-                <div class="segmented segmented-compact" role="radiogroup">
-                    ${[{v:"",l:"Normal"},{v:"500",l:"Medium"},{v:"600",l:"Semibold"},{v:"700",l:"Bold"}].map(o => html`<button type="button" role="radio" class=${(txt.weight||"")===o.v?"active":""}
+                <div class="segmented segmented-compact">
+                    ${[{v:"",l:"Normal"},{v:"500",l:"Medium"},{v:"600",l:"Semibold"},{v:"700",l:"Bold"}].map(o => html`<button type="button" class=${(txt.weight||"")===o.v?"active":""}
                         @click=${()=>{const n={...txt};if(o.v)n.weight=o.v;else delete n.weight;updateEl(ei,n);}}>${o.l}</button>`)}</div>
                 ${txtForm(txt, ei, "overflow", [{ name: "overflow", selector: { select: { mode: "dropdown", options: OPT.button_overflow } } }], "Overflow")}
+                ${spacing || ""}
                 <div class="toggle-group"><label class="toggle-row"><span>Fancy unit</span>
                     <ha-switch .checked=${txt.fancy_unit === true} @change=${(e) => { const n = { ...txt }; if (e.target.checked) n.fancy_unit = true; else delete n.fancy_unit; updateEl(ei, n); }}></ha-switch></label></div>`;
         };
@@ -1161,8 +1157,8 @@ class WeatherCardEditor extends LitElement {
                     if (ent) n.entity = ent; update(n); }}
             ><ha-icon class="button-type-icon ${isFc ? "active-icon" : ""}" icon="mdi:calendar-clock"></ha-icon>
                 <div class="button-type-text"><span class="button-type-name">Forecast</span><span class="button-type-desc">Weather</span></div></button></div>`;
-        const fcSettings = isFc && !fcEntityMissing ? html`<div class="segmented" role="radiogroup">
-                    ${[{v:"daily",l:"Daily"},{v:"hourly",l:"Hourly"}].map(o=>html`<button type="button" role="radio" class=${button.forecast===o.v?"active":""}
+        const fcSettings = isFc && !fcEntityMissing ? html`<div class="segmented">
+                    ${[{v:"daily",l:"Daily"},{v:"hourly",l:"Hourly"}].map(o=>html`<button type="button" class=${button.forecast===o.v?"active":""}
                         @click=${()=>update({...button,forecast:o.v,forecast_offset:0})}>${o.l}</button>`)}</div>
                 ${(()=>{const mx=button.forecast==="hourly"?23:6,lb=button.forecast==="hourly"?"Hours ahead":"Days ahead",
                     hp=button.forecast==="hourly"?(fcOff===0?"Now":`+${fcOff}h`):(fcOff===0?"Today":fcOff===1?"Tomorrow":`+${fcOff} days`);
@@ -1182,8 +1178,8 @@ class WeatherCardEditor extends LitElement {
                     onCommit: (v) => update({ ...button, marquee_speed: v }) });})()}` : null;
                 const containerAlign = (container.align || "start").toString().toLowerCase();
         const appearContent = html`${formatPicker}
-            <div class="segmented" role="radiogroup" aria-label="Inside button">
-                ${[{v:"start",l:"Left"},{v:"center",l:"Center"},{v:"end",l:"Right"},{v:"spread",l:"Spread"}].map(o => html`<button type="button" role="radio" class=${(button.align || containerAlign)===o.v?"active":""}
+            <div class="segmented">
+                ${[{v:"start",l:"Left"},{v:"center",l:"Center"},{v:"end",l:"Right"},{v:"spread",l:"Spread"}].map(o => html`<button type="button" class=${(button.align || containerAlign)===o.v?"active":""}
                     @click=${()=>{const n={...button};if(o.v===containerAlign)delete n.align;else n.align=o.v;update(n);}}>${o.l}</button>`)}</div>
             <div class="toggle-group">
                 <label class="toggle-row"><span>Background</span><ha-switch .checked=${button.background !== false}
@@ -1192,8 +1188,8 @@ class WeatherCardEditor extends LitElement {
                     @change=${(e) => { const n = { ...button }; if (e.target.checked) n.blurred_background = true; else delete n.blurred_background; update(n); }}></ha-switch></label>` : ""}
                 <label class="toggle-row"><span>Round shape</span><ha-switch .checked=${button.button_round === true}
                     @change=${(e) => { const n = { ...button }; if (e.target.checked) n.button_round = true; else delete n.button_round; update(n); }}></ha-switch></label>
-                <label class="toggle-row"><span>Shadow</span><ha-switch .checked=${button.shadow !== false}
-                    @change=${(e) => { const n = { ...button }; if (!e.target.checked) n.shadow = false; else delete n.shadow; update(n); }}></ha-switch></label>
+                ${containerScrollable ? "" : html`<label class="toggle-row"><span>Shadow</span><ha-switch .checked=${button.shadow !== false}
+                    @change=${(e) => { const n = { ...button }; if (!e.target.checked) n.shadow = false; else delete n.shadow; update(n); }}></ha-switch></label>`}
                 <label class="toggle-row"><span>Text shadow</span><ha-switch .checked=${button.text_shadow === true}
                     @change=${(e) => { const n = { ...button }; if (e.target.checked) n.text_shadow = true; else delete n.text_shadow; update(n); }}></ha-switch></label></div>
             ${button.background !== false ? this._renderColorPicker("Button color", button.background_color || "", (h, o) => { const next = { ...button }; if (!h) delete next.background_color; else next.background_color = this._serializeColor(h, o); update(next); }) : ""}
@@ -1213,7 +1209,7 @@ class WeatherCardEditor extends LitElement {
                             @value-changed=${(e)=>{e.stopPropagation();const v=e.detail&&e.detail.value&&e.detail.value.color_threshold_attribute;const n={...button};if(v)n.color_threshold_attribute=v;else delete n.color_threshold_attribute;update(n);}}></ha-form>`:""}</div></details>
                 ${this._renderThresholdList({ list: button.color_thresholds, swatchDefault: "#ff9800", addColor: "#ff9800", addLabel: "Add threshold",
                     commit: (arr) => update({ ...button, color_thresholds: arr }) })}</div>` : ""}`;
-                const gaugeFields = (prefix, obj, read, write, cssFor) => {
+                const gaugeFields = (prefix, obj, read, write, cssFor, extra) => {
             const p = prefix + "_", label = prefix === "ring" ? "Ring" : "Bar";
             const thresholds = Array.isArray(obj[p+"thresholds"]) ? obj[p+"thresholds"] : [];
             const gaugeEntityId = (obj.gauge_entity || "").toString().trim();
@@ -1222,25 +1218,26 @@ class WeatherCardEditor extends LitElement {
                 @value-changed=${(e)=>{e.stopPropagation();const v=e.detail&&e.detail.value&&e.detail.value[name];write(name, v);}}></ha-form>`;
             return html`<div class="vcb-grid">${cssFor(p+"min","Min","0")}${cssFor(p+"max","Max","100")}</div>
                 <div class="vcb-grid">${prefix==="ring"?html`${cssFor("ring_width","Thickness","4")}${cssFor("ring_gap","Gap","3")}`:html`${cssFor("bar_height","Thickness","4")}`}</div>
+                ${extra || ""}
                 ${this._renderColorPicker(`${label} color`,obj[p+"color"]||"",(h,o)=>{ write(p+"color", h ? this._serializeColor(h,o) : ""); })}
                 <details class="disclosure" @toggle=${this._onDisclosureToggle}><summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon><ha-icon icon="mdi:cog-outline"></ha-icon><span>${label} entity</span></summary>
-                    <div class="disclosure-body">${gaugeForm("gauge_entity",[{name:"gauge_entity",selector:{entity:{}}}],()=>"Value Entity",()=>obj.gauge_entity||"")}
-                        ${gaugeEntityId?gaugeForm("gauge_attribute",[{name:"gauge_attribute",selector:{attribute:{entity_id:gaugeEntityId}}}],()=>"Value Attribute",()=>obj.gauge_attribute||"")
+                    <div class="disclosure-body">${gaugeForm("gauge_entity",[{name:"gauge_entity",selector:{entity:{}}}],()=>"Value entity",()=>obj.gauge_entity||"")}
+                        ${gaugeEntityId?gaugeForm("gauge_attribute",[{name:"gauge_attribute",selector:{attribute:{entity_id:gaugeEntityId}}}],()=>"Value attribute",()=>obj.gauge_attribute||"")
                             :isFc?gaugeForm("gauge_attribute",[{name:"gauge_attribute",selector:{select:{mode:"dropdown",options:FC_ATTRIBUTES}}}],()=>"Forecast attribute",()=>obj.gauge_attribute||""):""}</div></details>
                 <details class="disclosure" @toggle=${this._onDisclosureToggle}><summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon><ha-icon icon="mdi:cog-outline"></ha-icon><span>Thresholds</span></summary>
                     <div class="disclosure-body">
-                        <div class="segmented" role="radiogroup">${[{v:"solid",l:"Solid"},{v:"segments",l:"Segments"},{v:"gradient",l:"Gradient"}].map(o=>html`<button type="button" role="radio" class=${(obj[p+"threshold_mode"]||"solid")===o.v?"active":""}
+                        <div class="segmented">${[{v:"solid",l:"Solid"},{v:"segments",l:"Segments"},{v:"gradient",l:"Gradient"}].map(o=>html`<button type="button" class=${(obj[p+"threshold_mode"]||"solid")===o.v?"active":""}
                             @click=${()=>{ write(p+"threshold_mode", o.v==="solid" ? "" : o.v); }}>${o.l}</button>`)}</div>
                         ${this._renderThresholdList({ list: thresholds, swatchDefault: "#ff0000", addColor: "#ff9800", addLabel: "Add",
                             commit: (arr) => write(p + "thresholds", arr) })}</div></details>`;};
-                const barElContent = (el, ei) => {
+                const barElContent = (el, ei, spacing) => {
             const elCss = (key, label, placeholder) => this._cssTextField({
                 value: el[key], label, placeholder, trim: true,
                 onCommit: (v) => { const n = { ...el }; if (v) n[key] = v; else delete n[key]; updateEl(ei, n); } });
             const write = (key, value) => { const n = { ...el };
                 const empty = value === null || value === undefined || value === "" || (Array.isArray(value) && !value.length);
                 if (empty) delete n[key]; else n[key] = value; updateEl(ei, n); };
-            return gaugeFields("bar", el, null, write, elCss);
+            return gaugeFields("bar", el, null, write, elCss, spacing);
         };
                 const isRingType = buttonType === 'ring';
         const ringWrite = (key, value) => { const n = { ...button };
@@ -1250,28 +1247,23 @@ class WeatherCardEditor extends LitElement {
             <ha-switch .checked=${isRingType} @change=${(e) => { const n = { ...button };
                 if (e.target.checked) { n.type = 'ring'; } else { delete n.type; } update(n); }}></ha-switch></label></div>
             ${isRingType ? gaugeFields("ring", button, null, ringWrite, cssField) : ""}`;
-                const ANCHORS = ["top-left","top-center","top-right","left","center","right","bottom-left","bottom-center","bottom-right"];
-        const currentAnchor = button.position_anchor || "top-left";
-        const posContent = html`<div class="toggle-group"><label class="toggle-row"><span>Free positioning</span>
-            <ha-switch .checked=${isFree} @change=${(e)=>{const n={...button};if(e.target.checked){n.position="custom";if(!n.position_anchor)n.position_anchor="top-left";}else{["position","position_anchor","position_x","position_y"].forEach(k=>delete n[k]);}update(n);}}></ha-switch></label></div>
-            ${isFree ? html`<div class="free-pos-layout"><div><div class="settings-group-label">Anchor</div>
-                <div class="anchor-grid" role="radiogroup">${ANCHORS.map(v=>html`<button type="button" role="radio" class="anchor-cell ${currentAnchor===v?"active":""}" title=${v}
-                    @click=${()=>update({...button,position_anchor:v})}></button>`)}</div></div>
-                <div><div class="settings-group-label">Offset</div><div class="offset-fields">
-                    <div class="offset-field"><span class="offset-field-label">X</span><input type="text" placeholder="0" .value=${String(button.position_x||"")}
-                        @change=${(e)=>{const n={...button},v=e.target.value.trim();if(v)n.position_x=v;else delete n.position_x;update(n);}}></div>
-                    <div class="offset-field"><span class="offset-field-label">Y</span><input type="text" placeholder="0" .value=${String(button.position_y||"")}
-                        @change=${(e)=>{const n={...button},v=e.target.value.trim();if(v)n.position_y=v;else delete n.position_y;update(n);}}></div></div></div></div>` : ""}`;
         const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
                 const BUTTON_STYLE_KEYS = ["style","align","background","blurred_background","icon_background","background_color","icon_background_color","padding","text_size","inner_gap","text_gap","icon_size","icon_padding","width","height","button_round","color_thresholds","color_threshold_entity","color_threshold_attribute","text_shadow","shadow"];
         const hasStyleOverrides = BUTTON_STYLE_KEYS.some(k => button[k] !== undefined && button[k] !== "");
                 const isWeatherEntity = entityId.startsWith("weather.");
-                const elementSection = (el, ei) => {
+                const elSpacing = (el, ei) => {
+            const box = (key, label) => this._cssTextField({
+                value: el[key], label, placeholder: "0", trim: true,
+                onCommit: (v) => { const n = { ...el }; if (v) n[key] = v; else delete n[key]; updateEl(ei, n); } });
+            return html`<div class="vcb-grid">${box("margin", "Margin")}${box("padding", "Padding")}</div>`;
+        };
+        const elementSection = (el, ei) => {
             const key = `el-${ei}`;
             const isOpen = nestedOpen === key;
-            const body = el.kind === "icon" ? iconElContent(el, ei)
-                : el.kind === "bar" ? barElContent(el, ei)
-                : textElContent(el, ei);
+            const spacing = elSpacing(el, ei);
+            const body = el.kind === "icon" ? iconElContent(el, ei, spacing)
+                : el.kind === "bar" ? barElContent(el, ei, spacing)
+                : textElContent(el, ei, spacing);
             return html`<div class="vcb-section">
                 <div class="vcb-section-head ${isOpen ? 'open' : ''}" @click=${() => setNested(isOpen ? null : key)}>
                     <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
@@ -1297,14 +1289,13 @@ class WeatherCardEditor extends LitElement {
             ${this._renderDisclosure("Settings", html`<div class="vcb">
                 ${section("appear", "mdi:palette-outline", "Appearance", appearContent)}
                 ${marqueeContent ? section("marquee", "mdi:motion-play-outline", "Scrolling", marqueeContent) : ""}
-                ${section("pos", "mdi:arrow-all", "Position", posContent)}
                 ${section("tap", "mdi:gesture-tap", "Tap Action", tapContent)}
                 ${section("vis", "mdi:eye-outline", "Visibility", this._renderButtonVisibility(button, containerIdx, idx, update))}
                 ${hasStyleOverrides ? html`<button type="button" class="add-card-btn" style="border-style:solid;border-color:rgba(var(--rgb-error-color,211,47,47),0.35);color:var(--error-color);margin-top:var(--origami-e-s3)"
                     @click=${() => { const n = { ...button }; for (const k of BUTTON_STYLE_KEYS) delete n[k]; update(n); }}><ha-icon icon="mdi:restore"></ha-icon><span>Reset all styles</span></button>` : ""}
             </div>`)}
         </div>`;
-        return this._renderListRow({ idx, total, expanded, body, badge: posBadge, title: this._buttonTitle(button),
+        return this._renderListRow({ idx, total, expanded, body, title: this._buttonTitle(button),
             onToggle: () => this._toggleButtonExpanded(idx), onMoveUp: () => this._moveButton(containerIdx, idx, -1),
             onMoveDown: () => this._moveButton(containerIdx, idx, 1), onDuplicate: () => this._duplicateButton(containerIdx, idx), onRemove: () => this._removeButton(containerIdx, idx)});}
     _parseColor(raw) {
@@ -1386,15 +1377,6 @@ class WeatherCardEditor extends LitElement {
             min, max, step, label, helper, statusFn,
             onCommit: (v) => this._updateField(field, v),
         });}
-    _alignGlyph(value, axis) {
-                        const h = { "": "mdi:format-align-left", center: "mdi:format-align-center", end: "mdi:format-align-right",
-            between: "mdi:arrow-expand-horizontal", around: "mdi:dots-horizontal", evenly: "mdi:distribute-horizontal-center",
-            start: "mdi:format-align-left", stretch: "mdi:arrow-expand-horizontal", baseline: "mdi:format-text" };
-        const v = { "": "mdi:align-vertical-center", start: "mdi:align-vertical-top", center: "mdi:align-vertical-center",
-            end: "mdi:align-vertical-bottom", stretch: "mdi:arrow-expand-vertical", baseline: "mdi:format-text",
-            between: "mdi:arrow-expand-vertical", around: "mdi:dots-vertical", evenly: "mdi:distribute-vertical-center" };
-        const icon = (axis === "v" ? v : h)[value] || "mdi:circle-small";
-        return html`<ha-icon icon=${icon} style="--mdc-icon-size:16px"></ha-icon>`;}
     _renderLayoutPicker(fmt, onPick) {
                         return html`<div class="layout-picker">
             ${["inline", "vertical"].map(f => html`<button type="button"
@@ -1421,6 +1403,7 @@ class WeatherCardEditor extends LitElement {
         });
         const bgActive = !!container.background;
         return html`<div class="vcb">
+            <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Applied to all buttons in this container. Individual button styles override these.</span></div>
             ${this._renderSubDisclosure("Background", html`<div class="vcb">
                 <div class="toggle-group">
                     <label class="toggle-row"><span>Background</span>
@@ -1428,12 +1411,12 @@ class WeatherCardEditor extends LitElement {
                             @change=${(e) => uf("background", e.target.checked || "")}
                         ></ha-switch></label>
                     ${bgActive ? html`<label class="toggle-row"><span>Blurred</span>
-                        <ha-switch .checked=${container.blurred_background === true}
-                            @change=${(e) => uf("blurred_background", e.target.checked || "")}
+                        <ha-switch .checked=${container.button_blurred_background === true}
+                            @change=${(e) => uf("button_blurred_background", e.target.checked || "")}
                         ></ha-switch></label>` : ""}
                     <label class="toggle-row"><span>Shadow</span>
-                        <ha-switch .checked=${container.shadow !== false}
-                            @change=${(e) => uf("shadow", e.target.checked ? "" : false)}
+                        <ha-switch .checked=${container.button_shadow !== false}
+                            @change=${(e) => uf("button_shadow", e.target.checked ? "" : false)}
                         ></ha-switch></label>
                     <label class="toggle-row"><span>Icon background</span>
                         <ha-switch .checked=${container.button_icon_background === true}
@@ -1508,10 +1491,10 @@ class WeatherCardEditor extends LitElement {
             <div style="display:flex;gap:var(--origami-e-s2)">
                 <button type="button" class="add-button-btn" style="flex:1" @click=${() => this._addContainer()}>
                     <ha-icon icon="mdi:plus"></ha-icon>
-                    <span>Add Buttons</span></button>
+                    <span>Add buttons</span></button>
                 <button type="button" class="add-card-btn" style="flex:1" @click=${() => this._addCardContainer()}>
                     <ha-icon icon="mdi:plus"></ha-icon>
-                    <span>Add Card</span></button></div>
+                    <span>Add card</span></button></div>
             ${this._renderContentLayoutDisclosure()}`;
     }
     _addContainer() {
@@ -1577,61 +1560,77 @@ class WeatherCardEditor extends LitElement {
             value: container[key], fallback: min, min, max, step, label, helper,
             onCommit: (v) => uf(key, v),
         });
-        const containerToggle = (toggles) => html`<div class="toggle-group">
-                ${toggles.map(t => html`<label class="toggle-row"> <span>${t.label}</span> <ha-switch .checked=${container[t.key] === true}
-                            @change=${(e) => uf(t.key, e.target.checked || "")}
-                        ></ha-switch></label>`)}</div>`;
         const isVScroll = layout === "vertical-scroll";
         const cFmt = (container.button_style || "inline").toString().toLowerCase() === "vertical" ? "vertical" : "inline";
         const align = (container.align || "start").toString().toLowerCase();
+        const alignDropdown = (key, label, options) => html`<ha-form .hass=${this.hass}
+                .data=${{ [key]: container[key] || "" }}
+                .schema=${[{ name: key, selector: { select: { mode: "dropdown", options } } }]}
+                .computeLabel=${() => label}
+                @value-changed=${(e) => { e.stopPropagation(); const v = e.detail && e.detail.value && e.detail.value[key]; uf(key, v || ""); }}
+            ></ha-form>`;
+        const isFree = (container.position || "").toString().toLowerCase() === "custom";
+        const ANCHORS = ["top-left","top-center","top-right","left","center","right","bottom-left","bottom-center","bottom-right"];
+        const currentAnchor = container.position_anchor || "top-left";
         const containerContent = html`<div class="vcb">
-                <div class="segmented" role="radiogroup" aria-label="Layout">
-                    ${OPT.button_container_layout.map(o => html`<button type="button" role="radio" class=${layout === o.value ? "active" : ""}
+            ${this._renderSubDisclosure("Arrangement", html`<div class="vcb">
+                <div class="segmented">
+                    ${OPT.button_container_layout.map(o => html`<button type="button" class=${layout === o.value ? "active" : ""}
                             @click=${() => uf("layout", o.value)}
                         >${o.label}</button>`)}</div>
                 ${isGrid ? containerSlider("columns", LABELS.button_container_columns, 1, 12, 1) : ""}
                 ${isScroll ? containerSlider("scroll_count", isVScroll ? "Rows visible" : "Columns visible", 1, 10, 1) : ""}
-                <div class="settings-group-label">Arrange buttons</div>
-                <div class="vcb-grid">
-                    <div class="css-field"><span class="css-field-label">Horizontal</span>
-                        <div class="segmented segmented-compact" role="radiogroup" aria-label="Horizontal">
-                            ${OPT.justify_content.map(o => html`<button type="button" role="radio" title=${o.label}
-                                class=${(container.justify_content || "") === o.value ? "active" : ""}
-                                @click=${() => uf("justify_content", o.value)}>${this._alignGlyph(o.value, "h")}</button>`)}</div></div>
-                    <div class="css-field"><span class="css-field-label">Vertical</span>
-                        <div class="segmented segmented-compact" role="radiogroup" aria-label="Vertical">
-                            ${OPT.align_items.map(o => html`<button type="button" role="radio" title=${o.label}
-                                class=${(container.align_items || "") === o.value ? "active" : ""}
-                                @click=${() => uf("align_items", o.value)}>${this._alignGlyph(o.value, "v")}</button>`)}</div></div></div>
+
                 <div class="settings-group-label">Button style</div>
-                ${this._renderLayoutPicker(cFmt, (f) => uf("button_style", f === "inline" ? "" : f))}
-                <div class="segmented" role="radiogroup" aria-label="Inside button" style="flex-wrap:nowrap">
-                    ${OPT.button_container_align.map(o => html`<button type="button" role="radio" class=${align === o.value ? "active" : ""}
+                ${this._renderLayoutPicker(cFmt, (f) => uf("button_style", f === "inline" ? "" : f))}</div>`)}
+            ${this._renderSubDisclosure("Alignment", html`<div class="vcb">
+                ${alignDropdown("justify_content", "Buttons horizontal", OPT.justify_content)}
+                ${alignDropdown("align_items", "Buttons vertical", OPT.align_items)}
+                <div class="settings-group-label">Content inside button</div>
+                <div class="segmented" style="flex-wrap:nowrap">
+                    ${OPT.button_container_align.map(o => html`<button type="button" class=${align === o.value ? "active" : ""}
                             @click=${() => uf("align", o.value)}
-                        >${o.label}</button>`)}</div>
+                        >${o.label}</button>`)}</div></div>`)}
+            ${this._renderSubDisclosure("Grouping", html`<div class="vcb">
                 <div class="toggle-group">
                     <label class="toggle-row"> <span>${LABELS.button_container_grouped}</span> <ha-switch .checked=${container.grouped === true}
                             @change=${(e) => { const on = e.target.checked; uf("grouped", on || ""); if (on && !bgActive) { uf("background", true); } }}
                         ></ha-switch></label>
                     ${container.grouped === true ? html`<label class="toggle-row"><span>Blurred</span>
                         <ha-switch .checked=${container.blurred_background === true}
-                            @change=${(e) => uf("blurred_background", e.target.checked || "")}></ha-switch></label>` : ""}
+                            @change=${(e) => uf("blurred_background", e.target.checked || "")}></ha-switch></label>
+                    <label class="toggle-row"><span>Shadow</span>
+                        <ha-switch .checked=${container.shadow !== false}
+                            @change=${(e) => uf("shadow", e.target.checked ? "" : false)}></ha-switch></label>` : ""}
                     <label class="toggle-row"> <span>${LABELS.button_container_separator}</span> <ha-switch .checked=${container.separator === true}
                             @change=${(e) => uf("separator", e.target.checked || "")}></ha-switch></label></div>
-                ${container.grouped === true ? this._renderContainerColorPicker(containerIdx, "background_color", "Group color") : ""}
+                ${container.grouped === true ? this._renderContainerColorPicker(containerIdx, "background_color", "Group color") : ""}</div>`)}
+            ${this._renderSubDisclosure("Position", html`<div class="vcb">
+                <div class="toggle-group"><label class="toggle-row"><span>Position container freely</span>
+                    <ha-switch .checked=${isFree} @change=${(e) => { const n = { ...container }; if (e.target.checked) { n.position = "custom"; if (!n.position_anchor) n.position_anchor = "top-left"; } else { ["position", "position_anchor", "position_x", "position_y"].forEach(k => delete n[k]); } this._updateContainerAt(containerIdx, n); }}></ha-switch></label></div>
+                ${isFree ? html`<div class="free-pos-layout">
+                    <div><div class="settings-group-label">Anchor</div>
+                        <div class="anchor-grid">${ANCHORS.map(v => html`<button type="button" class="anchor-cell ${currentAnchor === v ? "active" : ""}" title=${v}
+                            @click=${() => this._updateContainerField(containerIdx, "position_anchor", v)}></button>`)}</div></div>
+                    <div><div class="settings-group-label">Offset</div><div class="offset-fields">
+                        <div class="offset-field"><span class="offset-field-label">X</span><input type="text" placeholder="0" .value=${String(container.position_x || "")}
+                            @change=${(e) => { const v = e.target.value.trim(); if (v) uf("position_x", v); else this._updateContainerField(containerIdx, "position_x", ""); }}></div>
+                        <div class="offset-field"><span class="offset-field-label">Y</span><input type="text" placeholder="0" .value=${String(container.position_y || "")}
+                            @change=${(e) => { const v = e.target.value.trim(); if (v) uf("position_y", v); else this._updateContainerField(containerIdx, "position_y", ""); }}></div></div></div></div>` : ""}</div>`)}
+            ${this._renderSubDisclosure("Spacing", html`<div class="vcb">
                 <div class="vcb-grid">
                     ${sf("gap", LABELS.button_container_gap, "auto")}
                     ${sf("padding", LABELS.button_container_padding, "auto")}
                     ${sf("margin", LABELS.button_container_margin, "auto")}
-                    ${sf("custom_width", LABELS.button_container_width, "auto")}</div></div>`;
+                    ${sf("custom_width", LABELS.button_container_width, "auto")}</div></div>`)}</div>`;
         return html`
             <div class="sensor-list">
                 ${list.map((button, idx) => this._renderButtonRow(button, idx, list.length, containerIdx))}</div>
             <button type="button" class="add-button-btn" @click=${() => this._addButton(containerIdx)}>
                 <ha-icon icon="mdi:plus"></ha-icon>
                 <span>Add button</span></button>
-            ${this._renderDisclosure("Layout", containerContent)}
-            ${this._renderDisclosure("Styles", this._renderContainerButtonSettings(container, containerIdx))}
+            ${this._renderDisclosure("Container", containerContent)}
+            ${this._renderDisclosure("Button styles", this._renderContainerButtonSettings(container, containerIdx))}
             ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
     }
     _renderVisibilityConditions(conditions, emptyLabel, commitList) {
@@ -1665,8 +1664,8 @@ class WeatherCardEditor extends LitElement {
                         <span class="field-group-label" style="margin:0">Condition ${ci + 1}</span>
                         <button type="button" class="ring-threshold-del" title="Remove" @click=${() => removeCondition(ci)}>
                             <ha-icon icon="mdi:close" style="--mdc-icon-size:14px"></ha-icon></button></div>
-                    <div class="segmented segmented-compact" role="radiogroup" aria-label="Condition type">
-                        ${CONDITION_TYPES.map(o => html`<button type="button" role="radio"
+                    <div class="segmented segmented-compact">
+                        ${CONDITION_TYPES.map(o => html`<button type="button"
                             class=${cType === o.value ? "active" : ""}
                             @click=${() => onTypeChange(o.value)}
                         >${o.label}</button>`)}</div>
@@ -1781,7 +1780,7 @@ class WeatherCardEditor extends LitElement {
                     @value-changed=${(e) => { e.stopPropagation(); const v = e.detail && e.detail.value && e.detail.value.background_mode; if (v && v !== mode) this._setVisualMode(v); }}
                 ></ha-form>
             </div>
-            ${mode === "images" ? this._renderDisclosure("Weather Images", html`
+            ${mode === "images" ? this._renderDisclosure("Weather images", html`
                 <div class="settings-group">
                     ${this._renderClearableText("weather_image_path")}
                     ${this._renderClearableText("weather_image_path_dark")}
@@ -1789,34 +1788,59 @@ class WeatherCardEditor extends LitElement {
                 <div style="display:flex;flex-direction:column;gap:var(--origami-e-s2);margin-top:var(--origami-e-s3)">
                     ${this._renderSlider("bg_blur", LABELS.bg_blur, 0, 20, 1, null, blurStatus)}
                 </div>`) : ""}
-            ${this._renderDisclosure("Color Settings", html`
+            ${this._renderDisclosure("Color settings", html`
                 <div class="fc-box" style="margin-top:0">
-                    <div class="section-title"><ha-icon icon="mdi:theme-light-dark" style="--mdc-icon-size:18px"></ha-icon><span>Light / dark mode</span></div>
                     ${this._renderForm(this._colorModeSchema())}
                 </div>
                 ${showBgFilters ? html`<div style="display:flex;flex-direction:column;gap:var(--origami-e-s2)">
                 ${this._renderSlider("bg_brightness", LABELS.bg_brightness, 0.3, 1.7, 0.05, null, brightnessStatus)}
                 ${this._renderSlider("bg_saturation", LABELS.bg_saturation, 0, 2, 0.05, null, saturationStatus)}</div>` : ""}`)}
-            ${this._renderDisclosure("Animation Effects", html`<div class="settings-group">
+            ${this._renderDisclosure("Animation effects", html`<div class="settings-group">
                 <div class="toggle-group">
-                <label class="toggle-row"><span>Background Blobs</span>
-                    <ha-switch .checked=${(this._formData || {}).background_blobs !== false}
-                        @change=${(e) => this._updateField("background_blobs", e.target.checked ? "" : false)}></ha-switch></label>
-                <label class="toggle-row"><span>Weather Animations</span>
-                    <ha-switch .checked=${(this._formData || {}).weather_animations !== false}
-                        @change=${(e) => this._updateField("weather_animations", e.target.checked ? "" : false)}></ha-switch></label></div></div>`)}
+                <label class="toggle-row"><span>Background haze</span>
+                    <ha-switch .checked=${(this._formData || {}).background_haze !== false}
+                        @change=${(e) => this._updateField("background_haze", e.target.checked ? "" : false)}></ha-switch></label>
+                <label class="toggle-row"><span>Rain, snow &amp; hail</span>
+                    <ha-switch .checked=${(this._formData || {}).precipitation_effects !== false}
+                        @change=${(e) => this._updateField("precipitation_effects", e.target.checked ? "" : false)}></ha-switch></label>
+                <label class="toggle-row"><span>Clouds</span>
+                    <ha-switch .checked=${(this._formData || {}).cloud_effects !== false}
+                        @change=${(e) => this._updateField("cloud_effects", e.target.checked ? "" : false)}></ha-switch></label>
+                <label class="toggle-row"><span>Stars</span>
+                    <ha-switch .checked=${(this._formData || {}).night_sky_effects !== false}
+                        @change=${(e) => this._updateField("night_sky_effects", e.target.checked ? "" : false)}></ha-switch></label></div></div>`)}
             `;}
     _renderCardFrameToggle() {
         const c = this._formData || {};
         const frame = c.card_frame !== false;
+        const fw = c.full_width === true;
+        const ef = c.edge_fade === true;
         return html`<div class="field-group">
             <div class="toggle-group"><label class="toggle-row"><span>Use theme card styling</span>
                 <ha-switch .checked=${frame}
                     @change=${(e) => this._updateField("card_frame", e.target.checked ? "" : false)}></ha-switch></label></div>
+            <div class="toggle-group"><label class="toggle-row"><span>Stretch to fill dashboard</span>
+                <ha-switch .checked=${fw}
+                    @change=${(e) => this._updateField("full_width", e.target.checked ? true : "")}></ha-switch></label></div>
+            ${fw ? html`<div class="compact-fields" style="margin-top:var(--origami-e-s1)">
+                <div class="compact-field">
+                    <span class="compact-field-label">Dashboard side gap</span>
+                    <input type="text" placeholder="auto"
+                        .value=${c.full_width_margin || ""}
+                        @change=${(e) => this._updateField("full_width_margin", e.target.value.trim() || "")}></div></div>` : ""}
+            <div class="toggle-group"><label class="toggle-row"><span>Fade edges into background</span>
+                <ha-switch .checked=${ef}
+                    @change=${(e) => this._updateField("edge_fade", e.target.checked ? true : "")}></ha-switch></label></div>
+            ${ef ? html`<div class="compact-fields" style="margin-top:var(--origami-e-s1)">
+                <div class="compact-field">
+                    <span class="compact-field-label">Fade size</span>
+                    <input type="text" placeholder="10%"
+                        .value=${c.edge_fade_size || ""}
+                        @change=${(e) => this._updateField("edge_fade_size", e.target.value.trim() || "")}></div></div>` : ""}
             </div>`;}
     render() {
         if (!this.hass || !this._config) return html``; const c = this._formData;
-        return html`${this._renderForm([{ name: "weather_entity", selector: { entity: { domain: "weather" } } }])}
+        return html`${this._renderEntityField("weather_entity", { domain: "weather", label: "Weather entity" })}
             <ha-expansion-panel
                 outlined
                 .expanded=${this._openPanel === "card_settings"}
@@ -1830,12 +1854,12 @@ class WeatherCardEditor extends LitElement {
                     ${this._renderOffsetPicker()}
                     ${this._renderCardFrameToggle()}</div>`)}
                 ${this._renderDisclosure("Sun & Moon", this._renderSunMoonPanel())}
-                ${this._renderDisclosure("Custom Weather Icons", html`<div class="settings-group">
+                ${this._renderDisclosure("Custom weather icons", html`<div class="settings-group">
                     <div class="clearable-field">
                         ${this._renderForm([{ name: "icon_path", selector: { text: {} } }])}
                         ${(this._formData || {}).icon_path ? html`<button type="button" class="clear-btn" title="Clear" @click=${() => this._updateField("icon_path", "")}><ha-icon icon="mdi:close"></ha-icon></button>` : ""}
                     </div></div>`)}
-                ${this._renderDisclosure("Tap Action", html`<div class="settings-group">
+                ${this._renderDisclosure("Tap action", html`<div class="settings-group">
                     ${this._renderForm([{ name: "card_tap_action", selector: { ui_action: {} } }])}</div>`)}</ha-expansion-panel>
             <ha-expansion-panel
                 outlined

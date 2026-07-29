@@ -470,32 +470,18 @@ icon_path: /local/weather-icons/
 
 ## Backgrounds
 
-The card builds its background in layers, and it is easier to work with once you split it into three parts: the background itself, the things drawn on top of it, and the treatments laid over the whole stack.
+<details>
+<summary><b>The background stack</b></summary>
 
 <br>
 
-**The background itself**
+**Base** — `background_mode`: `default` (animated sky: weather- and sun-aware gradient plus drifting `background_haze`), `images` (your own files from `weather_image_path`, named after the [HA conditions](https://www.home-assistant.io/integrations/weather/#condition-mapping); `.mp4` loops as video), or `none` (transparent).
 
-`background_mode` decides what sits at the very bottom. There are three choices:
+**On top, over any base** — `sun_moon_enabled`, `sun_rays_enabled`, `night_sky_effects`, `cloud_effects`, `precipitation_effects`.
 
-- `default` draws an animated sky. A CSS gradient makes the base color and three soft color blobs drift across it, both reacting to the current weather and to sunrise and sunset. The gradient is plain CSS, so you can replace it with your own using `--origami-default-bg-light` and `--origami-default-bg-dark`. The blobs have their own switch, `background_blobs`.
-- `images` shows your own files instead. Point `weather_image_path` at a folder and name the files after the weather conditions (`sunny.jpg`, `rainy.png` and so on, using the [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). The card tries `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.svg` and `.mp4` in that order, so an mp4 gives you a looping video background. `weather_image_path_dark` points at a second folder for after sunset.
-- `none` leaves the card transparent. Handy if you want it to blend into the dashboard, or if you are stacking it on top of another card.
+**Over everything** — `bg_brightness`, `bg_saturation`, `bg_blur` (images only), `edge_fade`, `card_frame`.
 
-**What gets drawn on top**
-
-These layers sit above the background and none of them care which mode you picked. Rain falling over your own photos works, and so does a fully transparent card with nothing but stars on it.
-
-- Sun and moon, with rays during the day. The sun climbs and sinks with your `sun_entity`, and the moon shows its real phase once you set `moon_phase_entity`. Switches: `sun_moon_enabled` and `sun_rays_enabled`.
-- Stars at night, thinned out when it's cloudy. Switch: `night_sky_effects`.
-- A drifting cloud layer that gets denser and darker the worse the weather is. Switch: `cloud_effects`.
-- Precipitation: rain, downpour, thunderstorms, snow, sleet and hail, picked from the current condition. Switch: `precipitation_effects`.
-
-**Treatments over everything**
-
-`bg_brightness` and `bg_saturation` scale the background layer, whether that is the animated sky or your own images. `bg_blur` only touches image backgrounds. `edge_fade` fades the top and bottom edges into your dashboard background, and `card_frame: false` drops the rounded corners and the border.
-
-See [Background options](#options) for the full list, or play around with the features in the visual editor.
+</details>
 
 <br>
 
@@ -521,7 +507,7 @@ This card draws a lot. Plenty of effort goes into keeping it fast, but on older 
 - `precipitation_effects: false` stops the rain, snow, sleet and hail particles.
 - `cloud_effects: false` stops the drifting cloud layer. Set this and the one above to `false` and the effects canvas goes idle completely.
 - `night_sky_effects: false` removes the star field.
-- `background_blobs: false` stops the moving color blobs. They are CSS-animated rather than canvas, but they still add up on weak GPUs.
+- `background_haze: false` stops the drifting haze layers. They are CSS-animated rather than canvas, but they still add up on weak GPUs.
 - `background_mode: images` swaps the animated sky for a static file. Keep in mind this only replaces the background layer: clouds, precipitation, stars and the sun keep running on top of it, so switch those off too if that was the goal.
 
 These stack. Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card at very little rendering cost.
@@ -767,7 +753,7 @@ Set on the button, not on an element. Needs `type: ring`.
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `background_mode` | `string` | `default` | `default` for the animated sky, `images` for your own background files, `none` for a transparent card. |
-| `background_blobs` | `boolean` | `true` | The drifting color blobs that shift with the weather. Part of the `default` sky, so it has no effect in the other two modes. |
+| `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. Part of the `default` sky, so it has no effect in the other two modes. |
 | `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. |
 | `weather_image_path_dark` | `string` | — | Second folder used after sunset. Falls back to `weather_image_path`. |
 

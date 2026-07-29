@@ -238,12 +238,14 @@ button_containers:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30" />
 
-A simple card stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest of the dashboard. This can look nice, but mostly in specific cases, like a header for a popup.
+A simple card stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest of the dashboard.
 
 <details>
 <summary><b>Show YAML</b></summary>
 
 <br>
+
+>**Note:** This can look nice, but mostly in specific cases, like a header for a popup.
 
 ```yaml
 type: custom:origami-weather

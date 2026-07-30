@@ -58,10 +58,24 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 ## Examples
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/f7624bb6-87ed-4954-8269-77cc8de74152" /> 
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/64fe006a-4952-432d-baad-ebf213e90f1e" />
 
 <details>
 <summary><b>Default Card YAML</b></summary>
+
+<br>
+
+</details>
+
+<br>
+
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/f7624bb6-87ed-4954-8269-77cc8de74152" />
+
+<details>
+<summary><b>Big Card</b></summary>
 
 <br>
 
@@ -241,7 +255,7 @@ button_containers:
 A simple card stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest.
 
 <details>
-<summary><b>Show YAML</b></summary>
+<summary><b>Header Card</b></summary>
 
 <br>
 

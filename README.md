@@ -150,8 +150,7 @@ grid_options:
 
 <br>
 
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/f7624bb6-87ed-4954-8269-77cc8de74152" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08" />
 
 A big card that uses different features like a temperature ring, a large animated weather icon, and a forecast slider with rain probability bars.
 

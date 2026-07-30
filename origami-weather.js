@@ -1154,10 +1154,10 @@ class WeatherCard extends HTMLElement {
             if (Array.isArray(s.elements)) {
                 for (const el of s.elements) {
                     if (!el) continue;
-                    if (el.kind === 'text' && el.entity) {
+                    if (el.type === 'text' && el.entity) {
                         const te = hass.states[el.entity];
                         if (te) sig += `|tx:${el.attribute ? (te.attributes[el.attribute] != null ? te.attributes[el.attribute] : '') : te.state}`;
-                    } else if (el.kind === 'bar' && el.gauge_entity) {
+                    } else if (el.type === 'bar' && el.gauge_entity) {
                         const ge = hass.states[el.gauge_entity];
                         if (ge) sig += `|bar:${el.gauge_attribute ? (ge.attributes[el.gauge_attribute] != null ? ge.attributes[el.gauge_attribute] : '') : ge.state}`;
                     }
@@ -1221,27 +1221,77 @@ class WeatherCard extends HTMLElement {
         return document.createElement("origami-weather-editor");
     }
     static getStubConfig(hass) {
-        const weatherEntity = hass ? Object.keys(hass.states).find(e => e.startsWith('weather.')) || '' : '';
-        const rainBar = { kind: 'bar', gauge_attribute: 'precipitation_probability', bar_min: '0', bar_max: '100', bar_height: '8', bar_threshold_mode: 'gradient', margin: '6px 0 0 0', bar_thresholds: [{ value: '0', color: 'rgba(214, 224, 230, 0.8)' }, { value: '10', color: 'rgba(190, 210, 224, 0.8)' }, { value: '20', color: 'rgba(166, 197, 219, 0.8)' }, { value: '30', color: 'rgba(142, 184, 214, 0.8)' }, { value: '40', color: 'rgba(118, 170, 210, 0.8)' }, { value: '50', color: 'rgba(96, 156, 204, 0.8)' }, { value: '60', color: 'rgba(76, 141, 196, 0.8)' }, { value: '70', color: 'rgba(58, 125, 186, 0.8)' }, { value: '80', color: 'rgba(42, 108, 174, 0.8)' }, { value: '90', color: 'rgba(30, 90, 160, 0.8)' }] };
-        const fc = off => ({ entity: weatherEntity, forecast: 'daily', ...(off ? { forecast_offset: off } : {}), elements: [{ kind: 'icon', icon: 'weather' }, { kind: 'text', size: '12px', weight: '500', attribute: 'datetime' }, { kind: 'text', weight: '700', attribute: 'temperature' }, { ...rainBar }] });
+        const weatherEntity = hass ? Object.keys(hass.states).find(e => e.startsWith('weather.')) || 'weather.home' : 'weather.home';
         return {
             weather_entity: weatherEntity,
             sun_entity: 'sun.sun',
+            sun_moon_x: 80,
             card_height: 'content',
             card_padding: '16px',
-            background_mode: 'default',
+            content_align: 'between',
+            content_align_items: 'start',
             button_containers: [
-                { position: 'custom', position_anchor: 'top-left', padding: '4px 8px', buttons: [
-                    { entity: weatherEntity, attribute: 'temperature', text_size: '42px', align: 'start', padding: '4px 0 0 0', background: false, elements: [{ kind: 'text', weight: '700', fancy_unit: true, attribute: 'temperature', precision: 0 }] }
-                ] },
-                { background: true, button_icon_size: '34px', button_padding: '16px', align: 'center', button_background_color: 'rgba(255,255,255,0.1)', button_blurred_background: true, justify_content: 'end', align_items: 'start', padding: '8px', buttons: [
-                    { entity: weatherEntity, attribute: 'temperature', type: 'ring', ring_gap: '8px', ring_width: '4px', ring_min: '-20', ring_max: '40', ring_threshold_mode: 'gradient', ring_thresholds: [{ value: '-20', color: 'rgba(124, 142, 184, 0.8)' }, { value: '-16', color: 'rgba(132, 156, 196, 0.8)' }, { value: '-12', color: 'rgba(140, 172, 206, 0.8)' }, { value: '-8', color: 'rgba(150, 188, 214, 0.8)' }, { value: '-4', color: 'rgba(165, 202, 218, 0.8)' }, { value: '0', color: 'rgba(183, 213, 216, 0.8)' }, { value: '4', color: 'rgba(198, 218, 205, 0.8)' }, { value: '8', color: 'rgba(206, 218, 188, 0.8)' }, { value: '12', color: 'rgba(214, 214, 168, 0.8)' }, { value: '16', color: 'rgba(224, 207, 152, 0.8)' }, { value: '20', color: 'rgba(232, 195, 140, 0.8)' }, { value: '24', color: 'rgba(232, 178, 130, 0.8)' }, { value: '28', color: 'rgba(228, 158, 124, 0.8)' }, { value: '32', color: 'rgba(220, 138, 120, 0.8)' }, { value: '36', color: 'rgba(208, 120, 118, 0.8)' }, { value: '40', color: 'rgba(194, 104, 114, 0.8)' }], blurred_background: true, padding: '16px', elements: [{ kind: 'icon', icon: 'weather', icon_background: false, icon_background_color: 'rgba(0,0,0,0)', icon_size: '42px' }] }
-                ] },
-                { gap: '4px', button_gap: '0px', button_text_gap: '6px', button_padding: '0', align: 'start', button_text_size: '14px', padding: '0 0 16px 8px', margin: '-14px 0 0 0', buttons: [
-                    { entity: weatherEntity, align: 'start', elements: [{ kind: 'icon', icon: 'mdi:weather-windy' }, { kind: 'text', weight: '500', text: 'Wind' }, { kind: 'text', text: '•', weight: '500' }, { kind: 'text', attribute: 'wind_speed', weight: '700' }] }
-                ] },
-                { layout: 'horizontal-scroll', position: 'bottom-left', scroll_count: 5, gap: '2px', button_icon_background_color: 'rgba(255,255,255,0.05)', button_style: 'vertical', button_text_layout: 'vertical', button_gap: '6px', button_icon_size: '24px', button_padding: '12px', align: 'center', button_text_size: '13px', background_color: 'rgba(255,255,255,0.05)', width: '100%', blurred_background: true, button_background_color: 'rgba(255,255,255,0.1)', separator: true, button_icon_padding: '0 0 6px 0', grouped: true, background: true, buttons: [fc(0), fc(1), fc(2), fc(3), fc(4), fc(5), fc(6)] }
-            ]
+                {
+                    buttons: [
+                        {
+                            entity: weatherEntity,
+                            elements: [
+                                { type: 'icon', icon: 'weather', icon_background: false, margin: '0 2px 0 0' },
+                                { type: 'text', precision: 0, format: '°', entity: weatherEntity, attribute: 'temperature', weight: '700' },
+                                { type: 'text', weight: '500', entity: weatherEntity }
+                            ],
+                            text_layout: 'vertical',
+                            style: 'inline'
+                        }
+                    ],
+                    padding: '4px',
+                    button_text_size: '16px',
+                    margin: '0 0 32px 0',
+                    button_gap: '6px',
+                    button_style: 'vertical',
+                    button_icon_size: '20px'
+                },
+                {
+                    background: true,
+                    position: 'bottom-left',
+                    gap: '8px',
+                    button_text_layout: 'vertical',
+                    button_gap: '8px',
+                    button_text_gap: '6px',
+                    button_icon_size: '14px',
+                    button_padding: '6px 10px 6px 8px',
+                    align: 'center',
+                    button_text_size: '12px',
+                    background_color: 'rgba(255,255,255,0.1)',
+                    width: '100%',
+                    blurred_background: true,
+                    buttons: [
+                        {
+                            entity: weatherEntity,
+                            elements: [
+                                { type: 'icon', icon: 'mdi:weather-windy' },
+                                { type: 'text', attribute: 'wind_speed', format: ' km/h', weight: '700' }
+                            ],
+                            style: 'inline'
+                        },
+                        {
+                            entity: weatherEntity,
+                            elements: [
+                                { type: 'icon', icon: 'mdi:water-percent' },
+                                { type: 'text', weight: '700', attribute: 'humidity', format: ' %' }
+                            ],
+                            style: 'inline'
+                        }
+                    ],
+                    button_background_color: 'rgba(255,255,255,0.05)',
+                    button_blurred_background: true,
+                    justify_content: 'end'
+                }
+            ],
+            grid_options: {
+                rows: 'auto',
+                columns: 12
+            }
         };
     }
     getCardSize() { return 4; }
@@ -1291,8 +1341,8 @@ class WeatherCard extends HTMLElement {
             if (button.entity) ids.push(button.entity);
             if (Array.isArray(button.elements)) {
                 for (const el of button.elements) {
-                    if (el && el.kind === 'text' && el.entity) ids.push(el.entity);
-                    if (el && el.kind === 'bar' && el.gauge_entity) ids.push(el.gauge_entity);
+                    if (el && el.type === 'text' && el.entity) ids.push(el.entity);
+                    if (el && el.type === 'bar' && el.gauge_entity) ids.push(el.gauge_entity);
                 }
             }
             for (const ve of button._visEntities) ids.push(ve);
@@ -2445,10 +2495,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     _resolveButtonElements(button) {
         if (Array.isArray(button.elements)) {
             return button.elements
-                .filter(e => e && typeof e === 'object' && (e.kind === 'text' || e.kind === 'icon' || e.kind === 'bar'))
+                .filter(e => e && typeof e === 'object' && (e.type === 'text' || e.type === 'icon' || e.type === 'bar'))
                 .map(e => ({ ...e }));
         }
-        return [{ kind: 'text' }];
+        return [{ type: 'text' }];
     }
     _numericSensorValue(hass, entity, attribute) {
         const r = this._resolveSensorValue(hass, entity, attribute);
@@ -2524,9 +2574,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (!button.entity) return skip(`skip-${idx}`, false);
         if (!this._checkButtonVisibility(button, hass)) return skip(`hidden-${idx}-${JSON.stringify(button.visibility)}`, true);
         const elements = this._resolveButtonElements(button);
-        const textEls = elements.filter(e => e.kind === 'text');
-        const iconEls = elements.filter(e => e.kind === 'icon');
-        const barEls = elements.filter(e => e.kind === 'bar');
+        const textEls = elements.filter(e => e.type === 'text');
+        const iconEls = elements.filter(e => e.type === 'icon');
+        const barEls = elements.filter(e => e.type === 'bar');
         const effectiveFormat = (button.style || buttonFormat) === 'vertical' ? 'vertical' : 'inline';
         const isRingType = button.type === 'ring';
         const {
@@ -2555,15 +2605,15 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const textCtx = { isForecast, forecastEntry, forecastDatetime, formatted, unit, primaryResolved, lang };
         let elementsHtml = '', hasAnyMarquee = false, firstIconStrategy = 'static', firstIconSet = false, barCount = 0;
         for (const el of elements) {
-            if (el.kind === 'text') {
+            if (el.type === 'text') {
                 const b = this._buildTextElement(hass, button, el, textCtx, marqueeSpeed, marqueeRtl);
                 elementsHtml += b.html;
                 if (b.hasMarquee) hasAnyMarquee = true;
-            } else if (el.kind === 'icon') {
+            } else if (el.type === 'icon') {
                 const r = resolveIconEl(el);
                 if (!firstIconSet) { firstIconStrategy = r.strategy; firstIconSet = true; }
                 elementsHtml += this._buildIconElement(el, r);
-            } else if (el.kind === 'bar') {
+            } else if (el.type === 'bar') {
                 const gaugeVal = this._resolveGaugeValue(hass, button, el, isForecast, forecastEntry, forecastTextAttr, formatted);
                 elementsHtml += this._buildBar(el, gaugeVal, `${idx}-${barCount}`);
                 barCount++;

@@ -1216,7 +1216,7 @@ class WeatherCard extends HTMLElement {
     }
     static async getConfigElement() {
         if (!customElements.get("origami-weather-editor")) {
-            await import("./origami-weather-editor.js?v=origami-1.4ahjjhggssssggjizg");
+            await import("./origami-weather-editor.js?v=origami-1-0");
         }
         return document.createElement("origami-weather-editor");
     }

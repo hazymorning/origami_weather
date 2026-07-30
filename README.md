@@ -913,15 +913,11 @@ my_theme:
 
 <br>
 
-This card is pretty active visually. A lot of effort goes into keeping it fast, but on older or low-power devices you may want to switch off individual options if you notice your device struggling:
+This card is pretty busy visually. A lot of work goes into keeping it fast, and every design choice tries to balance performance and looks. It uses literal images for the clouds to stay fast while still looking nice (just about every clouds approach out there was tried before settling on this), and the card is continuously tested with performance tests (you can check this kind of thing with the browser tools).
 
-- `precipitation_effects: false` stops the rain, snow, sleet and hail particles.
-- `cloud_effects: false` stops the drifting cloud layer. Set this and the one above to `false` and the effects canvas goes idle completely.
-- `night_sky_effects: false` removes the star field.
-- `background_haze: false` stops the drifting haze layers. They are CSS-animated rather than canvas, but they still add up on weak GPUs.
-- `background_mode: images` swaps the animated sky for a static file. Keep in mind this only replaces the background layer: clouds, precipitation, stars and the sun keep running on top of it, so switch those off too if that was the goal.
+That said, the devices people use for Home Assistant vary a lot. On older or low-power devices, you may want to turn off individual options if you notice yours struggling.
 
-These stack. Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card at little rendering cost.
+> **Tip:** Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card for little rendering cost.
 
 </details>
 

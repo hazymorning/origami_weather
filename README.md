@@ -85,17 +85,17 @@ button_containers:
   - buttons:
       - entity: weather.home
         elements:
-          - kind: icon
+          - type: icon
             icon: weather
             icon_background: false
             margin: 0 2px 0 0
-          - kind: text
+          - type: text
             precision: 0
             format: °
             entity: weather.home
             attribute: temperature
             weight: "700"
-          - kind: text
+          - type: text
             weight: "500"
             entity: weather.home
         text_layout: vertical
@@ -122,18 +122,18 @@ button_containers:
     buttons:
       - entity: weather.home
         elements:
-          - kind: icon
+          - type: icon
             icon: mdi:weather-windy
-          - kind: text
+          - type: text
             attribute: wind_speed
             format: " km/h"
             weight: "700"
         style: inline
       - entity: weather.home
         elements:
-          - kind: icon
+          - type: icon
             icon: mdi:water-percent
-          - kind: text
+          - type: text
             weight: "700"
             attribute: humidity
             format: " %"
@@ -181,7 +181,7 @@ button_containers:
         padding: 4px 0 0 0
         background: false
         elements:
-          - kind: text
+          - type: text
             weight: "700"
             fancy_unit: true
             attribute: temperature
@@ -240,7 +240,7 @@ button_containers:
         blurred_background: true
         padding: 16px
         elements:
-          - kind: icon
+          - type: icon
             icon: weather
             icon_background: false
             icon_background_color: "rgba(0,0,0,0)"
@@ -257,15 +257,15 @@ button_containers:
       - entity: weather.home
         align: start
         elements:
-          - kind: icon
+          - type: icon
             icon: mdi:weather-windy
-          - kind: text
+          - type: text
             weight: "500"
             text: Wind
-          - kind: text
+          - type: text
             text: "•"
             weight: "500"
-          - kind: text
+          - type: text
             attribute: wind_speed
             weight: "700"
   - layout: horizontal-scroll
@@ -289,16 +289,16 @@ button_containers:
       - entity: weather.home
         forecast: daily
         elements:
-          - kind: icon
+          - type: icon
             icon: weather
-          - kind: text
+          - type: text
             size: 12px
             weight: "500"
             attribute: datetime
-          - kind: text
+          - type: text
             weight: "700"
             attribute: temperature
-          - kind: bar
+          - type: bar
             gauge_attribute: precipitation_probability
             bar_min: "0"
             bar_max: "100"
@@ -361,17 +361,17 @@ button_containers:
   - buttons:
       - entity: weather.home
         elements:
-          - kind: icon
+          - type: icon
             icon: weather
             icon_size: "22"
             icon_padding: 0 8px 0 0
-          - kind: text
+          - type: text
             precision: 0
             format: °
             entity: weather.home
             attribute: temperature
             weight: "700"
-          - kind: text
+          - type: text
             weight: "500"
             entity: weather.home
         style: inline
@@ -450,9 +450,9 @@ They can be styled individually or inherit defaults from their container. They s
 buttons:
   - entity: sensor.outside_temperature
     elements:
-      - kind: icon
+      - type: icon
         icon: mdi:thermometer
-      - kind: text
+      - type: text
 ```
 
 **Conditional visibility.** A button can show up only when certain conditions are met, using the same visibility conditions HA uses everywhere else:
@@ -487,21 +487,21 @@ buttons:
 
 <br>
 
-Everything inside a button is an element. A button holds a flat `elements` list, and the order of that list is the order things are drawn in. There are three kinds: `text`, `icon` and `bar`. You can use as many of each as you want and mix them freely, so a bar can sit between two texts, or an icon can sit after the value instead of before it.
+Everything inside a button is an element. A button holds a flat `elements` list, and the order of that list is the order things are drawn in. There are three types: `text`, `icon` and `bar`. You can use as many of each as you want and mix them freely, so a bar can sit between two texts, or an icon can sit after the value instead of before it.
 
 ```yaml
 buttons:
   - entity: weather.home
     forecast: daily
     elements:
-      - kind: text
+      - type: text
         text: "Today: "
         size: 12px
-      - kind: text
+      - type: text
         attribute: templow
         format: " –"
         weight: "700"
-      - kind: text
+      - type: text
         attribute: temperature
         weight: "700"
 ```
@@ -510,7 +510,7 @@ That gives you something like "Today: 8 – 14°" inside a single button.
 
 If you leave `elements` out completely, the button shows one text element with the entity state.
 
-All three kinds take `margin` and `padding`, which is the usual way to nudge one element around without touching the rest of the button.
+All three types take `margin` and `padding`, which is the usual way to nudge one element around without touching the rest of the button.
 
 **Text elements** take `entity`, `attribute`, `text` (a fixed string), `format` (glued to the end of the value, usually a unit), `precision` (decimal places), `size`, `weight`, `overflow` and `fancy_unit`. A text element without `entity`, `attribute` or `text` falls back to the button's own entity and attribute. Note that `weight` also sets the opacity: light weights are drawn faded, heavy ones fully opaque. That is why a `weight: 300` label looks softer than the value next to it.
 
@@ -522,11 +522,11 @@ All three kinds take `margin` and `padding`, which is the usual way to nudge one
 buttons:
   - entity: sensor.humidity
     elements:
-      - kind: icon
+      - type: icon
         icon: mdi:water-percent
-      - kind: text
+      - type: text
         format: "%"
-      - kind: bar
+      - type: bar
         bar_max: 100
         bar_height: 5px
 ```
@@ -546,9 +546,9 @@ buttons:
     forecast: hourly
     forecast_offset: 3
     elements:
-      - kind: icon
+      - type: icon
         icon: weather
-      - kind: text
+      - type: text
         attribute: temperature
         format: "°"
 ```
@@ -560,7 +560,7 @@ buttons:
 
 <br>
 
-There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you can add in the `elements` list with `kind: bar`. Both fill based on a value inside a min/max range.
+There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you can add in the `elements` list with `type: bar`. Both fill based on a value inside a min/max range.
 
 ```yaml
 buttons:
@@ -571,7 +571,7 @@ buttons:
     ring_width: 4px
     ring_color: "#03a9f4"
     elements:
-      - kind: text
+      - type: text
 ```
 
 Color thresholds change the gauge color as the value rises. `solid` fills the whole gauge with the matched color, `segments` draws each range as its own section, and `gradient` blends between the colors.
@@ -605,7 +605,7 @@ Set `icon_path` on a single element and it applies to whatever that element's `i
 ```yaml
 # Per element
 elements:
-  - kind: icon
+  - type: icon
     icon: weather
     icon_path: /local/weather-icons/
 
@@ -777,9 +777,9 @@ The card renders a sun during the day and a moon at night, positioned within the
 
 <br>
 
-Every entry in a button's `elements` list needs a `kind`, which is `text`, `icon` or `bar`.
+Every entry in a button's `elements` list needs a `type`, which is `text`, `icon` or `bar`.
 
-**Text** (`kind: text`)
+**Text** (`type: text`)
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -795,7 +795,7 @@ Every entry in a button's `elements` list needs a `kind`, which is `text`, `icon
 | `margin` | `string` | — | Outer margin of this element. |
 | `padding` | `string` | — | Inner padding of this element. |
 
-**Icon** (`kind: icon`)
+**Icon** (`type: icon`)
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -808,7 +808,7 @@ Every entry in a button's `elements` list needs a `kind`, which is `text`, `icon
 | `margin` | `string` | — | Outer margin of this element. |
 | `padding` | `string` | — | Inner padding of this element. |
 
-**Bar** (`kind: bar`)
+**Bar** (`type: bar`)
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -1010,7 +1010,7 @@ my_theme:
 
 <br>
 
-This card is pretty busy visually. A lot of work goes into keeping it fast, and every design choice tries to balance performance and looks. It uses literal images for the clouds to stay fast while still looking nice (just about every clouds approach out there was tried before settling on this), and the card is continuously tested with performance tests (you can check this kind of thing with the browser tools).
+This card is pretty busy visually. A lot of work goes into keeping it fast, and every design choice tries to balance performance and looks. It uses literal images for the clouds to stay fast while still looking nice (just about every clouds approach out there was tried before settling on this), and the card is continuously tested with performance tests (you can check this type of thing with the browser tools).
 
 That said, the devices people use for Home Assistant vary a lot. On older or low-power devices, you may want to turn off individual options if you notice yours struggling.
 
@@ -1023,6 +1023,6 @@ That said, the devices people use for Home Assistant vary a lot. On older or low
 
 ## History
 
-Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked a lot since then, taking different approaches to pretty much everything. I guess that's just how passion projects go, it's an ongoing learning process... and that's kind of the fun of it. I don't really enjoy the public maintenance side of things, but I like tinkering with this enough that I think it's worth sharing.
+Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked a lot since then, taking different approaches to pretty much everything. I guess that's just how passion projects go, it's an ongoing learning process... and that's type of the fun of it. I don't really enjoy the public maintenance side of things, but I like tinkering with this enough that I think it's worth sharing.
 
 > **Note:** AI is used as a tool in this project to get tedious tasks done faster (leaving me more time for the enjoyable parts), test new ideas, and most of all, to make debugging issues less painful.

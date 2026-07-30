@@ -60,7 +60,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/64fe006a-4952-432d-baad-ebf213e90f1e" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed" />
 
 <details>
 <summary><b>Default Card YAML</b></summary>

@@ -153,7 +153,7 @@ grid_options:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/f7624bb6-87ed-4954-8269-77cc8de74152" />
 
-A big card that uses different features like a temperature ring, a large animated weather icon, and a forecast slider with little rain probability bars.
+A big card that uses different features like a temperature ring, a large animated weather icon, and a forecast slider with rain probability bars.
 
 <details>
 <summary><b>Big Card</b></summary>

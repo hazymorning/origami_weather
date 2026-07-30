@@ -62,10 +62,14 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed" />
 
+This is the default card which shows up if you add it to your dashboard.
+
 <details>
 <summary><b>Default Card</b></summary>
 
 <br>
+
+> **Important:** You need to replace the weather and moon entity with your own ones.
 
 ```yaml
 type: custom:origami-weather
@@ -154,7 +158,7 @@ A big card that uses different features like a temperature ring, weather icon, a
 <details>
 <summary><b>Big Card</b></summary>
 
->**Tip:** The conditional visibility feature is useful for this kind of card layout. You can use it to toggle between a daily and hourly forecast, or to show the forecast on card tap.
+>**Tip:** The conditional visibility feature can be useful here. For example to toggle between a daily and hourly forecast, or to show/hide the forecast on card tap.
 
 <br>
 

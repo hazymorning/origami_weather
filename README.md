@@ -21,13 +21,13 @@ A flexible card that tries to visualize the weather and related data in a nice w
 
 <details>
 <summary><b>HACS (Recommended)</b></summary>
-
 <br>
 
-1. Open **HACS** → **Frontend**.
+This card isn't in the default HACS store yet, so it has to be added as a custom repository.
+
+1. Click the badge above, **or** in HACS go to **⋮** (top right) → **Custom repositories**, enter `https://github.com/hazymorning/origami-weather` with category **Dashboard**, and click **Add**.
 2. Search for **Origami Weather** and click **Download**.
 3. Reload your dashboard.
-
 </details>
 
 <details>

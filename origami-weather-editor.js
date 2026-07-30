@@ -788,7 +788,7 @@ class WeatherCardEditor extends LitElement {
         container.custom_cards = cards; this._updateContainerAt(containerIdx, container);}
     _buttonTitle(button) {
                         const els = button && Array.isArray(button.elements) ? button.elements : [];
-        const firstStatic = els.find(e => e && e.kind === "text" && typeof e.text === "string" && e.text.trim());
+        const firstStatic = els.find(e => e && e.type === "text" && typeof e.text === "string" && e.text.trim());
         const name = (firstStatic ? firstStatic.text : "").toString().trim(), entity = (button && button.entity || "").toString().trim();
         const attribute = (button && button.attribute || "").toString().trim();
         const two = (main, meta) => html`<span class="row-title-main">${main}</span>${meta ? html`<span class="row-title-meta">${meta}</span>` : ""}`;
@@ -800,7 +800,7 @@ class WeatherCardEditor extends LitElement {
             const offsetLabel = button.forecast === "hourly"
                 ? (offset === 0 ? "now" : `+${offset}h`)
                 : (offset === 0 ? "today" : offset === 1 ? "tomorrow" : `+${offset}d`);
-            const firstFcAttr = (els.find(e => e && e.kind === "text" && !e.entity && e.attribute) || {}).attribute;
+            const firstFcAttr = (els.find(e => e && e.type === "text" && !e.entity && e.attribute) || {}).attribute;
             return two(name || label, `${type} · ${offsetLabel} · ${firstFcAttr || "condition"}`);}
         return two(name || label, name ? (attribute ? `${label} · ${attribute}` : label) : attribute);}
     _textTitle(button, txt) {
@@ -822,9 +822,9 @@ class WeatherCardEditor extends LitElement {
         if (Array.isArray(out.elements)) {
             const elements = out.elements
                 .map(e => this._cleanElement(e || {}))
-                .filter(e => e && (e.kind === "text" || e.kind === "icon" || e.kind === "bar"));
+                .filter(e => e && (e.type === "text" || e.type === "icon" || e.type === "bar"));
             if (elements.length === 0) delete out.elements;
-            else if (elements.length === 1 && elements[0].kind === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
+            else if (elements.length === 1 && elements[0].type === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
             else out.elements = elements;
         }
         if (out.type !== 'ring') { delete out.gauge_entity; delete out.gauge_attribute; delete out.ring_min; delete out.ring_max; delete out.ring_color; delete out.ring_width; delete out.ring_gap; delete out.ring_thresholds; delete out.ring_threshold_mode; }
@@ -837,14 +837,14 @@ class WeatherCardEditor extends LitElement {
         return out;}
     _cleanElement(el) {
         const out = { ...(el || {}) };
-        const kind = out.kind === "icon" || out.kind === "bar" ? out.kind : "text";
-        out.kind = kind;
+        const type = out.type === "icon" || out.type === "bar" ? out.type : "text";
+        out.type = type;
                         if (out.source === "entity" && out.entity) delete out.source;
         for (const k of Object.keys(out)) {
-            if (k === "kind") continue;
+            if (k === "type") continue;
             const v = out[k];
-            if (kind === "text" && k === 'format') { if (v === null || v === undefined) delete out[k]; continue; }
-            if (kind === "text" && k === 'precision') { if (v === '' || v === null || v === undefined) delete out[k]; continue; }
+            if (type === "text" && k === 'format') { if (v === null || v === undefined) delete out[k]; continue; }
+            if (type === "text" && k === 'precision') { if (v === '' || v === null || v === undefined) delete out[k]; continue; }
             if ((k === 'bar_min' || k === 'bar_max') && (v === 0 || v === "0")) continue;
             if (k === 'icon_background' && v === false) continue;
             if (v === "" || v === null || v === undefined || v === false) delete out[k];
@@ -998,7 +998,7 @@ class WeatherCardEditor extends LitElement {
         const stAttr = st && st.attributes;
                 const elements = Array.isArray(button.elements) && button.elements.length
             ? button.elements.map(e => (e && typeof e === "object") ? e : {})
-            : [{ kind: "text" }];
+            : [{ type: "text" }];
         const commitElements = (arr) => {
             const n = { ...button };
             if (!arr.length) delete n.elements;
@@ -1026,8 +1026,8 @@ class WeatherCardEditor extends LitElement {
             if (nestedOpen === `el-${ei}`) setNested(null);
             commitElements(arr);
         };
-        const addEl = (kind) => {
-            const seed = kind === "bar" ? { kind: "bar" } : kind === "icon" ? { kind: "icon" } : { kind: "text" };
+        const addEl = (type) => {
+            const seed = type === "bar" ? { type: "bar" } : type === "icon" ? { type: "icon" } : { type: "text" };
             setNested(`el-${elements.length}`);
             commitElements([...elements, seed]);
         };
@@ -1137,10 +1137,10 @@ class WeatherCardEditor extends LitElement {
                     <ha-icon icon=${icon}></ha-icon>
                     <span class="vcb-section-title">${title}</span></div>
                 ${isOpen ? html`<div class="vcb-section-body">${content}</div>` : ""}</div>`;};
-                const elKindIcon = (k) => k === "icon" ? "mdi:image-outline" : k === "bar" ? "mdi:chart-bar" : "mdi:text-short";
+                const elTypeIcon = (k) => k === "icon" ? "mdi:image-outline" : k === "bar" ? "mdi:chart-bar" : "mdi:text-short";
         const elTitle = (el) => {
-            if (el.kind === "icon") return (el.icon || "").toString().trim().toLowerCase() === "weather" ? "Weather icon" : (el.icon ? el.icon : "Icon");
-            if (el.kind === "bar") return "Bar";
+            if (el.type === "icon") return (el.icon || "").toString().trim().toLowerCase() === "weather" ? "Weather icon" : (el.icon ? el.icon : "Icon");
+            if (el.type === "bar") return "Bar";
             return this._textTitle(button, el);
         };
                 const typePicker = html`<div class="button-type-picker">
@@ -1151,8 +1151,8 @@ class WeatherCardEditor extends LitElement {
             <button type="button" class="button-type-btn ${isFc ? "active" : ""}"
                 @click=${() => { const cur = entityId; const ent = (cur && cur.startsWith("weather.")) ? cur : (cardWeatherEntity || cur);
                     const n = { ...button, forecast: "daily", forecast_offset: 0 }; delete n.attribute;
-                    if (!Array.isArray(n.elements) || !n.elements.some(e => e && e.kind === "text" && Object.keys(e).length > 1)) {
-                        n.elements = [{ kind: "icon", icon: "weather" }, { kind: "text", attribute: "temperature" }];
+                    if (!Array.isArray(n.elements) || !n.elements.some(e => e && e.type === "text" && Object.keys(e).length > 1)) {
+                        n.elements = [{ type: "icon", icon: "weather" }, { type: "text", attribute: "temperature" }];
                     }
                     if (ent) n.entity = ent; update(n); }}
             ><ha-icon class="button-type-icon ${isFc ? "active-icon" : ""}" icon="mdi:calendar-clock"></ha-icon>
@@ -1170,7 +1170,7 @@ class WeatherCardEditor extends LitElement {
             const fcEntity = buttonForm([{ name: "entity", selector: { entity: { domain: "weather" } } }]);
             forecastContent = html`${fcEntity}${fcMissingHint}${fcSettings}`;
         }
-                const hasMarqueeText = elements.some(t => t && t.kind === "text" && ((t.overflow) || "").toString().toLowerCase() === "marquee");
+                const hasMarqueeText = elements.some(t => t && t.type === "text" && ((t.overflow) || "").toString().toLowerCase() === "marquee");
         const marqueeContent = hasMarqueeText ? html`<div class="toggle-group"><label class="toggle-row"><span>Right-to-left</span>
                 <ha-switch .checked=${button.marquee_rtl === true} @change=${(e) => { const n = { ...button }; if (e.target.checked) n.marquee_rtl = true; else delete n.marquee_rtl; update(n); }}></ha-switch></label></div>
             ${(() => { const spd = parseFloat(button.marquee_speed) || 30;
@@ -1261,13 +1261,13 @@ class WeatherCardEditor extends LitElement {
             const key = `el-${ei}`;
             const isOpen = nestedOpen === key;
             const spacing = elSpacing(el, ei);
-            const body = el.kind === "icon" ? iconElContent(el, ei, spacing)
-                : el.kind === "bar" ? barElContent(el, ei, spacing)
+            const body = el.type === "icon" ? iconElContent(el, ei, spacing)
+                : el.type === "bar" ? barElContent(el, ei, spacing)
                 : textElContent(el, ei, spacing);
             return html`<div class="vcb-section">
                 <div class="vcb-section-head ${isOpen ? 'open' : ''}" @click=${() => setNested(isOpen ? null : key)}>
                     <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
-                    <ha-icon icon=${elKindIcon(el.kind)}></ha-icon>
+                    <ha-icon icon=${elTypeIcon(el.type)}></ha-icon>
                     <span class="vcb-section-title">${elTitle(el)}</span>
                     ${elReorder(ei)}</div>
                 ${isOpen ? html`<div class="vcb-section-body">${body}</div>` : ""}</div>`;

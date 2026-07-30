@@ -63,9 +63,84 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed" />
 
 <details>
-<summary><b>Default Card YAML</b></summary>
+<summary><b>Default Card</b></summary>
 
 <br>
+
+```yaml
+type: custom:origami-weather
+weather_entity: weather.home
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
+sun_moon_x: 80
+card_height: content
+card_padding: 16px
+content_align: between
+content_align_items: start
+button_containers:
+  - buttons:
+      - entity: weather.home
+        elements:
+          - kind: icon
+            icon: weather
+            icon_background: false
+            margin: 0 2px 0 0
+          - kind: text
+            precision: 0
+            format: °
+            entity: weather.home
+            attribute: temperature
+            weight: "700"
+          - kind: text
+            weight: "500"
+            entity: weather.home
+        text_layout: vertical
+        style: inline
+    padding: "4px"
+    button_text_size: 16px
+    margin: 0 0 32px 0
+    button_gap: 6px
+    button_style: vertical
+    button_icon_size: 20px
+  - background: true
+    position: bottom-left
+    gap: 8px
+    button_text_layout: vertical
+    button_gap: 8px
+    button_text_gap: 6px
+    button_icon_size: 14px
+    button_padding: 6px 10px 6px 8px
+    align: center
+    button_text_size: 12px
+    background_color: rgba(255,255,255,0.1)
+    width: 100%
+    blurred_background: true
+    buttons:
+      - entity: weather.home
+        elements:
+          - kind: icon
+            icon: mdi:weather-windy
+          - kind: text
+            attribute: wind_speed
+            format: " km/h"
+            weight: "700"
+        style: inline
+      - entity: weather.home
+        elements:
+          - kind: icon
+            icon: mdi:water-percent
+          - kind: text
+            weight: "700"
+            attribute: humidity
+            format: " %"
+        style: inline
+    button_background_color: rgba(255,255,255,0.05)
+    button_blurred_background: true
+    justify_content: end
+grid_options:
+  rows: auto
+  columns: 12
+```
 
 </details>
 

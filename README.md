@@ -338,7 +338,7 @@ button_containers:
 A simple card that is stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest.
 
 <details>
-<summary><b>Simple Card</b></summary>
+<summary><b>Card without background</b></summary>
 
 <br>
 

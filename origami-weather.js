@@ -95,7 +95,6 @@ const FORECAST_ATTR_ICONS = Object.freeze({
     precipitation: 'mdi:weather-rainy', precipitation_probability: 'mdi:weather-rainy',
 });
 /*
- * CREDITS — DO NOT DELETE THIS COMMENT:
  * The BUILTIN_ICONS below are a slight remix of the Lucide icon set
  * (https://lucide.dev), used under the ISC License.
  * Portions of Lucide are Copyright (c) 2013-2022 Cole Bemis (Feather, MIT);

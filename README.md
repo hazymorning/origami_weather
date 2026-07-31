@@ -2,7 +2,7 @@
 
 A flexible card that tries to visualize the weather and related data in a nice way.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/f8d2570c-df5f-48e8-8b9c-fa8d5f286513" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed" />
 
 <br>
 <br>
@@ -70,8 +70,7 @@ There is a visual editor for this, so the yaml below is only there if you prefer
 
 ## Examples
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
-
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" /><br>
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed" />
 
 This is the default card which shows up if you add it to your dashboard.

@@ -840,6 +840,8 @@ class WeatherCardEditor extends LitElement {
         const type = out.type === "icon" || out.type === "bar" ? out.type : "text";
         out.type = type;
                         if (out.source === "entity" && out.entity) delete out.source;
+        if (out.bar_marker !== true) { delete out.bar_marker; delete out.bar_marker_color; delete out.bar_marker_size; delete out.bar_marker_icon; delete out.bar_marker_icon_name; }
+        if (out.bar_marker_icon !== true) { delete out.bar_marker_icon; delete out.bar_marker_icon_name; }
         for (const k of Object.keys(out)) {
             if (k === "type") continue;
             const v = out[k];
@@ -1184,6 +1186,8 @@ class WeatherCardEditor extends LitElement {
             <div class="toggle-group">
                 <label class="toggle-row"><span>Background</span><ha-switch .checked=${button.background !== false}
                     @change=${(e) => { const n = { ...button }; if (!e.target.checked) n.background = false; else delete n.background; update(n); }}></ha-switch></label>
+                <label class="toggle-row"><span>Background image</span><ha-switch .checked=${button.background_image === true}
+                    @change=${(e) => { const n = { ...button }; if (e.target.checked) n.background_image = true; else { delete n.background_image; delete n.background_image_path; } update(n); }}></ha-switch></label>
                 ${button.background !== false ? html`<label class="toggle-row"><span>Blurred</span><ha-switch .checked=${button.blurred_background === true}
                     @change=${(e) => { const n = { ...button }; if (e.target.checked) n.blurred_background = true; else delete n.blurred_background; update(n); }}></ha-switch></label>` : ""}
                 <label class="toggle-row"><span>Round shape</span><ha-switch .checked=${button.button_round === true}
@@ -1193,6 +1197,8 @@ class WeatherCardEditor extends LitElement {
                 <label class="toggle-row"><span>Text shadow</span><ha-switch .checked=${button.text_shadow === true}
                     @change=${(e) => { const n = { ...button }; if (e.target.checked) n.text_shadow = true; else delete n.text_shadow; update(n); }}></ha-switch></label></div>
             ${button.background !== false ? this._renderColorPicker("Button color", button.background_color || "", (h, o) => { const next = { ...button }; if (!h) delete next.background_color; else next.background_color = this._serializeColor(h, o); update(next); }) : ""}
+            ${button.background_image === true ? this._cssTextField({ value: button.background_image_path, label: "Image path", placeholder: "/local/my-image.jpg", trim: true,
+                onCommit: (v) => { const n = { ...button }; if (v) n.background_image_path = v; else delete n.background_image_path; update(n); } }) : ""}
             <div class="vcb-grid">
                 ${cssField("width", "Width", "auto")}${cssField("height", "Height", "auto")}
                 ${cssField("text_size", "Text size", "auto")}${cssField("padding", "Padding", "auto")}
@@ -1217,9 +1223,17 @@ class WeatherCardEditor extends LitElement {
                 .schema=${schema} .computeLabel=${computeLabel}
                 @value-changed=${(e)=>{e.stopPropagation();const v=e.detail&&e.detail.value&&e.detail.value[name];write(name, v);}}></ha-form>`;
             return html`<div class="vcb-grid">${cssFor(p+"min","Min","0")}${cssFor(p+"max","Max","100")}</div>
-                <div class="vcb-grid">${prefix==="ring"?html`${cssFor("ring_width","Thickness","4")}${cssFor("ring_gap","Gap","3")}`:html`${cssFor("bar_height","Thickness","4")}`}</div>
+                <div class="vcb-grid">${prefix==="ring"?html`${cssFor("ring_width","Thickness","4")}${cssFor("ring_gap","Gap","3")}`:html`${cssFor("bar_height","Thickness","4")}${obj.bar_marker===true?cssFor("bar_marker_size","Marker size","auto"):""}`}</div>
                 ${extra || ""}
                 ${this._renderColorPicker(`${label} color`,obj[p+"color"]||"",(h,o)=>{ write(p+"color", h ? this._serializeColor(h,o) : ""); })}
+                ${prefix==="ring"?"":html`<div class="toggle-group"><label class="toggle-row"><span>Marker</span>
+                    <ha-switch .checked=${obj.bar_marker === true} @change=${(e)=>{ write("bar_marker", e.target.checked ? true : false); }}></ha-switch></label></div>
+                ${obj.bar_marker===true?html`${this._renderColorPicker("Marker color",obj.bar_marker_color||"",(h,o)=>{ write("bar_marker_color", h ? this._serializeColor(h,o) : ""); })}
+                    <div class="toggle-group"><label class="toggle-row"><span>Marker icon</span>
+                        <ha-switch .checked=${obj.bar_marker_icon === true} @change=${(e)=>{ write("bar_marker_icon", e.target.checked ? true : false); }}></ha-switch></label></div>
+                    ${obj.bar_marker_icon===true?html`<ha-form .hass=${this.hass} .data=${{ bar_marker_icon_name: obj.bar_marker_icon_name || "" }}
+                        .schema=${[{ name: "bar_marker_icon_name", selector: { icon: {} } }]} .computeLabel=${()=>"Icon"}
+                        @value-changed=${(e)=>{ e.stopPropagation(); const v=e.detail&&e.detail.value&&e.detail.value.bar_marker_icon_name; write("bar_marker_icon_name", v); }}></ha-form>`:""}`:""}`}
                 <details class="disclosure" @toggle=${this._onDisclosureToggle}><summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon><ha-icon icon="mdi:cog-outline"></ha-icon><span>${label} entity</span></summary>
                     <div class="disclosure-body">${gaugeForm("gauge_entity",[{name:"gauge_entity",selector:{entity:{}}}],()=>"Value entity",()=>obj.gauge_entity||"")}
                         ${gaugeEntityId?gaugeForm("gauge_attribute",[{name:"gauge_attribute",selector:{attribute:{entity_id:gaugeEntityId}}}],()=>"Value attribute",()=>obj.gauge_attribute||"")

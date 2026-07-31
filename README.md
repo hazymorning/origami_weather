@@ -49,7 +49,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `weather_entity` | `string` | — | **Required.** Your weather integration entity (e.g. `weather.home`). |
+| `weather_entity` | `string` | — | **Required.** Your weather entity (e.g. `weather.home`). |
 | `moon_phase_entity` | `string` | — | **Recommended.** Shows the moon in its current phase. |
 
 **The actual content of the card is up to you.** When you add the card to your dashboard, it comes with an example layout already set up, which you can customize however you like. See the [Examples](#examples) below for inspiration, and [Layout Options](#layouts) for an explanation of how building layouts works.
@@ -167,7 +167,9 @@ A big card that uses different features like a temperature ring, a large animate
 <details>
 <summary><b>Big Card</b></summary>
 
->**Tip:** The conditional visibility feature can be useful here. For example to toggle between a daily and hourly forecast, or to show/hide the forecast on card tap.
+<br>
+
+>**Note:** The conditional visibility feature can be useful here. For example to toggle between a daily and hourly forecast, or to show/hide the forecast on card tap.
 
 <br>
 

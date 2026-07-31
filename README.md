@@ -50,7 +50,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** Your weather entity. |
-| `moon_phase_entity` | `string` | — | **Recommended.** For the moon phase. |
+| `moon_phase_entity` | `string` | — | **Recommended.** The moon phase. |
 
 **The actual content of the card is up to you.** When you add the card to your dashboard, it comes with an example layout already set up, which you can customize however you like. See the [Examples](#examples) below for inspiration, and [Layout Options](#layouts) for an explanation of how building layouts works.
 

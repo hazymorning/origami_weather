@@ -70,8 +70,9 @@ There is a visual editor for this, so the yaml below is only there if you prefer
 
 ## Examples
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" /><br>
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed" />
+| Light | Dark |
+|-------|------|
+| ![Light Mode](https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
 
 This is the default card which shows up if you add it to your dashboard.
 
@@ -161,7 +162,9 @@ grid_options:
 
 <br>
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08" />
+| Light | Dark |
+|-------|------|
+| ![Light Mode](https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08) | ![Dark Mode](https://github.com/user-attachments/assets/ea49bea3-03ec-418c-b462-64ad665a643c) |
 
 A big card that uses different features like a temperature ring, a large animated weather icon, and a forecast slider with rain probability bars.
 

@@ -171,8 +171,6 @@ A big card that uses different features like a temperature ring, a large animate
 
 >**Note:** The conditional visibility feature can be useful here. For example to toggle between a daily and hourly forecast, or to show/hide the forecast on card tap.
 
-<br>
-
 ```yaml
 type: custom:origami-weather
 weather_entity: weather.home

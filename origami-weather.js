@@ -1215,7 +1215,7 @@ class WeatherCard extends HTMLElement {
     }
     static async getConfigElement() {
         if (!customElements.get("origami-weather-editor")) {
-            await import("./origami-weather-editor.js?v=origami-1-0");
+            await import("./origami-weather-editor.js?v=hello-origami");
         }
         return document.createElement("origami-weather-editor");
     }
@@ -1743,7 +1743,6 @@ class WeatherCard extends HTMLElement {
     }
     static _buildStyles() {
         return `
-            @property --origami-ring-pct { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
             @property --origami-sun-core { syntax: '<color>'; inherits: true; initial-value: rgb(255,255,255); }
             @property --origami-sun-inner { syntax: '<color>'; inherits: true; initial-value: rgb(255,250,240); }
             @property --origami-sun-mid { syntax: '<color>'; inherits: true; initial-value: rgb(255,237,200); }
@@ -1956,6 +1955,9 @@ class WeatherCard extends HTMLElement {
             .button.with-bg { --_bg: var(--origami-bottom-bg-color, var(--_text-bg)); background: var(--_bg); padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
             .button.with-bg.blurred { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .button.with-bg .button-text { text-shadow: none; }
+            .button.has-bg-image { padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); overflow: hidden; background-image: var(--origami-button-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; }
+            .button.has-bg-image .button-text { text-shadow: none; }
+            .button.button-round.has-bg-image { border-radius: 999px; }
             #weather-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: 3; display: none; }
             #card-root.has-weather-effects #weather-effects { display: block; }
             #star-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: 2; display: none; }
@@ -1991,16 +1993,20 @@ class WeatherCard extends HTMLElement {
             .button.button-ring { position: relative; border-radius: 50%; aspect-ratio: 1; justify-content: center; align-content: center; z-index: 1; padding: var(--origami-buttons-padding, 10px); }
             .button.button-ring.with-bg { border-radius: 50%; padding: var(--origami-buttons-padding, 10px); }
             .button-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; scroll-snap-align: start; }
-            .button-ring-wrap::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--origami-ring-gradient, conic-gradient(var(--origami-ring-color, var(--primary-color, #03a9f4)) var(--origami-ring-pct, 0%), transparent 0)); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); mask: radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); transition: --origami-ring-pct 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; z-index: 0; }
+            .button-ring-wrap::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--origami-ring-gradient, conic-gradient(var(--origami-ring-color, var(--primary-color, #03a9f4)) var(--origami-ring-pct, 0%), transparent 0)); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); mask: radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); pointer-events: none; z-index: 0; }
             .button-ring-wrap.has-segments::before { -webkit-mask: conic-gradient(#000 var(--origami-ring-pct, 0%), transparent 0), radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); mask: conic-gradient(#000 var(--origami-ring-pct, 0%), transparent 0), radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); -webkit-mask-composite: source-in; mask-composite: intersect; }
             .button-ring-track { position: absolute; inset: 0; border-radius: 50%; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); mask: radial-gradient(farthest-side, transparent calc(100% - var(--origami-ring-w, 4px) - 0.5px), #000 calc(100% - var(--origami-ring-w, 4px))); background: currentColor; opacity: 0.10; pointer-events: none; }
             .button-ring-wrap > .button { margin: var(--origami-ring-gap, 3px); z-index: 1; }
             .buttons-row.row-grid > .button-ring-wrap > .button,
             .buttons-row.has-visible-count > .button-ring-wrap > .button { width: calc(100% - var(--origami-ring-gap, 3px) * 2); }
             .buttons-row.row-grid > .button-ring-wrap { aspect-ratio: 1; }
-            .button-bar { --_bar-radius: calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) * 0.35); position: relative; width: 100%; height: var(--origami-bar-h, 4px); min-height: var(--origami-bar-h, 4px); border-radius: var(--_bar-radius); overflow: hidden; flex-shrink: 0; }
-            .button-bar-track { position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0.10; }
-            .button-bar-fill { position: absolute; inset: 0; border-radius: inherit; background: var(--origami-bar-gradient, var(--origami-bar-color, var(--primary-color, #03a9f4))); transform-origin: left center; transform: scaleX(var(--origami-bar-scale, 0)); transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+            .button-bar { --_bar-radius: calc(var(--origami-card-border-radius, var(--ha-card-border-radius, 12px)) * 0.35); position: relative; width: 100%; min-height: var(--origami-bar-h, 4px); border-radius: var(--_bar-radius); overflow: hidden; flex-shrink: 0; }
+            .button-bar.has-marker { min-height: max(var(--origami-bar-h, 4px), var(--origami-bar-marker-size, var(--origami-bar-h, 4px))); }
+            .button-bar-track { position: absolute; left: 0; right: 0; top: 50%; height: var(--origami-bar-h, 4px); border-radius: var(--_bar-radius); background: currentColor; opacity: 0.10; transform: translateY(-50%); }
+            .button-bar-fill { position: absolute; left: 0; right: 0; top: 50%; height: var(--origami-bar-h, 4px); border-radius: var(--_bar-radius); background: var(--origami-bar-gradient, var(--origami-bar-color, var(--primary-color, #03a9f4))); transform-origin: left center; transform: translateY(-50%) scaleX(var(--origami-bar-scale, 0)); transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+            .button-bar-marker { position: absolute; top: 50%; left: calc(var(--origami-bar-scale, 0) * 100%); width: var(--origami-bar-marker-size, var(--origami-bar-h, 4px)); height: var(--origami-bar-marker-size, var(--origami-bar-h, 4px)); border-radius: 50%; background: var(--origami-bar-marker-color, var(--origami-bar-color, var(--primary-color, #03a9f4))); transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; animation: bar-marker-in 0.4s ease 0.3s forwards; }
+            @keyframes bar-marker-in { to { opacity: 1; } }
+            .button-bar-marker ha-icon { --mdc-icon-size: calc(var(--origami-bar-marker-size, var(--origami-bar-h, 4px)) * 0.66); color: var(--origami-bar-marker-icon-color, #fff); display: flex; }
             .button.button-bar-type { flex-wrap: wrap; }
             .button.button-bar-type.format-vertical { flex-wrap: nowrap; }
             .button.button-bar-type.format-vertical .button-bar { align-self: stretch; }
@@ -2385,7 +2391,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             if (rowRebuilt) {
                 ac.lastLocStr = rowSig;
                 bt.innerHTML = rendered.map(r => r.html).join('');
-                this._animateRings(bt, `a${ai}`);
+                this._animateBars(bt, `a${ai}`);
                 if (!hasVis && rowLayout === 'vertical-scroll') { requestAnimationFrame(() => this._computeVerticalVisHeight(ai)); }
                 anyRowRebuilt = true;
             }
@@ -2424,24 +2430,16 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             }
         }
     }
-    _animateRings(container, prefix) {
-        if (!this._ringPrevPct) this._ringPrevPct = new Map();
+    _animateBars(container, prefix) {
+        if (!this._barPrevScale) this._barPrevScale = new Map();
         const keyPrefix = prefix || '';
-        for (const wrap of container.querySelectorAll('.button-ring-wrap')) {
-            const key = keyPrefix + wrap.dataset.idx;
-            const target = (wrap.style.getPropertyValue('--origami-ring-pct') || '0%').trim();
-            const prev = this._ringPrevPct.get(key);
-            wrap.style.setProperty('--origami-ring-pct', prev !== undefined ? prev : '0%');
-            this._queueGaugeAnim(wrap, '--origami-ring-pct', target);
-            this._ringPrevPct.set(key, target);
-        }
-        for (const fill of container.querySelectorAll('.button-bar-fill')) {
-            const key = 'b' + keyPrefix + fill.dataset.barIdx;
-            const target = (fill.style.getPropertyValue('--origami-bar-scale') || '0').trim();
-            const prev = this._ringPrevPct.get(key);
-            fill.style.setProperty('--origami-bar-scale', prev !== undefined ? prev : '0');
-            this._queueGaugeAnim(fill, '--origami-bar-scale', target);
-            this._ringPrevPct.set(key, target);
+        for (const bar of container.querySelectorAll('.button-bar')) {
+            const key = keyPrefix + bar.dataset.barIdx;
+            const target = (bar.style.getPropertyValue('--origami-bar-scale') || '0').trim();
+            const prev = this._barPrevScale.get(key);
+            bar.style.setProperty('--origami-bar-scale', prev !== undefined ? prev : '0');
+            this._queueGaugeAnim(bar, '--origami-bar-scale', target);
+            this._barPrevScale.set(key, target);
         }
     }
             _queueGaugeAnim(el, prop, target) {
@@ -2449,10 +2447,12 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         this._gaugeAnimQueue.push([el, prop, target]);
         if (this._gaugeAnimRaf == null) {
             this._gaugeAnimRaf = requestAnimationFrame(() => {
-                this._gaugeAnimRaf = null;
-                const queue = this._gaugeAnimQueue;
-                this._gaugeAnimQueue = null;
-                for (const [e, p, t] of queue) e.style.setProperty(p, t);
+                this._gaugeAnimRaf = requestAnimationFrame(() => {
+                    this._gaugeAnimRaf = null;
+                    const queue = this._gaugeAnimQueue;
+                    this._gaugeAnimQueue = null;
+                    for (const [e, p, t] of queue) e.style.setProperty(p, t);
+                });
             });
         }
     }
@@ -2470,11 +2470,21 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const barH = parseFloat(el.bar_height) || 4;
         const g = computeGauge(gaugeVal, barMin, barMax, (el.bar_color || '').trim(), Array.isArray(el.bar_thresholds) ? el.bar_thresholds : [], el.bar_threshold_mode || 'solid');
         const scale = (parseFloat(g.pct) / 100).toFixed(4);
-        const fillStyles = [`--origami-bar-scale:${scale}`];
-        if (g.barGradient) fillStyles.push(`--origami-bar-gradient:linear-gradient(to right, ${g.barGradient})`);
-        else if (g.effectiveColor) fillStyles.push(`--origami-bar-color:${g.effectiveColor}`);
+        const barStyles = [`--origami-bar-h:${barH}px`, `--origami-bar-scale:${scale}`];
+        if (g.barGradient) barStyles.push(`--origami-bar-gradient:linear-gradient(to right, ${g.barGradient})`);
+        else if (g.effectiveColor) barStyles.push(`--origami-bar-color:${g.effectiveColor}`);
+        const marker = el.bar_marker === true;
+        let markerHtml = '';
+        if (marker) {
+            if (el.bar_marker_color) barStyles.push(`--origami-bar-marker-color:${cssValue(el.bar_marker_color)}`);
+            const markerSize = parseFloat(el.bar_marker_size);
+            if (Number.isFinite(markerSize) && markerSize > 0) barStyles.push(`--origami-bar-marker-size:${markerSize}px`);
+            const markerIcon = el.bar_marker_icon === true && el.bar_marker_icon_name
+                ? `<ha-icon icon="${escapeHtml(el.bar_marker_icon_name)}"></ha-icon>` : '';
+            markerHtml = `<div class="button-bar-marker">${markerIcon}</div>`;
+        }
         const box = _elBoxStyle(el);
-        return `<div class="button-bar" style="--origami-bar-h:${barH}px${box}"><div class="button-bar-track"></div><div class="button-bar-fill" data-bar-idx="${barKey}" style="${fillStyles.join(';')}"></div></div>`;
+        return `<div class="button-bar${marker ? ' has-marker' : ''}" data-bar-idx="${barKey}" style="${barStyles.join(';')}${box}"><div class="button-bar-track"></div><div class="button-bar-fill"></div>${markerHtml}</div>`;
     }
     _buildIconElement(el, resolved) {
         const styleParts = [];
@@ -2639,6 +2649,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         } else if (iconBg === true) {
             if (effectiveBlurred) classes.push('blurred');
         }
+        const bgImagePath = button.background_image === true ? (button.background_image_path || '').trim() : '';
+        if (bgImagePath) classes.push('has-bg-image');
         const effectiveBgColor = button.background_color || containerCtx.button_background_color || '';
         const effectiveIconBgColor = button.icon_background_color || containerCtx.button_icon_background_color || '';
         let buttonTintColor = '';
@@ -2661,6 +2673,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (width) { const wv = cssLength(width); inlineStyles.push(`width:${wv};max-width:${wv}`); }
         if (height) inlineStyles.push(`height:${cssLength(height)}`);
         if (effectiveBgColor) inlineStyles.push(`--origami-bottom-bg-color:${cssValue(effectiveBgColor)}`);
+        if (bgImagePath) inlineStyles.push(`--origami-button-bg-image:url("${escapeHtml(bgImagePath)}")`);
         if (effectiveIconBgColor) inlineStyles.push(`--origami-icon-bg-color:${cssValue(effectiveIconBgColor)}`);
         if (buttonTintColor) { inlineStyles.push(`--origami-button-tint:${cssValue(buttonTintColor)}`); classes.push('has-tint'); }
         if (button.padding !== undefined && button.padding !== '') inlineStyles.push(`padding:${cssLength(button.padding)}`);

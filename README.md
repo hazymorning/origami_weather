@@ -17,7 +17,7 @@ A flexible card that tries to visualize the weather and related data in a nice w
 
 ## Installation
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami-weather&category=plugin)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin)
 
 <details>
 <summary><b>HACS (Recommended)</b></summary>
@@ -25,7 +25,7 @@ A flexible card that tries to visualize the weather and related data in a nice w
 
 This card isn't in the default HACS store yet, so it has to be added as a custom repository.
 
-1. Click the badge above, **or** in HACS go to **⋮** (top right) → **Custom repositories**, enter `https://github.com/hazymorning/origami-weather` with category **Dashboard**, and click **Add**.
+1. Click the badge above, **or** in HACS go to **⋮** (top right) → **Custom repositories**, enter `https://github.com/hazymorning/origami_weather` with category **Dashboard**, and click **Add**.
 2. Search for **Origami Weather** and click **Download**.
 3. Reload your dashboard.
 </details>
@@ -52,13 +52,15 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 | `weather_entity` | `string` | — | **Required.** Your weather entity. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Your moon phase sensor. |
 
-**The actual content of the card is up to you.** When you add the card to your dashboard, it comes with an example layout already set up, which you can customize however you like. See the [Examples](#examples) below for inspiration, and [Layout Options](#layouts) for an explanation of how building layouts works.
+**The actual content of the card is up to you.** When you add the card to your dashboard, it comes with an example layout already set up, which you can customize however you like.
+
+There is a visual editor for this, so the yaml below is only there if you prefer it or want to copy an example. See the [Examples](#examples) for inspiration, and [Layout Options](#layouts) for how building layouts works.
 
 <br>
 
 > [!NOTE]
 > <details>
-> <summary>Important for <strong>dark themes</strong></summary></summary>
+> <summary>Important for <strong>dark themes</strong></summary>
 ><br>
 > By default, the card is light or dark based on the sun. In constantly dark themes this means a very bright card during the day, creating an unpleasant contrast. You can use `color_mode: theme` so the card stays dark during the day, or decrease the general brightness in the color settings.
 >
@@ -1019,9 +1021,9 @@ my_theme:
 
 <br>
 
-This card is pretty busy visually. A lot of work goes into keeping it fast, and every design choice tries to balance performance and looks. It uses literal images for the clouds to stay fast while still looking nice (just about every clouds approach out there was tried before settling on this), and the card is continuously tested with performance tests (you can check this type of thing with the browser tools).
+The card is visually busy, so a few things are built to keep the cost down. The clouds are images instead of drawn shapes, and the animation stops while the card is off screen.
 
-That said, the devices people use for Home Assistant vary a lot. On older or low-power devices, you may want to turn off individual options if you notice yours struggling.
+Devices vary a lot though. On older or low-power ones you can turn off the effects separately.
 
 > **Tip:** Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card for little rendering cost.
 
@@ -1032,6 +1034,6 @@ That said, the devices people use for Home Assistant vary a lot. On older or low
 
 ## History
 
-Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked a lot since then, taking different approaches to pretty much everything. I guess that's just how passion projects go, it's an ongoing learning process... and that's kind of the fun of it. I don't really enjoy the public maintenance side of things, but I like tinkering with this enough that I think it's worth sharing.
+Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked a lot since then, taking different approaches to pretty much everything. I guess that's just how passion projects go, it's an ongoing learning process... and that's kind of the fun of it.
 
-> **Note:** AI is used as a tool in this project to get tedious tasks done faster (leaving me more time for the enjoyable parts), test new ideas, and most of all, to make debugging issues less painful.
+> **Note:** I use AI as a tool in this project, mostly for debugging and the tedious parts.

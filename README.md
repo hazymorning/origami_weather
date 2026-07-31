@@ -1032,6 +1032,6 @@ That said, the devices people use for Home Assistant vary a lot. On older or low
 
 ## History
 
-Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked a lot since then, taking different approaches to pretty much everything. I guess that's just how passion projects go, it's an ongoing learning process... and that's type of the fun of it. I don't really enjoy the public maintenance side of things, but I like tinkering with this enough that I think it's worth sharing.
+Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked a lot since then, taking different approaches to pretty much everything. I guess that's just how passion projects go, it's an ongoing learning process... and that's kind of the fun of it. I don't really enjoy the public maintenance side of things, but I like tinkering with this enough that I think it's worth sharing.
 
 > **Note:** AI is used as a tool in this project to get tedious tasks done faster (leaving me more time for the enjoyable parts), test new ideas, and most of all, to make debugging issues less painful.

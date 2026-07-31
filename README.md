@@ -74,12 +74,12 @@ There is a visual editor for this, so the yaml below is only there if you prefer
 |-------|------|
 | ![Light Mode](https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
 
-This is the default card which shows up if you add it to your dashboard.
-
 <details>
 <summary><b>Default Card</b></summary>
 
 <br>
+
+This is the default card which shows up if you add it to your dashboard.
 
 > **Important:** You need to replace the weather and moon entity with your own ones.
 
@@ -166,12 +166,12 @@ grid_options:
 |-------|------|
 | ![Light Mode](https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08) | ![Dark Mode](https://github.com/user-attachments/assets/ea49bea3-03ec-418c-b462-64ad665a643c) |
 
-A big card that uses different features like a temperature ring, a large animated weather icon, and a forecast slider with rain probability bars.
-
 <details>
 <summary><b>Big Card</b></summary>
 
 <br>
+
+A big card that uses different features like a temperature ring, a large animated weather icon, and a forecast slider with rain probability bars.
 
 >**Note:** The conditional visibility feature can be useful here. For example to toggle between a daily and hourly forecast, or to show/hide the forecast on card tap.
 
@@ -348,12 +348,12 @@ button_containers:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30" />
 
-A simple card that is stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest.
-
 <details>
 <summary><b>Card without background</b></summary>
 
 <br>
+
+A simple card that is stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest.
 
 >**Note:** This can look nice, but mostly in specific cases, like a header for a popup or with an image card in it.
 

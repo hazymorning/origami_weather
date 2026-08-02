@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature request or idea
+    url: https://github.com/hazymorning/origami_weather/discussions/new?category=ideas
+    about: Features and ideas belong in Discussions. Feature requests opened as issues are closed.
+  - name: Question or help with your configuration
+    url: https://github.com/hazymorning/origami_weather/discussions/new?category=q-a
+    about: Card not broken, but you can't get it to do what you want? Ask here.

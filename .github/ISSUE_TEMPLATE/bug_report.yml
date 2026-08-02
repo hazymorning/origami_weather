@@ -1,0 +1,124 @@
+name: Bug report
+description: Something in the weather card is broken or renders incorrectly.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Bugs only.** Feature requests, ideas and "how do I…" questions are closed on sight — use Discussions.
+        **No card YAML = no bug report.** Issues without a full config are closed without investigation.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you submit
+      options:
+        - label: I am on the latest version of the card and of Home Assistant.
+          required: true
+        - label: I searched open and closed issues; this is not a duplicate.
+          required: true
+        - label: This is a bug report — not a feature request, idea or support question.
+          required: true
+        - label: I will paste my complete card YAML below. I understand the issue is closed without it.
+          required: true
+
+  - type: textarea
+    id: card_config
+    attributes:
+      label: Card YAML configuration
+      description: >-
+        Open the card → three dots → "Show code editor", and paste the **entire**
+        config. Redact API keys only — do not shorten or retype it from memory.
+      placeholder: |
+        type: custom:my-weather-card
+        entity: weather.home
+        forecast_type: hourly
+      render: yaml
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened, and what did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: input
+    id: card_version
+    attributes:
+      label: Card version
+      placeholder: e.g. 2.4.1
+    validations:
+      required: true
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: e.g. 2026.7.2
+    validations:
+      required: true
+
+  - type: input
+    id: weather_entity
+    attributes:
+      label: Weather entity and integration behind it
+      placeholder: e.g. weather.home (Met.no)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: How did you install the card?
+      options:
+        - HACS
+        - Manual (www/ folder)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: clients
+    attributes:
+      label: Where do you see the problem?
+      multiple: true
+      options:
+        - Chrome / Edge
+        - Firefox
+        - Safari (macOS)
+        - Companion app (Android)
+        - Companion app (iOS)
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console output
+      description: F12 → Console, hard-reload the dashboard, paste anything red.
+      render: shell
+
+  - type: textarea
+    id: entity_state
+    attributes:
+      label: Entity state and attributes (optional but very helpful)
+      description: Developer Tools → States → your weather entity → copy the attributes.
+      render: yaml
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else

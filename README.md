@@ -54,7 +54,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 **The actual content of the card is up to you.** When you add it to your dashboard it comes with a layout and your weather entity already filled in. The rest is done in the visual editor.
 
-All of it works in yaml as well, the keys are under [Options](#options).
+All of it works in yaml as well, see [here](#options).
 
 <br>
 
@@ -758,9 +758,7 @@ my_theme:
 
 <br>
 
-The card is visually busy, so a few things are built to keep the cost down. The clouds are images instead of drawn shapes, and the animation stops while the card is off screen.
-
-Devices vary a lot though. On older or low-power ones you can turn off the effects separately.
+The card is visually busy, so a few things are built to keep the required performance reasonable. Devices vary a lot though. On older or low-power ones you can turn off the effects separately.
 
 > **Tip:** Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card for little rendering cost.
 
@@ -771,6 +769,6 @@ Devices vary a lot though. On older or low-power ones you can turn off the effec
 
 ## History
 
-Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account). It's been reworked a lot since then, taking different approaches to pretty much everything. I guess that's just how passion projects go, it's an ongoing learning process... and that's kind of the fun of it.
+Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account).
 
 > **Note:** I use AI as a tool in this project, mostly for debugging and the tedious parts.

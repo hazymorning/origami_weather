@@ -72,13 +72,13 @@ All of it works in yaml as well, the keys are under [Options](#options).
 
 Four layouts are included as a starting point. All four are built from the same containers and buttons you find in the **Content** panel, so everything in them can be changed or removed. See [Building blocks](#building-blocks) for how that works. 
 
-> **Important:** A layout replaces the content of the card. So choose the layout first and change things afterwards.
+> **Important:** A layout replaces the content of the card. So choose the layout first and change things afterwards. 
 
 <br>
 
 **Compact** · Small and tidy
 
-<img width="400" alt="Compact layout" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554" /> 
 
 Icon and temperature at the top, a blurred bar at the bottom with wind, humidity and sunrise or sunset. The two sun buttons use visibility conditions, so you only see the next one.
 
@@ -92,9 +92,9 @@ Large temperature in the corner, the animated weather icon with a temperature ri
 
 <br>
 
-**Minimal** · Slim and simple
+**Minimal** · Centered and simple
 
-<!-- screenshot -->
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
 
 Only the temperature and the current condition, with high, low, wind and humidity in a centered row below. Nothing has a background here, so you see more of the sky.
 
@@ -102,8 +102,7 @@ Only the temperature and the current condition, with high, low, wind and humidit
 
 **Side by side** · Now and later
 
-<!-- screenshot -->
-
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/5f6f66d5-1bec-4845-b329-c8fa182a5243" />
 Current temperature and condition on the left, the hourly forecast on the right as a vertical scroll list with dividers between the rows.
 
 <br>

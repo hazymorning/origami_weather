@@ -78,9 +78,7 @@ Four layouts are included as a starting point. All four are built from the same 
 
 **Compact** · Small and tidy
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554" /> 
-
-Icon and temperature at the top, a blurred bar at the bottom with wind, humidity and sunrise or sunset. The two sun buttons use visibility conditions, so you only see the next one.
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554" />
 
 <br>
 
@@ -88,22 +86,17 @@ Icon and temperature at the top, a blurred bar at the bottom with wind, humidity
 
 <img width="400" alt="Big layout" src="https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08" />
 
-Large temperature in the corner, the animated weather icon with a temperature ring around it, wind and sun times below, and a seven day forecast that scrolls sideways.
-
 <br>
 
 **Minimal** · Centered and simple
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
 
-Only the temperature and the current condition, with high, low, wind and humidity in a centered row below. Nothing has a background here, so you see more of the sky.
-
 <br>
 
 **Side by side** · Now and later
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/5f6f66d5-1bec-4845-b329-c8fa182a5243" />
-Current temperature and condition on the left, the hourly forecast on the right as a vertical scroll list with dividers between the rows.
 
 <br>
 

@@ -7,9 +7,9 @@ A flexible card that tries to visualize the weather and related data in a nice w
 <br>
 <br>
 
-**Getting Started** · [Installation](#installation) · [Setup](#setup) · [Examples](#examples)
+**Getting Started** · [Installation](#installation) · [Setup](#setup) · [Layouts](#layouts)
 
-**How It Works** · [Backgrounds](#backgrounds) · [Layouts](#layouts)
+**How It Works** · [Backgrounds](#backgrounds) · [Building blocks](#building-blocks)
 
 **Reference** · [Options](#options) · [Performance](#performance) · [History](#history)
 
@@ -35,8 +35,8 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 <br>
 
-1. Download `origami-weather.js`, `origami-weather-editor.js` and `image-assets.js` from the latest release.
-2. Put all three in `config/www/`, in the same folder. The card loads the other two itself, so it breaks if they are missing or sitting somewhere else.
+1. Download `origami-weather.js`, `origami-weather-editor.js`, `layout-presets.js` and `image-assets.js` from the latest release.
+2. Put all four in `config/www/`, in the same folder. The card loads the other three itself, so it breaks if they are missing or sitting somewhere else.
 3. Go to **Settings** → **Dashboards** → **⋮** → **Resources**.
 4. Add `/local/origami-weather.js` as a JavaScript Module. Only this one file gets registered as a resource.
 5. Hard-refresh your browser.
@@ -52,9 +52,11 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 | `weather_entity` | `string` | — | **Required.** Your weather entity. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Your moon phase sensor. |
 
-**The actual content of the card is up to you.** When you add the card to your dashboard, it comes with an example layout already set up, which you can customize however you like.
+**The actual content of the card is up to you.** When you add it to your dashboard it comes with the Compact layout and your weather entity already filled in. The rest is done in the visual editor.
 
-There is a visual editor for this, so the yaml below is only there if you prefer it or want to copy an example. See the [Examples](#examples) for inspiration, and [Layout Options](#layouts) for how building layouts works.
+The editor has four panels: **Layouts** for the four included layouts, **General** for card size, sun and moon and tap action, **Background** for the sky and its effects, and **Content** for the containers and buttons the card is made of.
+
+All of it works in yaml as well, the keys are under [Options](#options).
 
 <br>
 
@@ -68,351 +70,70 @@ There is a visual editor for this, so the yaml below is only there if you prefer
 
 <br>
 
-## Examples
+## Layouts
 
-| Light | Dark |
-|-------|------|
-| ![Light Mode](https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
+Four layouts are included. You choose one under **Layouts** in the editor and it's set up for you.
 
-<details>
-<summary><b>Default Card</b></summary>
+> **Important:** A layout replaces the content of the card. Your weather entity, sun entity, moon sensor and icon folder stay, the rest is overwritten. So choose the layout first and change things afterwards.
 
-<br>
-
-This is the default card which shows up if you add it to your dashboard.
-
-> **Important:** You need to replace the weather and moon entity with your own ones.
-
-```yaml
-type: custom:origami-weather
-weather_entity: weather.home
-sun_entity: sun.sun
-moon_phase_entity: sensor.moon_phase
-sun_moon_x: 80
-card_height: content
-card_padding: 16px
-content_align: between
-content_align_items: start
-button_containers:
-  - buttons:
-      - entity: weather.home
-        elements:
-          - type: icon
-            icon: weather
-            icon_background: false
-            margin: 0 2px 0 0
-          - type: text
-            precision: 0
-            format: °
-            entity: weather.home
-            attribute: temperature
-            weight: "700"
-          - type: text
-            weight: "500"
-            entity: weather.home
-        text_layout: vertical
-        style: inline
-    padding: "4px"
-    button_text_size: 16px
-    margin: 0 0 32px 0
-    button_gap: 6px
-    button_style: vertical
-    button_icon_size: 20px
-  - background: true
-    position: bottom-left
-    gap: 8px
-    button_text_layout: vertical
-    button_gap: 8px
-    button_text_gap: 6px
-    button_icon_size: 14px
-    button_padding: 6px 10px 6px 8px
-    align: center
-    button_text_size: 12px
-    background_color: rgba(255,255,255,0.1)
-    width: 100%
-    blurred_background: true
-    buttons:
-      - entity: weather.home
-        elements:
-          - type: icon
-            icon: mdi:weather-windy
-          - type: text
-            attribute: wind_speed
-            format: " km/h"
-            weight: "700"
-        style: inline
-      - entity: weather.home
-        elements:
-          - type: icon
-            icon: mdi:water-percent
-          - type: text
-            weight: "700"
-            attribute: humidity
-            format: " %"
-        style: inline
-    button_background_color: rgba(255,255,255,0.05)
-    button_blurred_background: true
-    justify_content: end
-grid_options:
-  rows: auto
-  columns: 12
-```
-
-</details>
+They're only a starting point. All four are built from the same containers and buttons you find in the **Content** panel, so everything in them can be changed or removed. See [Building blocks](#building-blocks) for how that works.
 
 <br>
 
-| Light | Dark |
-|-------|------|
-| ![Light Mode](https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08) | ![Dark Mode](https://github.com/user-attachments/assets/ea49bea3-03ec-418c-b462-64ad665a643c) |
+**Compact** · Small and tidy
 
-<details>
-<summary><b>Big Card</b></summary>
+<img width="400" alt="Compact layout" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
 
-<br>
-
-A big card that uses different features like a temperature ring, a large animated weather icon, and a forecast slider with rain probability bars.
-
->**Note:** The conditional visibility feature can be useful here. For example to toggle between a daily and hourly forecast, or to show/hide the forecast on card tap.
-
-```yaml
-type: custom:origami-weather
-weather_entity: weather.home
-sun_entity: sun.sun
-card_height: content
-card_padding: 16px
-background_mode: default
-button_containers:
-  - position: custom
-    position_anchor: top-left
-    padding: 4px 8px
-    buttons:
-      - entity: weather.home
-        attribute: temperature
-        text_size: 42px
-        align: start
-        padding: 4px 0 0 0
-        background: false
-        elements:
-          - type: text
-            weight: "700"
-            fancy_unit: true
-            attribute: temperature
-            precision: 0
-  - background: true
-    button_icon_size: 34px
-    button_padding: 16px
-    align: center
-    button_background_color: "rgba(255,255,255,0.1)"
-    button_blurred_background: true
-    justify_content: end
-    align_items: start
-    padding: 8px
-    buttons:
-      - entity: weather.home
-        attribute: temperature
-        type: ring
-        ring_gap: 8px
-        ring_width: 4px
-        ring_min: "-20"
-        ring_max: "40"
-        ring_threshold_mode: gradient
-        ring_thresholds:
-          - value: "-20"
-            color: "rgba(124, 142, 184, 0.8)"
-          - value: "-16"
-            color: "rgba(132, 156, 196, 0.8)"
-          - value: "-12"
-            color: "rgba(140, 172, 206, 0.8)"
-          - value: "-8"
-            color: "rgba(150, 188, 214, 0.8)"
-          - value: "-4"
-            color: "rgba(165, 202, 218, 0.8)"
-          - value: "0"
-            color: "rgba(183, 213, 216, 0.8)"
-          - value: "4"
-            color: "rgba(198, 218, 205, 0.8)"
-          - value: "8"
-            color: "rgba(206, 218, 188, 0.8)"
-          - value: "12"
-            color: "rgba(214, 214, 168, 0.8)"
-          - value: "16"
-            color: "rgba(224, 207, 152, 0.8)"
-          - value: "20"
-            color: "rgba(232, 195, 140, 0.8)"
-          - value: "24"
-            color: "rgba(232, 178, 130, 0.8)"
-          - value: "28"
-            color: "rgba(228, 158, 124, 0.8)"
-          - value: "32"
-            color: "rgba(220, 138, 120, 0.8)"
-          - value: "36"
-            color: "rgba(208, 120, 118, 0.8)"
-          - value: "40"
-            color: "rgba(194, 104, 114, 0.8)"
-        blurred_background: true
-        padding: 16px
-        elements:
-          - type: icon
-            icon: weather
-            icon_background: false
-            icon_background_color: "rgba(0,0,0,0)"
-            icon_size: 42px
-  - gap: 4px
-    button_gap: 0px
-    button_text_gap: 6px
-    button_padding: "0"
-    align: start
-    button_text_size: 14px
-    padding: 0 0 16px 8px
-    margin: -14px 0 0 0
-    buttons:
-      - entity: weather.home
-        align: start
-        elements:
-          - type: icon
-            icon: mdi:weather-windy
-          - type: text
-            weight: "500"
-            text: Wind
-          - type: text
-            text: "•"
-            weight: "500"
-          - type: text
-            attribute: wind_speed
-            weight: "700"
-  - layout: horizontal-scroll
-    scroll_count: 5
-    gap: 2px
-    button_icon_background_color: "rgba(255,255,255,0.05)"
-    button_style: vertical
-    button_gap: 6px
-    button_icon_size: 24px
-    button_padding: 12px
-    align: center
-    button_text_size: 13px
-    background_color: "rgba(255,255,255,0.05)"
-    blurred_background: true
-    button_background_color: "rgba(255,255,255,0.1)"
-    separator: true
-    button_icon_padding: 0 0 6px 0
-    grouped: true
-    background: true
-    buttons:
-      - entity: weather.home
-        forecast: daily
-        elements:
-          - type: icon
-            icon: weather
-          - type: text
-            size: 12px
-            weight: "500"
-            attribute: datetime
-          - type: text
-            weight: "700"
-            attribute: temperature
-          - type: bar
-            gauge_attribute: precipitation_probability
-            bar_min: "0"
-            bar_max: "100"
-            bar_height: "8"
-            bar_threshold_mode: gradient
-            margin: 6px 0 0 0
-            bar_thresholds:
-              - value: "0"
-                color: "rgba(214, 224, 230, 0.8)"
-              - value: "10"
-                color: "rgba(190, 210, 224, 0.8)"
-              - value: "20"
-                color: "rgba(166, 197, 219, 0.8)"
-              - value: "30"
-                color: "rgba(142, 184, 214, 0.8)"
-              - value: "40"
-                color: "rgba(118, 170, 210, 0.8)"
-              - value: "50"
-                color: "rgba(96, 156, 204, 0.8)"
-              - value: "60"
-                color: "rgba(76, 141, 196, 0.8)"
-              - value: "70"
-                color: "rgba(58, 125, 186, 0.8)"
-              - value: "80"
-                color: "rgba(42, 108, 174, 0.8)"
-              - value: "90"
-                color: "rgba(30, 90, 160, 0.8)"
-      # Repeat with forecast_offset: 1 through 6 for the remaining days
-```
-
-</details>
+Icon and temperature at the top, a blurred bar at the bottom with wind, humidity and sunrise or sunset. The two sun buttons use visibility conditions, so you only see the next one.
 
 <br>
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30" />
+**Big** · Lots of info
 
-<details>
-<summary><b>Card without background</b></summary>
+<img width="400" alt="Big layout" src="https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08" />
+
+Large temperature in the corner, the animated weather icon with a temperature ring around it, wind and sun times below, and a seven day forecast that scrolls sideways.
 
 <br>
 
-A simple card that is stretched to fill the full dashboard width, with the sky and card styling disabled so it blends in with the rest.
+**Minimal** · Slim and simple
 
->**Note:** This can look nice, but mostly in specific cases, like a header for a popup or with an image card in it.
+<!-- screenshot -->
 
-```yaml
-type: custom:origami-weather
-weather_entity: weather.home
-sun_entity: sun.sun
-moon_phase_entity: sensor.moon_phase
-sun_moon_x: 28
-card_height: auto
-card_padding: 16px
-background_mode: none
-card_frame: false
-full_width: true
-content_align: end
-content_align_items: start
-button_containers:
-  - buttons:
-      - entity: weather.home
-        elements:
-          - type: icon
-            icon: weather
-            icon_size: "22"
-            icon_padding: 0 8px 0 0
-          - type: text
-            precision: 0
-            format: °
-            entity: weather.home
-            attribute: temperature
-            weight: "700"
-          - type: text
-            weight: "500"
-            entity: weather.home
-        style: inline
-    padding: "4"
-    button_text_size: 18px
-    button_gap: 8px
-grid_options:
-  rows: 2
-```
+Only the temperature and the current condition, with high, low, wind and humidity in a centered row below. Nothing has a background here, so you see more of the sky.
 
-</details>
+<br>
+
+**Side by side** · Now and later
+
+<!-- screenshot -->
+
+Current temperature and condition on the left, the hourly forecast on the right as a vertical scroll list with dividers between the rows.
 
 <br>
 
 ## Backgrounds
 
+| Light | Dark |
+|-------|------|
+| ![Light Mode](https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
+
 The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, and so on. Different effects are layered on top of this sky to add realism and drama.
 
 You can disable the sky or individual effects, or combine them with different background styles. If you prefer the minimalism, you can also use the card in the simple default HA style with just the content and nothing else going on.
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30" />
+
+With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a header for a popup or above an image card.
 
 The different settings are shown [here](#options).
 
 <br>
 
-## Layouts
+## Building blocks
 
 <details>
-<summary><b>Layout options</b></summary>
+<summary><b>Show how content is built</b></summary>
 
 <br>
 
@@ -457,7 +178,7 @@ button_containers:
 
 Buttons are the items inside a container. Each one is tied to an entity and shows live data from it: a sensor value, a weather attribute, a forecast entry, or just an icon.
 
-They can be styled individually or inherit defaults from their container. They support ring gauges, conditional visibility, free positioning, tap actions, and scrolling text.
+They can be styled individually or inherit defaults from their container. They support ring gauges, background images, conditional visibility, free positioning, tap actions, and scrolling text.
 
 ```yaml
 buttons:
@@ -529,7 +250,7 @@ All three types take `margin` and `padding`, which is the usual way to nudge one
 
 **Icon elements** take `icon`, `icon_path`, `icon_size`, `icon_padding`, `icon_background` and `icon_background_color`. Leave `icon` empty and the entity's own icon is used. Set `icon: weather` for the animated icon that matches the current weather.
 
-**Bar elements** are horizontal gauges. They take `bar_min`, `bar_max`, `bar_height`, `bar_color`, `bar_threshold_mode`, `bar_thresholds`, and `gauge_entity` / `gauge_attribute` if the bar should read a different value than the button.
+**Bar elements** are horizontal gauges. They take `bar_min`, `bar_max`, `bar_height`, `bar_color`, `bar_threshold_mode` and `bar_thresholds`. A bar uses the button's own value, unless you set a different one with `bar_values`.
 
 ```yaml
 buttons:
@@ -599,6 +320,23 @@ ring_thresholds:
   - value: 80
     color: "#f44336"
 ```
+
+A bar can also show more than one value. Add entries to `bar_values` and it becomes a comparison: the fill follows the first value, and every value gets its own marker on the bar. Each entry takes `entity`, `attribute`, `marker_color`, `marker_icon` and `marker_icon_color`.
+
+```yaml
+elements:
+  - type: bar
+    bar_min: -10
+    bar_max: 40
+    bar_height: 10px
+    bar_values:
+      - attribute: temperature
+        marker_icon: mdi:thermometer
+      - entity: sensor.outside_temperature
+        marker_color: "#03a9f4"
+```
+
+With one value there is no marker, `bar_marker: true` adds it. The marker is inside the bar, so a thin bar means a small icon.
 
 Any button can also use `color_thresholds` to tint itself based on a value, with no gauge involved.
 
@@ -689,7 +427,6 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
 | `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, or you can pass a CSS length. |
 | `sun_moon_y` | `string` | — | Vertical position, as a percentage from the top, clamped to 0-100. When unset it follows the sun's elevation. |
-| `sun_rays_enabled` | `boolean` | `true` | Show or hide the sun rays. |
 | `moon_phase_entity` | `string` | — | Entity for moon phase. When set, the moon shows the current phase. |
 
 </details>
@@ -724,7 +461,6 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `button_style` | `string` | `inline` | Default button format: `inline` (icon and text side by side) or `vertical` (icon above text). |
 | `button_padding` | `string` | — | Default padding for buttons in this container. |
 | `button_gap` | `string` | — | Gap between icon and text in buttons. |
-| `button_text_gap` | `string` | — | Gap between text elements. |
 | `button_text_size` | `string` | — | Default text size. |
 | `button_icon_size` | `string` | — | Default icon size. |
 | `button_icon_padding` | `string` | — | Default icon padding. |
@@ -749,11 +485,10 @@ The card renders a sun during the day and a moon at night, positioned within the
 | :--- | :--- | :--- | :--- |
 | `entity` | `string` | — | **Required.** Any sensor, binary_sensor, or weather entity. |
 | `attribute` | `string` | — | Read a specific attribute instead of the state. |
-| `elements` | `list` | — | What the button contains. See [Elements](#layouts). |
+| `elements` | `list` | — | What the button contains. See [Elements](#building-blocks). |
 | `type` | `string` | — | Set to `ring` for a circular gauge around the button. |
 | `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`). |
 | `text_size` | `string` | — | Text size for this button. |
-| `text_gap` | `string` | — | Gap between text elements. |
 | `text_shadow` | `boolean` | `false` | Keep the text shadow even when the button has no background. |
 | `inner_gap` | `string` | — | Gap between icon and text. |
 | `icon_size` | `string` | — | Size for the icons in this button. |
@@ -762,6 +497,8 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `icon_background_color` | `string` | — | Icon background color. |
 | `background` | `boolean` | — | Override the container's background setting. |
 | `background_color` | `string` | — | Custom background color. |
+| `background_image` | `boolean` | `false` | Show an image behind this button. |
+| `background_image_path` | `string` | — | Path to that image, e.g. `/local/my-image.jpg`. Only used with `background_image: true`. |
 | `blurred_background` | `boolean` | — | Override the container's blur setting. |
 | `button_round` | `boolean` | `false` | Fully rounded pill shape. |
 | `shadow` | `boolean` | — | Set to `false` to remove the shadow from this button. |
@@ -831,10 +568,20 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `bar_color` | `string` | — | Color of the filled part. |
 | `bar_threshold_mode` | `string` | `solid` | `solid`, `segments`, or `gradient`. |
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
-| `gauge_entity` | `string` | — | Use a different entity for the bar value. |
-| `gauge_attribute` | `string` | — | Attribute to read for the bar value. |
+| `bar_values` | `list` | — | The values shown on the bar. Without it the bar uses the button's own value. |
+| `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. |
 | `margin` | `string` | — | Outer margin of this element. |
 | `padding` | `string` | — | Inner padding of this element. |
+
+**Bar value** (an entry in `bar_values`)
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `entity` | `string` | — | Read from a different entity than the button. |
+| `attribute` | `string` | — | Attribute to read. |
+| `marker_color` | `string` | — | Color of the marker. |
+| `marker_icon` | `string` | — | Icon drawn inside the marker. |
+| `marker_icon_color` | `string` | — | Color of that icon. |
 
 </details>
 

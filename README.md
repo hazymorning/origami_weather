@@ -52,9 +52,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 | `weather_entity` | `string` | — | **Required.** Your weather entity. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Your moon phase sensor. |
 
-**The actual content of the card is up to you.** When you add it to your dashboard it comes with the Compact layout and your weather entity already filled in. The rest is done in the visual editor.
-
-The editor has four panels: **Layouts** for the four included layouts, **General** for card size, sun and moon and tap action, **Background** for the sky and its effects, and **Content** for the containers and buttons the card is made of.
+**The actual content of the card is up to you.** When you add it to your dashboard it comes with a layout and your weather entity already filled in. The rest is done in the visual editor.
 
 All of it works in yaml as well, the keys are under [Options](#options).
 
@@ -72,11 +70,9 @@ All of it works in yaml as well, the keys are under [Options](#options).
 
 ## Layouts
 
-Four layouts are included. You choose one under **Layouts** in the editor and it's set up for you.
+Four layouts are included as a starting point. All four are built from the same containers and buttons you find in the **Content** panel, so everything in them can be changed or removed. See [Building blocks](#building-blocks) for how that works. 
 
-> **Important:** A layout replaces the content of the card. Your weather entity, sun entity, moon sensor and icon folder stay, the rest is overwritten. So choose the layout first and change things afterwards.
-
-They're only a starting point. All four are built from the same containers and buttons you find in the **Content** panel, so everything in them can be changed or removed. See [Building blocks](#building-blocks) for how that works.
+> **Important:** A layout replaces the content of the card. So choose the layout first and change things afterwards.
 
 <br>
 

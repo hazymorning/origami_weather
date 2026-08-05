@@ -70,31 +70,18 @@ All of it works in yaml as well, see [here](#options).
 
 ## Layouts
 
-Four layouts are included as a starting point. All four are built from the same containers and buttons you find in the **Content** panel, so everything in them can be changed or removed. See [Building blocks](#building-blocks) for how that works. 
+You can either build your own layout or pick one of four pre-built ones in the visual editor. Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.
 
-> **Important:** A layout replaces the content of the card. So choose the layout first and change things afterwards. 
+> **Important:** Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards.
+
 
 <br>
-
-**Compact** · Small and tidy
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554" />
 
-<br>
-
-**Big** · Lots of info
-
 <img width="400" alt="Big layout" src="https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08" />
 
-<br>
-
-**Minimal** · Centered and simple
-
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
-
-<br>
-
-**Side by side** · Now and later
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/5f6f66d5-1bec-4845-b329-c8fa182a5243" />
 

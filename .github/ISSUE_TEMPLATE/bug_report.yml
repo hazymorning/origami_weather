@@ -6,8 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Bugs only — for ideas or "how do I…" questions, use Discussions.
-        The card YAML is required: without it I can't reproduce anything.
+        Bugs only — for ideas or "how do I…" questions, use Discussions. The card YAML is required: without it I can't reproduce your issue.
 
   - type: checkboxes
     id: preflight
@@ -23,7 +22,6 @@ body:
       label: Card YAML configuration
       description: >-
         Card → three dots → "Show code editor", paste the whole thing.
-        Redact API keys only.
       render: yaml
     validations:
       required: true

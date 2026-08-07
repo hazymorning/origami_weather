@@ -52,9 +52,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 | `weather_entity` | `string` | — | **Required.** Your weather entity. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Your moon phase sensor. |
 
-**The actual content of the card is up to you.** When you add it to your dashboard it comes with a layout and your weather entity already filled in. The rest is done in the visual editor.
-
-All of it works in yaml as well, see [here](#options).
+**The actual content of the card is up to you.** You can either build your own layout or pick one of four pre-built ones in the visual editor. All of it works in yaml as well, see [here](#options).
 
 <br>
 
@@ -62,7 +60,7 @@ All of it works in yaml as well, see [here](#options).
 > <details>
 > <summary>Important for <strong>dark themes</strong></summary>
 ><br>
-> By default, the card is light or dark based on the sun. In constantly dark themes this means a very bright card during the day, creating an unpleasant contrast. You can use `color_mode: theme` so the card stays dark during the day, or decrease the general brightness in the color settings.
+> By default, the card is light or dark based on the sun. In constantly dark themes this means a very bright card during the day, creating a quite extreme contrast. You can use `color_mode: theme` so the card stays dark during the day, or decrease the general brightness in the color settings.
 >
 > </details>
 
@@ -70,7 +68,7 @@ All of it works in yaml as well, see [here](#options).
 
 ## Layouts
 
-You can either build your own layout or pick one of four pre-built ones in the visual editor. Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.
+Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.
 
 > **Important:** Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards.
 
@@ -758,4 +756,4 @@ The card is visually busy, so a few things are built to keep the required perfor
 
 Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account).
 
-> **Note:** I use AI as a tool in this project, mostly for debugging and the tedious parts.
+> **Note:** I use AI as a tool in this project.

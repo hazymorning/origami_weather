@@ -77,8 +77,6 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
 
-<img width="400" alt="Big layout" src="https://github.com/user-attachments/assets/964286e2-6df7-40b6-9e14-ff76bb4d5d08" />
-
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/5f6f66d5-1bec-4845-b329-c8fa182a5243" />
 
 <br>
@@ -97,7 +95,9 @@ You can disable the sky or individual effects, or combine them with different ba
 
 With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a header for a popup or above an image card.
 
-The different settings are shown [here](#options).
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/c394771a-fa35-4357-8963-24690aab7368" />
+
+You can get pretty creative with different combinations. For example, it's also possible to repurpose the card into an indoor climate one, as shown above. All the different settings are shown [here](#options).
 
 <br>
 

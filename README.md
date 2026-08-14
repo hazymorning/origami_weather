@@ -75,6 +75,9 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <br>
 
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/15783d8f-c969-4089-98b3-223a31c6781c" />
+
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/5f6f66d5-1bec-4845-b329-c8fa182a5243" />

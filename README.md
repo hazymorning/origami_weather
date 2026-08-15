@@ -3,7 +3,7 @@
 A flexible card that tries to visualize the weather and related data in a nice way.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/9a4e1423-3530-4485-9e09-b666692aede7" /><br>
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554" /> 
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
 
 <br>
 
@@ -75,12 +75,12 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <br>
 
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/081a9b11-3037-4c65-a674-4a201753bda1" />
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/15783d8f-c969-4089-98b3-223a31c6781c" />
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/5f6f66d5-1bec-4845-b329-c8fa182a5243" />
 
 <br>
 
@@ -88,7 +88,8 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 | Light | Dark |
 |-------|------|
-| ![Light Mode](https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
+| ![Light Mode](https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
+
 
 The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, and so on. Different effects are layered on top of this sky to add realism and drama.
 

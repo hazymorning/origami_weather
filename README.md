@@ -87,7 +87,7 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/45a09980-3a13-487b-bd12-2d9b818ad896" />
 
 > [!TIP]
->If you like the style of this card, there's a whole dashboard to go with it — check out [Origami](https://github.com/hazymorning/origami).
+>If you like the style of this card, there's a whole [dashboard](https://github.com/hazymorning/origami) to go with it.
 
 
 <br>

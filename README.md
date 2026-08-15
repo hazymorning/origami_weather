@@ -86,6 +86,9 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/45a09980-3a13-487b-bd12-2d9b818ad896" />
 
+> [!TIP]
+>If you like the style of this card, there's a whole dashboard to go with it — check out [Origami](https://github.com/hazymorning/origami).
+
 
 <br>
 
@@ -106,7 +109,7 @@ With `background_mode: none` and `card_frame: false` the card loses its own styl
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/c394771a-fa35-4357-8963-24690aab7368" />
 
-You can get pretty creative with different combinations. For example, it's also possible to repurpose the card into an indoor climate one, as shown above. All the different settings are shown [here](#options).
+You can get pretty creative with different combinations. For example, it's also possible to repurpose the card into an indoor climate one, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
 
 <br>
 

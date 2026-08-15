@@ -90,12 +90,6 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 <br>
 <br>
 
-> [!TIP]
->There's a whole [dashboard](https://github.com/hazymorning/origami) to go with this card.
-
-
-<br>
-
 ## Backgrounds
 
 | Light | Dark |

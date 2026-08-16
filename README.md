@@ -80,9 +80,9 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/081a9b11-3037-4c65-a674-4a201753bda1" />
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/15783d8f-c969-4089-98b3-223a31c6781c" />
-
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/15783d8f-c969-4089-98b3-223a31c6781c" />
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/45a09980-3a13-487b-bd12-2d9b818ad896" />
 

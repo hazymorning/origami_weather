@@ -6,7 +6,9 @@ A flexible card that tries to visualize the weather and related data in a nice w
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
 
 > [!NOTE]
-> While it has a lot going on, this card actively tries to use as few resources as possible. It should run fine on older devices, and there are options to disable animations.
+> While it has a lot going on, this card tries to use as few resources as possible. It should run fine on older devices, and there are options to disable animations.
+
+If you like the style of this card or need some dashboard inspiration, check out [Origami](https://github.com/hazymorning/origami).
 
 <br>
 

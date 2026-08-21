@@ -108,6 +108,9 @@ With `background_mode: none` and `card_frame: false` the card loses its own styl
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/c394771a-fa35-4357-8963-24690aab7368" />
 
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/6c9599d4-0696-479d-ae09-25779538d834" />
+
+
 You can get pretty creative with different combinations. For example, it's also possible to repurpose the card into an indoor climate one, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
 
 <br>

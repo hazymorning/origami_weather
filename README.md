@@ -1,6 +1,6 @@
 # ◪ Origami Weather
 
-A flexible card that tries to visualize the weather and related data in a nice way.
+A flexible weather card.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/9a4e1423-3530-4485-9e09-b666692aede7" /><br>
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />

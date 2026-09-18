@@ -2,11 +2,8 @@
 
 A flexible weather card.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/45d89158-8229-4521-9d77-5849978eeee3" /><br>
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
-
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/55276c24-e197-4943-9517-2582966df53d" /><br>
 <br>
-
 **Getting Started** · [Installation](#installation) · [Setup](#setup) · [Layouts](#layouts)
 
 **How It Works** · [Backgrounds](#backgrounds) · [Building blocks](#building-blocks)
@@ -64,6 +61,8 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 
 <br>
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/081a9b11-3037-4c65-a674-4a201753bda1" />
 

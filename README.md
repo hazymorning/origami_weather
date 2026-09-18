@@ -72,6 +72,8 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/45a09980-3a13-487b-bd12-2d9b818ad896" />
 
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399" />
+
 <br>
 <br>
 
@@ -91,9 +93,6 @@ You can disable the sky or individual effects, or combine them with different ba
 With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a header for a popup or above an image card.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/c394771a-fa35-4357-8963-24690aab7368" />
-
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/6c9599d4-0696-479d-ae09-25779538d834" />
-
 
 You can get pretty creative with different combinations. For example, it's also possible to repurpose the card into an indoor climate one, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
 

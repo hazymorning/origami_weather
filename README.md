@@ -60,7 +60,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 > <details>
 > <summary>Important for <strong>dark themes</strong></summary>
 ><br>
-> By default, the card is light or dark based on the sun. In constantly dark themes this means a very bright card during the day, creating a quite extreme contrast. You can use `color_mode: theme` so the card stays dark during the day, or decrease the general brightness in the color settings.
+> By default, the card is light or dark based on the sun. In constantly dark themes this means a very bright card during the day, creating a quite extreme contrast. The card softens this on its own by toning the daytime sky down a bit when it notices a dark theme (`dark_theme_adaptation`). If that isn't enough, you can use `color_mode: theme` so the card stays dark during the day, or decrease the general brightness in the color settings.
 >
 > </details>
 
@@ -93,7 +93,7 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 | ![Light Mode](https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
 
 
-The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, birds cross the sky, balloons drift past, and so on. Different effects are layered on top of this sky to add realism and drama.
+The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, birds cross the sky, balloons drift past, planes pass overhead, and so on. Different effects are layered on top of this sky to add realism and drama.
 
 You can disable the sky or individual effects, or combine them with different background styles. If you prefer the minimalism, you can also use the card in the simple default HA style with just the content and nothing else going on.
 
@@ -322,7 +322,7 @@ With one value there is no marker, `bar_marker: true` adds it. The marker matche
 
 `bar_range_from` and `bar_range_to` draw a highlighted band on the track, which is useful for marking the range you actually care about.
 
-Any button can also use `color_thresholds` to tint itself based on a value, with no gauge involved.
+Any button can also use `color_thresholds` to tint itself based on a value, with no gauge involved. The value doesn't have to be a number here, a state like `on` or `home` works too.
 
 </details>
 
@@ -389,6 +389,7 @@ icon_path: /local/weather-icons/
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows your `sun_entity`, `theme` follows your HA theme. |
+| `dark_theme_adaptation` | `boolean` | `true` | Darkens and saturates the sky, background images, sun and effects a bit while your HA theme is dark but the card is in light mode. Only used with `background_mode: default` or `images`, and does nothing with `color_mode: theme` since the card is dark then anyway. |
 | `card_frame` | `boolean` | `true` | Set to `false` to drop the rounded corners and border of the card itself. |
 | `edge_fade` | `boolean` | `false` | Fades the top and bottom edge of the card into the dashboard background. |
 | `edge_fade_size` | `string` | `10%` | How deep that fade reaches in from each edge. |
@@ -407,11 +408,14 @@ The card renders a sun during the day and a moon at night, positioned within the
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only set this if your sun entity has a different ID. |
-| `sun_moon_enabled` | `boolean` | `true` | Show or hide the sun/moon. |
+| `sun_enabled` | `boolean` | `true` | Show or hide the sun. |
+| `moon_enabled` | `boolean` | `true` | Show or hide the moon. |
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
-| `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, or you can pass a CSS length. |
+| `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, or you can pass a CSS length. Set it to `dynamic` and the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. |
 | `sun_moon_y` | `string` | — | Vertical position, as a percentage from the top, clamped to 0-100. When unset it follows the sun's elevation. |
 | `moon_phase_entity` | `string` | — | Entity for moon phase. When set, the moon shows the current phase. |
+
+The old `sun_moon_enabled` is converted to the two separate toggles automatically, so existing configs keep working.
 
 </details>
 
@@ -493,7 +497,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `height` | `string` | — | Button height. |
 | `padding` | `string` | — | Inner padding. |
 | `align` | `string` | — | Content alignment: `start`, `center`, `end`, `spread`. |
-| `color_thresholds` | `list` | — | List of `{ value, color }` entries that tint the whole button as the value rises. |
+| `color_thresholds` | `list` | — | List of `{ value, color }` entries that tint the whole button as the value rises. `value` can also be a text state like `on` or `home` instead of a number. |
 | `color_threshold_entity` | `string` | — | Read the tint value from a different entity. |
 | `color_threshold_attribute` | `string` | — | Attribute to read for the tint value. |
 | `marquee_speed` | `number` | `30` | Scroll speed in px/s for text elements using `overflow: marquee`. |
@@ -609,7 +613,7 @@ Set on the button, not on an element. Needs `type: ring`.
 | :--- | :--- | :--- | :--- |
 | `background_mode` | `string` | `default` | `default` for the animated sky, `images` for your own background files, `card` for the plain Home Assistant card background, `color` for a color of your own, `none` for a transparent card. |
 | `background_color` | `string` | — | The color of the card. Only used with `background_mode: color`. |
-| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. |
+| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. |
 | `background_threshold_entity` | `string` | — | Entity the thresholds read from. |
 | `background_threshold_attribute` | `string` | — | Attribute to read for the threshold value. |
 | `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. Part of the `default` sky, so it has no effect in the other modes. |
@@ -623,12 +627,14 @@ These run on top of whichever background you picked, including `images` and `non
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `precipitation_effects` | `boolean` | `true` | Rain, downpour, thunderstorms, snow, sleet and hail particles. |
-| `cloud_effects` | `boolean` | `true` | The drifting cloud layer. |
+| `cloud_effects` | `boolean` | `true` | The drifting cloud layer. Even clear skies get a few soft ones, and fog is drawn with them as well. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, thinned out when it's cloudy. |
-| `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. |
+| `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |
 | `balloon_effects` | `boolean` | `true` | Balloons drifting past. Only when the sky is clear or lightly clouded. |
 | `balloon_density` | `number` | `1` | How many balloons, between `0.25` and `4`. |
+| `plane_effects` | `boolean` | `true` | Planes crossing the sky, with contrails on clear days and lights at night. Fewer of them in bad weather, none in thunderstorms, hail, fog or pouring rain. |
+| `plane_density` | `number` | `1` | How many planes, between `0.25` and `4`. |
 
 The sun and moon sit in this group too. Their options live under [Card · Sun & Moon](#options).
 

@@ -1,5 +1,5 @@
 import { LitElement, html, css } from "https://esm.sh/lit@3.2.1";
-import { LAYOUT_PRESETS, instantiatePreset } from "./layout-presets.js?v=1.6.t2ln";
+import { LAYOUT_PRESETS, instantiatePreset } from "./layout-presets.js?v=1-4-lets-get-cloudy";
 const LABELS = Object.freeze({
     weather_entity: "", sun_entity: "Sun entity",
     moon_phase_entity: "Moon phase entity", sun_moon_size: "Diameter", sun_moon_x: "Horizontal position", sun_moon_y: "Vertical position",
@@ -17,25 +17,18 @@ const LABELS = Object.freeze({
     icon_path: "SVG icon folder",
     bg_brightness: "Background brightness", bg_saturation: "Color intensity", bg_blur: "Background blur",
 });
-const HELPERS = Object.freeze({});
-const BUTTON_LABELS = Object.freeze({
-    entity: "", attribute: "Attribute",
-    gauge_entity: "Value entity", gauge_attribute: "Value attribute",
-    icon: "Icon", icon_path: "Icon folder",
-    tap_action: "Tap action"});
-const BUTTON_HELPERS = Object.freeze({
-    icon: "MDI icon, or type 'weather' for a dynamic icon.", icon_path: "e.g. /local/weather-icons/"});
+const BUTTON_LABELS = Object.freeze({ entity: "", tap_action: "Tap action" });
 const KEY_ORDER = Object.freeze([
     "type", "name", "entity", "weather_entity",
-    "sun_entity", "sun_moon_enabled", "moon_phase_entity", "sun_moon_size", "sun_moon_x", "sun_moon_y",
-    "color_mode", "card_height", "card_padding",
+    "sun_entity", "sun_enabled", "moon_enabled", "moon_phase_entity", "sun_moon_size", "sun_moon_x", "sun_moon_y",
+    "color_mode", "dark_theme_adaptation", "card_height", "card_padding",
     "background_mode", "background_color", "background_threshold_entity", "background_threshold_attribute", "background_thresholds",
     "weather_image_path", "weather_image_path_dark",
     "card_tap_action", "card_offset",
     "card_frame", "full_width", "full_width_margin", "edge_fade", "edge_fade_size", "shadow", "shadow_color",
     "icon_path",
     "bg_brightness", "bg_saturation", "bg_blur",
-    "background_haze", "precipitation_effects", "cloud_effects", "night_sky_effects", "bird_effects", "balloon_effects",
+    "background_haze", "precipitation_effects", "cloud_effects", "night_sky_effects", "bird_effects", "balloon_effects", "plane_effects",
     "button_containers"]);
 const CARD_THRESHOLD_KEYS = Object.freeze(["background_thresholds", "background_threshold_entity", "background_threshold_attribute"]);
 const DISPLAY_DEFAULTS = Object.freeze({
@@ -94,7 +87,7 @@ class WeatherCardEditor extends LitElement {
                 this._hassThrottle = true;
                 setTimeout(() => { this._hassThrottle = false; this._requestUpdateIfIdle(); }, 2000);}}}
     _isEditing() {
-                        const el = this.shadowRoot && this.shadowRoot.activeElement;
+        const el = this.shadowRoot && this.shadowRoot.activeElement;
         if (!el) return false;
         const tag = el.tagName;
         if (tag === "INPUT" || tag === "TEXTAREA") {
@@ -104,7 +97,7 @@ class WeatherCardEditor extends LitElement {
         return false;
     }
     _requestUpdateIfIdle() {
-                                if (!this._isEditing()) this.requestUpdate();
+        if (!this._isEditing()) this.requestUpdate();
     }
     get hass() { return this._hass; }
     static get styles() {
@@ -177,7 +170,7 @@ class WeatherCardEditor extends LitElement {
                 display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--origami-e-s2);
                 & ha-textfield { display: block; width: 100%; min-width: 0; }}
             /* Composite field groups */
-             .composite-grid-4 input {
+            .composite-grid-4 input {
                 flex: 1; min-width: 120px; padding: var(--origami-e-s2) var(--origami-e-s3);
                 border: 1px solid transparent; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07);
                 color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl);
@@ -414,7 +407,6 @@ class WeatherCardEditor extends LitElement {
             .anchor-grid { display: grid; grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); gap: 4px; }
             .anchor-cell { width: 30px; height: 30px; border: 1.5px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.15); border-radius: var(--origami-e-r-ctrl); background: transparent; cursor: pointer; transition: border-color var(--origami-e-t), background var(--origami-e-t); &:hover:not(.active) { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.07); } &.active { border-color: var(--primary-color); background: var(--primary-color); } }
             .clearable-field { position: relative; & ha-form { padding-right: 0; } & .clear-btn { position: absolute; top: 8px; right: 4px; width: 24px; height: 24px; padding: 0; margin: 0; border: none; background: transparent; color: var(--secondary-text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; opacity: 0.6; transition: opacity var(--origami-e-t), color var(--origami-e-t); z-index: 1; &:hover { opacity: 1; color: var(--error-color); } & ha-icon { --mdc-icon-size: 16px; } } }
-            /* Forecast special box */
             /* Ring threshold rows */
             .ring-threshold-row {
                 display: flex; align-items: center; gap: var(--origami-e-s2); padding: var(--origami-e-s2) 0;
@@ -488,6 +480,12 @@ class WeatherCardEditor extends LitElement {
         if (typeof c.background_mode !== "string") {
             c.background_mode = "default";
             autofilled = true;}
+        if ("sun_moon_enabled" in c) {
+            if (c.sun_moon_enabled === false) {
+                if (c.sun_enabled === undefined) c.sun_enabled = false;
+                if (c.moon_enabled === undefined) c.moon_enabled = false;}
+            delete c.sun_moon_enabled;
+            autofilled = true;}
         this._config = this._cleanConfig(c);
         if (autofilled) Promise.resolve().then(() => this._emit());}
     get _formData() {
@@ -497,8 +495,6 @@ class WeatherCardEditor extends LitElement {
         c.background_mode = typeof c.background_mode === "string" ? c.background_mode : "default";
         this._cachedFormData = c; this._cachedFormConfig = this._config;
         return c;}
-    _colorModeSchema() {
-        return [{ name: "color_mode", selector: { select: { mode: "dropdown", options: OPT.color_mode } }}];}
     _setVisualMode(mode) {
         const clear = ["weather_image_path", "weather_image_path_dark"];
         const withColor = mode === "color" ? clear : [...clear, "background_color", ...CARD_THRESHOLD_KEYS];
@@ -563,14 +559,9 @@ class WeatherCardEditor extends LitElement {
         if (!schema || !schema.name) return "";
         if (schema.name in LABELS) return LABELS[schema.name];
         return schema.name;};
-    _computeHelper = (schema) => {
-        if (!schema || !schema.name) return undefined;
-        return HELPERS[schema.name] || undefined;};
     _valueChanged(ev) {
         ev.stopPropagation(); if (!this._config) return;
-        const incoming = { ...((ev.detail && ev.detail.value) || {}) };
-        const strip = [];
-        this._patch(incoming, { replace: true, strip });}
+        this._patch({ ...((ev.detail && ev.detail.value) || {}) }, { replace: true });}
     _patch(changes, opts) {
         const options = opts || {};
         const base = options.replace ? {} : { ...(this._config || {}) };
@@ -617,7 +608,6 @@ class WeatherCardEditor extends LitElement {
                 .data=${this._formData}
                 .schema=${schema}
                 .computeLabel=${this._computeLabel}
-                .computeHelper=${this._computeHelper}
                 @value-changed=${this._valueChanged}
             ></ha-form>`;}
     _renderEntityField(name, opts) {
@@ -693,18 +683,28 @@ class WeatherCardEditor extends LitElement {
             </div></div>`;}
     _renderSunMoonPanel() {
         const c = this._formData || {};
-        const enabled = c.sun_moon_enabled !== false;
+        const sunEnabled = c.sun_enabled !== false, moonEnabled = c.moon_enabled !== false;
+        const xDynamic = c.sun_moon_x === "dynamic";
         const yRaw = c.sun_moon_y;
         const yFixed = yRaw != null && yRaw !== "";
         return html`<div class="settings-group">
-            <div class="toggle-group"><label class="toggle-row"><span>Show Sun & Moon</span>
-                <ha-switch .checked=${enabled}
-                    @change=${(e) => this._updateField("sun_moon_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
-            ${enabled ? html`
+            <div class="toggle-group"><label class="toggle-row"><span>Show Sun</span>
+                <ha-switch .checked=${sunEnabled}
+                    @change=${(e) => this._updateField("sun_enabled", e.target.checked ? "" : false)}></ha-switch></label>
+                <label class="toggle-row"><span>Show Moon</span>
+                <ha-switch .checked=${moonEnabled}
+                    @change=${(e) => this._updateField("moon_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
+            ${sunEnabled || moonEnabled ? html`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
-                ${this._renderEntityField("moon_phase_entity", { domain: "sensor" })}
+                ${moonEnabled ? this._renderEntityField("moon_phase_entity", { domain: "sensor" }) : ""}
                 ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
-                ${this._renderSlider("sun_moon_x", LABELS.sun_moon_x, 0, 100, 1)}
+                <div class="compact-field">
+                    <span class="compact-field-label">${LABELS.sun_moon_x}</span>
+                    <div class="segmented segmented-compact">
+                        <button type="button" class=${xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", "dynamic")}>Dynamic</button>
+                        <button type="button" class=${!xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", 50)}>Fixed</button>
+                    </div></div>
+                ${xDynamic ? "" : this._renderSlider("sun_moon_x", "", 0, 100, 1)}
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_y}</span>
                     <div class="segmented segmented-compact">
@@ -838,7 +838,7 @@ class WeatherCardEditor extends LitElement {
         this._expandedCard = cards.length - 1;
         container.custom_cards = cards; this._updateContainerAt(containerIdx, container);}
     _buttonTitle(button) {
-                        const els = button && Array.isArray(button.elements) ? button.elements : [];
+        const els = button && Array.isArray(button.elements) ? button.elements : [];
         const firstStatic = els.find(e => e && e.type === "text" && typeof e.text === "string" && e.text.trim());
         const name = (firstStatic ? firstStatic.text : "").toString().trim(), entity = (button && button.entity || "").toString().trim();
         const attribute = (button && button.attribute || "").toString().trim();
@@ -890,7 +890,7 @@ class WeatherCardEditor extends LitElement {
         const out = { ...(el || {}) };
         const type = out.type === "icon" || out.type === "bar" ? out.type : "text";
         out.type = type;
-                        if (out.source === "entity" && out.entity) delete out.source;
+        if (out.source === "entity" && out.entity) delete out.source;
         if (type === "bar") {
             const values = (Array.isArray(out.bar_values) ? out.bar_values : [])
                 .filter(v => v && typeof v === "object")
@@ -906,7 +906,6 @@ class WeatherCardEditor extends LitElement {
         for (const k of Object.keys(out)) {
             if (k === "type") continue;
             const v = out[k];
-            if (type === "text" && k === 'format') { if (v === null || v === undefined) delete out[k]; continue; }
             if (type === "text" && k === 'precision') { if (v === '' || v === null || v === undefined) delete out[k]; continue; }
             if ((k === 'bar_min' || k === 'bar_max' || k === 'bar_range_from' || k === 'bar_range_to') && (v === 0 || v === "0")) continue;
             if (k === 'icon_background' && v === false) continue;
@@ -915,18 +914,18 @@ class WeatherCardEditor extends LitElement {
         return out;}
     _cleanContainer(container) {
         const out = { ...(container || {}) };
-                const layout = (out.layout || "wrap").toString().toLowerCase();
+        const layout = (out.layout || "wrap").toString().toLowerCase();
         if (layout !== "grid") delete out.columns;
         if (layout !== "horizontal-scroll" && layout !== "vertical-scroll") { delete out.scroll_count; delete out.scroll_fade; delete out.scroll_fade_size; delete out.row_height; }
         if (out.scroll_fade === true) delete out.button_blurred_background;
         else delete out.scroll_fade_size;
         if (layout === "wrap") delete out.layout;
-                if (Array.isArray(out.buttons)) {
+        if (Array.isArray(out.buttons)) {
             const buttons = out.buttons.map(b => this._cleanButton(b || {}));
             if (buttons.length === 0) delete out.buttons;
             else out.buttons = buttons;
         }
-                        for (const k of Object.keys(out)) {
+        for (const k of Object.keys(out)) {
             const v = out[k];
             if ((k === "shadow" || k === "button_shadow" || k === "button_icon_background") && v === false) continue;
             if (Array.isArray(v)) { if (v.length === 0) delete out[k]; continue; }
@@ -951,7 +950,7 @@ class WeatherCardEditor extends LitElement {
         this._commitButtonsInContainer(containerIdx, list);}
     _removeButton(containerIdx, idx) {
         const list = [...this._getButtonsForContainer(containerIdx)]; list.splice(idx, 1);
-        this._shiftAccordionOnRemove(containerIdx, idx, list.length);
+        this._shiftAccordionOnRemove(containerIdx, idx);
         if (this._expandedButton === idx) this._expandedButton = null;
         else if (typeof this._expandedButton === "number" && this._expandedButton > idx) {
             this._expandedButton = this._expandedButton - 1;}
@@ -967,11 +966,8 @@ class WeatherCardEditor extends LitElement {
         if (!schema || !schema.name) return "";
         if (schema.name in BUTTON_LABELS) return BUTTON_LABELS[schema.name];
         return schema.name;};
-    _buttonHelper = (schema) => {
-        if (!schema || !schema.name) return undefined;
-        return BUTTON_HELPERS[schema.name] || undefined;};
     _cssTextField(opts) {
-                                                                                const { value, label, placeholder, onCommit } = opts;
+        const { value, label, placeholder, onCommit } = opts;
         const trim = opts.trim !== false;
         const has = value !== undefined && value !== null && String(value) !== "";
         const inherited = opts.inherit !== undefined && opts.inherit !== null && String(opts.inherit) !== ""
@@ -983,7 +979,7 @@ class WeatherCardEditor extends LitElement {
                 <input type="text" placeholder=${ph}
                     .value=${has ? String(value) : ""}
                     @change=${(e) => onCommit(trim ? e.target.value.trim() : e.target.value)}></div>`;}
-        _accKey(containerIdx, idx) { return `${containerIdx}:${idx}`; }
+    _accKey(containerIdx, idx) { return `${containerIdx}:${idx}`; }
     _getSecOpen(containerIdx, idx) { return (this._secOpen && this._secOpen.get(this._accKey(containerIdx, idx))) || null; }
     _setSecOpen(containerIdx, idx, val) {
         if (!this._secOpen) this._secOpen = new Map();
@@ -996,8 +992,8 @@ class WeatherCardEditor extends LitElement {
         if (val) this._nestedOpen.set(this._accKey(containerIdx, idx), val);
         else this._nestedOpen.delete(this._accKey(containerIdx, idx));
     }
-    _shiftAccordionOnRemove(containerIdx, removedIdx, newLen) {
-                for (const map of [this._secOpen, this._nestedOpen]) {
+    _shiftAccordionOnRemove(containerIdx, removedIdx) {
+        for (const map of [this._secOpen, this._nestedOpen]) {
             if (!map) continue;
             const next = new Map();
             for (const [k, v] of map) {
@@ -1013,7 +1009,7 @@ class WeatherCardEditor extends LitElement {
         }
     }
     _renderThresholdList(opts) {
-                                const { list, swatchDefault, addLabel, addColor } = opts;
+        const { list, swatchDefault, addLabel, addColor } = opts;
         const commit = opts.commit;
         const setAt = (ti, patch) => { const arr = [...list]; arr[ti] = { ...arr[ti], ...patch }; commit(arr); };
         const removeAt = (ti) => { const arr = [...list]; arr.splice(ti, 1); commit(arr.length ? arr : undefined); };
@@ -1038,19 +1034,17 @@ class WeatherCardEditor extends LitElement {
                 idx, total, expanded, body: "", title: this._buttonTitle(button),
                 onToggle: () => this._toggleButtonExpanded(idx), onMoveUp: () => this._moveButton(containerIdx, idx, -1),
                 onMoveDown: () => this._moveButton(containerIdx, idx, 1), onDuplicate: () => this._duplicateButton(containerIdx, idx), onRemove: () => this._removeButton(containerIdx, idx)});}
-                const entityId = (button.entity || "").toString().trim();
+        const entityId = (button.entity || "").toString().trim();
         const hasEntity = !!entityId;
         const fcEntityMissing = isFc && entityId && !entityId.startsWith("weather.");
         const cardWeatherEntity = (this._config && this._config.weather_entity) || "";
         const update = (next) => this._updateButtonAt(containerIdx, idx, next);
         const buttonForm = (schema) => html`<ha-form .hass=${this.hass} .data=${button}
-                .schema=${schema} .computeLabel=${this._buttonLabel} .computeHelper=${this._buttonHelper}
+                .schema=${schema} .computeLabel=${this._buttonLabel}
                 @value-changed=${(e) => { e.stopPropagation(); update((e.detail && e.detail.value) || {}); }}></ha-form>`;
-                const container = this._getContainers()[containerIdx] || {};
-                const containerScrollable = ["horizontal-scroll", "vertical-scroll"].includes((container.layout || "").toString().toLowerCase());
-                const BTN_INHERIT = { text_size: "button_text_size", icon_size: "button_icon_size",
-            padding: "button_padding", icon_padding: "button_icon_padding",
-            inner_gap: "button_gap" };
+        const container = this._getContainers()[containerIdx] || {};
+        const containerScrollable = ["horizontal-scroll", "vertical-scroll"].includes((container.layout || "").toString().toLowerCase());
+        const BTN_INHERIT = { text_size: "button_text_size", padding: "button_padding", inner_gap: "button_gap" };
         const cssField = (key, label, placeholder) => this._cssTextField({
             value: button[key], label, placeholder, trim: true,
             inherit: BTN_INHERIT[key] ? container[BTN_INHERIT[key]] : undefined,
@@ -1059,9 +1053,9 @@ class WeatherCardEditor extends LitElement {
         const _r = (buttonKey, containerKey) => button[buttonKey] !== undefined ? button[buttonKey] : (container[containerKey] !== undefined ? container[containerKey] : undefined);
         const fmt = (_r("style", "button_style") || "inline").toString().toLowerCase() === "vertical" ? "vertical" : "inline";
         const fcOff = parseInt(button.forecast_offset, 10) || 0;
-                const st = this.hass && this.hass.states && this.hass.states[entityId];
+        const st = this.hass && this.hass.states && this.hass.states[entityId];
         const stAttr = st && st.attributes;
-                const elements = Array.isArray(button.elements) && button.elements.length
+        const elements = Array.isArray(button.elements) && button.elements.length
             ? button.elements.map(e => (e && typeof e === "object") ? e : {})
             : [{ type: "text" }];
         const commitElements = (arr) => {
@@ -1071,13 +1065,13 @@ class WeatherCardEditor extends LitElement {
             update(n);
         };
         const updateEl = (ei, nextEl) => commitElements(elements.map((e, i) => i === ei ? nextEl : e));
-                const containerFmtNow = (container.button_style || "inline").toString().toLowerCase() === "vertical" ? "vertical" : "inline";
+        const containerFmtNow = (container.button_style || "inline").toString().toLowerCase() === "vertical" ? "vertical" : "inline";
         const formatPicker = this._renderLayoutPicker(fmt, (f) => {
             const n = { ...button };
             if (f === containerFmtNow) delete n.style; else n.style = f;
             update(n);
         });
-                const nestedOpen = this._getNestedOpen(containerIdx, idx);
+        const nestedOpen = this._getNestedOpen(containerIdx, idx);
         const setNested = (v) => { this._setNestedOpen(containerIdx, idx, v); this.requestUpdate(); };
         const moveEl = (ei, dir) => {
             const arr = [...elements]; const ni = ei + dir;
@@ -1100,7 +1094,7 @@ class WeatherCardEditor extends LitElement {
             <button type="button" ?disabled=${ei === 0} @click=${() => moveEl(ei, -1)} title="Move up"><ha-icon icon="mdi:chevron-up"></ha-icon></button>
             <button type="button" ?disabled=${ei === elements.length - 1} @click=${() => moveEl(ei, 1)} title="Move down"><ha-icon icon="mdi:chevron-down"></ha-icon></button>
             <button type="button" @click=${() => removeEl(ei)} title="Remove"><ha-icon icon="mdi:close"></ha-icon></button></span>`;
-                const iconElContent = (el, ei, spacing) => {
+        const iconElContent = (el, ei, spacing) => {
             const isWeatherIcon = (el.icon || "").toString().trim().toLowerCase() === "weather";
             const iconSourceEntity = (el.entity || "").toString().trim() || entityId;
             const patchEl = (patch, strip) => { const n = { ...el, ...patch }; if (strip) for (const k of strip) delete n[k]; updateEl(ei, n); };
@@ -1136,15 +1130,15 @@ class WeatherCardEditor extends LitElement {
         };
         const entitySection = isFc ? "" : buttonForm([{ name: "entity", selector: { entity: {} } }]);
         const emptyNudge = !hasEntity && !isFc ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Pick an entity.</div>` : "";
-                const secOpen = this._getSecOpen(containerIdx, idx);
+        const secOpen = this._getSecOpen(containerIdx, idx);
         const setSec = (v) => { this._setSecOpen(containerIdx, idx, v); this.requestUpdate(); };
-                const txtField = (txt, ei, key, label, placeholder, keepEmpty) => this._cssTextField({
-            value: txt[key], label, placeholder, trim: !keepEmpty,
+        const txtField = (txt, ei, key, label, placeholder, keepSpaces) => this._cssTextField({
+            value: txt[key], label, placeholder, trim: !keepSpaces,
             inherit: key === "size"
                 ? (button.text_size !== undefined && button.text_size !== "" ? button.text_size : container.button_text_size)
                 : undefined,
             onCommit: (v) => { const n = { ...txt };
-                if (keepEmpty) n[key] = v; else if (v) n[key] = v; else delete n[key];
+                if (v) n[key] = v; else delete n[key];
                 updateEl(ei, n); },
         });
         const txtForm = (txt, ei, key, schema, label) => html`<ha-form .hass=${this.hass} .data=${{ [key]: txt[key] || "" }}
@@ -1205,13 +1199,13 @@ class WeatherCardEditor extends LitElement {
                     <ha-icon icon=${icon}></ha-icon>
                     <span class="vcb-section-title">${title}</span></div>
                 ${isOpen ? html`<div class="vcb-section-body">${content}</div>` : ""}</div>`;};
-                const elTypeIcon = (k) => k === "icon" ? "mdi:image-outline" : k === "bar" ? "mdi:chart-bar" : "mdi:text-short";
+        const elTypeIcon = (k) => k === "icon" ? "mdi:image-outline" : k === "bar" ? "mdi:chart-bar" : "mdi:text-short";
         const elTitle = (el) => {
             if (el.type === "icon") return (el.icon || "").toString().trim().toLowerCase() === "weather" ? "Weather icon" : (el.attribute || el.icon || "Icon");
             if (el.type === "bar") { const n = Array.isArray(el.bar_values) ? el.bar_values.length : 0; return n > 1 ? `Bar (${n} values)` : "Bar"; }
             return this._textTitle(button, el);
         };
-                const typePicker = html`<div class="button-type-picker">
+        const typePicker = html`<div class="button-type-picker">
             <button type="button" class="button-type-btn ${!isFc ? "active" : ""}"
                 @click=${() => { const n = { ...button }; delete n.forecast; delete n.forecast_offset; update(n); }}
             ><ha-icon class="button-type-icon ${!isFc ? "active-icon" : ""}" icon="mdi:gauge"></ha-icon>
@@ -1238,13 +1232,13 @@ class WeatherCardEditor extends LitElement {
             const fcEntity = buttonForm([{ name: "entity", selector: { entity: { domain: "weather" } } }]);
             forecastContent = html`${fcEntity}${fcMissingHint}${fcSettings}`;
         }
-                const hasMarqueeText = elements.some(t => t && t.type === "text" && ((t.overflow) || "").toString().toLowerCase() === "marquee");
+        const hasMarqueeText = elements.some(t => t && t.type === "text" && ((t.overflow) || "").toString().toLowerCase() === "marquee");
         const marqueeContent = hasMarqueeText ? html`<div class="toggle-group"><label class="toggle-row"><span>Right-to-left</span>
                 <ha-switch .checked=${button.marquee_rtl === true} @change=${(e) => { const n = { ...button }; if (e.target.checked) n.marquee_rtl = true; else delete n.marquee_rtl; update(n); }}></ha-switch></label></div>
             ${(() => { const spd = parseFloat(button.marquee_speed) || 30;
                 return this._slider({ value: spd, fallback: 30, min: 5, max: 100, step: 5, int: true, label: "Speed",
                     onCommit: (v) => update({ ...button, marquee_speed: v }) });})()}` : null;
-                const containerAlign = (container.align || "start").toString().toLowerCase();
+        const containerAlign = (container.align || "start").toString().toLowerCase();
         const appearContent = html`${formatPicker}
             <div class="segmented">
                 ${[{v:"start",l:"Left"},{v:"center",l:"Center"},{v:"end",l:"Right"},{v:"spread",l:"Spread"}].map(o => html`<button type="button" class=${(button.align || containerAlign)===o.v?"active":""}
@@ -1268,15 +1262,7 @@ class WeatherCardEditor extends LitElement {
             <div class="vcb-grid">
                 ${cssField("width", "Width", "auto")}${cssField("height", "Height", "auto")}
                 ${cssField("text_size", "Text size", "auto")}${cssField("padding", "Padding", "auto")}
-                ${this._cssTextField({
-                    value: button.inner_gap, label: "Element gap", placeholder: "auto", trim: true,
-                    inherit: container.button_gap,
-                    onCommit: (v) => {
-                        const next = { ...button };
-                        if (v) next.inner_gap = v; else delete next.inner_gap;
-                        update(next);
-                    },
-                })}</div>
+                ${cssField("inner_gap", "Element gap", "auto")}</div>
             <div class="toggle-group"><label class="toggle-row"><span>Color thresholds</span>
                 <ha-switch .checked=${Array.isArray(button.color_thresholds) && button.color_thresholds.length > 0}
                     @change=${(e) => { const n = { ...button }; if (e.target.checked) n.color_thresholds = [{ value: "", color: "#ff9800" }]; else { delete n.color_thresholds; delete n.color_threshold_entity; delete n.color_threshold_attribute; } update(n); }}></ha-switch></label></div>
@@ -1289,7 +1275,7 @@ class WeatherCardEditor extends LitElement {
                             @value-changed=${(e)=>{e.stopPropagation();const v=e.detail&&e.detail.value&&e.detail.value.color_threshold_attribute;const n={...button};if(v)n.color_threshold_attribute=v;else delete n.color_threshold_attribute;update(n);}}></ha-form>`:""}</div></details>
                 ${this._renderThresholdList({ list: button.color_thresholds, swatchDefault: "#ff9800", addColor: "#ff9800", addLabel: "Add threshold",
                     commit: (arr) => update({ ...button, color_thresholds: arr }) })}</div>` : ""}`;
-                const gaugeFields = (prefix, obj, write, cssFor, extra, tail) => {
+        const gaugeFields = (prefix, obj, write, cssFor, extra, tail) => {
             const p = prefix + "_", label = prefix === "ring" ? "Ring" : "Bar";
             const thresholds = Array.isArray(obj[p+"thresholds"]) ? obj[p+"thresholds"] : [];
             return html`<div class="vcb-grid">${cssFor(p+"min","Min","0")}${cssFor(p+"max","Max","100")}</div>
@@ -1303,7 +1289,7 @@ class WeatherCardEditor extends LitElement {
                             @click=${()=>{ write(p+"threshold_mode", o.v==="solid" ? "" : o.v); }}>${o.l}</button>`)}</div>
                         ${this._renderThresholdList({ list: thresholds, swatchDefault: "#ff0000", addColor: "#ff9800", addLabel: "Add",
                             commit: (arr) => write(p + "thresholds", arr) })}</div></details>`;};
-                const barValuesSection = (el, ei) => {
+        const barValuesSection = (el, ei) => {
             const values = Array.isArray(el.bar_values) && el.bar_values.length
                 ? el.bar_values.map(v => (v && typeof v === "object") ? v : {})
                 : [{}];
@@ -1361,7 +1347,7 @@ class WeatherCardEditor extends LitElement {
                     ${markerField("bar_marker_size", "Marker size", "bar height")}
                     ${markerField("bar_marker_icon_size", "Icon size", "auto")}</div>` : ""}</div>`;
         };
-                const barElContent = (el, ei, spacing) => {
+        const barElContent = (el, ei, spacing) => {
             const elCss = (key, label, placeholder) => this._cssTextField({
                 value: el[key], label, placeholder, trim: true,
                 onCommit: (v) => { const n = { ...el }; if (v) n[key] = v; else delete n[key]; updateEl(ei, n); } });
@@ -1375,7 +1361,7 @@ class WeatherCardEditor extends LitElement {
                 ${hasRange ? this._renderColorPicker("Range color", el.bar_range_color || "", (h, o) => write("bar_range_color", h ? this._serializeColor(h, o) : "")) : ""}</div>`;
             return gaugeFields("bar", el, write, elCss, spacing, html`${rangeSection}${barValuesSection(el, ei)}`);
         };
-                const isRingType = buttonType === 'ring';
+        const isRingType = buttonType === 'ring';
         const ringWrite = (key, value) => { const n = { ...button };
             const empty = value === null || value === undefined || value === "" || (Array.isArray(value) && !value.length);
             if (empty) delete n[key]; else n[key] = value; update(n); };
@@ -1394,10 +1380,9 @@ class WeatherCardEditor extends LitElement {
                 if (e.target.checked) { n.type = 'ring'; } else { delete n.type; } update(n); }}></ha-switch></label></div>
             ${isRingType ? gaugeFields("ring", button, ringWrite, cssField, "", ringEntityFields()) : ""}`;
         const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
-                const BUTTON_STYLE_KEYS = ["style","align","background","blurred_background","icon_background","background_color","icon_background_color","padding","text_size","inner_gap","icon_size","icon_padding","width","height","button_round","color_thresholds","color_threshold_entity","color_threshold_attribute","text_shadow","shadow"];
+        const BUTTON_STYLE_KEYS = ["style","align","background","blurred_background","icon_background","background_color","icon_background_color","padding","text_size","inner_gap","icon_size","icon_padding","width","height","button_round","color_thresholds","color_threshold_entity","color_threshold_attribute","text_shadow","shadow"];
         const hasStyleOverrides = BUTTON_STYLE_KEYS.some(k => button[k] !== undefined && button[k] !== "");
-                const isWeatherEntity = entityId.startsWith("weather.");
-                const elSpacing = (el, ei) => {
+        const elSpacing = (el, ei) => {
             const box = (key, label) => this._cssTextField({
                 value: el[key], label, placeholder: "0", trim: true,
                 onCommit: (v) => { const n = { ...el }; if (v) n[key] = v; else delete n[key]; updateEl(ei, n); } });
@@ -1481,7 +1466,7 @@ class WeatherCardEditor extends LitElement {
                         <span class="button-color-opacity-val">${Math.round(opacity*100)}%</span></div>
                 ` : ""}</div>`;}
     _slider(opts) {
-                                        const { min, max, step = 1, label, helper, statusFn, onCommit } = opts;
+        const { min, max, step = 1, label, helper, statusFn, onCommit } = opts;
         const int = opts.int === true;
         const parse = int ? (v) => parseInt(v, 10) : (v) => parseFloat(v);
         const fallbackNum = parse(opts.fallback != null ? opts.fallback : min);
@@ -1499,7 +1484,6 @@ class WeatherCardEditor extends LitElement {
             if (statusFn) { const s = wrap && wrap.querySelector(".wbk-slider-status"); if (s) s.textContent = statusFn(v); }
         };
         const onRangeCommit = (e) => onCommit(clamp(parse(e.target.value)));
-        const onRangeClick = (e) => onCommit(clamp(parse(e.target.value)));
         const onNumCommit = (e) => {
             const v = clamp(parse(e.target.value));
             const wrap = wrapOf(e), range = wrap && wrap.querySelector(".wbk-slider-range");
@@ -1514,7 +1498,7 @@ class WeatherCardEditor extends LitElement {
                         .value=${String(val)} @change=${onNumCommit}></div>
                 <input type="range" class="wbk-slider-range" min=${min} max=${max} step=${step}
                     .value=${String(val)} style="--origami-slider-pct:${toPct(val)}%"
-                    @input=${onDrag} @change=${onRangeCommit} @click=${onRangeClick}>
+                    @input=${onDrag} @change=${onRangeCommit} @click=${onRangeCommit}>
                 ${statusText != null ? html`<div class="wbk-slider-status">${statusText}</div>` : ""}
                 ${helper ? html`<div class="wbk-slider-helper">${helper}</div>` : ""}</div>`;}
     _renderSlider(field, label, min, max, step, helper, statusFn) {
@@ -1524,7 +1508,7 @@ class WeatherCardEditor extends LitElement {
             onCommit: (v) => this._updateField(field, v),
         });}
     _renderLayoutPicker(fmt, onPick) {
-                        return html`<div class="layout-picker">
+        return html`<div class="layout-picker">
             ${["inline", "vertical"].map(f => html`<button type="button"
                     class="layout-card ${fmt === f ? "active" : ""}" @click=${() => onPick(f)}>
                     <div class="lp-fig ${f}">
@@ -1577,14 +1561,7 @@ class WeatherCardEditor extends LitElement {
                     ${sf("button_icon_size", "Icon size", "auto")}
                     ${sf("button_padding", "Button padding", "auto")}
                     ${sf("button_icon_padding", "Icon padding", "auto")}
-                    ${this._cssTextField({
-                        value: container.button_gap, label: "Element gap", placeholder: "auto", trim: false,
-                        onCommit: (v) => {
-                            const next = { ...container };
-                            if (v) next.button_gap = v; else delete next.button_gap;
-                            this._updateContainerAt(containerIdx, next);
-                        },
-                    })}</div></div>`)}</div>`; }
+                    ${sf("button_gap", "Element gap", "auto")}</div></div>`)}</div>`; }
     _renderContentLayoutDisclosure() {
         const isRow = ((this._formData || {}).content_direction || "column") === "row";
         const alignOpts = isRow ? [
@@ -1700,7 +1677,7 @@ class WeatherCardEditor extends LitElement {
     _renderButtonContainerBody(container, containerIdx) {
         const list = this._getButtonsForContainer(containerIdx);
         const uf = (key, value) => this._updateContainerField(containerIdx, key, value);
-        let layout = (container.layout || "wrap").toString().toLowerCase();
+        const layout = (container.layout || "wrap").toString().toLowerCase();
         const isGrid   = layout === "grid";
         const isScroll = layout === "horizontal-scroll" || layout === "vertical-scroll";
         const bgActive = !!container.background;
@@ -1791,9 +1768,9 @@ class WeatherCardEditor extends LitElement {
                             @click=${() => this._updateContainerField(containerIdx, "position_anchor", v)}></button>`)}</div></div>
                     <div><div class="settings-group-label">Offset</div><div class="offset-fields">
                         <div class="offset-field"><span class="offset-field-label">X</span><input type="text" placeholder="0" .value=${String(container.position_x || "")}
-                            @change=${(e) => { const v = e.target.value.trim(); if (v) uf("position_x", v); else this._updateContainerField(containerIdx, "position_x", ""); }}></div>
+                            @change=${(e) => uf("position_x", e.target.value.trim())}></div>
                         <div class="offset-field"><span class="offset-field-label">Y</span><input type="text" placeholder="0" .value=${String(container.position_y || "")}
-                            @change=${(e) => { const v = e.target.value.trim(); if (v) uf("position_y", v); else this._updateContainerField(containerIdx, "position_y", ""); }}></div></div></div></div>` : ""}</div>`)}
+                            @change=${(e) => uf("position_y", e.target.value.trim())}></div></div></div></div>` : ""}</div>`)}
             ${this._renderSubDisclosure("Spacing", html`<div class="vcb">
                 <div class="vcb-grid">
                     ${sf("gap", LABELS.button_container_gap, "auto")}
@@ -1810,7 +1787,7 @@ class WeatherCardEditor extends LitElement {
             ${this._renderDisclosure("Button styles", this._renderContainerButtonSettings(container, containerIdx))}
             ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
     }
-    _renderVisibilityConditions(conditions, emptyLabel, commitList) {
+    _renderVisibilityConditions(conditions, commitList) {
         const CONDITION_TYPES = [
             { value: "state", label: "State" },
             { value: "numeric_state", label: "Numeric state" },
@@ -1917,14 +1894,14 @@ class WeatherCardEditor extends LitElement {
                 All conditions must be met to be visible.</div>` : ""}`;}
     _renderContainerVisibility(container, containerIdx) {
         const conditions = Array.isArray(container.visibility) ? container.visibility : [];
-        return this._renderVisibilityConditions(conditions, "Always visible.", (arr) => {
+        return this._renderVisibilityConditions(conditions, (arr) => {
             const n = { ...container };
             if (arr.length) n.visibility = arr; else delete n.visibility;
             this._updateContainerAt(containerIdx, n);
         });}
     _renderButtonVisibility(button, containerIdx, idx, update) {
         const conditions = Array.isArray(button.visibility) ? button.visibility : [];
-        return this._renderVisibilityConditions(conditions, "Always visible.", (arr) => {
+        return this._renderVisibilityConditions(conditions, (arr) => {
             const n = { ...button };
             if (arr.length) n.visibility = arr; else delete n.visibility;
             update(n);
@@ -1996,7 +1973,10 @@ class WeatherCardEditor extends LitElement {
                 </div>`) : ""}
             ${this._renderDisclosure("Color settings", html`
                 <div class="fc-box" style="margin-top:0">
-                    ${this._renderForm(this._colorModeSchema())}
+                    ${this._renderForm([{ name: "color_mode", selector: { select: { mode: "dropdown", options: OPT.color_mode } } }])}
+                    ${showBgFilters && c.color_mode !== "theme" ? html`<div class="toggle-group"><label class="toggle-row"><span>Adapt to dark theme</span>
+                        <ha-switch .checked=${c.dark_theme_adaptation !== false}
+                            @change=${(e) => this._updateField("dark_theme_adaptation", e.target.checked ? "" : false)}></ha-switch></label></div>` : ""}
                 </div>
                 ${showBgFilters ? html`<div style="display:flex;flex-direction:column;gap:var(--origami-e-s2)">
                 ${this._renderSlider("bg_brightness", LABELS.bg_brightness, 0.3, 1.7, 0.05, null, brightnessStatus)}
@@ -2020,7 +2000,10 @@ class WeatherCardEditor extends LitElement {
                         @change=${(e) => this._updateField("bird_effects", e.target.checked ? "" : false)}></ha-switch></label>
                 <label class="toggle-row"><span>Balloon</span>
                     <ha-switch .checked=${(this._formData || {}).balloon_effects !== false}
-                        @change=${(e) => this._updateField("balloon_effects", e.target.checked ? "" : false)}></ha-switch></label></div></div>`)}
+                        @change=${(e) => this._updateField("balloon_effects", e.target.checked ? "" : false)}></ha-switch></label>
+                <label class="toggle-row"><span>Planes</span>
+                    <ha-switch .checked=${(this._formData || {}).plane_effects !== false}
+                        @change=${(e) => this._updateField("plane_effects", e.target.checked ? "" : false)}></ha-switch></label></div></div>`)}
             `;}
     _renderCardFrameToggle() {
         const c = this._formData || {};
@@ -2051,7 +2034,7 @@ class WeatherCardEditor extends LitElement {
                         @change=${(e) => this._updateField("edge_fade_size", e.target.value.trim() || "")}></div></div>` : ""}
             </div>`;}
     render() {
-        if (!this.hass || !this._config) return html``; const c = this._formData;
+        if (!this.hass || !this._config) return html``;
         return html`${this._renderEntityField("weather_entity", { domain: "weather", label: "Weather entity" })}
             <ha-expansion-panel
                 outlined
@@ -2076,10 +2059,7 @@ class WeatherCardEditor extends LitElement {
                     ${this._renderCardFrameToggle()}</div>`)}
                 ${this._renderDisclosure("Sun & Moon", this._renderSunMoonPanel())}
                 ${this._renderDisclosure("Custom icons", html`<div class="settings-group">
-                    <div class="clearable-field">
-                        ${this._renderForm([{ name: "icon_path", selector: { text: {} } }])}
-                        ${(this._formData || {}).icon_path ? html`<button type="button" class="clear-btn" title="Clear" @click=${() => this._updateField("icon_path", "")}><ha-icon icon="mdi:close"></ha-icon></button>` : ""}
-                    </div></div>`)}
+                    ${this._renderClearableText("icon_path")}</div>`)}
                 ${this._renderDisclosure("Tap action", html`<div class="settings-group">
                     ${this._renderForm([{ name: "card_tap_action", selector: { ui_action: {} } }])}</div>`)}</ha-expansion-panel>
             <ha-expansion-panel

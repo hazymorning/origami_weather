@@ -11,7 +11,7 @@ const sunButton = (rising) => ({
 
 const SLIM_CONFIG = Object.freeze({
     sun_entity: 'sun.sun',
-    sun_moon_x: 80,
+    sun_moon_x: 'dynamic',
     card_height: 'content',
     card_padding: '16px',
     background_mode: 'default',
@@ -130,6 +130,7 @@ const forecastButton = (offset) => ({
 
 const CLASSIC_CONFIG = Object.freeze({
     sun_entity: 'sun.sun',
+    sun_moon_x: 'dynamic',
     card_height: 'content',
     card_padding: '16px',
     background_mode: 'default',
@@ -245,7 +246,7 @@ const metaItem = (icon, attribute, weight, forecast) => ({
 
 const CENTERED_CONFIG = Object.freeze({
     sun_entity: 'sun.sun',
-    sun_moon_x: 86,
+    sun_moon_x: 'dynamic',
     card_height: 'content',
     card_padding: '24px 20px',
     background_mode: 'default',
@@ -312,11 +313,29 @@ const TEMP_RGB = Object.freeze([
     ['34', '207,64,64']
 ]);
 
-const BACKGROUND_ALPHA = Object.freeze(['0.14', '0.13', '0.12', '0.11', '0.10', '0.09', '0.09', '0.10', '0.11', '0.13', '0.15', '0.18']);
-
 const BAR_ALPHA = Object.freeze(['0.45', '0.45', '0.45', '0.46', '0.48', '0.50', '0.50', '0.52', '0.55', '0.58', '0.62', '0.68']);
 
 const tempThresholds = (alpha) => TEMP_RGB.map(([value, rgb], i) => ({ value, color: alpha ? `rgba(${rgb},${alpha[i]})` : `rgb(${rgb})` }));
+
+const WEATHER_RGB = Object.freeze([
+    ['sunny', 80, '245,185,70'],
+    ['clear-night', 80, '80,90,180'],
+    ['partlycloudy', 82, '120,175,225'],
+    ['cloudy', 84, '145,155,175'],
+    ['fog', 84, '185,185,200'],
+    ['windy', 84, '90,190,175'],
+    ['windy-variant', 84, '110,170,200'],
+    ['rainy', 80, '70,130,200'],
+    ['pouring', 76, '45,95,190'],
+    ['lightning', 80, '150,105,220'],
+    ['lightning-rainy', 76, '115,85,205'],
+    ['hail', 80, '100,185,210'],
+    ['snowy', 80, '180,215,245'],
+    ['snowy-rainy', 80, '135,175,215'],
+    ['exceptional', 76, '230,95,65']
+]);
+
+const weatherThresholds = () => WEATHER_RGB.map(([value, base, rgb]) => ({ value, color: `color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) ${base}%, rgb(${rgb}))` }));
 
 const scrollItem = (icon, attribute, format, forecast) => ({
     entity: PRESET_ENTITY_TOKEN,
@@ -337,8 +356,7 @@ const COMPARISON_CONFIG = Object.freeze({
     card_offset: '20px 0px 0px 0px',
     background_mode: 'color',
     background_threshold_entity: PRESET_ENTITY_TOKEN,
-    background_threshold_attribute: 'temperature',
-    background_thresholds: tempThresholds(BACKGROUND_ALPHA),
+    background_thresholds: weatherThresholds(),
     background_haze: false,
     precipitation_effects: false,
     cloud_effects: false,

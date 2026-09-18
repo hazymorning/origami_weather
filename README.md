@@ -56,16 +56,6 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 <br>
 
-> [!NOTE]
-> <details>
-> <summary>Important for <strong>dark themes</strong></summary>
-><br>
-> By default, the card is light or dark based on the sun. In constantly dark themes this means a very bright card during the day, creating a quite extreme contrast. The card softens this on its own by toning the daytime sky down a bit when it notices a dark theme (`dark_theme_adaptation`). If that isn't enough, you can use `color_mode: theme` so the card stays dark during the day, or decrease the general brightness in the color settings.
->
-> </details>
-
-<br>
-
 ## Layouts
 
 Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.

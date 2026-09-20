@@ -1,14 +1,20 @@
+<div align="center">
+
 # ◪ Origami Weather
 
 A flexible weather card.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/55276c24-e197-4943-9517-2582966df53d" /><br>
+<img width="720" alt="Origami Weather at night: moon behind drifting clouds, 10 °C, wind and humidity in a row below" src="https://github.com/user-attachments/assets/55276c24-e197-4943-9517-2582966df53d">
+
 <br>
+
 **Getting Started** · [Installation](#installation) · [Setup](#setup) · [Layouts](#layouts)
 
 **How It Works** · [Backgrounds](#backgrounds) · [Building blocks](#building-blocks)
 
 **Reference** · [Options](#options) · [Performance](#performance) · [History](#history)
+
+</div>
 
 <br>
 
@@ -25,11 +31,11 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 1. Click the badge above, **or** in HACS go to **⋮** (top right) → **Custom repositories**, enter `https://github.com/hazymorning/origami_weather` with category **Dashboard**, and click **Add**.
 2. Search for **Origami Weather** and click **Download**.
 3. Reload your dashboard.
+
 </details>
 
 <details>
 <summary><b>Manual</b></summary>
-
 <br>
 
 1. Download `origami-weather.js`, `origami-weather-editor.js`, `layout-presets.js` and `image-assets.js` from the latest release.
@@ -59,40 +65,45 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 > **Important:** Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards.
 
+<table>
+<tr>
+<td width="50%" align="center"><img width="360" alt="Daytime card with a sunset sky, condition text and two pill buttons" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff"></td>
+<td width="50%" align="center"><img width="360" alt="Overcast daytime card with a large temperature and a row of values below" src="https://github.com/user-attachments/assets/f69afa99-6834-4fff-9ecf-08447e6b9c11"></td>
+</tr>
+<tr>
+<td align="center"><img width="360" alt="Night card with a crescent moon and a scrollable row of pill buttons" src="https://github.com/user-attachments/assets/081a9b11-3037-4c65-a674-4a201753bda1"></td>
+<td align="center"><img width="360" alt="Night card with a large temperature over a cloudy sky" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308"></td>
+</tr>
+<tr>
+<td align="center"><img width="360" alt="Night card with a full moon, a moon phase ring and a five day forecast strip" src="https://github.com/user-attachments/assets/15783d8f-c969-4089-98b3-223a31c6781c"></td>
+<td align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></td>
+</tr>
+</table>
 
-<br>
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff" />
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/f69afa99-6834-4fff-9ecf-08447e6b9c11" />
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/081a9b11-3037-4c65-a674-4a201753bda1" />
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308" />
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/15783d8f-c969-4089-98b3-223a31c6781c" />
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399" />
-
-<br>
 <br>
 
 ## Backgrounds
 
-| Light | Dark |
-|-------|------|
-| ![Light Mode](https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554) | ![Dark Mode](https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed) |
-
+<table>
+<tr>
+<th width="50%" align="center">Light</th>
+<th width="50%" align="center">Dark</th>
+</tr>
+<tr>
+<td align="center"><img width="360" alt="Card in light mode, pale cloudy sky" src="https://github.com/user-attachments/assets/47b8d6a8-42ff-4e61-8adf-bbfe5d60e554"></td>
+<td align="center"><img width="360" alt="The same card in dark mode, night sky with stars and moon" src="https://github.com/user-attachments/assets/e8f2f07c-9ff0-4a46-ac74-cec2c63974ed"></td>
+</tr>
+</table>
 
 The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, birds cross the sky, balloons drift past, planes pass overhead, and so on. Different effects are layered on top of this sky to add realism and drama.
 
 You can disable the sky or individual effects, or combine them with different background styles. If you prefer the minimalism, you can also use the card in the simple default HA style with just the content and nothing else going on.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30" />
+<img width="720" alt="Card without frame or background, stretched across the full dashboard width like a header strip" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30">
 
 With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a header for a popup or above an image card.
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/c394771a-fa35-4357-8963-24690aab7368" />
+<img width="480" alt="The card repurposed as an indoor climate card, showing indoor temperature, humidity and a comfort bar" src="https://github.com/user-attachments/assets/c394771a-fa35-4357-8963-24690aab7368">
 
 You can get pretty creative with different combinations. For example, it's also possible to repurpose the card into an indoor climate one, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
 
@@ -102,12 +113,10 @@ You can get pretty creative with different combinations. For example, it's also 
 
 <details>
 <summary><b>Show how content is built</b></summary>
-
 <br>
 
 <details>
 <summary><b>Containers</b></summary>
-
 <br>
 
 Containers are the top-level layout blocks. Each one holds a list of buttons and controls how they're arranged. Stack a few containers to build up the card.
@@ -143,7 +152,6 @@ Each embedded card takes `custom_width` and `custom_height` if it needs a size o
 
 <details>
 <summary><b>Buttons</b></summary>
-
 <br>
 
 Buttons are the items inside a container. Each one is tied to an entity and shows live data from it: a sensor value, a weather attribute, a forecast entry, or just an icon.
@@ -188,7 +196,6 @@ buttons:
 
 <details>
 <summary><b>Elements</b></summary>
-
 <br>
 
 Everything inside a button is an element. A button holds a flat `elements` list, and the order of that list is the order things are drawn in. There are three types: `text`, `icon` and `bar`. You can use as many of each as you want and mix them freely, so a bar can sit between two texts, or an icon can sit after the value instead of before it.
@@ -239,7 +246,6 @@ buttons:
 
 <details>
 <summary><b>Forecasts</b></summary>
-
 <br>
 
 Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. A text element with `attribute: datetime` prints the matching label (day name or time). With `icon: weather` on an icon element, the icon matches the forecasted condition.
@@ -261,7 +267,6 @@ buttons:
 
 <details>
 <summary><b>Gauges</b></summary>
-
 <br>
 
 There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you can add in the `elements` list with `type: bar`. Both fill based on a value inside a min/max range.
@@ -316,7 +321,6 @@ Any button can also use `color_thresholds` to tint itself based on a value, with
 
 <details>
 <summary><b>Icons</b></summary>
-
 <br>
 
 The card comes with animated weather icons. Turn them on with `icon: weather` on an icon element.
@@ -346,12 +350,10 @@ icon_path: /local/weather-icons/
 
 <details>
 <summary><b>Show all card options</b></summary>
-
 <br>
 
 <details>
 <summary><b>Card · Layout</b></summary>
-
 <br>
 
 | Option | Type | Default | Description |
@@ -371,7 +373,6 @@ icon_path: /local/weather-icons/
 
 <details>
 <summary><b>Card · Color & frame</b></summary>
-
 <br>
 
 | Option | Type | Default | Description |
@@ -388,7 +389,6 @@ icon_path: /local/weather-icons/
 
 <details>
 <summary><b>Card · Sun & Moon</b></summary>
-
 <br>
 
 The card renders a sun during the day and a moon at night, positioned within the background.
@@ -409,7 +409,6 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 
 <details>
 <summary><b>Container</b></summary>
-
 <br>
 
 | Option | Type | Default | Description |
@@ -457,7 +456,6 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 
 <details>
 <summary><b>Button</b></summary>
-
 <br>
 
 | Option | Type | Default | Description |
@@ -503,7 +501,6 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 
 <details>
 <summary><b>Elements</b></summary>
-
 <br>
 
 Every entry in a button's `elements` list needs a `type`, which is `text`, `icon` or `bar`.
@@ -571,7 +568,6 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 
 <details>
 <summary><b>Ring gauge</b></summary>
-
 <br>
 
 Set on the button, not on an element. Needs `type: ring`.
@@ -592,7 +588,6 @@ Set on the button, not on an element. Needs `type: ring`.
 
 <details>
 <summary><b>Background</b></summary>
-
 <br>
 
 **The background itself**
@@ -641,15 +636,13 @@ The sun and moon sit in this group too. Their options live under [Card · Sun & 
 </details>
 
 <details>
-<summary><b>Show all CSS-Variables</b></summary>
-
+<summary><b>Show all CSS variables</b></summary>
 <br>
 
 These are for theming. None of them are needed to use the card, they're there if you want to change the look further than the options allow. Put them in your theme file, or set them on a single card with card-mod. Anything the visual editor already covers is left out of this list, since setting it twice only causes confusion.
 
 <details>
 <summary><b>Text and colors</b></summary>
-
 <br>
 
 | Variable | Default | Description |
@@ -665,7 +658,6 @@ These are for theming. None of them are needed to use the card, they're there if
 
 <details>
 <summary><b>Sky and sun</b></summary>
-
 <br>
 
 | Variable | Default | Description |
@@ -678,7 +670,6 @@ These are for theming. None of them are needed to use the card, they're there if
 
 <details>
 <summary><b>Card frame</b></summary>
-
 <br>
 
 | Variable | Default | Description |
@@ -692,7 +683,6 @@ These are for theming. None of them are needed to use the card, they're there if
 
 <details>
 <summary><b>Backgrounds behind containers, buttons and icons</b></summary>
-
 <br>
 
 | Variable | Default | Description |
@@ -707,7 +697,6 @@ These are for theming. None of them are needed to use the card, they're there if
 
 <details>
 <summary><b>Dividers</b></summary>
-
 <br>
 
 | Variable | Default | Description |
@@ -719,7 +708,6 @@ These are for theming. None of them are needed to use the card, they're there if
 
 <details>
 <summary><b>Scrolling text</b></summary>
-
 <br>
 
 | Variable | Default | Description |
@@ -750,7 +738,6 @@ my_theme:
 
 <details>
 <summary><b>Notes on performance</b></summary>
-
 <br>
 
 The card is visually busy, so a few things are built to keep the required performance reasonable. Devices vary a lot though. On older or low-power ones you can turn off the effects separately.
@@ -761,9 +748,8 @@ The card is visually busy, so a few things are built to keep the required perfor
 
 <br>
 
-
 ## History
 
 Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account).
 
-> **Note:** I use AI as a tool in this project.
+> **Note:** AI is used as a tool in this project.

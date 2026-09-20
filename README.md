@@ -68,15 +68,11 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 <table>
 <tr>
 <td width="50%" align="center"><img width="360" alt="Daytime card with a sunset sky, condition text and two pill buttons" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff"></td>
-<td width="50%" align="center"><img width="360" alt="Overcast daytime card with a large temperature and a row of values below" src="https://github.com/user-attachments/assets/f69afa99-6834-4fff-9ecf-08447e6b9c11"></td>
-</tr>
-<tr>
 <td align="center"><img width="360" alt="Night card with a crescent moon and a scrollable row of pill buttons" src="https://github.com/user-attachments/assets/081a9b11-3037-4c65-a674-4a201753bda1"></td>
-<td align="center"><img width="360" alt="Night card with a large temperature over a cloudy sky" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308"></td>
 </tr>
 <tr>
-<td align="center"><img width="360" alt="Night card with a full moon, a moon phase ring and a five day forecast strip" src="https://github.com/user-attachments/assets/15783d8f-c969-4089-98b3-223a31c6781c"></td>
-<td align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></td>
+<td width="50%" align="center"><img width="360" alt="Overcast daytime card with a large temperature and a row of values below" src="https://github.com/user-attachments/assets/f69afa99-6834-4fff-9ecf-08447e6b9c11"></td> 
+<td align="center"><img width="360" alt="Night card with a large temperature over a cloudy sky" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308"></td>
 </tr>
 </table>
 
@@ -103,9 +99,10 @@ You can disable the sky or individual effects, or combine them with different ba
 
 With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a header for a popup or above an image card.
 
-<img width="480" alt="The card repurposed as an indoor climate card, showing indoor temperature, humidity and a comfort bar" src="https://github.com/user-attachments/assets/c394771a-fa35-4357-8963-24690aab7368">
 
-You can get pretty creative with different combinations. For example, it's also possible to repurpose the card into an indoor climate one, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
+<td align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></td> 
+
+You can get pretty creative with different combinations. For example, it's also possible to use the card without any weather animations, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
 
 <br>
 

@@ -4,8 +4,18 @@
 
 A flexible weather card.
 
-<img width="720" alt="Origami Weather at night: moon behind drifting clouds, 10 °C, wind and humidity in a row below" src="https://github.com/user-attachments/assets/55276c24-e197-4943-9517-2582966df53d">
+<a href="https://github.com/hazymorning/origami_weather/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/hazymorning/origami_weather?label=Release&color=41BDF5&labelColor=1B1C20"></a>
+&nbsp;
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin"><img alt="HACS custom repository" src="https://img.shields.io/badge/HACS-Custom-41BDF5?labelColor=1B1C20"></a>
 
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/20a3b823-b4cc-4293-801b-492a15bd44ae">
+  <img width="880" alt="Origami Weather on a phone dashboard, in light and dark mode: an animated sky with moon and clouds behind 11 °C, a three-day forecast and a condition line" src="https://github.com/user-attachments/assets/c98429a5-6833-44bb-b146-769d4810980f">
+</picture>
+
+<br>
 <br>
 
 **Getting Started** · [Installation](#installation) · [Setup](#setup) · [Layouts](#layouts)
@@ -63,7 +73,8 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 
 Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.
 
-> **Important:** Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards.
+> [!IMPORTANT]
+> Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards.
 
 <table>
 <tr>
@@ -95,12 +106,12 @@ The card shows an animated sky behind your content that follows whatever the wea
 
 You can disable the sky or individual effects, or combine them with different background styles. If you prefer the minimalism, you can also use the card in the simple default HA style with just the content and nothing else going on.
 
-<img width="720" alt="Card without frame or background, stretched across the full dashboard width like a header strip" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30">
+<p align="center"><img width="720" alt="Card without frame or background, stretched across the full dashboard width like a header strip" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30"></p>
 
 With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a header for a popup or above an image card.
 
 
-<td align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></td> 
+<p align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></p>
 
 You can get pretty creative with different combinations. For example, it's also possible to use the card without any weather animations, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
 
@@ -739,7 +750,8 @@ my_theme:
 
 The card is visually busy, so a few things are built to keep the required performance reasonable. Devices vary a lot though. On older or low-power ones you can turn off the effects separately.
 
-> **Tip:** Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card for little rendering cost.
+> [!TIP]
+> Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card for little rendering cost.
 
 </details>
 
@@ -749,4 +761,5 @@ The card is visually busy, so a few things are built to keep the required perfor
 
 Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account).
 
-> **Note:** AI is used as a tool in this project.
+> [!NOTE]
+> AI is used as a tool in this project.

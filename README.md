@@ -65,7 +65,7 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 | `weather_entity` | `string` | — | **Required.** Your weather entity. |
 | `moon_phase_entity` | `string` | — | **Recommended.** Your moon phase sensor. |
 
-**The actual content of the card is up to you.** You can either build your own layout or pick one of four pre-built ones in the visual editor. All of it works in yaml as well, see [here](#options).
+**The actual content of the card is up to you.** You can either build your own layout or pick one of the pre-built ones in the visual editor. All of it works in yaml as well, see [here](#options).
 
 <br>
 

@@ -8,12 +8,7 @@ A flexible weather card.
 &nbsp;
 <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin"><img alt="HACS custom repository" src="https://img.shields.io/badge/HACS-Custom-41BDF5?labelColor=1B1C20"></a>
 
-<br>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/20a3b823-b4cc-4293-801b-492a15bd44ae">
-  <img width="880" alt="Origami Weather on a phone dashboard, in light and dark mode: an animated sky with moon and clouds behind 11 °C, a three-day forecast and a condition line" src="https://github.com/user-attachments/assets/c98429a5-6833-44bb-b146-769d4810980f">
-</picture>
+<img width="800" alt="Origami Weather on a phone dashboard, in light and dark mode" src="https://github.com/user-attachments/assets/10c36c5a-6727-4fe5-8617-8886abb2c3d8" />
 
 <br>
 <br>
@@ -30,17 +25,17 @@ A flexible weather card.
 
 ## Installation
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin)
-
 <details>
-<summary><b>HACS (Recommended)</b></summary>
+<summary><b>HACS (custom repository)</b></summary>
 <br>
 
-This card isn't in the default HACS store yet, so it has to be added as a custom repository.
+Origami Weather is not listed in the HACS store yet. You can still install it through HACS by adding the repository yourself:
 
-1. Click the badge above, **or** in HACS go to **⋮** (top right) → **Custom repositories**, enter `https://github.com/hazymorning/origami_weather` with category **Dashboard**, and click **Add**.
-2. Search for **Origami Weather** and click **Download**.
-3. Reload your dashboard.
+1. Open HACS in Home Assistant.
+2. Click the three dots in the top right corner and choose **Custom repositories**.
+3. Enter `https://github.com/hazymorning/origami_weather` as the repository, select **Dashboard** as the type and click **Add**.
+4. Search for **Origami Weather** in HACS and click **Download**.
+5. Reload your browser.
 
 </details>
 
@@ -49,10 +44,10 @@ This card isn't in the default HACS store yet, so it has to be added as a custom
 <br>
 
 1. Download `origami-weather.js`, `origami-weather-editor.js`, `layout-presets.js` and `image-assets.js` from the latest release.
-2. Put all four in `config/www/`, in the same folder. The card loads the other three itself, so it breaks if they are missing or sitting somewhere else.
-3. Go to **Settings** → **Dashboards** → **⋮** → **Resources**.
-4. Add `/local/origami-weather.js` as a JavaScript Module. Only this one file gets registered as a resource.
-5. Hard-refresh your browser.
+2. Copy all four files into the same folder inside `config/www/`. The card loads the other three files on its own, so it will not work if one of them is missing or in a different folder.
+3. In Home Assistant, go to **Settings**, then **Dashboards**, click the three dots in the top right corner and choose **Resources**.
+4. Add `/local/origami-weather.js` as a JavaScript module. You only need to add this one file.
+5. Reload your browser with a hard refresh (Ctrl+F5 or Cmd+Shift+R).
 
 </details>
 

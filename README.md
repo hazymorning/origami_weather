@@ -9,7 +9,7 @@ A flexible weather card.
 &nbsp;
 <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin"><img alt="HACS custom repository" src="https://img.shields.io/badge/HACS-Custom-41BDF5?labelColor=1B1C20"></a>
 
-<img width="800" alt="Origami Weather on a phone dashboard, in light and dark mode" src="https://github.com/user-attachments/assets/3df5f607-51d4-4b79-8997-239545067d14" />
+<img width="800" alt="Origami Weather on a phone dashboard, in light and dark mode" src="https://github.com/user-attachments/assets/aec8b7ff-bd27-4c9f-a1d0-96ff60290379" />
 
 <br>
 <br>

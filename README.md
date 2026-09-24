@@ -109,7 +109,7 @@ With `background_mode: none` and `card_frame: false` the card loses its own styl
 
 <p align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></p>
 
-You can get pretty creative with different combinations. For example, it's also possible to use the card without any weather animations, as shown above. You can find this indoor climate example in the [Origami dashboard](https://github.com/hazymorning/origami). All the different settings are shown [here](#options).
+You can get pretty creative with different combinations.
 
 <br>
 

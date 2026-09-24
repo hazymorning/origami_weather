@@ -69,19 +69,10 @@ Origami Weather is not listed in the HACS store yet. You can still install it th
 
 Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.
 
-> [!IMPORTANT]
-> Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards.
+<img width="800" alt="Image" src="https://github.com/user-attachments/assets/8acdb51a-7a4b-4d28-bc90-aac1f3591b15" />
 
-<table>
-<tr>
-<td width="50%" align="center"><img width="360" alt="Daytime card with a sunset sky, condition text and two pill buttons" src="https://github.com/user-attachments/assets/a1548af5-582f-41c5-a410-c4a1a63f82ff"></td>
-<td align="center"><img width="360" alt="Night card with a crescent moon and a scrollable row of pill buttons" src="https://github.com/user-attachments/assets/081a9b11-3037-4c65-a674-4a201753bda1"></td>
-</tr>
-<tr>
-<td width="50%" align="center"><img width="360" alt="Overcast daytime card with a large temperature and a row of values below" src="https://github.com/user-attachments/assets/f69afa99-6834-4fff-9ecf-08447e6b9c11"></td> 
-<td align="center"><img width="360" alt="Night card with a large temperature over a cloudy sky" src="https://github.com/user-attachments/assets/280e57d0-dcc6-46c7-ba49-c15e8d1b1308"></td>
-</tr>
-</table>
+> [!NOTE]
+> Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards. 
 
 <br>
 
@@ -109,7 +100,7 @@ With `background_mode: none` and `card_frame: false` the card loses its own styl
 
 <p align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></p>
 
-You can get pretty creative with different combinations.
+You can get creative with different combinations. Sometimes a calmer card works better, and there are plenty of ways to use it without any effects while still giving visual feedback, like dynamic background colors or static weather images.
 
 <br>
 

@@ -1,4 +1,3 @@
-
 <div align="center">
 
 # ◪ Origami Weather
@@ -746,7 +745,7 @@ The card is visually busy, so a few things are built to keep the required perfor
 
 ## History
 
-Origami Weather is the continuation of a hobby project I started in early 2026 (originally called Atmospheric Weather Card on a previous GitHub account).
+Origami Weather is the continuation of a hobby project which started in early 2026, originally called Atmospheric Weather Card on a previous GitHub account.
 
 > [!NOTE]
 > AI is used as a tool in this project.

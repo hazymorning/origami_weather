@@ -58,7 +58,6 @@ Origami Weather is not listed in the HACS store yet. You can still install it th
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** Your weather entity. |
-| `moon_phase_entity` | `string` | — | **Recommended.** Your moon phase sensor. |
 
 **The actual content of the card is up to you.** You can either build your own layout or pick one of the pre-built ones in the visual editor. All of it works in yaml as well, see [here](#options).
 
@@ -88,7 +87,7 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 </tr>
 </table>
 
-The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night, birds cross the sky, balloons drift past, planes pass overhead, and so on. Different effects are layered on top of this sky to add realism and drama.
+The card shows an animated sky behind your content that follows whatever the weather and sun are doing. The sky color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past, planes pass overhead, and so on. Different effects are layered on top of this sky to add realism and drama.
 
 You can disable the sky or individual effects, or combine them with different background styles. If you prefer the minimalism, you can also use the card in the simple default HA style with just the content and nothing else going on.
 
@@ -186,6 +185,8 @@ buttons:
     background: true
 ```
 
+Offsets and sizes on free-positioned buttons and containers can use container query units (`cqw`, `cqh`, `cqmin`), which are relative to the card instead of the screen. That way the whole arrangement scales along with the card.
+
 </details>
 
 <details>
@@ -263,7 +264,7 @@ buttons:
 <summary><b>Gauges</b></summary>
 <br>
 
-There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you can add in the `elements` list with `type: bar`. Both fill based on a value inside a min/max range.
+There are two gauge shapes. A ring wraps around the whole button and is set on the button itself with `type: ring`. A bar is an element you can add in the `elements` list with `type: bar`. Both fill based on a value inside a min/max range, and everything below works the same for both, only the `ring_` or `bar_` prefix changes.
 
 ```yaml
 buttons:
@@ -290,7 +291,7 @@ ring_thresholds:
     color: "#f44336"
 ```
 
-A bar can also show more than one value. Add entries to `bar_values` and it becomes a comparison: the fill follows the first value, and every value gets its own marker on the bar. Each entry takes `entity`, `attribute`, `marker_color`, `marker_icon` and `marker_icon_color`.
+A gauge can also show more than one value. Add entries to `bar_values` or `ring_values` and it becomes a comparison: the fill follows the first value, and every value gets its own marker. Each entry takes `entity`, `attribute`, `marker_size`, `marker_color`, `marker_icon` and `marker_icon_color`.
 
 ```yaml
 elements:
@@ -305,9 +306,13 @@ elements:
         marker_color: "#03a9f4"
 ```
 
-With one value there is no marker, `bar_marker: true` adds it. The marker matches the bar height, so a thin bar means a small icon, unless you set `bar_marker_size` to make it stick out on both sides.
+With one value there is no marker, `bar_marker: true` adds it. The marker matches the bar height, so a thin bar means a small icon, unless you set `bar_marker_size` to make it stick out on both sides. `bar_fill: false` drops the fill and leaves only the markers, and a `marker_size` of `0` on a single value hides its marker, which is handy when a value should only drive the fill.
 
 `bar_range_from` and `bar_range_to` draw a highlighted band on the track, which is useful for marking the range you actually care about.
+
+A ring doesn't have to be a full circle. `ring_start` rotates where it begins, in degrees clockwise from the top, and `ring_arc` sets how far it goes, so `ring_start: 240` with `ring_arc: 240` gives you an open arc with the gap at the bottom.
+
+Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset. The Arc layout is built exactly like that.
 
 Any button can also use `color_thresholds` to tint itself based on a value, with no gauge involved. The value doesn't have to be a number here, a state like `on` or `home` works too.
 
@@ -352,7 +357,7 @@ icon_path: /local/weather-icons/
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `card_height` | `string` | `200px` | Height of the card. Numbers are treated as px. `auto` fills available height in grid layouts, `content` sizes to fit the content. |
+| `card_height` | `string` | `200px` | Height of the card. Numbers are treated as px. `auto` fills available height in grid layouts, `content` sizes to fit the content, `square` makes it as tall as it is wide. |
 | `card_padding` | `string` | `16px` | Inner padding around the content. |
 | `card_offset` | `string` | — | Shifts the card via CSS margin. Useful when layering cards. |
 | `full_width` | `boolean` | `false` | Lets the card bleed past the column gutter so it runs edge to edge in a sections view. |
@@ -385,7 +390,7 @@ icon_path: /local/weather-icons/
 <summary><b>Card · Sun & Moon</b></summary>
 <br>
 
-The card renders a sun during the day and a moon at night, positioned within the background.
+The card renders a sun during the day and a moon at night, positioned within the background. The moon shows the current phase, which the card works out on its own.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -395,9 +400,8 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
 | `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, or you can pass a CSS length. Set it to `dynamic` and the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. |
 | `sun_moon_y` | `string` | — | Vertical position, as a percentage from the top, clamped to 0-100. When unset it follows the sun's elevation. |
-| `moon_phase_entity` | `string` | — | Entity for moon phase. When set, the moon shows the current phase. |
 
-The old `sun_moon_enabled` is converted to the two separate toggles automatically, so existing configs keep working.
+The old `sun_moon_enabled` is converted to the two separate toggles automatically and a leftover `moon_phase_entity` is simply ignored, so existing configs keep working.
 
 </details>
 
@@ -532,7 +536,7 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `bar_min` | `number` | `0` | Minimum of the range. |
+| `bar_min` | `number` | `0` | Minimum of the range. This and `bar_max` can also be a time or an entity ID, see [Gauges](#building-blocks). |
 | `bar_max` | `number` | `100` | Maximum of the range. |
 | `bar_height` | `string` | `4px` | Height of the bar. |
 | `bar_color` | `string` | — | Color of the filled part. |
@@ -540,6 +544,7 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
 | `bar_values` | `list` | — | The values shown on the bar. Without it the bar uses the button's own value. |
 | `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. |
+| `bar_fill` | `boolean` | `true` | Set to `false` to draw only the track and the markers, no fill. |
 | `bar_marker_size` | `string` | *bar height* | Size of the markers. Anything larger than the bar sticks out on both sides. |
 | `bar_marker_icon_size` | `string` | *two thirds of the marker* | Size of the icon inside a marker. |
 | `bar_range_from` | `number` | — | Start of a highlighted band drawn on the track, e.g. to mark a comfortable range. |
@@ -548,12 +553,13 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `margin` | `string` | — | Outer margin of this element. |
 | `padding` | `string` | — | Inner padding of this element. |
 
-**Bar value** (an entry in `bar_values`)
+**Gauge value** (an entry in `bar_values` or `ring_values`)
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `entity` | `string` | — | Read from a different entity than the button. |
 | `attribute` | `string` | — | Attribute to read. |
+| `marker_size` | `string` | *gauge marker size* | Size of this marker. `0` hides it. |
 | `marker_color` | `string` | — | Color of the marker. |
 | `marker_icon` | `string` | — | Icon drawn inside the marker. |
 | `marker_icon_color` | `string` | — | Color of that icon. |
@@ -564,19 +570,29 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 <summary><b>Ring gauge</b></summary>
 <br>
 
-Set on the button, not on an element. Needs `type: ring`.
+Set on the button, not on an element. Needs `type: ring`. Entries in `ring_values` take the same options as the gauge values under [Elements](#options).
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `ring_min` | `number` | `0` | Minimum of the range. |
+| `ring_min` | `number` | `0` | Minimum of the range. This and `ring_max` can also be a time or an entity ID, see [Gauges](#building-blocks). |
 | `ring_max` | `number` | `100` | Maximum of the range. |
 | `ring_width` | `string` | `4px` | Thickness of the ring. |
 | `ring_gap` | `string` | `3px` | Gap between the ring and the button content. |
+| `ring_start` | `number` | `0` | Where the ring begins, in degrees clockwise from the top. |
+| `ring_arc` | `number` | `360` | How many degrees the ring covers. Anything below 360 leaves an open gap. |
 | `ring_color` | `string` | — | Color of the filled part. |
 | `ring_threshold_mode` | `string` | `solid` | `solid`, `segments`, or `gradient`. |
 | `ring_thresholds` | `list` | — | List of `{ value, color }` entries. |
-| `gauge_entity` | `string` | — | Use a different entity for the ring value. |
-| `gauge_attribute` | `string` | — | Attribute to read for the ring value. |
+| `ring_values` | `list` | — | The values shown on the ring. Without it the ring uses the button's own value. |
+| `ring_marker` | `boolean` | `false` | Show the marker when the ring has one value. With several values the markers are always there. |
+| `ring_fill` | `boolean` | `true` | Set to `false` to draw only the track and the markers, no fill. |
+| `ring_marker_size` | `string` | *ring width* | Size of the markers. Anything larger than the ring sticks out on both sides. |
+| `ring_marker_icon_size` | `string` | *two thirds of the marker* | Size of the icon inside a marker. |
+| `ring_range_from` | `number` | — | Start of a highlighted band drawn on the track. |
+| `ring_range_to` | `number` | — | End of that band. Both are needed for it to show. |
+| `ring_range_color` | `string` | 18% of the text color | Color of that band. |
+
+The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` entry automatically, so existing configs keep working.
 
 </details>
 
@@ -605,12 +621,12 @@ These run on top of whichever background you picked, including `images` and `non
 | :--- | :--- | :--- | :--- |
 | `precipitation_effects` | `boolean` | `true` | Rain, downpour, thunderstorms, snow, sleet and hail particles. |
 | `cloud_effects` | `boolean` | `true` | The drifting cloud layer. Even clear skies get a few soft ones, and fog is drawn with them as well. |
-| `night_sky_effects` | `boolean` | `true` | Stars at night, thinned out when it's cloudy. |
+| `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |
 | `balloon_effects` | `boolean` | `true` | Balloons drifting past. Only when the sky is clear or lightly clouded. |
 | `balloon_density` | `number` | `1` | How many balloons, between `0.25` and `4`. |
-| `plane_effects` | `boolean` | `true` | Planes crossing the sky, with contrails on clear days and lights at night. Fewer of them in bad weather, none in thunderstorms, hail, fog or pouring rain. |
+| `plane_effects` | `boolean` | `true` | Planes crossing the sky, trailing contrails, with lights at night. Fewer of them in bad weather, none in thunderstorms, hail, fog or pouring rain. |
 | `plane_density` | `number` | `1` | How many planes, between `0.25` and `4`. |
 
 The sun and moon sit in this group too. Their options live under [Card · Sun & Moon](#options).

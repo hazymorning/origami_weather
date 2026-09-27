@@ -10,11 +10,9 @@ const sunButton = (rising) => ({
 });
 
 const SLIM_CONFIG = Object.freeze({
-    sun_entity: 'sun.sun',
     sun_moon_x: 'dynamic',
     card_height: 'content',
     card_padding: '16px',
-    background_mode: 'default',
     content_align: 'between',
     content_align_items: 'start',
     button_containers: [
@@ -37,7 +35,6 @@ const SLIM_CONFIG = Object.freeze({
         },
         {
             background: true,
-            position: 'bottom-left',
             gap: '8px',
             button_gap: '6px',
             button_icon_size: '14px',
@@ -45,7 +42,6 @@ const SLIM_CONFIG = Object.freeze({
             align: 'center',
             button_text_size: '12px',
             background_color: 'rgba(255,255,255,0.1)',
-            width: '100%',
             blurred_background: true,
             buttons: [
                 {
@@ -129,11 +125,9 @@ const forecastButton = (offset) => ({
 });
 
 const CLASSIC_CONFIG = Object.freeze({
-    sun_entity: 'sun.sun',
     sun_moon_x: 'dynamic',
     card_height: 'content',
     card_padding: '16px',
-    background_mode: 'default',
     button_containers: [
         {
             position: 'custom',
@@ -176,7 +170,6 @@ const CLASSIC_CONFIG = Object.freeze({
                     ring_thresholds: RING_THRESHOLDS.map((t) => ({ ...t })),
                     blurred_background: true,
                     padding: '16px',
-                    background: false,
                     elements: [
                         { type: 'icon', icon: 'weather', icon_background: false, icon_background_color: 'rgba(0,0,0,0)', icon_size: '36px' }
                     ]
@@ -201,7 +194,15 @@ const CLASSIC_CONFIG = Object.freeze({
                     ]
                 },
                 sunButton(true),
-                sunButton(false)
+                sunButton(false),
+                {
+                    entity: PRESET_ENTITY_TOKEN,
+                    forecast: 'daily',
+                    elements: [
+                        { type: 'icon', icon: 'mdi:umbrella-outline' },
+                        { type: 'text', attribute: 'precipitation_probability', weight: '700' }
+                    ]
+                }
             ]
         },
         {
@@ -211,17 +212,18 @@ const CLASSIC_CONFIG = Object.freeze({
             button_icon_background_color: 'rgba(255,255,255,0.05)',
             button_style: 'vertical',
             button_gap: '6px',
-            button_icon_size: '24px',
+            button_icon_size: '28px',
             button_padding: '16px 0',
             align: 'center',
-            button_text_size: '13px',
-            background_color: 'rgba(0,0,0,0.05)',
+            button_text_size: '14px',
+            background_color: 'rgba(255,255,255,0.05)',
             blurred_background: true,
             button_background_color: 'rgba(255,255,255,0.1)',
             button_icon_padding: '0 0 6px 0',
             grouped: true,
             background: true,
             separator: true,
+            shadow: false,
             buttons: [0, 1, 2, 3, 4, 5, 6].map(forecastButton)
         }
     ],
@@ -245,11 +247,9 @@ const metaItem = (icon, attribute, weight, forecast) => ({
 });
 
 const CENTERED_CONFIG = Object.freeze({
-    sun_entity: 'sun.sun',
     sun_moon_x: 'dynamic',
     card_height: 'content',
     card_padding: '24px 20px',
-    background_mode: 'default',
     content_align: 'between',
     content_align_items: 'center',
     button_containers: [
@@ -298,25 +298,6 @@ const CENTERED_CONFIG = Object.freeze({
     }
 });
 
-const TEMP_RGB = Object.freeze([
-    ['-10', '66,110,196'],
-    ['-6', '79,143,214'],
-    ['-2', '89,168,209'],
-    ['2', '95,191,203'],
-    ['6', '95,191,174'],
-    ['10', '110,201,138'],
-    ['14', '140,205,112'],
-    ['18', '178,205,100'],
-    ['22', '214,180,96'],
-    ['26', '224,138,114'],
-    ['30', '224,102,86'],
-    ['34', '207,64,64']
-]);
-
-const BAR_ALPHA = Object.freeze(['0.45', '0.45', '0.45', '0.46', '0.48', '0.50', '0.50', '0.52', '0.55', '0.58', '0.62', '0.68']);
-
-const tempThresholds = (alpha) => TEMP_RGB.map(([value, rgb], i) => ({ value, color: alpha ? `rgba(${rgb},${alpha[i]})` : `rgb(${rgb})` }));
-
 const WEATHER_RGB = Object.freeze([
     ['sunny', 80, '245,185,70'],
     ['clear-night', 80, '80,90,180'],
@@ -337,23 +318,27 @@ const WEATHER_RGB = Object.freeze([
 
 const weatherThresholds = () => WEATHER_RGB.map(([value, base, rgb]) => ({ value, color: `color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) ${base}%, rgb(${rgb}))` }));
 
-const scrollItem = (icon, attribute, format, forecast) => ({
+const forecastTile = (offset) => ({
     entity: PRESET_ENTITY_TOKEN,
-    ...(forecast ? { forecast: 'daily' } : {}),
-    background: false,
+    forecast: 'daily',
+    ...(offset ? { forecast_offset: offset } : {}),
+    align: 'center',
+    background_color: `rgba(150,150,150,${(14 - 2 * offset) / 100})`,
     elements: [
-        { type: 'icon', icon, icon_background: false },
-        { type: 'text', attribute, precision: 0, format, weight: '700' }
+        { type: 'icon', icon: 'weather' },
+        { type: 'text', size: '12px', weight: '500', attribute: 'datetime' },
+        { type: 'text', weight: '700', attribute: 'temperature', format: '\u00b0' }
     ]
 });
 
 const COMPARISON_CONFIG = Object.freeze({
-    sun_entity: 'sun.sun',
-    sun_moon_enabled: false,
+    sun_enabled: false,
+    moon_enabled: false,
+    sun_moon_x: 'dynamic',
     color_mode: 'theme',
     card_height: 'content',
     card_padding: '20px',
-    card_offset: '20px 0px 0px 0px',
+    card_offset: '8px 0px 0px 0px',
     background_mode: 'color',
     background_threshold_entity: PRESET_ENTITY_TOKEN,
     background_thresholds: weatherThresholds(),
@@ -363,10 +348,6 @@ const COMPARISON_CONFIG = Object.freeze({
     night_sky_effects: false,
     button_containers: [
         {
-            position: 'custom',
-            position_anchor: 'top-left',
-            position_x: '4px',
-            position_y: '4px',
             buttons: [
                 {
                     entity: PRESET_ENTITY_TOKEN,
@@ -377,51 +358,30 @@ const COMPARISON_CONFIG = Object.freeze({
                     inner_gap: '6px',
                     elements: [
                         { type: 'text', text: 'Outside', size: '14px', weight: '500' },
-                        { type: 'text', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', precision: 0, format: '\u00b0', size: '48px', weight: '800' }
+                        { type: 'text', attribute: 'temperature', precision: 0, format: '\u00b0', size: '42px', weight: '800' }
                     ]
                 }
             ]
         },
         {
-            justify_content: 'end',
-            padding: '0',
-            buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    background: true,
-                    button_round: true,
-                    shadow: false,
-                    padding: '15px 22px',
-                    text_size: '14px',
-                    background_color: 'rgba(255,255,255,0.10)',
-                    color_threshold_attribute: 'temperature',
-                    color_thresholds: tempThresholds(),
-                    elements: [
-                        { type: 'icon', icon: 'weather' },
-                        { type: 'text', weight: '700' }
-                    ]
-                }
-            ]
-        },
-        {
-            justify_content: 'end',
-            padding: '0 4px',
-            margin: '16px 0 0 0',
-            buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    background: false,
-                    padding: '0',
-                    text_size: '14px',
-                    elements: [
-                        { type: 'text', attribute: 'humidity', precision: 0, format: ' % humidity', weight: '500' }
-                    ]
-                }
-            ]
+            position: 'custom',
+            position_anchor: 'top-right',
+            layout: 'horizontal-scroll',
+            custom_width: '60%',
+            scroll_count: 3,
+            gap: '8px',
+            background: true,
+            button_style: 'vertical',
+            button_padding: '16px',
+            button_icon_size: '26px',
+            button_icon_padding: '0 0 8px 0',
+            button_shadow: false,
+            button_blurred_background: true,
+            buttons: [0, 1, 2, 3].map(forecastTile)
         },
         {
             padding: '0',
-            margin: '28px 0 0 0',
+            margin: '66px 0 8px 0',
             buttons: [
                 {
                     entity: PRESET_ENTITY_TOKEN,
@@ -433,17 +393,14 @@ const COMPARISON_CONFIG = Object.freeze({
                         {
                             type: 'bar',
                             bar_min: '-10',
-                            bar_max: '38',
-                            bar_height: 18,
-                            bar_color: 'rgba(255,255,255,0.14)',
-                            bar_threshold_mode: 'gradient',
-                            bar_thresholds: tempThresholds(BAR_ALPHA),
+                            bar_max: '35',
+                            bar_height: '2px',
+                            bar_color: 'rgba(150,150,150,0.6)',
+                            bar_marker_size: '10px',
                             bar_values: [
-                                { entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', marker_icon: 'mdi:thermometer', marker_color: '#ffffff', marker_icon_color: '#14263f' },
-                                { attribute: 'templow', marker_icon: 'mdi:arrow-down', marker_color: '#5c5c5c', marker_icon_color: '#ffffff' },
-                                { attribute: 'temperature', marker_icon: 'mdi:arrow-up', marker_color: '#5c5c5c', marker_icon_color: '#ffffff' }
-                            ],
-                            bar_marker_size: '26px'
+                                { entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', marker_color: '#ffffff' },
+                                { attribute: 'temperature' }
+                            ]
                         }
                     ]
                 }
@@ -451,9 +408,20 @@ const COMPARISON_CONFIG = Object.freeze({
         },
         {
             padding: '0 4px',
-            margin: '16px 0 0 0',
+            margin: '12px 0 0 0',
+            align: 'start',
             button_text_size: '16px',
             buttons: [
+                {
+                    entity: PRESET_ENTITY_TOKEN,
+                    background: false,
+                    padding: '0',
+                    align: 'spread',
+                    elements: [
+                        { type: 'icon', icon: 'weather', padding: '0 4px 0 0' },
+                        { type: 'text', weight: '700', margin: '0 auto 0 0' }
+                    ]
+                },
                 {
                     entity: PRESET_ENTITY_TOKEN,
                     forecast: 'daily',
@@ -461,55 +429,108 @@ const COMPARISON_CONFIG = Object.freeze({
                     padding: '0',
                     align: 'spread',
                     elements: [
-                        { type: 'text', text: 'Today', weight: '400' },
-                        { type: 'icon', icon: 'weather' },
-                        { type: 'text', attribute: 'condition', weight: '700', margin: '0 auto 0 0' },
-                        { type: 'text', attribute: 'precipitation', precision: 1, format: ' mm', weight: '400', margin: '0 0 0 auto' }
+                        { type: 'icon', icon: 'mdi:umbrella-outline', margin: '0 0 0 auto' },
+                        { type: 'text', attribute: 'precipitation_probability', format: ' %', weight: '400' }
                     ]
                 }
-            ]
-        },
-        {
-            padding: '0',
-            margin: '24px 0 8px 0',
-            buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    background: false,
-                    padding: '0',
-                    width: '100%',
-                    elements: [
-                        { type: 'bar', bar_height: '2', bar_color: 'rgba(0,0,0,0)' }
-                    ]
-                }
-            ]
-        },
-        {
-            layout: 'horizontal-scroll',
-            scroll_fade: true,
-            scroll_fade_size: '28px',
-            padding: '0',
-            gap: '18px',
-            button_gap: '7px',
-            button_icon_size: '16px',
-            button_text_size: '14px',
-            button_padding: '8px 0 0 0',
-            align: 'center',
-            buttons: [
-                sunButton(true),
-                sunButton(false),
-                scrollItem('mdi:weather-windy', 'wind_speed', ' km/h', false),
-                scrollItem('mdi:weather-rainy', 'precipitation_probability', ' %', true),
-                scrollItem('mdi:cloud-outline', 'cloud_coverage', ' %', true),
-                scrollItem('mdi:eye-outline', 'visibility', ' km', false),
-                scrollItem('mdi:gauge', 'pressure', ' hPa', false),
-                scrollItem('mdi:compass-outline', 'wind_bearing', '\u00b0', false)
             ]
         }
     ],
     grid_options: {
         rows: 'auto',
         columns: 12
+    }
+});
+
+const arcText = (value, extra) => ({ type: 'text', ...extra, size: value ? 'clamp(24px, 8cqmin, 36px)' : 'clamp(13px, 3.5cqmin, 16px)', weight: value ? '700' : '500' });
+
+const arcSunButton = (rising) => ({
+    ...sunButton(rising),
+    background: false,
+    elements: [
+        arcText(true, { attribute: rising ? 'next_rising' : 'next_setting' }),
+        arcText(false, { text: rising ? 'Sunrise' : 'Sunset' })
+    ]
+});
+
+const arcEnd = (rising) => ({ entity: rising ? 'sensor.sun_next_rising' : 'sensor.sun_next_setting', marker_size: '26', marker_color: 'rgba(0,0,0,0.8)', marker_icon: rising ? 'mdi:weather-sunset-up' : 'mdi:weather-sunset-down', marker_icon_color: '#ffffff' });
+
+const arcRing = (rising) => {
+    const from = arcEnd(!rising), to = arcEnd(rising);
+    return {
+        ...sunButton(rising),
+        type: 'ring',
+        width: '68cqmin',
+        background: false,
+        ring_min: from.entity,
+        ring_max: to.entity,
+        ring_start: 240,
+        ring_arc: 240,
+        ring_width: '4',
+        ring_color: 'color-mix(in srgb, currentColor 40%, transparent)',
+        ring_values: [
+            { entity: 'sensor.time', marker_size: 0 },
+            from,
+            to,
+            { entity: 'sensor.time', marker_size: '40', marker_color: '#ffffff', marker_icon: rising ? 'mdi:weather-night' : 'mdi:white-balance-sunny', marker_icon_color: '#2c2c2e' }
+        ],
+        elements: [
+            { type: 'text', text: ' ' }
+        ]
+    };
+};
+
+const ARC_CONFIG = Object.freeze({
+    sun_moon_size: 100,
+    sun_moon_y: 44,
+    card_height: 'auto',
+    card_padding: '0',
+    bird_effects: false,
+    balloon_effects: false,
+    plane_effects: false,
+    button_containers: [
+        {
+            position: 'custom',
+            position_anchor: 'top',
+            position_y: '10cqh',
+            buttons: [arcRing(false), arcRing(true)]
+        },
+        {
+            position: 'custom',
+            position_anchor: 'bottom-left',
+            position_x: '7cqw',
+            position_y: '7cqh',
+            padding: '0',
+            button_style: 'vertical',
+            button_padding: '0',
+            button_gap: '8px',
+            buttons: [
+                {
+                    entity: PRESET_ENTITY_TOKEN,
+                    background: false,
+                    elements: [
+                        arcText(true, { attribute: 'temperature', precision: 0, format: '\u00b0' }),
+                        arcText(false)
+                    ]
+                }
+            ]
+        },
+        {
+            position: 'custom',
+            position_anchor: 'bottom-right',
+            position_x: '7cqw',
+            position_y: '7cqh',
+            align: 'end',
+            padding: '0',
+            button_style: 'vertical',
+            button_padding: '0',
+            button_gap: '8px',
+            buttons: [arcSunButton(false), arcSunButton(true)]
+        }
+    ],
+    grid_options: {
+        columns: 12,
+        rows: 6
     }
 });
 
@@ -541,6 +562,13 @@ export const LAYOUT_PRESETS = Object.freeze([
         description: 'Lots of info',
         icon: 'mdi:compare-horizontal',
         config: COMPARISON_CONFIG
+    },
+    {
+        id: 'arc',
+        name: 'Arc',
+        description: 'Sunrise to sunset',
+        icon: 'mdi:weather-sunset',
+        config: ARC_CONFIG
     }
 ]);
 
@@ -558,11 +586,7 @@ export const rebindPresetEntities = (value, entity) => {
     if (Array.isArray(value)) return value.map((v) => rebindPresetEntities(v, entity));
     if (value && typeof value === 'object') {
         const out = {};
-        for (const k of Object.keys(value)) {
-            const v = value[k];
-            if ((k === 'entity' || k === 'gauge_entity') && v === PRESET_ENTITY_TOKEN) out[k] = entity;
-            else out[k] = rebindPresetEntities(v, entity);
-        }
+        for (const k of Object.keys(value)) out[k] = rebindPresetEntities(value[k], entity);
         return out;
     }
     if (value === PRESET_ENTITY_TOKEN) return entity;

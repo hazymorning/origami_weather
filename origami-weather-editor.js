@@ -1,8 +1,8 @@
 import { LitElement, html, css } from "https://esm.sh/lit@3.2.1";
-import { LAYOUT_PRESETS, instantiatePreset } from "./layout-presets.js?v=1-4-lets-get-cloudy";
+import { LAYOUT_PRESETS, instantiatePreset } from "./layout-presets.js?v=OOJOPV";
 const LABELS = Object.freeze({
     weather_entity: "", sun_entity: "Sun entity",
-    moon_phase_entity: "Moon phase entity", sun_moon_size: "Diameter", sun_moon_x: "Horizontal position", sun_moon_y: "Vertical position",
+    sun_moon_size: "Diameter", sun_moon_x: "Horizontal position", sun_moon_y: "Vertical position",
     color_mode: "Light / dark mode", card_height: "Card height",
     background_mode: "Card background",
     card_padding: "Card padding", card_offset: "Card offset", card_tap_action: "Tap action",
@@ -20,7 +20,7 @@ const LABELS = Object.freeze({
 const BUTTON_LABELS = Object.freeze({ entity: "", tap_action: "Tap action" });
 const KEY_ORDER = Object.freeze([
     "type", "name", "entity", "weather_entity",
-    "sun_entity", "sun_enabled", "moon_enabled", "moon_phase_entity", "sun_moon_size", "sun_moon_x", "sun_moon_y",
+    "sun_entity", "sun_enabled", "moon_enabled", "sun_moon_size", "sun_moon_x", "sun_moon_y",
     "color_mode", "dark_theme_adaptation", "card_height", "card_padding",
     "background_mode", "background_color", "background_threshold_entity", "background_threshold_attribute", "background_thresholds",
     "weather_image_path", "weather_image_path_dark",
@@ -32,7 +32,7 @@ const KEY_ORDER = Object.freeze([
     "button_containers"]);
 const CARD_THRESHOLD_KEYS = Object.freeze(["background_thresholds", "background_threshold_entity", "background_threshold_attribute"]);
 const DISPLAY_DEFAULTS = Object.freeze({
-    color_mode: "sun",
+    color_mode: "sun", sun_entity: "sun.sun", background_mode: "default",
     sun_moon_size: 80, sun_moon_x: 50,
     bg_brightness: 1.0, bg_saturation: 1.0, bg_blur: 0});
 const OPT = Object.freeze({
@@ -107,7 +107,6 @@ class WeatherCardEditor extends LitElement {
                 --origami-e-f-meta: 12px; --origami-e-f-label: 13px; --origami-e-f-body: 14px; --origami-e-f-header: 15px;
                 --origami-e-t: 150ms ease;
                 --mdc-text-field-fill-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06);
-                --mdc-select-fill-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06);
                 --mdc-typography-subtitle1-font-size: var(--origami-e-f-label); --mdc-typography-subtitle1-font-weight: 400;
                 --mdc-typography-body2-font-size: var(--origami-e-f-meta);
                 display: block;}
@@ -167,8 +166,7 @@ class WeatherCardEditor extends LitElement {
                 & code { background: var(--primary-background-color); padding: 1px 6px; border-radius: 4px; font-size: var(--origami-e-f-meta); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }}
             /* Grid layouts */
             .card-size-row {
-                display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--origami-e-s2);
-                & ha-textfield { display: block; width: 100%; min-width: 0; }}
+                display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--origami-e-s2); }
             /* Composite field groups */
             .composite-grid-4 input {
                 flex: 1; min-width: 120px; padding: var(--origami-e-s2) var(--origami-e-s3);
@@ -260,7 +258,7 @@ class WeatherCardEditor extends LitElement {
             .compact-field {
                 display: flex; flex-direction: column; gap: var(--origami-e-s1);
                 & .compact-field-label { margin-bottom: 0; }
-                & input, & ha-textfield { width: 100%; min-width: 0; box-sizing: border-box; }
+                & input { width: 100%; min-width: 0; box-sizing: border-box; }
                 & input {
                     padding: var(--origami-e-s2) var(--origami-e-s3); border: 1px solid transparent;
                     background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); color: var(--primary-text-color);
@@ -284,11 +282,7 @@ class WeatherCardEditor extends LitElement {
                     --ha-switch-checked-border-color: transparent;
                     --ha-switch-checked-thumb-border-color: transparent;
                     --ha-switch-checked-background-color: var(--primary-color);
-                    --ha-switch-checked-thumb-background-color: var(--text-primary-color, #fff);
-                    --switch-unchecked-track-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.12);
-                    --switch-unchecked-button-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.35);
-                    --switch-checked-track-color: var(--primary-color);
-                    --switch-checked-button-color: var(--text-primary-color, #fff); }}
+                    --ha-switch-checked-thumb-background-color: var(--text-primary-color, #fff); }}
             .fc-box {
                 margin: var(--origami-e-s3) 0; padding: var(--origami-e-s3) var(--origami-e-s4); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08);
                 border: 1px solid rgba(var(--rgb-primary-color, 0, 120, 212), 0.18);
@@ -474,17 +468,14 @@ class WeatherCardEditor extends LitElement {
         if (!c.weather_entity && this.hass && this.hass.states) {
             const firstWeather = Object.keys(this.hass.states).find((id) => id.startsWith("weather."));
             if (firstWeather) { c.weather_entity = firstWeather; autofilled = true; }}
-        if (!c.sun_entity && this.hass && this.hass.states && this.hass.states["sun.sun"]) {
-            c.sun_entity = "sun.sun";
-            autofilled = true;}
-        if (typeof c.background_mode !== "string") {
-            c.background_mode = "default";
-            autofilled = true;}
         if ("sun_moon_enabled" in c) {
             if (c.sun_moon_enabled === false) {
                 if (c.sun_enabled === undefined) c.sun_enabled = false;
                 if (c.moon_enabled === undefined) c.moon_enabled = false;}
             delete c.sun_moon_enabled;
+            autofilled = true;}
+        if ("moon_phase_entity" in c) {
+            delete c.moon_phase_entity;
             autofilled = true;}
         this._config = this._cleanConfig(c);
         if (autofilled) Promise.resolve().then(() => this._emit());}
@@ -492,7 +483,6 @@ class WeatherCardEditor extends LitElement {
         if (this._cachedFormData && this._cachedFormConfig === this._config) {
             return this._cachedFormData;}
         const c = { ...DISPLAY_DEFAULTS, ...(this._config || {}) };
-        c.background_mode = typeof c.background_mode === "string" ? c.background_mode : "default";
         this._cachedFormData = c; this._cachedFormConfig = this._config;
         return c;}
     _setVisualMode(mode) {
@@ -663,7 +653,7 @@ class WeatherCardEditor extends LitElement {
         const entity = current.weather_entity || "";
         const next = instantiatePreset(preset, entity);
         if (entity) next.weather_entity = entity;
-        for (const key of ["type", "name", "sun_entity", "moon_phase_entity", "icon_path"]) {
+        for (const key of ["type", "name", "sun_entity", "icon_path"]) {
             if (current[key] != null && current[key] !== "") next[key] = current[key];
         }
         this._patch(next, { replace: true });
@@ -696,7 +686,6 @@ class WeatherCardEditor extends LitElement {
                     @change=${(e) => this._updateField("moon_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
             ${sunEnabled || moonEnabled ? html`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
-                ${moonEnabled ? this._renderEntityField("moon_phase_entity", { domain: "sensor" }) : ""}
                 ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_x}</span>
@@ -719,14 +708,10 @@ class WeatherCardEditor extends LitElement {
     _renderCardHeightControl() {
         const raw = this._formData.card_height;
         const rawStr = String(raw == null ? "" : raw).toLowerCase().trim();
-        const mode = rawStr === "content" ? "content" : rawStr === "auto" ? "auto" : "fixed";
+        const mode = ["content", "auto", "square"].includes(rawStr) ? rawStr : "fixed";
         const fixedVal = mode === "fixed" ? String(raw == null ? "" : raw) : "";
-        const setMode = (m) => {
-            if (m === "content") this._updateField("card_height", "content");
-            else if (m === "auto") this._updateField("card_height", "auto");
-            else this._updateField("card_height", fixedVal || "220");
-        };
-        const modes = [{ v: "content", l: "Content" }, { v: "auto", l: "Fill" }, { v: "fixed", l: "Fixed" }];
+        const setMode = (m) => this._updateField("card_height", m === "fixed" ? fixedVal || "220" : m);
+        const modes = [{ v: "content", l: "Content" }, { v: "auto", l: "Fill" }, { v: "fixed", l: "Fixed" }, { v: "square", l: "Square" }];
         return html`<div class="compact-field">
                 <span class="compact-field-label">${LABELS.card_height}</span>
                 <div class="segmented segmented-compact">
@@ -878,40 +863,37 @@ class WeatherCardEditor extends LitElement {
             else if (elements.length === 1 && elements[0].type === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
             else out.elements = elements;
         }
-        if (out.type !== 'ring') { delete out.gauge_entity; delete out.gauge_attribute; delete out.ring_min; delete out.ring_max; delete out.ring_color; delete out.ring_width; delete out.ring_gap; delete out.ring_thresholds; delete out.ring_threshold_mode; }
+        if (out.type === 'ring') {
+            if (!out.ring_values && (out.gauge_entity || out.gauge_attribute)) out.ring_values = [{ entity: out.gauge_entity, attribute: out.gauge_attribute }];
+            delete out.gauge_entity; delete out.gauge_attribute; this._cleanGauge(out, "ring_");
+        } else for (const k of Object.keys(out)) if (/^(ring|gauge)_/.test(k)) delete out[k];
         if (!Array.isArray(out.color_thresholds) || out.color_thresholds.length === 0) { delete out.color_thresholds; delete out.color_threshold_entity; delete out.color_threshold_attribute; }
         for (const k of Object.keys(out)) {
             const v = out[k];
-            if (k === 'ring_min') { if (v === null || v === undefined) delete out[k]; continue; }
-            if (k === 'background' && v === false) continue; if (k === 'icon_background' && v === false) continue; if (k === 'shadow' && v === false) continue;
-            if (v === "" || v === null || v === undefined || v === false) delete out[k];}
+            if (v === "" || v === null || v === undefined || (v === false && !['background', 'icon_background', 'shadow', 'ring_fill'].includes(k))) delete out[k];}
         return out;}
     _cleanElement(el) {
         const out = { ...(el || {}) };
         const type = out.type === "icon" || out.type === "bar" ? out.type : "text";
         out.type = type;
         if (out.source === "entity" && out.entity) delete out.source;
-        if (type === "bar") {
-            const values = (Array.isArray(out.bar_values) ? out.bar_values : [])
-                .filter(v => v && typeof v === "object")
-                .map(v => { const o = { ...v }; for (const k of Object.keys(o)) { const val = o[k]; if (val === "" || val === null || val === undefined || val === false) delete o[k]; } return o; });
-            if (values.length > 1) { out.bar_values = values; delete out.bar_marker; }
-            else if (values.length === 1 && Object.keys(values[0]).length) out.bar_values = values;
-            else delete out.bar_values;
-            if (!(values.length > 1 || out.bar_marker === true)) { delete out.bar_marker_size; delete out.bar_marker_icon_size; }
-            if (![out.bar_range_from, out.bar_range_to].some(v => v !== undefined && v !== null && String(v) !== "")) delete out.bar_range_color;
-        } else {
-            delete out.bar_values;
-        }
+        if (type === "bar") this._cleanGauge(out, "bar_");
+        else delete out.bar_values;
         for (const k of Object.keys(out)) {
             if (k === "type") continue;
             const v = out[k];
             if (type === "text" && k === 'precision') { if (v === '' || v === null || v === undefined) delete out[k]; continue; }
-            if ((k === 'bar_min' || k === 'bar_max' || k === 'bar_range_from' || k === 'bar_range_to') && (v === 0 || v === "0")) continue;
-            if (k === 'icon_background' && v === false) continue;
-            if (v === "" || v === null || v === undefined || v === false) delete out[k];
+            if (v === "" || v === null || v === undefined || (v === false && k !== 'icon_background' && k !== 'bar_fill')) delete out[k];
         }
         return out;}
+    _cleanGauge(out, p) {
+        const values = (Array.isArray(out[p + "values"]) ? out[p + "values"] : [])
+            .filter(v => v && typeof v === "object")
+            .map(v => { const o = { ...v }; for (const k of Object.keys(o)) { const val = o[k]; if (val === "" || val === null || val === undefined || val === false) delete o[k]; } return o; });
+        if (values.length > 1 || Object.keys(values[0] || {}).length) out[p + "values"] = values; else delete out[p + "values"];
+        if (values.length > 1 || out[p + "fill"] === false) delete out[p + "marker"];
+        if (!(values.length > 1 || out[p + "marker"] === true || out[p + "fill"] === false)) { delete out[p + "marker_size"]; delete out[p + "marker_icon_size"]; }
+        if (![out[p + "range_from"], out[p + "range_to"]].some(v => v !== undefined && v !== null && String(v) !== "")) delete out[p + "range_color"];}
     _cleanContainer(container) {
         const out = { ...(container || {}) };
         const layout = (out.layout || "wrap").toString().toLowerCase();
@@ -1275,29 +1257,35 @@ class WeatherCardEditor extends LitElement {
                             @value-changed=${(e)=>{e.stopPropagation();const v=e.detail&&e.detail.value&&e.detail.value.color_threshold_attribute;const n={...button};if(v)n.color_threshold_attribute=v;else delete n.color_threshold_attribute;update(n);}}></ha-form>`:""}</div></details>
                 ${this._renderThresholdList({ list: button.color_thresholds, swatchDefault: "#ff9800", addColor: "#ff9800", addLabel: "Add threshold",
                     commit: (arr) => update({ ...button, color_thresholds: arr }) })}</div>` : ""}`;
-        const gaugeFields = (prefix, obj, write, cssFor, extra, tail) => {
+        const gaugeFields = (prefix, obj, commit, extra) => {
             const p = prefix + "_", label = prefix === "ring" ? "Ring" : "Bar";
             const thresholds = Array.isArray(obj[p+"thresholds"]) ? obj[p+"thresholds"] : [];
+            const write = (key, value) => { const n = { ...obj };
+                const empty = value === null || value === undefined || value === "" || (Array.isArray(value) && !value.length);
+                if (empty) delete n[key]; else n[key] = value; commit(n); };
+            const cssFor = (key, text, placeholder) => this._cssTextField({ value: obj[key], label: text, placeholder, trim: true, onCommit: (v) => write(key, v) });
+            const hasRange = [obj[p+"range_from"], obj[p+"range_to"]].some(v => v !== undefined && v !== null && String(v) !== "");
             return html`<div class="vcb-grid">${cssFor(p+"min","Min","0")}${cssFor(p+"max","Max","100")}</div>
-                <div class="vcb-grid">${prefix==="ring"?html`${cssFor("ring_width","Thickness","4")}${cssFor("ring_gap","Gap","3")}`:html`${cssFor("bar_height","Thickness","4")}`}</div>
+                <div class="vcb-grid">${prefix==="ring"?html`${cssFor("ring_width","Thickness","4")}${cssFor("ring_gap","Gap","3")}${cssFor("ring_start","Start angle","0")}${cssFor("ring_arc","Arc","360")}`:html`${cssFor("bar_height","Thickness","4")}`}</div>
                 ${extra || ""}
                 ${this._renderColorPicker(`${label} color`,obj[p+"color"]||"",(h,o)=>{ write(p+"color", h ? this._serializeColor(h,o) : ""); })}
-                ${tail || ""}
+                <div class="field-group">
+                    <div class="field-group-label">Range</div>
+                    <div class="vcb-grid">${cssFor(p+"range_from", "From", "start")}${cssFor(p+"range_to", "To", "end")}</div>
+                    ${hasRange ? this._renderColorPicker("Range color", obj[p+"range_color"] || "", (h, o) => write(p+"range_color", h ? this._serializeColor(h, o) : "")) : ""}</div>
+                ${gaugeValues(p, obj, write, cssFor)}
                 <details class="disclosure" @toggle=${this._onDisclosureToggle}><summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon><ha-icon icon="mdi:cog-outline"></ha-icon><span>Thresholds</span></summary>
                     <div class="disclosure-body">
                         <div class="segmented">${[{v:"solid",l:"Solid"},{v:"segments",l:"Segments"},{v:"gradient",l:"Gradient"}].map(o=>html`<button type="button" class=${(obj[p+"threshold_mode"]||"solid")===o.v?"active":""}
                             @click=${()=>{ write(p+"threshold_mode", o.v==="solid" ? "" : o.v); }}>${o.l}</button>`)}</div>
                         ${this._renderThresholdList({ list: thresholds, swatchDefault: "#ff0000", addColor: "#ff9800", addLabel: "Add",
                             commit: (arr) => write(p + "thresholds", arr) })}</div></details>`;};
-        const barValuesSection = (el, ei) => {
-            const values = Array.isArray(el.bar_values) && el.bar_values.length
-                ? el.bar_values.map(v => (v && typeof v === "object") ? v : {})
+        const gaugeValues = (p, obj, write, cssFor) => {
+            const values = Array.isArray(obj[p+"values"]) && obj[p+"values"].length
+                ? obj[p+"values"].map(v => (v && typeof v === "object") ? v : {})
                 : [{}];
-            const markersOn = values.length > 1 || el.bar_marker === true;
-            const commitValues = (arr) => { const n = { ...el }; n.bar_values = arr; updateEl(ei, n); };
-            const markerField = (key, label, placeholder) => this._cssTextField({
-                value: el[key], label, placeholder, trim: true,
-                onCommit: (v) => { const n = { ...el }; if (v) n[key] = v; else delete n[key]; updateEl(ei, n); } });
+            const fill = obj[p+"fill"] !== false, markersOn = values.length > 1 || obj[p+"marker"] === true || !fill;
+            const commitValues = (arr) => write(p+"values", arr);
             const setValue = (vi, patch) => commitValues(values.map((v, i) => i === vi ? { ...v, ...patch } : v));
             const addValue = () => commitValues([...values, {}]);
             const removeValue = (vi) => { const arr = [...values]; arr.splice(vi, 1); commitValues(arr); };
@@ -1336,49 +1324,25 @@ class WeatherCardEditor extends LitElement {
                         ${valueForm(v, vi, "entity", [{ name: "entity", selector: { entity: {} } }], "Value entity")}
                         ${valueAttr(v, vi)}
                         ${markersOn ? html`${this._renderColorPicker("Marker color", v.marker_color || "", (h, o) => setValue(vi, { marker_color: h ? this._serializeColor(h, o) : "" }))}
+                            ${this._cssTextField({ value: v.marker_size, label: "Marker size", placeholder: obj[p+"marker_size"] || "thickness", trim: true, onCommit: (s) => setValue(vi, { marker_size: s }) })}
                             ${valueForm(v, vi, "marker_icon", [{ name: "marker_icon", selector: { icon: {} } }], "Marker icon")}
                             ${v.marker_icon ? this._renderColorPicker("Icon color", v.marker_icon_color || "", (h, o) => setValue(vi, { marker_icon_color: h ? this._serializeColor(h, o) : "" })) : ""}` : ""}</div></details>`)}
                 <button type="button" class="ring-threshold-add" @click=${addValue}><ha-icon icon="mdi:plus" style="--mdc-icon-size:14px"></ha-icon> Add value</button>
-                ${values.length > 1
-                    ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Fill uses the first value; each value gets a marker.</span></div>`
-                    : html`<div class="toggle-group"><label class="toggle-row"><span>Marker</span>
-                        <ha-switch .checked=${el.bar_marker === true} @change=${(e) => { const n = { ...el }; if (e.target.checked) n.bar_marker = true; else delete n.bar_marker; updateEl(ei, n); }}></ha-switch></label></div>`}
+                <div class="toggle-group"><label class="toggle-row"><span>Fill</span>
+                    <ha-switch .checked=${fill} @change=${(e) => write(p+"fill", e.target.checked ? "" : false)}></ha-switch></label>
+                    ${fill && values.length < 2 ? html`<label class="toggle-row"><span>Marker</span>
+                    <ha-switch .checked=${obj[p+"marker"] === true} @change=${(e) => write(p+"marker", e.target.checked || "")}></ha-switch></label>` : ""}</div>
+                ${fill && values.length > 1 ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Fill uses the first value; each value gets a marker.</span></div>` : ""}
                 ${markersOn ? html`<div class="vcb-grid">
-                    ${markerField("bar_marker_size", "Marker size", "bar height")}
-                    ${markerField("bar_marker_icon_size", "Icon size", "auto")}</div>` : ""}</div>`;
+                    ${cssFor(p+"marker_size", "Marker size", "thickness")}
+                    ${cssFor(p+"marker_icon_size", "Icon size", "auto")}</div>` : ""}</div>`;
         };
-        const barElContent = (el, ei, spacing) => {
-            const elCss = (key, label, placeholder) => this._cssTextField({
-                value: el[key], label, placeholder, trim: true,
-                onCommit: (v) => { const n = { ...el }; if (v) n[key] = v; else delete n[key]; updateEl(ei, n); } });
-            const write = (key, value) => { const n = { ...el };
-                const empty = value === null || value === undefined || value === "" || (Array.isArray(value) && !value.length);
-                if (empty) delete n[key]; else n[key] = value; updateEl(ei, n); };
-            const hasRange = [el.bar_range_from, el.bar_range_to].some(v => v !== undefined && v !== null && String(v) !== "");
-            const rangeSection = html`<div class="field-group">
-                <div class="field-group-label">Range</div>
-                <div class="vcb-grid">${elCss("bar_range_from", "From", "start")}${elCss("bar_range_to", "To", "end")}</div>
-                ${hasRange ? this._renderColorPicker("Range color", el.bar_range_color || "", (h, o) => write("bar_range_color", h ? this._serializeColor(h, o) : "")) : ""}</div>`;
-            return gaugeFields("bar", el, write, elCss, spacing, html`${rangeSection}${barValuesSection(el, ei)}`);
-        };
+        const barElContent = (el, ei, spacing) => gaugeFields("bar", el, (n) => updateEl(ei, n), spacing);
         const isRingType = buttonType === 'ring';
-        const ringWrite = (key, value) => { const n = { ...button };
-            const empty = value === null || value === undefined || value === "" || (Array.isArray(value) && !value.length);
-            if (empty) delete n[key]; else n[key] = value; update(n); };
-        const ringEntityFields = () => {
-            const gaugeEntityId = (button.gauge_entity || "").toString().trim();
-            const gaugeForm = (name, schema, label, get) => html`<ha-form .hass=${this.hass} .data=${{ [name]: get() }}
-                .schema=${schema} .computeLabel=${() => label}
-                @value-changed=${(e) => { e.stopPropagation(); const v = e.detail && e.detail.value && e.detail.value[name]; ringWrite(name, v); }}></ha-form>`;
-            return html`<details class="disclosure" @toggle=${this._onDisclosureToggle}><summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon><ha-icon icon="mdi:cog-outline"></ha-icon><span>Ring entity</span></summary>
-                <div class="disclosure-body">${gaugeForm("gauge_entity", [{ name: "gauge_entity", selector: { entity: {} } }], "Value entity", () => button.gauge_entity || "")}
-                    ${gaugeEntityId ? gaugeForm("gauge_attribute", [{ name: "gauge_attribute", selector: { attribute: { entity_id: gaugeEntityId } } }], "Value attribute", () => button.gauge_attribute || "")
-                        : isFc ? gaugeForm("gauge_attribute", [{ name: "gauge_attribute", selector: { select: { mode: "dropdown", options: FC_ATTRIBUTES } } }], "Forecast attribute", () => button.gauge_attribute || "") : ""}</div></details>`;
-        };
         const ringContent = html`<div class="toggle-group"><label class="toggle-row"><span>Enable</span>
             <ha-switch .checked=${isRingType} @change=${(e) => { const n = { ...button };
                 if (e.target.checked) { n.type = 'ring'; } else { delete n.type; } update(n); }}></ha-switch></label></div>
-            ${isRingType ? gaugeFields("ring", button, ringWrite, cssField, "", ringEntityFields()) : ""}`;
+            ${isRingType ? gaugeFields("ring", button, update) : ""}`;
         const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
         const BUTTON_STYLE_KEYS = ["style","align","background","blurred_background","icon_background","background_color","icon_background_color","padding","text_size","inner_gap","icon_size","icon_padding","width","height","button_round","color_thresholds","color_threshold_entity","color_threshold_attribute","text_shadow","shadow"];
         const hasStyleOverrides = BUTTON_STYLE_KEYS.some(k => button[k] !== undefined && button[k] !== "");

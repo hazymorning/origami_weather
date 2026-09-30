@@ -93,7 +93,7 @@ You can disable the sky or individual effects, or combine them with different ba
 
 <p align="center"><img width="720" alt="Card without frame or background, stretched across the full dashboard width like a header strip" src="https://github.com/user-attachments/assets/83098aff-04f8-4a22-8780-dbb030e8db30"></p>
 
-With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a header for a popup or above an image card.
+With `background_mode: none` and `card_frame: false` the card loses its own styling and blends in with the rest of the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, like a dashboard header.
 
 
 <p align="center"><img width="360" alt="Card with a three day forecast, a range bar and a condition line at the bottom" src="https://github.com/user-attachments/assets/e0ecebae-a3fc-4e22-aa62-9219e1068399"></p>

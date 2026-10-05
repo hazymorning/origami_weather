@@ -25,6 +25,8 @@ A flexible weather card.
 
 ## Installation
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin)
+
 <details>
 <summary><b>HACS (custom repository)</b></summary>
 <br>

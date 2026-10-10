@@ -1,5 +1,5 @@
-import { CLOUD_SPRITE, CLOUD_SOFT, MOON_SURFACE, BIRD_SHEET, BALLOON_SHEET, PLANE_SHEET } from './image-assets.js?v=OOJOPV';
-import { buildStubConfig } from './layout-presets.js?v=OOJOPV';
+import { CLOUD_SPRITE, CLOUD_SOFT, MOON_SURFACE, BIRD_SHEET, BALLOON_SHEET, PLANE_SHEET, DEMO_HOME } from './image-assets.js?v=JI4J3U';
+import { buildStubConfig } from './layout-presets.js?v=JI4J3U';
 console.info(
     "%c ◪ Origami Weather ",
     "color: #fff; border-radius: 6px; background: linear-gradient(135deg, #888 0%, #000 100%); font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; padding: 4px 8px;"
@@ -1314,6 +1314,7 @@ const escapeHtml = (v) => String(v).replace(/["&<>]/g, c => ESCAPE_MAP[c]);
 const _CSS_STRIP = /["'<>;{}\\]|\/\*|\*\/|@|url\s*\(|expression\s*\(/gi;
 const cssValue = (v) => String(v).replace(/[\u0000-\u001F\u007F]/g, '').replace(_CSS_STRIP, '');
 const _ALIGN_CLASSES = new Set(['start', 'center', 'end', 'spread']);
+const _BUTTON_STYLES = new Set(['vertical', 'split']);
 const JUSTIFY_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly' });
 const _SAFE_JUSTIFY = new Set(['center', 'flex-end']);
 const ALIGN_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch', baseline: 'baseline' });
@@ -1377,6 +1378,12 @@ function parseAnchor(anchor) {
     if (anchor === 'center' || anchor === 'left' || anchor === 'right') return ['center', anchor];
     return anchor.includes('-') ? anchor.split('-') : ['top', anchor];
 }
+function freeStyle(o) {
+    if ((o.position || '').toString().toLowerCase() !== 'custom') return [];
+    const [v, h] = parseAnchor(o.position_anchor || 'top-left'), cx = h !== 'left' && h !== 'right', cy = v !== 'top' && v !== 'bottom';
+    const out = [[cx ? 'left' : h, cx ? '50%' : cssLength(o.position_x) || '0'], [cy ? 'top' : v, cy ? '50%' : cssLength(o.position_y) || '0']];
+    return cx || cy ? [...out, ['transform', [cx && 'translateX(-50%)', cy && 'translateY(-50%)'].filter(Boolean).join(' ')]] : out;
+}
 function pickThreshold(thresholds, value) {
     if (value == null) return '';
     const valid = thresholds.filter(t => t.value !== '' && t.value !== undefined && t.color);
@@ -1430,8 +1437,6 @@ class WeatherCard extends HTMLElement {
         this._effectsScale = 1;
         this._effectsW = 0;
         this._effectsH = 0;
-        this._sunGlowX = null;
-        this._sunGlowY = null;
         this._sunGlowVisibility = 0;
         this._sunGlowIsNight = false;
         this._sunsetF = 0;
@@ -1526,6 +1531,7 @@ class WeatherCard extends HTMLElement {
         this._trackedIdsCache = null;
         if (this._containers.length !== prevContainerCount) this._containerRenderCache = null;
         this._initDOM();
+        this._userCss.replaceSync(String(config.css || ''));
         const root = this._elements.root;
         const heightMode = String(config.card_height == null ? '' : config.card_height).toLowerCase();
         if (heightMode === 'content' || heightMode === 'square') {
@@ -1676,7 +1682,7 @@ class WeatherCard extends HTMLElement {
     }
     static async getConfigElement() {
         if (!customElements.get("origami-weather-editor")) {
-            await import("./origami-weather-editor.js?v=OOJOPV");
+            await import("./origami-weather-editor.js?v=JI4J3U");
         }
         return document.createElement("origami-weather-editor");
     }
@@ -1704,7 +1710,8 @@ class WeatherCard extends HTMLElement {
                     const c = { ...s };
                     if (!c.ring_values && (c.gauge_entity || c.gauge_attribute)) c.ring_values = [{ entity: c.gauge_entity, attribute: c.gauge_attribute }];
                     c._visEntities = collectConditionEntities(s.visibility);
-                    c._gaugeDefs = (s.type === 'ring' ? gaugeRefs(c, 'ring_') : []).concat(...(Array.isArray(s.elements) ? s.elements : []).filter(e => e && e.type === 'bar').map(e => gaugeRefs(e, 'bar_'))).filter(d => d.entity || d.attribute);
+                    c._thresholdDef = { entity: s.color_threshold_entity, attribute: s.color_threshold_attribute || (s.color_threshold_entity ? s.attribute : undefined) };
+                    c._gaugeDefs = (s.type === 'ring' ? gaugeRefs(c, 'ring_') : []).concat(...(Array.isArray(s.elements) ? s.elements : []).filter(e => e && e.type === 'bar').map(e => gaugeRefs(e, 'bar_')), c._thresholdDef).filter(d => d.entity || d.attribute);
                     return c;
                 });
                 return { ...a, buttons };
@@ -1741,7 +1748,6 @@ class WeatherCard extends HTMLElement {
                 }
             }
             for (const def of button._gaugeDefs) if (def.entity) ids.push(def.entity);
-            if (button.color_threshold_entity) ids.push(button.color_threshold_entity);
             for (const ve of button._visEntities) ids.push(ve);
         }
         for (const ve of this._containerVisibilityEntities()) ids.push(ve);
@@ -1759,6 +1765,11 @@ class WeatherCard extends HTMLElement {
         const elev = sunValid ? Number(sun.attributes && sun.attributes.elevation) : NaN;
         const weatherState = (weather && weather.state ? weather.state : 'default').toLowerCase();
         const tuning = _weatherTuning(weatherState);
+        const D = Math.PI / 180, az = (sunValid ? Number(sun.attributes?.azimuth) : NaN) * D, up = elev > 0, now = new Date();
+        const lat = Number(this._hass?.config?.latitude) * D, dec = -23.44 * D * Math.cos(2 * Math.PI * ((now - new Date(now.getFullYear(), 0, 1)) / 864e5 + 10) / 365);
+        const rise = Math.acos(Math.max(-1, Math.min(1, Math.sin(dec) / Math.cos(lat)))) / D, south = lat > dec;
+        const light = up ? Math.max(0, Math.min(1, (tuning.sunVisibility - 0.45) / 0.55)) * Math.min(1, elev / 4) : 0;
+        for (const [k, v] of [['x', Math.sin(az)], ['y', Math.cos(az)], ['shadow', up ? Math.min(3, 1 / Math.tan(elev * D)) : 0], ['light', light], ['path-start', south ? rise : 360 - rise], ['path', south ? 360 - 2 * rise : 2 * rise]]) this._cssVar(els.root, `--origami-sun-${k}`, Number.isFinite(v) ? v.toFixed(3) : '', `sun-${k}`);
         this._sunsetF = (sunValid && !isAstroNight && Number.isFinite(elev))
             ? Math.max(0, Math.min(1, 1 - Math.abs(elev - 6) / 16))
             : 0;
@@ -1776,8 +1787,6 @@ class WeatherCard extends HTMLElement {
         const y = yFixed ? Math.min(100, Math.max(0, parseFloat(cfg.sun_moon_y) || 0)) : Math.round((100 - t * 86) * 2) / 2;
         const x = cfg.sun_moon_x === 'dynamic' ? Math.round((7 + WeatherCard._pathProgress(sun.attributes || {}, isAstroNight) * 86) * 2) / 2 : null;
         const warm = isAstroNight ? 0 : Math.round(Math.pow(1 - t, 1.6) * 20) / 20;
-        this._sunGlowX = x;
-        this._sunGlowY = y;
         this._sunGlowVisibility = tuning.sunVisibility;
         this._sunGlowIsNight = isAstroNight;
         const phase = isAstroNight ? Math.round(WeatherCard._moonPhase() * 200) / 200 : 0;
@@ -2143,13 +2152,14 @@ class WeatherCard extends HTMLElement {
     }
     static _buildStyles() {
         return `
-            :host { display: block; width: 100%; position: relative; background: transparent !important; }
-            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; border-width: var(--origami-card-border-width, var(--ha-card-border-width, 0px)); border-style: solid; border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0)); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); --_button-no-bg-shadow: none; }
+            :host { display: block; width: 100%; position: relative; background: transparent !important; --_dash-bg: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); }
+            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; border-width: var(--origami-card-border-width, var(--ha-card-border-width, 0px)); border-style: solid; border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0)); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--_dash-bg); --_button-no-bg-shadow: none; }
             #card-root.clickable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
             #card-root.clickable:active { transform: scale(0.98); transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1); }
             #card-root.clickable:not(:active) { transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
-            #card-root.scheme-light { --origami-text-color: var(--origami-text-light, #2c2c2e); --_button-shadow-avail: var(--origami-button-text-shadow, var(--origami-text-shadow-light, 0 1px 2px rgba(255, 255, 255, 0.85), 0 0 6px rgba(255, 255, 255, 0.5))); --_text-bg-border: var(--ha-card-border-color, var(--divider-color, rgba(0,0,0,0.08))); --_origami-shadow-preset: 0 1px 2px rgba(17, 24, 39, 0.08), 0 4px 12px rgba(17, 24, 39, 0.10); }
-            #card-root.scheme-dark { --origami-text-color: var(--origami-text-dark, #ffffff); --_button-shadow-avail: var(--origami-button-text-shadow, var(--origami-text-shadow-dark, 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.6))); --_text-bg-border: var(--ha-card-border-color, var(--divider-color, rgba(255,255,255,0.08))); --_origami-shadow-preset: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.45); }
+            #card-root.scheme-light { --_scheme-bg: #fff; --origami-text-color: var(--origami-text-light, #2c2c2e); --_button-shadow-avail: var(--origami-button-text-shadow, var(--origami-text-shadow-light, 0 1px 2px rgba(255, 255, 255, 0.85), 0 0 6px rgba(255, 255, 255, 0.5))); --_text-bg-border: var(--ha-card-border-color, var(--divider-color, rgba(0,0,0,0.08))); --_origami-shadow-preset: 0 1px 2px rgba(17, 24, 39, 0.08), 0 4px 12px rgba(17, 24, 39, 0.10); }
+            #card-root.scheme-dark { --_scheme-bg: #1c1c1c; --origami-text-color: var(--origami-text-dark, #ffffff); --_button-shadow-avail: var(--origami-button-text-shadow, var(--origami-text-shadow-dark, 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.6))); --_text-bg-border: var(--ha-card-border-color, var(--divider-color, rgba(255,255,255,0.08))); --_origami-shadow-preset: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.45); }
+            #card-root.theme-mismatch { --_text-bg: var(--_scheme-bg); --ha-card-background: var(--_text-bg); --primary-text-color: var(--origami-text-color); --secondary-text-color: color-mix(in srgb, var(--origami-text-color) 70%, transparent); }
             #card-root.has-custom-shadow { --_origami-shadow: var(--origami-shadow, var(--_origami-shadow-preset)); }
             #card-root:not(.has-custom-shadow) { --_origami-shadow: var(--origami-shadow, none); }
             #card-root.no-card-frame { border-radius: 0; box-shadow: none; border-width: 0; }
@@ -2157,11 +2167,12 @@ class WeatherCard extends HTMLElement {
             #card-root.bg-custom-color { background-color: var(--origami-card-bg-color, var(--_text-bg)); }
             :host(.full-width) { --origami-fw-gap: var(--origami-full-width-margin, var(--ha-view-sections-column-gap, var(--column-gap, 32px))); width: calc(100% + 2 * var(--origami-fw-gap)); max-width: none; }
             #card-root.edge-fade::before { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; background: linear-gradient(to bottom, var(--origami-edge-fade-color, var(--primary-background-color, #111)) 0%, transparent var(--origami-edge-fade-size, 10%), transparent calc(100% - var(--origami-edge-fade-size, 10%)), var(--origami-edge-fade-color, var(--primary-background-color, #111)) 100%); }
+            #card-root::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; background: var(--origami-gradient, none); }
+            #card-root:is(.has-default-bg, .has-weather-bg)::after { background-color: color-mix(in srgb, var(--_dash-bg) var(--origami-bg-blend, 0%), transparent); }
             #weather-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
             #weather-bg > img, #weather-bg > video { display: block; width: 100%; height: 100%; object-fit: cover; border: none; outline: none; filter: brightness(var(--origami-bg-brightness, 1)) saturate(var(--origami-bg-saturation, 1)) blur(var(--origami-bg-blur, 0px)) var(--_origami-dark-theme-filter, ); }
             #card-root.has-weather-bg #weather-bg { display: block; }
             #default-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
-            #card-root.has-bg-filter #default-bg { filter: brightness(var(--origami-bg-brightness, 1)) saturate(var(--origami-bg-saturation, 1)); }
             #sky-base { position: absolute; inset: 0; border-radius: inherit; }
             #card-root.scheme-light #sky-base { background: var(--origami-default-bg-light, linear-gradient(125deg, #bdd8ee 0%, #d3e6f2 55%, #e4f0f7 100%)); }
             #card-root.scheme-dark #sky-base { background: var(--origami-default-bg-dark, linear-gradient(125deg, #0b1830 0%, #10203c 55%, #152a4c 100%)); }
@@ -2293,7 +2304,13 @@ class WeatherCard extends HTMLElement {
             #free-layer > .buttons-group.free-positioned { position: absolute; max-width: 100%; }
             #free-layer > .buttons-group.free-positioned.has-custom-width { width: var(--origami-container-width); }
             .buttons-group { pointer-events: auto; min-width: 0; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
-            .buttons-row { color: var(--origami-text-color); }
+            .buttons-group.has-image { display: grid; }
+            .buttons-group.has-image > * { grid-area: 1 / 1; min-width: 0; }
+            .group-image { width: 100%; height: auto; }
+            #card-root:not(.scheme-dark) .group-image.dark, #card-root.scheme-dark .group-image.light { display: none; }
+            .buttons-row, .group-image { color: var(--origami-text-color); }
+            .buttons-row.has-free { position: relative; }
+            .buttons-row > .free-positioned .button-icon, .button-ring .button-icon { line-height: 0; }
             .buttons-group.has-row-horizontal-scroll { height: var(--origami-row-height, auto); }
             .buttons-group.has-row-vertical-scroll { height: var(--origami-row-height, var(--_origami-vscroll-fill, auto)); }
             .buttons-group.has-row-vertical-scroll.has-vscroll-cap { height: auto; }
@@ -2370,6 +2387,7 @@ class WeatherCard extends HTMLElement {
             .button.has-tint::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--origami-button-tint); opacity: 0.18; pointer-events: none; z-index: 0; }
             .button.has-tint > * { position: relative; z-index: 1; }
             .button.format-vertical { flex-direction: column; align-items: center; text-align: center; row-gap: var(--origami-button-gap, 6px); flex-wrap: nowrap; }
+            .button.format-split > .button-stack { display: flex; flex-direction: column; row-gap: var(--origami-button-gap, 6px); flex: 1 1 0; min-width: 0; }
             .button.format-vertical .button-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); }
             .button.format-vertical .button-icon ha-icon,
             .button.format-vertical .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.6em); }
@@ -2404,7 +2422,10 @@ class WeatherCard extends HTMLElement {
             .button-ring-gauge > :not(.gauge-marker) { --_seg: #000 var(--_arc), transparent 0; inset: 0; border-radius: 50%; -webkit-mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring); mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring); -webkit-mask-composite: source-in; mask-composite: intersect; }
             .button-ring-gauge > .gauge-fill { --_seg: #000 calc(var(--origami-gauge-pos) * var(--_arc)), transparent 0; background-image: conic-gradient(var(--_from), var(--origami-gauge-stops)); }
             .button-ring-gauge > .gauge-range { --_seg: transparent calc(var(--origami-range-from) * var(--_arc)), #000 0 calc(var(--origami-range-to) * var(--_arc)), transparent 0; }
-            .button-ring-gauge > .gauge-marker { --_a: calc(var(--origami-gauge-pos) * var(--_arc) + var(--origami-gauge-start, 0deg)); left: calc(50% + sin(var(--_a)) * (50% - var(--origami-gauge-w) / 2)); top: calc(50% - cos(var(--_a)) * (50% - var(--origami-gauge-w) / 2)); }
+            .button-ring-gauge > .gauge-marker { --_a: calc(var(--origami-gauge-pos) * var(--_arc) + var(--origami-gauge-start, 0deg)); left: 50%; top: 0; width: 0; height: 50%; box-shadow: none; transform: rotate(var(--_a)); transform-origin: bottom; }
+            .button-ring-gauge > .gauge-marker::before, .button-ring-gauge > .gauge-marker ha-icon { position: absolute; left: 0; top: calc(var(--origami-gauge-w) / 2); transform: translate(-50%, -50%) rotate(calc(-1 * var(--_a))); }
+            .button-ring-gauge > .gauge-marker::before { content: ''; width: var(--origami-marker-size); height: var(--origami-marker-size); border-radius: 50%; background: var(--origami-gauge-color); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.10); }
+            .button-ring-gauge > .gauge-marker.needle::before { top: calc((var(--origami-gauge-w) + var(--origami-marker-size)) / 2); bottom: 0; width: 1px; height: auto; border-radius: 0; box-shadow: none; transform: translateX(-50%); }
             .button-ring-wrap > .button { margin: var(--origami-ring-gap, 3px); z-index: 1; }
             .buttons-row.row-grid > .button-ring-wrap > .button,
             .buttons-row.has-visible-count > .button-ring-wrap > .button { width: calc(100% - var(--origami-ring-gap, 3px) * 2); }
@@ -2451,7 +2472,7 @@ class WeatherCard extends HTMLElement {
             _sharedStyles = new CSSStyleSheet();
             _sharedStyles.replaceSync(WeatherCard._buildStyles());
         }
-        this.shadowRoot.adoptedStyleSheets = [_sharedStyles];
+        this.shadowRoot.adoptedStyleSheets = [_sharedStyles, this._userCss = new CSSStyleSheet()];
         const root = document.createElement('div'); root.id = 'card-root';
         root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><svg class="moon-disc" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="wbk-moon-surface" cx="38%" cy="34%" r="78%"><stop offset="0%" stop-color="#eef0f4"/><stop offset="45%" stop-color="#dce0e8"/><stop offset="100%" stop-color="#b8bcc6"/></radialGradient><clipPath id="wbk-moon-lit"><path class="moon-lit-path" d=""/></clipPath></defs><g clip-path="url(#wbk-moon-lit)"><circle class="moon-surface" cx="50" cy="50" r="48" fill="url(#wbk-moon-surface)"/><image class="moon-image" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid slice"/></g></svg></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
         this.shadowRoot.append(root);
@@ -2539,6 +2560,7 @@ class WeatherCard extends HTMLElement {
         const root = this._elements.root;
         root.classList.toggle('scheme-dark', this._schemeDark);
         root.classList.toggle('scheme-light', !this._schemeDark);
+        root.classList.toggle('theme-mismatch', this._themeDark !== this._schemeDark);
         const styleSig = `${this._schemeDark}_${weatherState}`;
         if (this._prevStyleSig === styleSig) return;
         this._prevStyleSig = styleSig;
@@ -2548,13 +2570,13 @@ class WeatherCard extends HTMLElement {
         this._prevWeatherClass = cls;
     }
     _resolveCardBackgroundColor(cfg) {
-        const base = (cfg.background_color || '').toString().trim();
+        const dark = this._schemeDark, base = ((dark && cfg.background_color_dark) || cfg.background_color || '').toString().trim();
         const thresholds = Array.isArray(cfg.background_thresholds) ? cfg.background_thresholds : [];
         if (!thresholds.length || !this._hass) return base;
         const entity = cfg.background_threshold_entity;
         if (!entity) return base;
         const value = this._sensorValue(this._hass, entity, cfg.background_threshold_attribute);
-        return pickThreshold(thresholds, value) || base;
+        return pickThreshold(dark ? thresholds.map(t => ({ ...t, color: t.color_dark || t.color })) : thresholds, value) || base;
     }
     _applyConfigStyles() {
         if (!this._elements || !this._elements.buttonContainerEls.length) return;
@@ -2567,7 +2589,7 @@ class WeatherCard extends HTMLElement {
         this._cssVar(root, '--origami-bg-brightness', bgB, '_prevBgBrightness');
         this._cssVar(root, '--origami-bg-saturation', bgS, '_prevBgSaturation');
         this._cssVar(root, '--origami-bg-blur', bgBlur, '_prevBgBlur');
-        root.classList.toggle('has-bg-filter', !!bgB || !!bgS);
+        this._cssVar(root, '--origami-bg-blend', cfg.bg_blend ? `${parseFloat(cfg.bg_blend)}%` : '', '_prevBgBlend');
         const cardFrame = cfg.card_frame !== false;
         root.classList.toggle('no-card-frame', !cardFrame);
         const bgMode = this._backgroundMode(cfg);
@@ -2598,6 +2620,7 @@ class WeatherCard extends HTMLElement {
         root.classList.toggle('edge-fade', ef);
         const efSize = ef ? (cfg.edge_fade_size || '').toString().trim() : '';
         this._cssVar(root, '--origami-edge-fade-size', efSize ? normalizeLength(efSize) : '', '_prevEdgeFadeSize');
+        this._cssVar(root, '--origami-gradient', cfg.gradient === true ? `${cfg.gradient_type === 'radial' ? `radial-gradient(at ${cfg.gradient_x ?? 50}% ${cfg.gradient_y ?? 50}%, ` : `linear-gradient(${cfg.gradient_angle ?? 180}deg, `}${cfg.gradient_color_1 || 'transparent'} ${cfg.gradient_stop_1 ?? 0}%, ${cfg.gradient_color_2 || 'transparent'} ${cfg.gradient_stop_2 ?? 100}%)` : '', '_prevGradient');
         root.classList.toggle('has-custom-shadow', cfg.shadow !== false);
         root.classList.toggle('no-haze', cfg.background_haze === false);
         this._cssVar(root, '--origami-shadow', (cfg.shadow_color || '').toString().trim(), '_prevShadow');
@@ -2661,27 +2684,23 @@ class WeatherCard extends HTMLElement {
         const customWidth = normalizeLength((container.custom_width || '').toString().trim());
         cssVarContainer(cg, '--origami-container-width', customWidth, 'containerWidth');
         if (cache.hasCustomWidth !== !!customWidth) { cache.hasCustomWidth = !!customWidth; cg.classList.toggle('has-custom-width', !!customWidth); }
-        const isFree = (container.position || '').toString().toLowerCase() === 'custom';
-        const posAnchor = isFree ? (container.position_anchor || 'top-left') : '';
-        const posX = isFree ? String(container.position_x == null ? '' : container.position_x).trim() : '';
-        const posY = isFree ? String(container.position_y == null ? '' : container.position_y).trim() : '';
-        const freeSig = `${isFree}|${posAnchor}|${posX}|${posY}`;
+        const image = (container.image || '').toString().trim(), imageDark = image && (container.image_dark || '').toString().trim();
+        if (cache.image !== `${image}|${imageDark}`) {
+            cache.image = `${image}|${imageDark}`;
+            for (const n of cg.querySelectorAll('.group-image')) n.remove();
+            const img = (src, mode) => src === 'demo-home-image' ? DEMO_HOME.replace('group-image', `group-image${mode}`) : `<img class="group-image${mode}" src="${escapeHtml(src)}">`;
+            if (image) cg.insertAdjacentHTML('afterbegin', img(image, imageDark && ' light') + (imageDark && img(imageDark, ' dark')));
+            cg.classList.toggle('has-image', !!image);
+        }
+        const free = freeStyle(container), freeSig = String(free);
         if (cache.freeSig !== freeSig) {
             cache.freeSig = freeSig;
-            cg.classList.toggle('free-positioned', isFree);
+            cg.classList.toggle('free-positioned', free.length > 0);
             for (const p of ['left', 'right', 'top', 'bottom', 'transform']) cg.style.removeProperty(p);
-            if (isFree) {
-                const [anchorV, anchorH] = parseAnchor(posAnchor || 'top-left');
-                const ox = normalizeLength(posX) || '0', oy = normalizeLength(posY) || '0', tx = [];
-                if (anchorH === 'left') cg.style.left = ox;
-                else if (anchorH === 'right') cg.style.right = ox;
-                else { cg.style.left = '50%'; tx.push('translateX(-50%)'); }
-                if (anchorV === 'top') cg.style.top = oy;
-                else if (anchorV === 'bottom') cg.style.bottom = oy;
-                else { cg.style.top = '50%'; tx.push('translateY(-50%)'); }
-                if (tx.length) cg.style.transform = tx.join(' ');
-            }
+            for (const [p, v] of free) cg.style.setProperty(p, v);
         }
+        const hasFree = container.buttons.some(b => freeStyle(b).length > 0);
+        if (cache.hasFree !== hasFree) { cache.hasFree = hasFree; bt.classList.toggle('has-free', hasFree); }
         cssVarContainer(cg, '--origami-row-height', normalizeLength((container.row_height || '').toString().trim()), 'rowHeight');
         const cols = parseInt(container.columns, 10);
         cssVarContainer(cg, '--origami-row-columns', Number.isFinite(cols) && cols > 0 ? String(cols) : '', 'rowCols');
@@ -2786,7 +2805,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             }
             const bt = els.row;
             const showBottomBg = container.background === true;
-            const buttonFormat = (container.button_style || 'inline').toLowerCase() === 'vertical' ? 'vertical' : 'inline';
+            const buttonFormat = (container.button_style || '').toLowerCase();
             const rowLayout = (container.layout || 'wrap').toString().toLowerCase();
             const containerBlurred = container.button_blurred_background === true;
             const visCount = parseInt(container.scroll_count, 10), hasVis = Number.isFinite(visCount) && visCount > 0;
@@ -2854,7 +2873,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const mode = o[p + 'threshold_mode'] || 'solid', ts = (Array.isArray(o[p + 'thresholds']) ? o[p + 'thresholds'] : []).filter(t => t.color).map(t => [near(num(t.value)), t.color]).filter(t => !isNaN(t[0])).sort((a, b) => a[0] - b[0]);
         const stops = mode === 'solid' ? '' : ts.map(([v, c], i) => `${cssValue(c)} ${pct(v)}${mode === 'segments' ? ` ${pct(ts[i + 1] ? ts[i + 1][0] : max)}` : ''}`).join(', ');
         const color = (mode === 'solid' && ts.filter(t => t[0] <= v0).pop()?.[1]) || (o[p + 'color'] && o[p + 'color'] !== 'auto' && o[p + 'color']) || 'var(--primary-color, #03a9f4)';
-        const marked = values.length > 1 || o[p + 'marker'] === true || o[p + 'fill'] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
+        const needle = o[p + 'needle'] === true, marked = needle || values.length > 1 || o[p + 'marker'] === true || o[p + 'fill'] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
         const style = [`--origami-gauge-w:${w}px`, `--origami-gauge-color:${cssValue(color)}`];
         if (n.marker_icon_size > 0) style.push(`--origami-marker-icon-size:${n.marker_icon_size}px`);
         if (n.start) style.push(`--origami-gauge-start:${n.start}deg`);
@@ -2862,11 +2881,11 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         let html = '<div class="gauge-track"></div>';
         if (o[p + 'fill'] !== false) html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ''}"></div>`;
         if (rb > ra) html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + 'range_color'] ? `;background:${cssValue(o[p + 'range_color'])}` : ''}"></div>`;
-        if (marked) html += values.filter(v => v.size).map(({ def: d, value, size }) => `<div class="gauge-marker" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;background:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ''}</div>`).join('');
+        if (marked) html += values.filter(v => v.size).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? ' needle' : ''}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ''}</div>`).join('');
         return { style: style.join(';'), html, overflow: marked && values.some(v => v.size > w) };
     }
-    _buildIconElement(el, resolved) {
-        const styleParts = [];
+    _buildIconElement(el, resolved, color) {
+        const styleParts = color ? [`color:${cssValue(color)}`] : [];
         if (el.icon_size) styleParts.push(`--weather-icon-size:${cssLength(el.icon_size)}`);
         if (el.icon_padding !== undefined && el.icon_padding !== '') styleParts.push(`--weather-icon-padding:${cssLength(el.icon_padding)}`);
         const iconClasses = ['button-icon'];
@@ -2893,8 +2912,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         return r.rawNumeric != null ? r.rawNumeric : r.formatted;
     }
     _resolveGaugeValue(hass, button, def, ctx) {
-        return ctx.isForecast && !def.entity ? (ctx.forecastEntry || {})[def.attribute || ctx.forecastTextAttr]
-            : this._sensorValue(hass, def.entity || button.entity, def.entity || def.attribute ? def.attribute : button.attribute);
+        return def.value ?? (ctx.isForecast && !def.entity ? (ctx.forecastEntry || {})[def.attribute || ctx.forecastTextAttr]
+            : this._sensorValue(hass, def.entity || button.entity, def.entity || def.attribute ? def.attribute : button.attribute));
     }
     _buttonIconInner(iconStrategy, iconValue) {
         if (iconStrategy === 'native') return '<ha-state-icon></ha-state-icon>';
@@ -2912,7 +2931,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const overflow = (txt.overflow || 'ellipsis').toString().toLowerCase().trim();
         const txtStyles = [];
         if (txt.size) txtStyles.push(`font-size:${cssLength(txt.size)}`);
-        if (txt.weight) { txtStyles.push(`font-weight:${cssValue(txt.weight)}`); const o = _wOp(txt.weight); if (o) txtStyles.push(`opacity:${o}`); }
+        if (txt.weight) { txtStyles.push(`font-weight:${cssValue(txt.weight)}`); const o = !txt.color && _wOp(txt.weight); if (o) txtStyles.push(`opacity:${o}`); }
+        if (txt.color) txtStyles.push(`color:${cssValue(txt.color)}`);
         if (overflow === 'clip') txtStyles.push('text-overflow:clip');
         else if (overflow === 'wrap') txtStyles.push('white-space:normal;overflow:visible;text-overflow:clip');
         const txtBox = _elBoxStyle(txt);
@@ -2958,7 +2978,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const textEls = elements.filter(e => e.type === 'text');
         const iconEls = elements.filter(e => e.type === 'icon');
         const barEls = elements.filter(e => e.type === 'bar');
-        const effectiveFormat = (button.style || buttonFormat) === 'vertical' ? 'vertical' : 'inline';
+        const styleKey = button.style || buttonFormat, effectiveFormat = _BUTTON_STYLES.has(styleKey) ? styleKey : 'inline';
         const isRingType = button.type === 'ring';
         const {
             sensorObj, iconStrategy, iconValue, formatted, primaryResolved,
@@ -2971,14 +2991,15 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             const val0 = configIcon || iconValue;
             const configPath = el.icon_path || ((configIcon === 'weather' || (!ownIcon && !configIcon)) && this._config && this._config.icon_path ? this._config.icon_path : '');
             if (!configIcon) return { strategy: strat0, value: val0 };
-            const resolvedBase = (configIcon === 'weather') ? (isForecast && forecastCondition ? forecastCondition : weatherState) : configIcon;
+            const live = !isForecast || !!el.entity;
+            const resolvedBase = (configIcon === 'weather') ? (!live && forecastCondition ? forecastCondition : weatherState) : configIcon;
             if (configPath) {
                 const basePath = configPath.endsWith('/') ? configPath : configPath + '/';
                 const ext = resolvedBase.includes('.') ? '' : '.svg';
                 return { strategy: 'image', value: `${basePath}${resolvedBase}${ext}` };
             }
             if (configIcon === 'weather' && BUILTIN_ICONS[resolvedBase]) {
-                return { strategy: 'builtin', value: (!isForecast && this._isAstroNight && BUILTIN_ICONS[`${resolvedBase}-night`]) ? `${resolvedBase}-night` : resolvedBase };
+                return { strategy: 'builtin', value: (live && this._isAstroNight && BUILTIN_ICONS[`${resolvedBase}-night`]) ? `${resolvedBase}-night` : resolvedBase };
             }
             return { strategy: 'static', value: (configIcon === 'weather') ? _weatherTuning(resolvedBase).icon : configIcon };
         };
@@ -2986,22 +3007,26 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const marqueeRtl = button.marquee_rtl === true, width = (button.width || '').toString().trim(), height = (button.height || '').toString().trim();
         const textCtx = { isForecast, forecastEntry, forecastDatetime, forecastTextAttr, formatted, primaryResolved };
         const gauge = (o, p) => this._buildGauge(o, p, def => this._resolveGaugeValue(hass, button, def, textCtx));
-        let elementsHtml = '', hasAnyMarquee = false, firstIconStrategy = 'static', firstIconSet = false, barCount = 0, barOverflow = false;
+        const threshold = (o, def) => Array.isArray(o.color_thresholds) && o.color_thresholds.length ? pickThreshold(o.color_thresholds, this._resolveGaugeValue(hass, button, def, textCtx)) : '';
+        const parts = [];
+        const push = (html, icon) => { const last = parts[parts.length - 1]; if (!icon && last && !last.icon) last.html += html; else parts.push({ html, icon }); };
+        let hasAnyMarquee = false, firstIconStrategy = 'static', firstIconSet = false, barCount = 0, barOverflow = false;
         for (const el of elements) {
             if (el.type === 'text') {
                 const b = this._buildTextElement(hass, button, el, textCtx, marqueeSpeed, marqueeRtl);
-                elementsHtml += b.html;
+                push(b.html);
                 if (b.hasMarquee) hasAnyMarquee = true;
             } else if (el.type === 'icon') {
                 const r = resolveIconEl(el);
                 if (!firstIconSet) { firstIconStrategy = r.strategy; firstIconSet = true; }
-                elementsHtml += this._buildIconElement(el, r);
+                push(this._buildIconElement(el, r, threshold(el, el) || el.color), true);
             } else if (el.type === 'bar') {
                 const g = gauge(el, 'bar_');
-                elementsHtml += `<div class="button-bar" data-gauge="${idx}-${barCount++}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`;
+                push(`<div class="button-bar" data-gauge="${idx}-${barCount++}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
                 barOverflow = barOverflow || g.overflow;
             }
         }
+        const elementsHtml = parts.map(p => effectiveFormat === 'split' && !p.icon ? `<span class="button-stack">${p.html}</span>` : p.html).join('');
         const effectiveBg = button.background !== undefined ? button.background : rowBg;
         const showIcon = iconEls.length > 0;
         const classes = ['button'];
@@ -3010,7 +3035,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (!textEls.length) classes.push('icon-only');
         if (barEls.length) classes.push('button-bar-type');
         if (barOverflow) classes.push('has-bar-overflow');
-        if (effectiveFormat === 'vertical') classes.push('format-vertical');
+        if (effectiveFormat !== 'inline') classes.push(`format-${effectiveFormat}`);
         if (isRingType) classes.push('button-ring');
         const iconBg = button.icon_background !== undefined ? button.icon_background : containerCtx.button_icon_background;
         if (iconBg === true) classes.push('has-icon-bg');
@@ -3032,22 +3057,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (bgImagePath) classes.push('has-bg-image');
         const effectiveBgColor = button.background_color || containerCtx.button_background_color || '';
         const effectiveIconBgColor = button.icon_background_color || containerCtx.button_icon_background_color || '';
-        let buttonTintColor = '';
-        if (Array.isArray(button.color_thresholds) && button.color_thresholds.length) {
-            let ctVal;
-            if (isForecast && forecastEntry) {
-                if (button.color_threshold_entity) {
-                    ctVal = this._sensorValue(hass, button.color_threshold_entity, button.color_threshold_attribute);
-                } else {
-                    const thresholdAttr = button.color_threshold_attribute || forecastTextAttr;
-                    if (thresholdAttr) ctVal = forecastEntry[thresholdAttr];
-                }
-            } else {
-                const ctEntity = button.color_threshold_entity || button.entity;
-                if (ctEntity) ctVal = this._sensorValue(hass, ctEntity, button.color_threshold_attribute || button.attribute);
-            }
-            buttonTintColor = pickThreshold(button.color_thresholds, ctVal);
-        }
+        const buttonTintColor = threshold(button, button._thresholdDef);
         const inlineStyles = [];
         if (width) { const wv = cssLength(width); inlineStyles.push(`width:${wv};max-width:${wv}`); }
         if (height) inlineStyles.push(`height:${cssLength(height)}`);
@@ -3067,12 +3077,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const buttonAlignClass = _ALIGN_CLASSES.has(button.align) ? button.align : '';
         if (buttonAlignClass) classes.push(`align-${buttonAlignClass}`);
         if (button.button_round === true) classes.push('button-round');
+        const free = freeStyle(button).map(p => p.join(':')).join(';'), freeCss = free && `position:absolute;${free}`;
+        if (free && !isRingType) { classes.push('free-positioned'); inlineStyles.push(freeCss); }
         const loaderHtml = forecastLoading ? '<div class="button-loader"><span></span><span></span><span></span></div>' : '';
         const style = inlineStyles.length ? ` style="${inlineStyles.join(';')}"` : '';
         let buttonHtml = `<div class="${classes.join(' ')}" data-idx="${idx}" data-container="${containerIdx}"${style}>${loaderHtml}${elementsHtml}</div>`;
         if (isRingType) {
             const g = gauge(button, 'ring_');
-            buttonHtml = `<div class="button-ring-wrap${forecastLoading ? ' button-loading' : ''}" data-idx="${idx}" data-container="${containerIdx}" style="--origami-ring-gap:${parseFloat(button.ring_gap) || 3}px"><div class="button-ring-gauge" data-gauge="${idx}" style="${g.style}">${g.html}</div>${buttonHtml}</div>`;
+            buttonHtml = `<div class="button-ring-wrap${free && ' free-positioned'}${forecastLoading ? ' button-loading' : ''}" data-idx="${idx}" data-container="${containerIdx}" style="--origami-ring-gap:${parseFloat(button.ring_gap) || 3}px${free && `;${freeCss}`}"><div class="button-ring-gauge" data-gauge="${idx}" style="${g.style}">${g.html}</div>${buttonHtml}</div>`;
         }
         const sig = width ? `${buttonHtml}|${width}` : buttonHtml;
         return { html: buttonHtml, sig, sensorObj, iconStrategy: firstIconStrategy, showIcon, width, containerIdx, buttonIdx: idx, hidden: false };
@@ -3459,18 +3471,15 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         els.root.classList.toggle('has-star-canvas', !!stars);
         if (active) this._startAnimation();
     }
-    _effectsEnv(w, h) {
-        const cfg = this._config || {};
-        const num = (v, dflt) => { const n = parseFloat(v); return Number.isFinite(n) ? n : dflt; };
-        const sunX = this._sunGlowX ?? num(cfg.sun_moon_x, 50), sunSize = num(cfg.sun_moon_size, 80);
-        const cx = sunX / 100 * w, cy = this._sunGlowY / 100 * h;
+    _effectsEnv() {
+        const sm = this._elements.sunMoon, cx = sm.offsetLeft, cy = sm.offsetTop, sunSize = sm.offsetWidth;
         let glow = null;
-        if (this._sunMoonActive && this._sunGlowY != null && this._sunGlowVisibility > 0.05) {
+        if (this._sunMoonActive && this._sunGlowVisibility > 0.05) {
             const r = sunSize * 2.4;
             glow = { x: cx, y: cy, r2: r * r, s: 0.55 * this._sunGlowVisibility * (this._sunGlowIsNight ? 0.5 : 1) };
         }
         let moon = null;
-        if (this._sunMoonActive && this._isAstroNight && this._sunGlowY != null) {
+        if (this._sunMoonActive && this._isAstroNight) {
             moon = { x: cx, y: cy, r: sunSize / 2 };
         }
         return { schemeDark: this._schemeDark, glow, moon, night: this._isAstroNight, backgroundRGB: this._backgroundColor(this._schemeDark) };
@@ -3502,7 +3511,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (!w || !h) return;
         const dt = Math.max(0.001, Math.min(0.05, (now - this._lastEffectsTime) * 0.001));
         this._lastEffectsTime = now;
-        const alive = WeatherEffects.frame(this._effects, ctx, w, h, this._effectsScale, dt, now * 0.001, this._effectsEnv(w, h), this._starCtx);
+        const alive = WeatherEffects.frame(this._effects, ctx, w, h, this._effectsScale, dt, now * 0.001, this._effectsEnv(), this._starCtx);
         if (!alive) {
             this._effectsActive = false;
             els.root.classList.remove('has-weather-effects');

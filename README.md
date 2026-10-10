@@ -73,6 +73,8 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <img width="800" alt="Image" src="https://github.com/user-attachments/assets/79726a62-a2df-44dd-b0c7-549d7db99ad9" />
 
+The font in the screenshots is Montserrat. The [Origami theme](https://github.com/hazymorning/origami) repo explains how to get it into Home Assistant.
+
 <details>
 <summary><b>ℹ️ Home layout tutorial</b></summary>
 <br>

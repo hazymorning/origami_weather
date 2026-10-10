@@ -65,11 +65,17 @@ Origami Weather is not listed in the HACS store yet. You can still install it th
 
 <br>
 
+
+
 ## Layouts
 
 Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.
 
 <img width="800" alt="Image" src="https://github.com/user-attachments/assets/79726a62-a2df-44dd-b0c7-549d7db99ad9" />
+
+<details>
+<summary><b>About the Home layout</b></summary>
+<br>
 
 The house in the Home layout is drawn by the card. Its shadow follows the real position of the sun, the ring around it shows the path the sun takes today, the house is mirrored on the wet ground when it rains during the day, the roof turns white when it snows and the windows light up in dark mode. The room temperatures show your weather entity until you point them at your own sensors.
 
@@ -110,8 +116,12 @@ Once it works, play around with the card settings to find a look you like. The H
 
 </details>
 
+</details>
+
 > [!NOTE]
-> Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards. 
+> Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards.
+
+<br>
 
 <br>
 

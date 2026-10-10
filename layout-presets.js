@@ -128,6 +128,9 @@ const CLASSIC_CONFIG = Object.freeze({
     sun_moon_x: 'dynamic',
     card_height: 'content',
     card_padding: '16px',
+    gradient: true,
+    gradient_color_2: 'var(--ha-card-background)',
+    gradient_stop_2: 70,
     button_containers: [
         {
             position: 'custom',
@@ -185,14 +188,6 @@ const CLASSIC_CONFIG = Object.freeze({
             padding: '0 0 16px 8px',
             margin: '-14px 0 0 0',
             buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    align: 'start',
-                    elements: [
-                        { type: 'icon', icon: 'mdi:weather-windy' },
-                        { type: 'text', attribute: 'wind_speed', weight: '700' }
-                    ]
-                },
                 sunButton(true),
                 sunButton(false),
                 {
@@ -220,8 +215,6 @@ const CLASSIC_CONFIG = Object.freeze({
             blurred_background: true,
             button_background_color: 'rgba(255,255,255,0.1)',
             button_icon_padding: '0 0 6px 0',
-            grouped: true,
-            background: true,
             separator: true,
             shadow: false,
             buttons: [0, 1, 2, 3, 4, 5, 6].map(forecastButton)
@@ -316,8 +309,6 @@ const WEATHER_RGB = Object.freeze([
     ['exceptional', 76, '230,95,65']
 ]);
 
-const weatherThresholds = () => WEATHER_RGB.map(([value, base, rgb]) => ({ value, color: `color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) ${base}%, rgb(${rgb}))` }));
-
 const forecastTile = (offset) => ({
     entity: PRESET_ENTITY_TOKEN,
     forecast: 'daily',
@@ -335,13 +326,13 @@ const COMPARISON_CONFIG = Object.freeze({
     sun_enabled: false,
     moon_enabled: false,
     sun_moon_x: 'dynamic',
-    color_mode: 'theme',
     card_height: 'content',
     card_padding: '20px',
     card_offset: '8px 0px 0px 0px',
+    color_mode: 'theme',
     background_mode: 'color',
     background_threshold_entity: PRESET_ENTITY_TOKEN,
-    background_thresholds: weatherThresholds(),
+    background_thresholds: WEATHER_RGB.map(([value, base, rgb]) => ({ value, color: `color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) ${base}%, rgb(${rgb}))` })),
     background_haze: false,
     precipitation_effects: false,
     cloud_effects: false,
@@ -534,6 +525,111 @@ const ARC_CONFIG = Object.freeze({
     }
 });
 
+const HOME_SKY = [
+    ['sunny', '#e7e2d9', '#24211d'],
+    ['clear-night', '#dbdce1', '#15181f'],
+    ['partlycloudy', '#e0deda', '#1c2023'],
+    ['cloudy', '#d3d4d6', '#222324'],
+    ['fog', '#e6e6e5', '#272829'],
+    ['windy', '#dadfdd', '#1c201e'],
+    ['windy-variant', '#d5dad9', '#1a1f1e'],
+    ['rainy', '#cdd2d6', '#181e22'],
+    ['pouring', '#c8cdd2', '#14191e'],
+    ['lightning', '#cfced3', '#1c1b21'],
+    ['lightning-rainy', '#cacacf', '#18171e'],
+    ['snowy', '#e6eaed', '#252b2e'],
+    ['snowy-rainy', '#d8dddf', '#1f2527'],
+    ['hail', '#d2d9da', '#1c2324'],
+    ['exceptional', '#ded8d2', '#27221f']
+];
+
+const homeText = (extra, size = '12px', weight = '500') => ({ type: 'text', size, weight, color: 'var(--primary-text-color)', ...extra });
+
+const homeLabel = (text) => homeText({ text, color: 'var(--secondary-text-color)' });
+
+const homeTemp = (size, weight) => homeText({ attribute: 'temperature', precision: 0, format: '\u00b0' }, size, weight);
+
+const sunTime = (state, text, attribute) => ({
+    entity: 'sun.sun',
+    visibility: [{ condition: 'state', entity: 'sun.sun', state }],
+    elements: [homeLabel(text), homeText({ entity: 'sun.sun', attribute })]
+});
+
+const room = (text) => ({
+    entity: PRESET_ENTITY_TOKEN,
+    style: 'vertical',
+    align: 'start',
+    elements: [homeLabel(text), homeTemp('16px', '300')]
+});
+
+const HOME_CONFIG = Object.freeze({
+    sun_enabled: false,
+    moon_enabled: false,
+    cloud_effects: false,
+    night_sky_effects: false,
+    bird_effects: false,
+    balloon_effects: false,
+    plane_effects: false,
+    background_mode: 'color',
+    background_threshold_entity: PRESET_ENTITY_TOKEN,
+    background_thresholds: HOME_SKY.map(([value, color, color_dark]) => ({ value, color, color_dark })),
+    card_height: '260px',
+    card_padding: '20px',
+    button_containers: [
+        {
+            position: 'custom',
+            position_anchor: 'right',
+            image: 'demo-home-image',
+            custom_width: 'min(208px, 52%)'
+        },
+        {
+            position: 'custom',
+            position_anchor: 'top-left',
+            button_gap: '6px',
+            buttons: [sunTime('above_horizon', 'Sunset', 'next_setting'), sunTime('below_horizon', 'Sunrise', 'next_rising')]
+        },
+        {
+            position: 'custom',
+            position_anchor: 'bottom-left',
+            gap: '5px',
+            buttons: [
+                { entity: PRESET_ENTITY_TOKEN, width: '100%', elements: [homeTemp('68px', '200')] },
+                { entity: PRESET_ENTITY_TOKEN, elements: [homeText()] }
+            ]
+        },
+        {
+            position: 'custom',
+            position_anchor: 'bottom-right',
+            gap: '22px',
+            button_gap: '4px',
+            buttons: [room('Living'), room('Bedroom'), room('Bath')]
+        },
+        {
+            position: 'custom',
+            position_anchor: 'top-right',
+            buttons: [
+                {
+                    entity: 'sun.sun',
+                    type: 'ring',
+                    ring_start: 25,
+                    ring_needle: true,
+                    ring_width: 1,
+                    ring_color: 'var(--secondary-text-color)',
+                    ring_marker_size: 12,
+                    ring_marker_icon_size: 16,
+                    ring_values: [{ value: 0, marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--primary-text-color)' }],
+                    padding: '9px',
+                    elements: [{ type: 'icon', icon: 'mdi:circle-small', icon_size: '12px', color: 'var(--secondary-text-color)' }]
+                }
+            ]
+        }
+    ],
+    grid_options: {
+        rows: 'auto',
+        columns: 12
+    }
+});
+
 export const LAYOUT_PRESETS = Object.freeze([
     {
         id: 'slim',
@@ -548,6 +644,13 @@ export const LAYOUT_PRESETS = Object.freeze([
         description: 'Daily forecast',
         icon: 'mdi:view-dashboard-variant-outline',
         config: CLASSIC_CONFIG
+    },
+    {
+        id: 'home',
+        name: 'Home',
+        description: 'Inside & outside',
+        icon: 'mdi:home-outline',
+        config: HOME_CONFIG
     },
     {
         id: 'centered',

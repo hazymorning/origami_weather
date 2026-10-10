@@ -8,7 +8,7 @@ A flexible weather card.
 &nbsp;
 <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin"><img alt="HACS custom repository" src="https://img.shields.io/badge/HACS-Custom-41BDF5?labelColor=1B1C20"></a>
 
-<img width="800" alt="Origami Weather on a phone dashboard, in light and dark mode" src="https://github.com/user-attachments/assets/aec8b7ff-bd27-4c9f-a1d0-96ff60290379" />
+<img width="800" alt="Origami Weather on a phone dashboard, in light and dark mode" src="https://github.com/user-attachments/assets/f7f68181-e539-4c63-a617-e4abf9340659" />
 
 <br>
 <br>
@@ -69,7 +69,7 @@ Origami Weather is not listed in the HACS store yet. You can still install it th
 
 Everything in these layouts is customizable — see [Building blocks](#building-blocks) for how that works.
 
-<img width="800" alt="Image" src="https://github.com/user-attachments/assets/8acdb51a-7a4b-4d28-bc90-aac1f3591b15" />
+<img width="800" alt="Image" src="https://github.com/user-attachments/assets/79726a62-a2df-44dd-b0c7-549d7db99ad9" />
 
 The house in the Home layout is drawn by the card. Its shadow follows the real position of the sun, the ring around it shows the path the sun takes today, the house is mirrored on the wet ground when it rains during the day, the roof turns white when it snows and the windows light up in dark mode. The room temperatures show your weather entity until you point them at your own sensors.
 

@@ -71,6 +71,45 @@ Everything in these layouts is customizable — see [Building blocks](#building-
 
 <img width="800" alt="Image" src="https://github.com/user-attachments/assets/8acdb51a-7a4b-4d28-bc90-aac1f3591b15" />
 
+The house in the Home layout is drawn by the card. Its shadow follows the real position of the sun, the ring around it shows the path the sun takes today, the house is mirrored on the wet ground when it rains during the day, the roof turns white when it snows and the windows light up in dark mode. The room temperatures show your weather entity until you point them at your own sensors.
+
+<details>
+<summary><b>Your own home instead of the demo house</b></summary>
+<br>
+
+An AI can draw your own home in the same style and build the layout around it. Use the most capable model you have access to, it needs to understand photos, draw clean SVGs and work through this whole README.
+
+Give it:
+
+1. This README as a reference. Download `README.md` from the repo.
+2. A few photos of your home, ideally one from the front and one from a corner, so the shape is clear.
+3. The YAML of a card with the Home layout. Pick the layout in the visual editor, then open the code editor and copy it.
+4. `image-assets.js` from the repo. Its last entry, `DEMO_HOME`, is the demo house, so the AI can match the style.
+5. Optionally, the light entities of your rooms, so a room can light up when its light is on.
+
+Then paste this and fill in the brackets:
+
+```text
+I'm using the Origami Weather card for Home Assistant and want to turn its Home layout into my own home. Attached are the card's README (the full reference for every option), my card YAML with the Home layout, image-assets.js (DEMO_HOME at the end is the demo house) and photos of my home.
+
+1. Draw my home as an SVG in the style of DEMO_HOME: isometric, flat matte colors, no outlines, soft ground shadow, transparent background, square viewBox with the house centered. Recognizable, but simplified.
+2. Make two versions, one for light mode and one for dark mode, for `image` and `image_dark` on the container. Both are loaded as normal image files, so they can't read the card's CSS variables or classes the way DEMO_HOME does.
+3. Rebuild the card YAML around it. Put each room's temperature on that room as free-positioned buttons inside the image container, with offsets in %, so they stay in place when the card resizes. Use my sensors instead of the weather entity:
+   [sensor.living_room_temperature: living room]
+   [...]
+4. Optional: make a room light up when its light is on, for example with a lit window overlay as an icon element (`icon_path`) that only shows through `visibility`. Keep the windows dark in both base images then.
+   [light.living_room: living room]
+   [...]
+
+Read the whole README before you start and really use what's in it: containers, free positioning, all element types, visibility, thresholds, the gradient layer and the `css` option. Almost anything is possible. For `css`, the card sets --origami-sun-x, --origami-sun-y, --origami-sun-shadow and --origami-sun-light, and #card-root has scheme-light/scheme-dark and weather-<condition> classes.
+
+Give me the SVG files, where they go (/config/www/, used as /local/...) and the complete card YAML.
+```
+
+Once it works, play around with the card settings to find a look you like. The Home layout turns off the sun, the clouds and the other effects, and switching some of them back on or trying a different background can change the whole feel. Pretty much anything in this README can go into it, so let the AI try things.
+
+</details>
+
 > [!NOTE]
 > Selecting a different layout in the visual editor replaces the card's content, so choose your layout first and customize it afterwards. 
 
@@ -131,6 +170,19 @@ button_containers:
       - entity: sensor.wind_speed
 ```
 
+A container can show an image with `image`, as wide as the container. Its buttons sit on top of it, and with [free positioning](#building-blocks) you can put each one exactly where it belongs, like room temperatures on a floor plan. `image_dark` swaps in a different image while the card is in dark mode, and `image: demo-home-image` gives you the house from the Home layout.
+
+```yaml
+button_containers:
+  - image: /local/floorplan.png
+    custom_width: 60%
+    buttons:
+      - entity: sensor.living_room_temperature
+        position: custom
+        position_x: 30%
+        position_y: 40%
+```
+
 Containers can also hold other HA cards instead of buttons using `custom_cards`:
 
 ```yaml
@@ -175,7 +227,7 @@ buttons:
 
 State, numeric state, screen size, user, and `and`/`or`/`not` conditions are supported. A `numeric_state` condition can read an `attribute` instead of the state, or a forecast entry with `forecast: daily` or `hourly` plus `forecast_offset`. If you list several conditions, all of them have to pass. Visibility also works at the container level.
 
-**Free positioning.** Any button can be pulled out of its container and placed anywhere on the card:
+**Free positioning.** Any button can be taken out of the normal flow and placed freely inside its container:
 
 ```yaml
 buttons:
@@ -187,7 +239,7 @@ buttons:
     background: true
 ```
 
-Offsets and sizes on free-positioned buttons and containers can use container query units (`cqw`, `cqh`, `cqmin`), which are relative to the card instead of the screen. That way the whole arrangement scales along with the card.
+Containers can be placed freely on the card the same way. Offsets and sizes inside free-positioned containers can use container query units (`cqw`, `cqh`, `cqmin`), which are relative to the card instead of the screen. That way the whole arrangement scales along with the card.
 
 </details>
 
@@ -220,9 +272,9 @@ If you leave `elements` out completely, the button shows one text element with t
 
 All three types take `margin` and `padding`, which is the usual way to nudge one element around without touching the rest of the button.
 
-**Text elements** take `entity`, `attribute`, `text` (a fixed string), `format` (glued to the end of the value, usually a unit), `precision` (decimal places), `size`, `weight`, `overflow` and `fancy_unit`. A text element without `entity`, `attribute` or `text` falls back to the button's own entity and attribute. Note that `weight` also sets the opacity: light weights are drawn faded, heavy ones fully opaque. That is why a `weight: 300` label looks softer than the value next to it.
+**Text elements** take `entity`, `attribute`, `text` (a fixed string), `format` (glued to the end of the value, usually a unit), `precision` (decimal places), `size`, `weight`, `color`, `overflow` and `fancy_unit`. A text element without `entity`, `attribute` or `text` falls back to the button's own entity and attribute. Note that `weight` also sets the opacity: light weights are drawn faded, heavy ones fully opaque. That is why a `weight: 300` label looks softer than the value next to it. A text with its own `color` is not faded.
 
-**Icon elements** take `icon`, `icon_path`, `icon_size`, `icon_padding`, `icon_background` and `icon_background_color`. Leave `icon` empty and the entity's own icon is used. Set `icon: weather` for the animated icon that matches the current weather.
+**Icon elements** take `icon`, `icon_path`, `icon_size`, `icon_padding`, `icon_background`, `icon_background_color`, `color` and `color_thresholds`. Leave `icon` empty and the entity's own icon is used. Set `icon: weather` for the animated icon that matches the current weather.
 
 **Bar elements** are horizontal gauges. They take `bar_min`, `bar_max`, `bar_height`, `bar_color`, `bar_threshold_mode` and `bar_thresholds`. A bar uses the button's own value, unless you set a different one with `bar_values`.
 
@@ -314,9 +366,11 @@ With one value there is no marker, `bar_marker: true` adds it. The marker matche
 
 A ring doesn't have to be a full circle. `ring_start` rotates where it begins, in degrees clockwise from the top, and `ring_arc` sets how far it goes, so `ring_start: 240` with `ring_arc: 240` gives you an open arc with the gap at the bottom.
 
+`ring_needle: true` turns the markers into needles that point from the center, like a compass or a clock hand. A value can also be a fixed number with `value` instead of reading an entity, which is handy for a mark that never moves. The compass in the Home layout is built like that.
+
 Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset. The Arc layout is built exactly like that.
 
-Any button can also use `color_thresholds` to tint itself based on a value, with no gauge involved. The value doesn't have to be a number here, a state like `on` or `home` works too.
+Any button or icon element can also use `color_thresholds` to tint itself based on a value, with no gauge involved. An icon reads its own entity or attribute if it has one, otherwise the button's value. The value doesn't have to be a number here, a state like `on` or `home` works too.
 
 </details>
 
@@ -369,6 +423,7 @@ icon_path: /local/weather-icons/
 | `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
 | `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. |
 | `icon_path` | `string` | — | Folder of custom SVG weather icons, used by every `icon: weather` element that doesn't set its own path. |
+| `css` | `string` | — | Your own CSS, applied inside the card. Handy for small tweaks without card-mod. |
 
 </details>
 
@@ -378,7 +433,7 @@ icon_path: /local/weather-icons/
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows your `sun_entity`, `theme` follows your HA theme. |
+| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows your `sun_entity`, `theme` follows your HA theme. When the card doesn't match your theme, embedded cards and theme colors inside the card follow the card. |
 | `dark_theme_adaptation` | `boolean` | `true` | Darkens and saturates the sky, background images, sun and effects a bit while your HA theme is dark but the card is in light mode. Only used with `background_mode: default` or `images`, and does nothing with `color_mode: theme` since the card is dark then anyway. |
 | `card_frame` | `boolean` | `true` | Set to `false` to drop the rounded corners and border of the card itself. |
 | `edge_fade` | `boolean` | `false` | Fades the top and bottom edge of the card into the dashboard background. |
@@ -428,6 +483,8 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `padding` | `string` | — | Inner padding of the container. |
 | `margin` | `string` | — | Outer margin of the container. |
 | `custom_width` | `string` | — | Fixed width for this container. Useful in `content_direction: row` layouts. |
+| `image` | `string` | — | Image shown in the container, as wide as the container, with the buttons on top. `demo-home-image` shows the house from the Home layout. |
+| `image_dark` | `string` | — | Image shown instead while the card is in dark mode. Only used with `image`. |
 | `background` | `boolean` | `false` | Add a background behind the buttons. |
 | `background_color` | `string` | — | Custom background color. |
 | `blurred_background` | `boolean` | `false` | Frosted glass effect on the container background. |
@@ -436,7 +493,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `shadow` | `boolean` | — | Set to `false` to remove shadow from this container. |
 | `hide` | `boolean` | `false` | Hide the container. |
 | `visibility` | `list` | — | Standard HA visibility conditions. |
-| `button_style` | `string` | `inline` | Default button format: `inline` (icon and text side by side) or `vertical` (icon above text). |
+| `button_style` | `string` | `inline` | Default button format: `inline` (icon and text side by side), `vertical` (icon above text) or `split` (texts stacked on top of each other, icon beside them). |
 | `button_padding` | `string` | — | Default padding for buttons in this container. |
 | `button_gap` | `string` | — | Gap between icon and text in buttons. |
 | `button_text_size` | `string` | — | Default text size. |
@@ -464,7 +521,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `attribute` | `string` | — | Read a specific attribute instead of the state. |
 | `elements` | `list` | — | What the button contains. See [Elements](#building-blocks). |
 | `type` | `string` | — | Set to `ring` for a circular gauge around the button. |
-| `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`). |
+| `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`, `split`). |
 | `text_size` | `string` | — | Text size for this button. |
 | `text_shadow` | `boolean` | `false` | Keep the text shadow even when the button has no background. |
 | `inner_gap` | `string` | — | Gap between icon and text. |
@@ -492,7 +549,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
 | `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` = today/now, `1` = next, etc. |
-| `position` | `string` | — | Set to `custom` to detach the button and place it freely. |
+| `position` | `string` | — | Set to `custom` to detach the button and place it freely inside its container. |
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
 | `position_y` | `string` | `0` | Vertical offset from anchor. |
@@ -515,7 +572,8 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `format` | `string` | — | Glued to the end of the value, usually a unit. |
 | `precision` | `number` | — | Decimal places. |
 | `size` | `string` | — | Font size. |
-| `weight` | `string` | — | Font weight. This also drives opacity: light weights are drawn faded, heavy ones fully opaque. |
+| `weight` | `string` | — | Font weight. This also drives opacity: light weights are drawn faded, heavy ones fully opaque. Not when `color` is set. |
+| `color` | `string` | — | Text color. |
 | `overflow` | `string` | `ellipsis` | What happens when the text doesn't fit: `ellipsis`, `clip`, `wrap`, `marquee`. |
 | `fancy_unit` | `boolean` | `false` | Print the unit small and raised. |
 | `margin` | `string` | — | Outer margin of this element. |
@@ -531,6 +589,8 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `icon_padding` | `string` | — | Padding around the icon. |
 | `icon_background` | `boolean` | — | Background behind this icon. |
 | `icon_background_color` | `string` | — | Color of that background. |
+| `color` | `string` | — | Icon color. |
+| `color_thresholds` | `list` | — | List of `{ value, color }` entries that change the icon color. Reads this element's `entity` or `attribute`, otherwise the button's value. |
 | `margin` | `string` | — | Outer margin of this element. |
 | `padding` | `string` | — | Inner padding of this element. |
 
@@ -561,6 +621,7 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | :--- | :--- | :--- | :--- |
 | `entity` | `string` | — | Read from a different entity than the button. |
 | `attribute` | `string` | — | Attribute to read. |
+| `value` | `number` | — | A fixed value instead of reading one. |
 | `marker_size` | `string` | *gauge marker size* | Size of this marker. `0` hides it. |
 | `marker_color` | `string` | — | Color of the marker. |
 | `marker_icon` | `string` | — | Icon drawn inside the marker. |
@@ -588,6 +649,7 @@ Set on the button, not on an element. Needs `type: ring`. Entries in `ring_value
 | `ring_values` | `list` | — | The values shown on the ring. Without it the ring uses the button's own value. |
 | `ring_marker` | `boolean` | `false` | Show the marker when the ring has one value. With several values the markers are always there. |
 | `ring_fill` | `boolean` | `true` | Set to `false` to draw only the track and the markers, no fill. |
+| `ring_needle` | `boolean` | `false` | Draws each marker as a needle from the center. |
 | `ring_marker_size` | `string` | *ring width* | Size of the markers. Anything larger than the ring sticks out on both sides. |
 | `ring_marker_icon_size` | `string` | *two thirds of the marker* | Size of the icon inside a marker. |
 | `ring_range_from` | `number` | — | Start of a highlighted band drawn on the track. |
@@ -608,7 +670,8 @@ The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` en
 | :--- | :--- | :--- | :--- |
 | `background_mode` | `string` | `default` | `default` for the animated sky, `images` for your own background files, `card` for the plain Home Assistant card background, `color` for a color of your own, `none` for a transparent card. |
 | `background_color` | `string` | — | The color of the card. Only used with `background_mode: color`. |
-| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. |
+| `background_color_dark` | `string` | — | Color used instead while the card is in dark mode. |
+| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. Add `color_dark` to an entry for dark mode. |
 | `background_threshold_entity` | `string` | — | Entity the thresholds read from. |
 | `background_threshold_attribute` | `string` | — | Attribute to read for the threshold value. |
 | `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. Part of the `default` sky, so it has no effect in the other modes. |
@@ -640,6 +703,16 @@ The sun and moon sit in this group too. Their options live under [Card · Sun & 
 | `bg_brightness` | `number` | `1` | Brightness multiplier (e.g. `0.8` to darken). Applies to the animated sky and to your own images. |
 | `bg_saturation` | `number` | `1` | Saturation multiplier (e.g. `0` for grayscale). Applies to both as well. |
 | `bg_blur` | `number` | — | Blur in pixels. Only applies to image backgrounds. |
+| `bg_blend` | `number` | `0` | Mixes your theme's card color over the animated sky or your images, from `0` to `100`. Tones the background down. |
+| `gradient` | `boolean` | `false` | A gradient over the background, the sun and the effects, under your content. Works with every `background_mode`. |
+| `gradient_type` | `string` | `linear` | `linear` or `radial`. |
+| `gradient_angle` | `number` | `180` | Direction of a linear gradient in degrees. `180` runs from top to bottom. |
+| `gradient_x` | `number` | `50` | Horizontal center of a radial gradient, in percent. |
+| `gradient_y` | `number` | `50` | Vertical center of a radial gradient, in percent. |
+| `gradient_color_1` | `string` | `transparent` | Start color. |
+| `gradient_stop_1` | `number` | `0` | Where the start color sits, in percent. |
+| `gradient_color_2` | `string` | `transparent` | End color. |
+| `gradient_stop_2` | `number` | `100` | Where the end color sits, in percent. |
 
 `edge_fade` and `card_frame` also change how the background meets the dashboard. Both are under [Card · Color & frame](#options).
 
@@ -651,7 +724,7 @@ The sun and moon sit in this group too. Their options live under [Card · Sun & 
 <summary><b>Show all CSS variables</b></summary>
 <br>
 
-These are for theming. None of them are needed to use the card, they're there if you want to change the look further than the options allow. Put them in your theme file, or set them on a single card with card-mod. Anything the visual editor already covers is left out of this list, since setting it twice only causes confusion.
+These are for theming. None of them are needed to use the card, they're there if you want to change the look further than the options allow. Put them in your theme file, or set them on a single card with the `css` option, like `:host { --origami-separator-width: 1px; }`. Anything the visual editor already covers is left out of this list, since setting it twice only causes confusion.
 
 <details>
 <summary><b>Text and colors</b></summary>

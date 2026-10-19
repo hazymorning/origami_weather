@@ -1,0 +1,32 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/build.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: build
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist
+          git diff --cached --quiet || git commit -m "Build dist"
+          git push

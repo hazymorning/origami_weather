@@ -1,5 +1,5 @@
-import { LitElement, html, css } from "https://esm.sh/lit@3.2.1";
-import { LAYOUT_PRESETS, instantiatePreset } from "./layout-presets.js?v=JI4J3U";
+import { LitElement, html, css } from "lit";
+import { LAYOUT_PRESETS, instantiatePreset } from "./layout-presets.js";
 const LABELS = Object.freeze({
     weather_entity: "", sun_entity: "Sun entity",
     sun_moon_size: "Diameter", sun_moon_x: "Horizontal position", sun_moon_y: "Vertical position",

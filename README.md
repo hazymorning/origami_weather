@@ -44,8 +44,8 @@ Origami Weather is not listed in the HACS store yet. You can still install it th
 <summary><b>Manual</b></summary>
 <br>
 
-1. Download `origami-weather.js`, `origami-weather-editor.js`, `layout-presets.js` and `image-assets.js` from the latest release.
-2. Copy all four files into the same folder inside `config/www/`. The card loads the other three files on its own, so it will not work if one of them is missing or in a different folder.
+1. Download `dist/origami-weather.js` from the latest release.
+2. Copy it into `config/www/`. Everything the card needs is in this one file.
 3. In Home Assistant, go to **Settings**, then **Dashboards**, click the three dots in the top right corner and choose **Resources**.
 4. Add `/local/origami-weather.js` as a JavaScript module. You only need to add this one file.
 5. Reload your browser with a hard refresh (Ctrl+F5 or Cmd+Shift+R).
@@ -91,7 +91,7 @@ Give it:
 1. This README as a reference. Download `README.md` from the repo.
 2. A few photos of your home, ideally one from the front and one from a corner, so the shape is clear.
 3. The YAML of a card with the Home layout. Pick the layout in the visual editor, then open the code editor and copy it.
-4. `image-assets.js` from the repo. Its last entry, `DEMO_HOME`, is the demo house, so the AI can match the style.
+4. `src/image-assets.js` from the repo. Its last entry, `DEMO_HOME`, is the demo house, so the AI can match the style.
 5. Optionally, the light entities of your rooms, so a room can light up when its light is on.
 
 Then paste this and fill in the brackets:

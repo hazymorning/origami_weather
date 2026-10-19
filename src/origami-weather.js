@@ -1,5 +1,5 @@
-import { CLOUD_SPRITE, CLOUD_SOFT, MOON_SURFACE, BIRD_SHEET, BALLOON_SHEET, PLANE_SHEET, DEMO_HOME } from './image-assets.js?v=JI4J3U';
-import { buildStubConfig } from './layout-presets.js?v=JI4J3U';
+import { CLOUD_SPRITE, CLOUD_SOFT, MOON_SURFACE, BIRD_SHEET, BALLOON_SHEET, PLANE_SHEET, DEMO_HOME } from './image-assets.js';
+import { buildStubConfig } from './layout-presets.js';
 console.info(
     "%c ◪ Origami Weather ",
     "color: #fff; border-radius: 6px; background: linear-gradient(135deg, #888 0%, #000 100%); font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; padding: 4px 8px;"
@@ -95,7 +95,7 @@ const FORECAST_ATTR_ICONS = Object.freeze({
     condition: 'mdi:weather-partly-cloudy', templow: 'mdi:thermometer-low',
     precipitation: 'mdi:weather-rainy', precipitation_probability: 'mdi:weather-rainy',
 });
-/*
+/*!
  * The BUILTIN_ICONS below are a slight remix of the Lucide icon set
  * (https://lucide.dev), used under the ISC License.
  * Portions of Lucide are Copyright (c) 2013-2022 Cole Bemis (Feather, MIT);
@@ -1682,7 +1682,7 @@ class WeatherCard extends HTMLElement {
     }
     static async getConfigElement() {
         if (!customElements.get("origami-weather-editor")) {
-            await import("./origami-weather-editor.js?v=JI4J3U");
+            await import("./origami-weather-editor.js");
         }
         return document.createElement("origami-weather-editor");
     }

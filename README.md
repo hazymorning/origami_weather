@@ -27,16 +27,14 @@ A weather card with finished layouts and a builder approach. Use it as is or cha
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin)
 
 <details>
-<summary><b>HACS (custom repository)</b></summary>
+<summary><b>HACS</b></summary>
 <br>
 
-Origami Weather is not listed in the HACS store yet. You can still install it through HACS by adding the repository yourself:
+Click the button above, or:
 
 1. Open HACS in Home Assistant.
-2. Click the three dots in the top right corner and choose **Custom repositories**.
-3. Enter `https://github.com/hazymorning/origami_weather` as the repository, select **Dashboard** as the type and click **Add**.
-4. Search for **Origami Weather** in HACS and click **Download**.
-5. Reload your browser.
+2. Search for **Origami Weather** and click **Download**.
+3. Reload your browser.
 
 </details>
 

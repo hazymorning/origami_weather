@@ -834,10 +834,9 @@ my_theme:
 <summary><b>Notes on performance</b></summary>
 <br>
 
-The card is visually busy, so a few things are built to keep the required performance reasonable. Devices vary a lot though. On older or low-power ones you can turn off the effects separately.
+Creating an animated weather card for Home Assistant comes with limits. It has to run on all kinds of setups, so a new idea often starts with the question of how to make it work without frying a CPU. A lot of care went into keeping this card light, which is why there are no extra performance options. It already runs at the lowest level that still lets it do what it's meant to do.
 
-> [!TIP]
-> Keeping the animated sky but turning off precipitation and clouds, for example, gives you a good-looking card for little rendering cost.
+If it still feels too heavy on your device, most features can be turned off one by one. You can also switch to plain weather photos or leave out the decorative parts entirely to keep things even lighter.
 
 </details>
 

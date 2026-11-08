@@ -6,7 +6,7 @@
 
 Origami Weather is a weather card for Home Assistant with finished layouts and a builder approach. It works as it is or changes as much as wanted, and it should cover most uses.
 
-[Get started](#get-started) · [Layouts](#layouts) · [In Origami](#in-origami) · [More](#more)
+[Get started](#get-started) · [Layouts](#layouts) · [More](#more)
 
 ## Get started
 
@@ -33,7 +33,7 @@ Without HACS, copy [`dist/origami-weather.js`](https://github.com/hazymorning/or
 <br>
 
 1. Edit a dashboard and add the **Origami Weather** card.
-2. Choose the weather entity and a layout.
+2. Choose the weather entity and a layout. For the diorama, paste its file into the code editor instead.
 3. Change what's needed in the visual editor, or in the code editor.
 
 > **Layout first.** Choosing another layout replaces the card's content, so the layout comes first and the changes after.
@@ -42,23 +42,23 @@ Without HACS, copy [`dist/origami-weather.js`](https://github.com/hazymorning/or
 
 ## Layouts
 
-Six layouts come with the card. Each one is a starting point, and every piece of it can change.
+Each layout is a starting point, and every piece of it can change.
+
+### Diorama
+
+<img width="800" alt="The Diorama layout, a paper landscape for each kind of weather: a partly cloudy midday with the sun above the hills, and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
+
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The card loads its pictures from Origami, so its file is all it needs. [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml)
 
 ### Slim
 
-<img width="800" alt="The Slim layout: the temperature with a row of small chips, over clouds and birds by day and over the moon and stars at night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/next/images/slim.webp">
+<img width="800" alt="The Slim layout: the temperature with a row of small chips, over clouds and birds by day and over the moon and stars at night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
 
 The weather now and a row of small chips, made for the top of a page.
 
-### Classic
-
-<img width="800" alt="The Classic layout: the temperature, the chance of rain and five days of forecast, in rain by day and in snow at night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/next/images/classic.webp">
-
-Today's weather with the next five days below it.
-
 ### Home
 
-<img width="800" alt="The Home layout: a small house with the temperature of three rooms, casting its shadow on a sunny day and with lit windows on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/next/images/home.webp">
+<img width="800" alt="The Home layout: a small house with the temperature of three rooms, casting its shadow on a sunny day and with lit windows on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
 A house that casts its shadow with the sun and lights its windows at night, with the temperature of each room.
 
@@ -106,43 +106,15 @@ The SVG files go into the `www` folder of Home Assistant's configuration. The Ho
 
 ### Centered
 
-<img width="800" alt="The Centered layout: the temperature in the middle with the high, the low, wind and humidity, on a partly cloudy day and a cloudy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/next/images/centered.webp">
+<img width="800" alt="The Centered layout: the temperature in the middle with the high, the low, wind and humidity, on a partly cloudy day and a cloudy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
 
 The temperature in the middle, with the day's high and low, wind and humidity.
 
 ### Comparison
 
-<img width="800" alt="The Comparison layout: the temperature now beside three days of forecast, with the temperatures on a bar and the chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/next/images/comparison.webp">
+<img width="800" alt="The Comparison layout: the temperature now beside three days of forecast, with the temperatures on a bar and the chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/comparison.webp">
 
 The temperature now against the next days, on a bar, with the chance of rain.
-
-### Arc
-
-<img width="800" alt="The Arc layout: the sun on its arc toward sunset by day and the moon on its arc toward sunrise at night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/next/images/arc.webp">
-
-The sun's way from sunrise to sunset, and the moon's at night.
-
-## In Origami
-
-The [Origami](https://github.com/hazymorning/origami) dashboard has three cards made with Origami Weather. Their files and steps are in its [weather part](https://github.com/hazymorning/origami/tree/main/dashboard/weather).
-
-### Diorama
-
-<img width="800" alt="The diorama card, a paper landscape for each kind of weather: a partly cloudy midday with the sun above the hills, and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/weather.webp">
-
-A little paper landscape for each kind of weather, from pictures of its own. [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml)
-
-### House
-
-<img width="800" alt="The house card, a house whose rooms light up and show how warm they are: a gray midday with the living room lit, and a rainy night with three rooms lit, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/weather-house.webp">
-
-A drawing of a house whose rooms light up with the home's lights and show how warm they are. [`house.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/house.yaml)
-
-### Calm comparison
-
-<img width="800" alt="The comparison card, whose color follows the weather, with the next days on tiles: a rainy midday and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/weather-comparison.webp">
-
-The Comparison layout in calm colors, without the sky. [`comparison.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/comparison.yaml)
 
 ## More
 

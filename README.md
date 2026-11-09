@@ -10,7 +10,7 @@
 
 <img alt="Origami Weather's diorama, a partly cloudy day with the sun and birds in light mode, and a clear night with the moon and stars in dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.webp">
 
-Origami Weather is a weather card for Home Assistant with finished layouts and a builder approach. Use a layout as it is or change every part of it. Almost any idea, even a very creative one, can be built with it exactly as planned.
+Origami Weather is a weather card for Home Assistant that can become almost any weather card. Everything on it is built from simple parts that can be combined freely, so a classic forecast is just as possible as something completely different. The layouts are ready to use and a good place to start.
 
 [Get started](#get-started) · [Layouts](#layouts) · [More](#more)
 

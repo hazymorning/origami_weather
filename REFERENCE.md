@@ -1,6 +1,6 @@
 # Origami Weather reference
 
-The building blocks of a card of its own, and every option. The visual editor covers most of them, and its code editor shows the YAML of any layout as a starting point.
+The building blocks of a layout, and every option. The visual editor covers most of them, and the code editor shows the YAML of any layout as a starting point.
 
 [Building blocks](#building-blocks) · [Options](#options) · [CSS variables](#css-variables)
 
@@ -215,7 +215,7 @@ Any button or icon element can also use `color_thresholds` to tint itself based 
 
 The card comes with animated weather icons. Turn them on with `icon: weather` on an icon element.
 
-For icons of one's own, `icon_path` points to a folder of SVGs. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). Set once at the card level, `icon_path` applies to every `icon: weather` element.
+For custom icons, `icon_path` points to a folder of SVGs. Name the files after the weather conditions (`sunny.svg`, `rainy.svg`, etc., using the standard [HA condition names](https://www.home-assistant.io/integrations/weather/#condition-mapping)). Set once at the card level, `icon_path` applies to every `icon: weather` element.
 
 Set `icon_path` on a single element and it applies to whatever that element's `icon` says, not just to `weather`, so it doubles as a way to pull in one-off custom graphics. The card appends `.svg` unless the name already has a file extension.
 
@@ -246,7 +246,7 @@ icon_path: /local/weather-icons/
 | `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
 | `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. |
 | `icon_path` | `string` | — | Folder of custom SVG weather icons, used by every `icon: weather` element that doesn't set its own path. |
-| `css` | `string` | — | CSS of one's own, applied inside the card, for small changes without card-mod. |
+| `css` | `string` | — | Custom CSS, applied inside the card, for small changes without card-mod. |
 
 ### Colors and frame
 
@@ -258,7 +258,7 @@ icon_path: /local/weather-icons/
 | `edge_fade` | `boolean` | `false` | Fades the top and bottom edge of the card into the dashboard background. |
 | `edge_fade_size` | `string` | `10%` | How deep that fade reaches in from each edge. |
 | `shadow` | `boolean` | `true` | Shadow under button and container backgrounds. |
-| `shadow_color` | `string` | — | Replaces that shadow with a CSS box-shadow of one's own, e.g. `0 2px 8px rgba(0,0,0,0.4)`. |
+| `shadow_color` | `string` | — | Replaces that shadow with a custom CSS box-shadow, e.g. `0 2px 8px rgba(0,0,0,0.4)`. |
 
 ### Sun and moon
 
@@ -463,7 +463,7 @@ The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` en
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `background_mode` | `string` | `default` | `default` for the animated sky, `images` for background files of one's own, `card` for the plain Home Assistant card background, `color` for a color of one's own, `none` for a transparent card. |
+| `background_mode` | `string` | `default` | `default` for the animated sky, `images` for custom background pictures, `card` for the plain Home Assistant card background, `color` for a custom color, `none` for a transparent card. |
 | `background_color` | `string` | — | The color of the card. Only used with `background_mode: color`. |
 | `background_color_dark` | `string` | — | Color used instead while the card is in dark mode. |
 | `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. Add `color_dark` to an entry for dark mode. |

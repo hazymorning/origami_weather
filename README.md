@@ -9,7 +9,7 @@
   <img alt="Origami Weather with the diorama and the Home layout" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero-light.webp">
 </picture>
 
-Origami Weather is a weather card for Home Assistant with finished layouts and a builder approach. It works as it is or changes as much as wanted, and it should cover most uses.
+Origami Weather is a weather card for Home Assistant with finished layouts and a builder approach. With a specific idea in mind, even a very creative one, it's almost always possible to build exactly that.
 
 [Get started](#get-started) · [Layouts](#layouts) · [More](#more)
 
@@ -38,32 +38,36 @@ Without HACS, copy [`dist/origami-weather.js`](https://github.com/hazymorning/or
 <br>
 
 1. Edit a dashboard and add the **Origami Weather** card.
-2. Choose the weather entity and a layout. For the diorama, paste its file into the code editor instead.
-3. Change what's needed in the visual editor, or in the code editor.
+2. Choose the weather entity and a layout. For the diorama, paste [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml) into the code editor instead, and change `weather.home` to the home's weather entity.
+3. Change anything in the visual editor or in the code editor.
 
-> **Layout first.** Choosing another layout replaces the card's content, so the layout comes first and the changes after.
+> **Choose the layout first.** Another layout replaces the card's content, including changes made before.
 
 </details>
 
 ## Layouts
 
-Each layout is a starting point, and every piece of it can change.
+Each layout is a starting point, and every part of it can be changed.
 
 ### Diorama
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather: a partly cloudy midday with the sun above the hills, and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml)
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills. The layout comes as a file from Origami, [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml).
 
 <details>
-<summary><b>Keep the pictures in Home Assistant</b></summary>
+<summary><b>Load the pictures from Home Assistant</b></summary>
 
 <br>
 
-The file loads its pictures from Origami's repository, so it works right away. Kept in Home Assistant, they load without the internet.
+The diorama loads its pictures from Origami's repository through jsDelivr. To load them from Home Assistant instead:
 
-1. Download Origami with **Code** and **Download ZIP** on [its page](https://github.com/hazymorning/origami), and copy the folder `dashboard/weather/diorama` to `/config/www/diorama`.
-2. In the card's code editor, set `weather_image_path` to `/local/diorama/light/` and `weather_image_path_dark` to `/local/diorama/dark/`.
+1. Copy the folder [`diorama`](https://github.com/hazymorning/origami/tree/main/dashboard/weather/diorama) from Origami to `/config/www`, so the pictures are in `/config/www/diorama/light` and `/config/www/diorama/dark`.
+2. In `diorama.yaml`, replace every copy of this address with `/local/diorama/`. The replace function of a text editor does it in one step.
+
+   ```text
+   https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/
+   ```
 
 </details>
 
@@ -71,34 +75,34 @@ The file loads its pictures from Origami's repository, so it works right away. K
 
 <img width="800" alt="The Slim layout: the temperature with a row of small chips, over clouds and birds by day and over the moon and stars at night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
 
-The weather now and a row of small chips, made for the top of a page.
+The current weather with a row of small chips for today's high, the wind, the next sunset or sunrise and the humidity, made for the top of a dashboard.
 
 ### Home
 
 <img width="800" alt="The Home layout: a small house with the temperature of three rooms, casting its shadow on a sunny day and with lit windows on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-A house that casts its shadow with the sun and lights its windows at night, with the temperature of each room.
+A house that casts a shadow with the sun and lights its windows at night, with the temperature of each room.
 
 <details>
 <summary><b>The house in detail</b></summary>
 
 <br>
 
-The card draws the house. Its shadow follows the sun, the ring around it shows the sun's path for the day, the wet ground mirrors it in the rain and the roof turns white in the snow. The rooms show the weather entity's temperature until they point to sensors of their own.
+The card draws the house itself. Its shadow follows the sun, and the ring around it shows the sun's path through the day. In the rain, the wet ground mirrors the house, and in the snow, the roof turns white. Until the rooms get sensors of their own, they show the temperature of the weather entity.
 
 </details>
 
 <details>
-<summary><b>The home's own house</b></summary>
+<summary><b>Draw a real home with AI</b></summary>
 
 <br>
 
-An AI can draw a home in the same style and build the layout around it. It takes a capable model that understands photos and draws clean SVGs.
+An AI can draw a real home in the style of the demo house and build the layout around it. This needs a capable model that understands photos and draws clean SVGs.
 
-1. Download `README.md` and `REFERENCE.md` from this repository, and `src/image-assets.js`, whose last entry, `DEMO_HOME`, is the demo house.
+1. Download [`README.md`](README.md), [`REFERENCE.md`](REFERENCE.md) and [`src/image-assets.js`](src/image-assets.js) from this repository. The last entry in `image-assets.js`, `DEMO_HOME`, is the demo house.
 2. Take a few photos of the home, ideally one from the front and one from a corner.
 3. Copy the YAML of a card with the Home layout from the code editor.
-4. Give it all to the AI with this text, with the brackets filled in. Lights are optional, for rooms that light up.
+4. Give it all to the AI with this text, and fill in the brackets. The lights are optional, for rooms that light up.
 
 ```text
 I'm using the Origami Weather card for Home Assistant and want to turn its Home layout into my own home. Attached are the card's README and REFERENCE (every option), my card YAML with the Home layout, image-assets.js (DEMO_HOME at the end is the demo house) and photos of my home.
@@ -117,21 +121,21 @@ Read the whole README and REFERENCE before you start and really use what's in th
 Give me the SVG files, where they go (/config/www/, used as /local/...) and the complete card YAML.
 ```
 
-The SVG files go into the `www` folder of Home Assistant's configuration. The Home layout turns off the sun, the clouds and the other effects, and turning some of them back on, or another background, changes the whole feel.
+The SVG files go into `/config/www`. The Home layout turns off the sun, the clouds and the other effects. Turning some of them back on, or choosing another background, changes the whole look.
 
 </details>
 
 ### Centered
 
-<img width="800" alt="The Centered layout: the temperature in the middle with the high, the low, wind and humidity, on a partly cloudy day and a cloudy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
+<img width="800" alt="The Centered layout: the temperature in the middle with the high, the low, wind and humidity, on a partly cloudy day and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
 
-The temperature in the middle, with the day's high and low, wind and humidity.
+The temperature in the middle, with the day's high and low, the wind and the humidity.
 
 ### Comparison
 
-<img width="800" alt="The Comparison layout: the temperature now beside three days of forecast, with the temperatures on a bar and the chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/comparison.webp">
+<img width="800" alt="The Comparison layout: the temperature outside beside three days of forecast, with a temperature bar and the chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/comparison.webp">
 
-The temperature now against the next days, on a bar, with the chance of rain.
+The temperature outside beside the next three days, with a temperature bar and the chance of rain.
 
 ## More
 
@@ -141,27 +145,29 @@ The temperature now against the next days, on a bar, with the chance of rain.
 
 <br>
 
-The sky behind the content changes from day to night, the sun rises and sets, and stars come out at night with a shooting star now and then. Clouds, rain and snow, birds, balloons and planes cross it, each with an option of its own.
+The sky behind the content changes from day to night, the sun rises and sets, and stars come out at night with a shooting star now and then. Clouds, rain, snow, birds, balloons and planes cross it, and each of them can be turned on or off.
 
-`background_mode` picks the sky, pictures for each kind of weather, a color, the plain card background or none at all. With `background_mode: none` and `card_frame: false`, the card blends into the dashboard, and `full_width: true` stretches it across the page, such as for a header. The [reference](REFERENCE.md#background) lists every option.
-
-</details>
-
-<details>
-<summary><b>A card of its own</b></summary>
-
-<br>
-
-Each layout is made of containers, which hold buttons, and each button shows its entity with text, icons and bars, or a ring around it. A container can also hold a picture, such as a floor plan with each room's temperature on it, or other Home Assistant cards. The [reference](REFERENCE.md) explains each building block and every option, and the code editor shows the YAML of any layout as a starting point.
+Instead of the sky, `background_mode` can show a picture for each kind of weather, a color, the plain card background or nothing at all. With `background_mode: none` and `card_frame: false`, the card blends into the dashboard, and `full_width: true` stretches it across the page, such as for a header. The [reference](REFERENCE.md#background) lists every option.
 
 </details>
 
 <details>
-<summary><b>Speed</b></summary>
+<summary><b>Building blocks</b></summary>
 
 <br>
 
-The card is made to run on any device, so it has no extra settings for speed. Where it still feels heavy, each effect turns off on its own, and pictures or a plain color are lighter than the animated sky.
+Every layout is built from the same blocks. Containers hold buttons, and each button shows an entity with text, icons, bars or a ring. A container can also hold a picture, such as a floor plan with each room's temperature on it, or other Home Assistant cards.
+
+The [reference](REFERENCE.md) explains each block and every option. For a new layout, the YAML of a finished one in the code editor is a good start.
+
+</details>
+
+<details>
+<summary><b>Performance</b></summary>
+
+<br>
+
+A lot of care went into keeping the card light, so it runs on any device and needs no settings for performance. Where it still feels heavy, the effects can be turned off one by one, and pictures or a plain color are lighter than the animated sky.
 
 </details>
 

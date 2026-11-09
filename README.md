@@ -10,7 +10,7 @@
 
 <img alt="Origami Weather's diorama, a partly cloudy day with the sun and birds in light mode, and a clear night with the moon and stars in dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.webp">
 
-Origami Weather is a weather card for Home Assistant with finished layouts and a builder approach. With a specific idea in mind, even a very creative one, it's almost always possible to build exactly that.
+Origami Weather is a weather card for Home Assistant with finished layouts and a builder approach. Use a layout as it is or change every part of it. Almost any idea, even a very creative one, can be built with it exactly as planned.
 
 [Get started](#get-started) · [Layouts](#layouts) · [More](#more)
 
@@ -29,7 +29,7 @@ Origami Weather is in the HACS default store.
 
 2. Reload the page.
 
-Without HACS, copy [`dist/origami-weather.js`](https://github.com/hazymorning/origami_weather/blob/main/dist/origami-weather.js) to `/config/www` and add `/local/origami-weather.js` as a **JavaScript module** under [Resources](https://my.home-assistant.io/redirect/lovelace_resources/).
+Without HACS, copy `dist/origami-weather.js` from the [latest release](https://github.com/hazymorning/origami_weather/releases/latest) to `/config/www`, add `/local/origami-weather.js` as a **JavaScript module** under [Resources](https://my.home-assistant.io/redirect/lovelace_resources/) and reload the page with a hard refresh.
 
 </details>
 
@@ -39,16 +39,16 @@ Without HACS, copy [`dist/origami-weather.js`](https://github.com/hazymorning/or
 <br>
 
 1. Edit a dashboard and add the **Origami Weather** card.
-2. Choose the weather entity and a layout. For the diorama, paste [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml) into the code editor instead, and change `weather.home` to the home's weather entity.
+2. Choose the weather entity and a layout. For the diorama, paste [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml) into the code editor instead, and change each `weather.home` in it to the home's weather entity.
 3. Change anything in the visual editor or in the code editor.
 
-> **Choose the layout first.** Another layout replaces the card's content, including changes made before.
+> **Choose the layout first.** A layout chosen in the visual editor replaces all of the card's settings, so the changes come after it.
 
 </details>
 
 ## Layouts
 
-Each layout is a starting point, and every part of it can be changed.
+<sub>The screenshots use the Montserrat font. The [Origami](https://github.com/hazymorning/origami#get-started) repository explains how to add it to Home Assistant.</sub>
 
 ### Diorama
 
@@ -76,20 +76,20 @@ The diorama loads its pictures from Origami's repository through jsDelivr. To lo
 
 <img width="800" alt="The Slim layout: the temperature with a row of small chips, over clouds and birds by day and over the moon and stars at night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
 
-The current weather with a row of small chips for today's high, the wind, the next sunset or sunrise and the humidity, made for the top of a dashboard.
+The current weather with a row of small chips for today's high, the wind, the next sunset or sunrise, the humidity and the UV index.
 
 ### Home
 
 <img width="800" alt="The Home layout: a small house with the temperature of three rooms, casting its shadow on a sunny day and with lit windows on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-A house that casts a shadow with the sun and lights its windows at night, with the temperature of each room.
+A house that casts its shadow with the sun and lights its windows in dark mode, with the temperature of each room.
 
 <details>
 <summary><b>The house in detail</b></summary>
 
 <br>
 
-The card draws the house itself. Its shadow follows the sun, and the ring around it shows the sun's path through the day. In the rain, the wet ground mirrors the house, and in the snow, the roof turns white. Until the rooms get sensors of their own, they show the temperature of the weather entity.
+The card draws the house itself. Its shadow follows the real position of the sun, and the ring around it shows the path the sun takes today. When it rains during the day, the house is mirrored on the wet ground, and when it snows, the roof turns white. The rooms show the weather entity's temperature until each one is set to a room sensor.
 
 </details>
 
@@ -98,7 +98,7 @@ The card draws the house itself. Its shadow follows the sun, and the ring around
 
 <br>
 
-An AI can draw a real home in the style of the demo house and build the layout around it. This needs a capable model that understands photos and draws clean SVGs.
+An AI can draw a real home in the style of the demo house and build the layout around it. Use the most capable model available, since it has to understand photos, draw clean SVGs and work through the whole README and reference.
 
 1. Download [`README.md`](README.md), [`REFERENCE.md`](REFERENCE.md) and [`src/image-assets.js`](src/image-assets.js) from this repository. The last entry in `image-assets.js`, `DEMO_HOME`, is the demo house.
 2. Take a few photos of the home, ideally one from the front and one from a corner.
@@ -122,7 +122,7 @@ Read the whole README and REFERENCE before you start and really use what's in th
 Give me the SVG files, where they go (/config/www/, used as /local/...) and the complete card YAML.
 ```
 
-The SVG files go into `/config/www`. The Home layout turns off the sun, the clouds and the other effects. Turning some of them back on, or choosing another background, changes the whole look.
+Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the birds, the balloons and the planes, and only rain and snow still fall. Turning some of them back on or trying another background can change the whole feel, and almost anything in the README and the reference can go into it, so let the AI try things.
 
 </details>
 
@@ -130,13 +130,13 @@ The SVG files go into `/config/www`. The Home layout turns off the sun, the clou
 
 <img width="800" alt="The Centered layout: the temperature in the middle with the high, the low, wind and humidity, on a partly cloudy day and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
 
-The temperature in the middle, with the day's high and low, the wind and the humidity.
+The temperature and the current weather in the middle, with the day's high and low, the wind and the humidity.
 
 ### Comparison
 
-<img width="800" alt="The Comparison layout: the temperature outside beside three days of forecast, with a temperature bar and the chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/comparison.webp">
+<img width="800" alt="The Comparison layout: the temperature outside beside tiles for today and the next days, with a bar that compares it with today's high and today's chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/comparison.webp">
 
-The temperature outside beside the next three days, with a temperature bar and the chance of rain.
+The temperature outside beside tiles for today and the next days, with a bar that compares it with today's high, and today's chance of rain.
 
 ## More
 
@@ -146,9 +146,11 @@ The temperature outside beside the next three days, with a temperature bar and t
 
 <br>
 
-The sky behind the content changes from day to night, the sun rises and sets, and stars come out at night with a shooting star now and then. Clouds, rain, snow, birds, balloons and planes cross it, and each of them can be turned on or off.
+The card shows an animated sky behind the content that follows the weather and the sun. Its color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past and planes pass overhead. Clouds, rain and snow add to it.
 
-Instead of the sky, `background_mode` can show a picture for each kind of weather, a color, the plain card background or nothing at all. With `background_mode: none` and `card_frame: false`, the card blends into the dashboard, and `full_width: true` stretches it across the page, such as for a header. The [reference](REFERENCE.md#background) lists every option.
+The sky and each kind of effect can be turned off, rain and snow with one switch. The effects also work on top of the other backgrounds, which `background_mode` sets: a picture for each kind of weather, a color, the plain card background or none. The card also works in Home Assistant's plain style, with just the content and nothing else going on.
+
+With `background_mode: none` and `card_frame: false`, the card loses its own styling and blends in with the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, such as a dashboard header. The [reference](REFERENCE.md#background) lists every option.
 
 </details>
 
@@ -168,7 +170,9 @@ The [reference](REFERENCE.md) explains each block and every option. For a new la
 
 <br>
 
-A lot of care went into keeping the card light, so it runs on any device and needs no settings for performance. Where it still feels heavy, the effects can be turned off one by one, and pictures or a plain color are lighter than the animated sky.
+An animated weather card has to run on all kinds of setups, so a lot of care went into keeping this one light. That's why there are no extra performance options. It already runs at the lowest level that still lets it do what it's meant to do.
+
+If it still feels too heavy on a device, most features can be turned off one by one. Plain weather pictures, or leaving out the decorative parts entirely, make it even lighter.
 
 </details>
 

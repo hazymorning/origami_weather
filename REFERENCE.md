@@ -113,7 +113,7 @@ buttons:
         weight: "700"
 ```
 
-That makes "Today: 8 – 14°" inside a single button.
+That gives something like "Today: 8 – 14 °C" inside a single button.
 
 Without `elements`, the button shows one text element with the entity state.
 
@@ -236,6 +236,7 @@ icon_path: /local/weather-icons/
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
+| `weather_entity` | `string` | — | **Required.** The weather entity the card follows, for the sky, the effects, the pictures and the tap on the card. |
 | `card_height` | `string` | `200px` | Height of the card. Numbers are treated as px. `auto` fills available height in grid layouts, `content` sizes to fit the content, `square` makes it as tall as it is wide. |
 | `card_padding` | `string` | `16px` | Inner padding around the content. |
 | `card_offset` | `string` | — | Shifts the card via CSS margin. Useful when layering cards. |
@@ -284,7 +285,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `layout` | `string` | `wrap` | How buttons are arranged: `wrap`, `horizontal-scroll`, `vertical-scroll`, `grid`. |
 | `columns` | `number` | — | Number of columns when `layout: grid`. |
 | `scroll_count` | `number` | — | Buttons visible at once in a scroll layout. Enables snap scrolling. |
-| `scroll_fade` | `boolean` | `false` | Soft fade at both ends of a scroll layout, which pulls back at that end. Doesn't combine with `button_blurred_background`. |
+| `scroll_fade` | `boolean` | `false` | Soft fade at both ends of a scroll layout. The fade at an end disappears once the scroll reaches that end. Doesn't combine with `button_blurred_background`. |
 | `scroll_fade_size` | `string` | `24px` | How far that fade reaches in. |
 | `row_height` | `string` | — | Fixed height for a container using `horizontal-scroll` or `vertical-scroll`. |
 | `align` | `string` | `start` | Button alignment: `start`, `center`, `end`, `spread`. |
@@ -463,7 +464,7 @@ The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` en
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `background_mode` | `string` | `default` | `default` for the animated sky, `images` for custom background pictures, `card` for the plain Home Assistant card background, `color` for a custom color, `none` for a transparent card. |
+| `background_mode` | `string` | `default` | `default` for the animated sky, `images` for custom background pictures or videos, `card` for the plain Home Assistant card background, `color` for a custom color, `none` for a transparent card. |
 | `background_color` | `string` | — | The color of the card. Only used with `background_mode: color`. |
 | `background_color_dark` | `string` | — | Color used instead while the card is in dark mode. |
 | `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. Add `color_dark` to an entry for dark mode. |

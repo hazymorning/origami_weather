@@ -6,6 +6,8 @@
 <a href="https://github.com/hazymorning?tab=repositories&q=origami"><img alt="Origami suite" src="https://img.shields.io/badge/Origami-Suite-F6F4F1?labelColor=181715&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiNGNkY0RjEiIHN0cm9rZS13aWR0aD0iMiIvPjxwb2x5Z29uIHBvaW50cz0iMjEsMyAyMSwyMSAzLDIxIiBmaWxsPSIjRjZGNEYxIi8%2BPC9zdmc%2B"></a>
 </div>
 
+<br>
+
 <img alt="Origami Weather's diorama, a partly cloudy and a rainy day in light mode, and a clear and a partly cloudy night in dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.webp">
 
 Origami Weather is a weather card for Home Assistant with finished layouts and a builder approach. With a specific idea in mind, even a very creative one, it's almost always possible to build exactly that.

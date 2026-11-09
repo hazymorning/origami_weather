@@ -50,7 +50,19 @@ Each layout is a starting point, and every piece of it can change.
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather: a partly cloudy midday with the sun above the hills, and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The card loads its pictures from Origami, so its file is all it needs. [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml)
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. [`diorama.yaml`](https://github.com/hazymorning/origami/blob/main/dashboard/weather/diorama.yaml)
+
+<details>
+<summary><b>Keep the pictures in Home Assistant</b></summary>
+
+<br>
+
+The file loads its pictures from Origami's repository, so it works right away. Kept in Home Assistant, they load without the internet.
+
+1. Download Origami with **Code** and **Download ZIP** on [its page](https://github.com/hazymorning/origami), and copy the folder `dashboard/weather/diorama` to `/config/www/diorama`.
+2. In the card's code editor, set `weather_image_path` to `/local/diorama/light/` and `weather_image_path_dark` to `/local/diorama/dark/`.
+
+</details>
 
 ### Slim
 

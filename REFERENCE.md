@@ -518,9 +518,9 @@ These run on top of every background, including `images` and `none`.
 | :--- | :--- | :--- | :--- |
 | `precipitation_effects` | `boolean` | `true` | Rain, downpour, thunderstorms, snow, sleet and hail particles. |
 | `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
-| `cloud_effects` | `boolean` | `true` | The drifting cloud layer. Even clear skies get a few soft ones, and fog is drawn with them as well. |
-| `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the cloud layer is drawn with instead of the built-in clouds. A PNG or WebP with a transparent background works best. |
-| `mist_effects` | `boolean` | `false` | A faint mist that drifts across the card when it's cloudy and thickens into banks in fog. It works with or without the clouds. |
+| `cloud_effects` | `boolean` | `true` | The drifting clouds, in three layers of different size and speed. There are none on clear days and in fog, where the mist takes over. |
+| `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the clouds are drawn with instead of the built-in one. A PNG or WebP with a transparent background works best. |
+| `mist_effects` | `boolean` | same as `cloud_effects` | Soft layers of mist that drift at different speeds, behind and in front of the clouds. A few faint wisps on clear days, more when it's cloudy and a veil over the whole card in fog. It works with or without the clouds. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |

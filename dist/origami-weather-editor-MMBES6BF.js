@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-FBFQRRPB.js";
+} from "./chunk-R6YH4ZWU.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -3383,7 +3383,7 @@ var WeatherCardEditor = class extends i4 {
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
                 ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c4.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v2) => this._updateField("cloud_image_path", v2) }))}
-                ${fx("mist_effects", "Mist", null, false)}
+                ${fx("mist_effects", "Mist", null, c4.cloud_effects !== false)}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

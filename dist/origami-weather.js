@@ -60,22 +60,22 @@ var _HAZE_TUNING = Object.freeze({
   "default": { light: { tone: [232, 236, 242], mix: 0.16, alpha: 0.7, core: 1, scale: 1 }, dark: { tone: [56, 78, 120], mix: 0.22, alpha: 0.8, core: 0.75, scale: 1 } }
 });
 var WEATHER_TUNING = Object.freeze({
-  "sunny": { icon: "mdi:weather-sunny", precipitation: null, lightning: false, sunVisibility: 1, sunSaturation: 1, cloudDensity: 0, cloudDarkness: 0, cloudSpeed: 1, softClouds: "fair", starCount: 800, starOpacity: 1 },
-  "clear-night": { icon: "mdi:weather-night", precipitation: null, lightning: false, sunVisibility: 1, sunSaturation: 1, cloudDensity: 0, cloudDarkness: 0, cloudSpeed: 0.6, softClouds: "fair", starCount: 800, starOpacity: 1 },
-  "partlycloudy": { icon: "mdi:weather-partly-cloudy", precipitation: null, lightning: false, sunVisibility: 0.78, sunSaturation: 0.85, cloudDensity: 0.3, cloudDarkness: 0.2, cloudSpeed: 1, softClouds: "scattered", starCount: 450, starOpacity: 0.7 },
-  "cloudy": { icon: "mdi:weather-cloudy", precipitation: null, lightning: false, sunVisibility: 0.42, sunSaturation: 0.5, cloudDensity: 0.6, cloudDarkness: 0.55, cloudSpeed: 1, softClouds: "overcast", starCount: 300, starOpacity: 0.5 },
-  "windy": { icon: "mdi:weather-windy", precipitation: null, lightning: false, sunVisibility: 0.6, sunSaturation: 0.68, cloudDensity: 0.5, cloudDarkness: 0.12, cloudSpeed: 3.2, softClouds: "windy", starCount: 500, starOpacity: 0.8 },
-  "windy-variant": { icon: "mdi:weather-windy-variant", precipitation: null, lightning: false, sunVisibility: 0.85, sunSaturation: 0.9, cloudDensity: 0.55, cloudDarkness: 0.18, cloudSpeed: 3.2, softClouds: "windy", starCount: 600, starOpacity: 0.8 },
-  "fog": { icon: "mdi:weather-fog", precipitation: null, lightning: false, sunVisibility: 0.26, sunSaturation: 0.12, cloudDensity: 0, cloudDarkness: 0.42, cloudSpeed: 0.5, softClouds: "fog", starCount: 250, starOpacity: 0.35 },
-  "rainy": { icon: "mdi:weather-rainy", precipitation: "rain", lightning: false, sunVisibility: 0.34, sunSaturation: 0.45, cloudDensity: 0.6, cloudDarkness: 0.6, cloudSpeed: 1.35, softClouds: "overcast", starCount: 0, starOpacity: 0 },
-  "pouring": { icon: "mdi:weather-pouring", precipitation: "pour", lightning: false, sunVisibility: 0.2, sunSaturation: 0.3, cloudDensity: 0.77, cloudDarkness: 0.82, cloudSpeed: 1.6, softClouds: "overcast", starCount: 0, starOpacity: 0 },
-  "lightning": { icon: "mdi:weather-lightning", precipitation: "storm", lightning: true, sunVisibility: 0.3, sunSaturation: 0.4, cloudDensity: 0.3, cloudDarkness: 0.72, cloudSpeed: 1.8, softClouds: "overcast", starCount: 0, starOpacity: 0 },
-  "lightning-rainy": { icon: "mdi:weather-lightning-rainy", precipitation: "storm", lightning: true, sunVisibility: 0.24, sunSaturation: 0.35, cloudDensity: 0.77, cloudDarkness: 0.78, cloudSpeed: 1.8, softClouds: "overcast", starCount: 0, starOpacity: 0 },
-  "snowy": { icon: "mdi:weather-snowy", precipitation: "snow", lightning: false, sunVisibility: 0.38, sunSaturation: 0.3, cloudDensity: 0.3, cloudDarkness: 0.35, cloudSpeed: 0.8, softClouds: "overcast", starCount: 600, starOpacity: 0.4 },
-  "snowy-rainy": { icon: "mdi:weather-snowy-rainy", precipitation: "sleet", lightning: false, sunVisibility: 0.3, sunSaturation: 0.35, cloudDensity: 0.3, cloudDarkness: 0.6, cloudSpeed: 1.3, softClouds: "overcast", starCount: 450, starOpacity: 0.3 },
-  "hail": { icon: "mdi:weather-hail", precipitation: "hail", lightning: false, sunVisibility: 0.3, sunSaturation: 0.4, cloudDensity: 0.3, cloudDarkness: 0.7, cloudSpeed: 1.5, softClouds: "overcast", starCount: 350, starOpacity: 0.45 },
-  "exceptional": { icon: "mdi:weather-sunny", precipitation: null, lightning: false, sunVisibility: 1, sunSaturation: 1, cloudDensity: 0, cloudDarkness: 0, cloudSpeed: 0.6, softClouds: "fair", starCount: 800, starOpacity: 1 },
-  "default": { icon: "mdi:weather-cloudy", precipitation: null, lightning: false, sunVisibility: 0.85, sunSaturation: 0.9, cloudDensity: 0.3, cloudDarkness: 0.3, cloudSpeed: 1, softClouds: "scattered", starCount: 800, starOpacity: 0.8 }
+  "sunny": { icon: "mdi:weather-sunny", precipitation: null, lightning: false, sunVisibility: 1, sunSaturation: 1, cloudDensity: 0, cloudDarkness: 0, cloudSpeed: 1, mist: "fair", starCount: 800, starOpacity: 1 },
+  "clear-night": { icon: "mdi:weather-night", precipitation: null, lightning: false, sunVisibility: 1, sunSaturation: 1, cloudDensity: 0, cloudDarkness: 0, cloudSpeed: 0.6, mist: "fair", starCount: 800, starOpacity: 1 },
+  "partlycloudy": { icon: "mdi:weather-partly-cloudy", precipitation: null, lightning: false, sunVisibility: 0.78, sunSaturation: 0.85, cloudDensity: 0.3, cloudDarkness: 0.2, cloudSpeed: 1, mist: "scattered", starCount: 450, starOpacity: 0.7 },
+  "cloudy": { icon: "mdi:weather-cloudy", precipitation: null, lightning: false, sunVisibility: 0.42, sunSaturation: 0.5, cloudDensity: 0.6, cloudDarkness: 0.55, cloudSpeed: 1, mist: "overcast", starCount: 300, starOpacity: 0.5 },
+  "windy": { icon: "mdi:weather-windy", precipitation: null, lightning: false, sunVisibility: 0.6, sunSaturation: 0.68, cloudDensity: 0.5, cloudDarkness: 0.12, cloudSpeed: 3.2, mist: "scattered", starCount: 500, starOpacity: 0.8 },
+  "windy-variant": { icon: "mdi:weather-windy-variant", precipitation: null, lightning: false, sunVisibility: 0.85, sunSaturation: 0.9, cloudDensity: 0.55, cloudDarkness: 0.18, cloudSpeed: 3.2, mist: "scattered", starCount: 600, starOpacity: 0.8 },
+  "fog": { icon: "mdi:weather-fog", precipitation: null, lightning: false, sunVisibility: 0.26, sunSaturation: 0.12, cloudDensity: 0, cloudDarkness: 0.42, cloudSpeed: 0.5, mist: "fog", starCount: 250, starOpacity: 0.35 },
+  "rainy": { icon: "mdi:weather-rainy", precipitation: "rain", lightning: false, sunVisibility: 0.34, sunSaturation: 0.45, cloudDensity: 0.6, cloudDarkness: 0.6, cloudSpeed: 1.35, mist: "overcast", starCount: 0, starOpacity: 0 },
+  "pouring": { icon: "mdi:weather-pouring", precipitation: "pour", lightning: false, sunVisibility: 0.2, sunSaturation: 0.3, cloudDensity: 0.77, cloudDarkness: 0.82, cloudSpeed: 1.6, mist: "overcast", starCount: 0, starOpacity: 0 },
+  "lightning": { icon: "mdi:weather-lightning", precipitation: "storm", lightning: true, sunVisibility: 0.3, sunSaturation: 0.4, cloudDensity: 0.3, cloudDarkness: 0.72, cloudSpeed: 1.8, mist: "overcast", starCount: 0, starOpacity: 0 },
+  "lightning-rainy": { icon: "mdi:weather-lightning-rainy", precipitation: "storm", lightning: true, sunVisibility: 0.24, sunSaturation: 0.35, cloudDensity: 0.77, cloudDarkness: 0.78, cloudSpeed: 1.8, mist: "overcast", starCount: 0, starOpacity: 0 },
+  "snowy": { icon: "mdi:weather-snowy", precipitation: "snow", lightning: false, sunVisibility: 0.38, sunSaturation: 0.3, cloudDensity: 0.3, cloudDarkness: 0.35, cloudSpeed: 0.8, mist: "overcast", starCount: 600, starOpacity: 0.4 },
+  "snowy-rainy": { icon: "mdi:weather-snowy-rainy", precipitation: "sleet", lightning: false, sunVisibility: 0.3, sunSaturation: 0.35, cloudDensity: 0.3, cloudDarkness: 0.6, cloudSpeed: 1.3, mist: "overcast", starCount: 450, starOpacity: 0.3 },
+  "hail": { icon: "mdi:weather-hail", precipitation: "hail", lightning: false, sunVisibility: 0.3, sunSaturation: 0.4, cloudDensity: 0.3, cloudDarkness: 0.7, cloudSpeed: 1.5, mist: "overcast", starCount: 350, starOpacity: 0.45 },
+  "exceptional": { icon: "mdi:weather-sunny", precipitation: null, lightning: false, sunVisibility: 1, sunSaturation: 1, cloudDensity: 0, cloudDarkness: 0, cloudSpeed: 0.6, mist: "fair", starCount: 800, starOpacity: 1 },
+  "default": { icon: "mdi:weather-cloudy", precipitation: null, lightning: false, sunVisibility: 0.85, sunSaturation: 0.9, cloudDensity: 0.3, cloudDarkness: 0.3, cloudSpeed: 1, mist: "scattered", starCount: 800, starOpacity: 0.8 }
 });
 var _weatherTuning = (state) => WEATHER_TUNING[state] || WEATHER_TUNING.default;
 var SUN_PALETTE = Object.freeze({
@@ -254,9 +254,8 @@ var WeatherEffects = (() => {
     _loaders.set(src, get);
     return get;
   }
-  const _getCloudImg = _imgLoader(() => import("./image-assets-clouds-LW3PRVS6.js").then((m) => m.CLOUD_SPRITE));
-  const _getSoftImg = _imgLoader(() => import("./image-assets-clouds-LW3PRVS6.js").then((m) => m.CLOUD_SOFT));
-  const _getMistImg = _imgLoader(() => import("./image-assets-mist-JRVGBJ55.js").then((m) => m.CLOUD_MIST));
+  const _getCloudImg = _imgLoader(() => import("./image-assets-clouds-HYH5R5U7.js").then((m) => m.CLOUD_SPRITE));
+  const _getMistImg = _imgLoader(() => import("./image-assets-mist-4ZH4CA4A.js").then((m) => m.CLOUD_MIST));
   const _getBirdImg = _imgLoader(() => import("./image-assets-birds-Z4ZU72J5.js").then((m) => m.BIRD_SHEET));
   const _getBalloonImg = _imgLoader(BALLOON_SHEET);
   const _getPlaneImg = _imgLoader(() => import("./image-assets-planes-H3FJKFTA.js").then((m) => m.PLANE_SHEET));
@@ -350,34 +349,27 @@ var WeatherEffects = (() => {
     { size: 150, bright: 0.96, alpha: 0.78, speed: 6e-3, count: 4, stretch: 0.14, res: 1 },
     { size: 250, bright: 1, alpha: 0.92, speed: 0.015, count: 2, stretch: 0.1, res: 1.5 }
   ]);
-  const SOFT_BAND = CLOUD_BANDS.length;
-  const SOFT_SHADE = 0.15;
-  const MIST_PALETTE = Object.freeze({ top: [255, 255, 255], bot: [255, 255, 255], shadow: [255, 255, 255] });
-  const MIST_ALPHA = Object.freeze({ light: 0.29, dark: 0.072, fog: 4.6 });
-  const SOFT_LAYOUTS = Object.freeze({
+  const MIST_DARK = 0.32;
+  const MIST_LAYOUTS = Object.freeze({
     fair: [
-      { size: 24, alpha: 0.5, speed: -8e-4, count: 1, y: [0.24, 0.4], x: [-0.2, 1.2] },
-      { size: 34, alpha: 0.65, speed: 22e-4, count: 1, y: [0.56, 0.76], x: [-0.1, 1.1] }
+      { size: 70, alpha: 0.2, speed: 2e-3, count: 2, y: [0.15, 0.5] }
     ],
     scattered: [
-      { size: 48, alpha: 0.85, speed: -24e-4, count: 2, y: [0.02, 0.26], x: [-0.2, 1.2] },
-      { size: 100, alpha: 0.6, speed: 0.01, count: 1, y: [0.86, 0.96], front: true }
-    ],
-    windy: [
-      { size: 48, alpha: 0.85, speed: -6e-3, count: 2, y: [0.02, 0.26], x: [-0.2, 1.2] },
-      { size: 100, alpha: 0.6, speed: 0.02, count: 1, y: [0.86, 0.96], front: true }
+      { size: 100, alpha: 0.48, speed: 22e-4, count: 3, y: [0.06, 0.45] },
+      { size: 170, alpha: 0.52, speed: 6e-3, count: 2, y: [0.58, 0.95], front: true }
     ],
     overcast: [
-      { size: 60, alpha: 0.9, speed: -16e-4, count: 3, y: [0.02, 0.24], x: [-0.3, 1.3] },
-      { size: 100, alpha: 0.72, speed: 0.01, count: 1, y: [0.86, 0.96], front: true }
+      { size: 90, alpha: 0.4, speed: 22e-4, count: 3, y: [0.05, 0.4] },
+      { size: 130, alpha: 0.45, speed: 45e-4, count: 2, y: [0.3, 0.7] },
+      { size: 180, alpha: 0.5, speed: 85e-4, count: 2, y: [0.6, 1], front: true }
     ],
     fog: [
-      { size: 60, alpha: 0.55, speed: 4e-3, count: 3, y: [0.16, 0.34], x: [-0.3, 1.3] },
-      { size: 80, alpha: 0.7, speed: -5e-3, count: 3, y: [0.46, 0.64], x: [-0.4, 1.4] },
-      { size: 100, alpha: 0.85, speed: 7e-3, count: 2, y: [0.78, 0.94], x: [-0.2, 1.2] }
+      { size: 110, alpha: 0.36, speed: 3e-3, count: 3, y: [0.05, 0.45] },
+      { size: 150, alpha: 0.42, speed: 55e-4, count: 3, y: [0.3, 0.75] },
+      { size: 200, alpha: 0.48, speed: 9e-3, count: 2, y: [0.55, 1], front: true }
     ]
   });
-  const _softLayout = (tuning) => SOFT_LAYOUTS[tuning.softClouds] || [];
+  const _mistLayout = (tuning) => MIST_LAYOUTS[tuning.mist] || [];
   const _cloudAtlas = /* @__PURE__ */ new WeakMap();
   function _fit(img, max) {
     const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = max / Math.max(w, h);
@@ -390,24 +382,20 @@ var WeatherEffects = (() => {
     cx.drawImage(img, 0, 0, c.width, c.height);
     return c;
   }
-  function _cloudBandSprites(img, soft, state, schemeDark, backgroundRGB, mist) {
-    if (!(img.naturalWidth || img.width) || !(soft.naturalWidth || soft.width)) return null;
+  function _cloudBandSprites(img, state, schemeDark, backgroundRGB) {
+    if (!(img.naturalWidth || img.width)) return null;
     let a = _cloudAtlas.get(img);
-    if (!a) {
-      const src = _fit(img, 512);
-      _cloudAtlas.set(img, a = { srcs: _cloudVariantSources(src), soft: soft === img ? src : soft, bands: /* @__PURE__ */ new Map() });
-    }
-    const key = mist ? "" : `${state}|${schemeDark}|${backgroundRGB}`;
+    if (!a) _cloudAtlas.set(img, a = { srcs: _cloudVariantSources(_fit(img, 512)), bands: /* @__PURE__ */ new Map() });
+    const key = `${state}|${schemeDark}|${backgroundRGB}`;
     let bands = a.bands.get(key);
     if (bands) return bands;
-    const pal = mist ? MIST_PALETTE : _cloudPalette(state, schemeDark, backgroundRGB);
+    const pal = _cloudPalette(state, schemeDark, backgroundRGB);
     const cl = (v) => Math.max(0, Math.min(255, Math.round(v)));
     bands = CLOUD_BANDS.map((d) => {
       const top = pal.top.map((v) => cl(v * d.bright));
       const bot = pal.bot.map((v) => cl(v * d.bright));
       return a.srcs.map((s) => _cloudSprite(s, top, bot, d.res));
     });
-    bands.push([_cloudSprite(a.soft, pal.top, _mix(pal.bot, pal.shadow, SOFT_SHADE), 1)]);
     if (a.bands.size >= 4) a.bands.clear();
     a.bands.set(key, bands);
     return bands;
@@ -860,10 +848,8 @@ var WeatherEffects = (() => {
     ctx.setTransform(s, 0, 0, s, 0, 0);
     ctx.globalAlpha = 1;
   }
-  const _hasClouds = (state) => {
-    const t = state ? _weatherTuning(state) : null;
-    return !!t && (t.cloudDensity > 0 || _softLayout(t).length > 0);
-  };
+  const _hasClouds = (state) => !!state && _weatherTuning(state).cloudDensity > 0;
+  const _hasMist = (state) => !!state && _mistLayout(_weatherTuning(state)).length > 0;
   const _briOf = (filter) => {
     const m = /brightness\(([\d.]+)\)/.exec(filter || "");
     return m ? parseFloat(m[1]) : 1;
@@ -887,7 +873,7 @@ var WeatherEffects = (() => {
       const silver = tint(baseL * 0.92, 0.86, 0.94, 1.14);
       const steel = tint(baseL * 0.74, 0.68, 0.8, 1.24);
       const blueShadow = mix(steel, [22, 40, 78], 0.34 + 0.3 * darkness).map(Math.round);
-      return { top: silver.map(Math.round), bot: blueShadow, shadow: blueShadow };
+      return { top: silver.map(Math.round), bot: blueShadow };
     }
     const white = [255, 255, 255];
     const skyGrey = [Math.round((bg[0] + 250) / 2 * 0.97), Math.round((bg[1] + 250) / 2 * 0.98), Math.round((bg[2] + 252) / 2)];
@@ -897,7 +883,7 @@ var WeatherEffects = (() => {
     const dark2 = (0.3 + 0.62 * darkness) * 0.55;
     const top = mix(white, skyGrey, dark1).map(Math.round);
     const bot = mix(white, shadowTarget, dark2).map(Math.round);
-    return { top, bot, shadow: slate };
+    return { top, bot };
   }
   function _buildCloudField(tuning, seed) {
     const cover = Math.min(1, tuning.cloudDensity);
@@ -907,40 +893,62 @@ var WeatherEffects = (() => {
       { x: 0.72 - rnd() * 0.18, y: 0.2 + rnd() * 0.6 }
     ];
     const inHole = (x, y) => holes.some((hl) => (x - hl.x) ** 2 + (y - hl.y) ** 2 < 0.09);
-    const behind = [], hard = [], front = [];
-    let softIndex = 0;
-    const place = (bands, soft, scale) => {
-      for (let band = 0; band < bands.length; band++) {
-        const d = bands[band];
-        const n = Math.round(d.count * scale);
-        let placed = 0, tries = 0;
-        while (placed < n && tries < n * 5) {
-          tries++;
-          const x = d.x ? d.x[0] + (placed + rnd() * 0.6) / n * (d.x[1] - d.x[0]) : rnd();
-          const y = d.y ? d.y[0] + rnd() * (d.y[1] - d.y[0]) : 0.12 + rnd() * 0.76;
-          if (!soft && inHole(x, y) && rnd() < 0.95) continue;
-          placed++;
-          (soft ? d.front ? front : behind : hard).push({
-            band: soft ? SOFT_BAND : band,
-            x,
-            y,
-            size: d.size * (0.82 + rnd() * 0.36),
-            variant: soft ? 0 : rnd() * CLOUD_VARIANTS | 0,
-            flip: soft ? softIndex++ % 2 === 1 : rnd() < 0.5,
-            rot: soft ? 0 : (rnd() - 0.5) * 0.1,
-            stretch: soft ? 1 : 1 + (rnd() - 0.5) * 2 * d.stretch,
-            alpha: d.alpha * (0.9 + rnd() * 0.2),
-            speed: d.speed * (0.85 + rnd() * 0.3),
-            bobPh: rnd() * Math.PI * 2,
-            bobAmp: 4e-3 + rnd() * 6e-3,
-            bobF: 0.05 + band * 0.03
-          });
-        }
+    const puffs = [];
+    for (let band = 0; band < CLOUD_BANDS.length; band++) {
+      const d = CLOUD_BANDS[band];
+      const n = Math.round(d.count * (0.55 + 0.45 * cover));
+      let placed = 0, tries = 0;
+      while (placed < n && tries < n * 5) {
+        tries++;
+        const x = rnd();
+        const y = 0.12 + rnd() * 0.76;
+        if (inHole(x, y) && rnd() < 0.95) continue;
+        placed++;
+        puffs.push({
+          band,
+          x,
+          y,
+          size: d.size * (0.82 + rnd() * 0.36),
+          variant: rnd() * CLOUD_VARIANTS | 0,
+          flip: rnd() < 0.5,
+          rot: (rnd() - 0.5) * 0.1,
+          stretch: 1 + (rnd() - 0.5) * 2 * d.stretch,
+          alpha: d.alpha * (0.9 + rnd() * 0.2),
+          speed: d.speed * (0.85 + rnd() * 0.3),
+          bobPh: rnd() * Math.PI * 2,
+          bobAmp: 4e-3 + rnd() * 6e-3,
+          bobF: 0.05 + band * 0.03,
+          breath: 0
+        });
       }
-    };
-    if (cover > 0) place(CLOUD_BANDS, false, 0.55 + 0.45 * cover);
-    place(_softLayout(tuning), true, 1);
-    return { puffs: behind.concat(hard, front), density: tuning.cloudDensity, layout: tuning.softClouds };
+    }
+    return { puffs, key: tuning.cloudDensity };
+  }
+  function _buildMistField(tuning, seed) {
+    const rnd = _mulberry32(seed || 1);
+    const puffs = [];
+    for (const d of _mistLayout(tuning)) {
+      for (let i = 0; i < d.count; i++) {
+        puffs.push({
+          band: 0,
+          variant: 0,
+          x: -0.3 + (i + rnd() * 0.6) / d.count * 1.6,
+          y: d.y[0] + rnd() * (d.y[1] - d.y[0]),
+          size: d.size * (0.85 + rnd() * 0.3),
+          flip: i % 2 === 1,
+          rot: 0,
+          stretch: 1,
+          alpha: d.alpha * (0.9 + rnd() * 0.2),
+          speed: d.speed * (0.85 + rnd() * 0.3),
+          bobPh: rnd() * Math.PI * 2,
+          bobAmp: 4e-3 + rnd() * 6e-3,
+          bobF: 0.05,
+          breath: 0.3,
+          front: !!d.front
+        });
+      }
+    }
+    return { puffs, key: tuning.mist };
   }
   const _lerp = (a, b, t) => a + (b - a) * t;
   const _count = (t, area) => Math.max(t.min, Math.min(t.max, Math.round(area / 1e4 * t.perContainer)));
@@ -1080,7 +1088,7 @@ var WeatherEffects = (() => {
     c.height = h;
     return c;
   }
-  function _buildStarField(count, W, H, seed) {
+  function _buildStarField(count, W, H, seed, k) {
     const c = _offscreen(W, H);
     const ctx = c.getContext("2d", { alpha: true });
     if (!ctx) return c;
@@ -1094,7 +1102,7 @@ var WeatherEffects = (() => {
         b = { rgb, alpha: qA, pts: [] };
         batches.set(key, b);
       }
-      b.pts.push(x, y, r);
+      b.pts.push(x, y, r * k);
     };
     const tinyCount = Math.floor(count * 1.1);
     const smallCount = Math.floor(count * 0.35);
@@ -1145,9 +1153,9 @@ var WeatherEffects = (() => {
       const rgb = _starColor(rnd());
       put(rgb, alpha, x, y, r);
       if (i % 8 === 0) {
-        const glowR = r * 3;
+        const glowR = r * 3 * k;
         ctx.globalAlpha = alpha * 0.12;
-        const g = ctx.createRadialGradient(x, y, r * 0.5, x, y, glowR);
+        const g = ctx.createRadialGradient(x, y, r * 0.5 * k, x, y, glowR);
         g.addColorStop(0, _rgba(rgb, 1));
         g.addColorStop(0.4, _rgba(rgb, 0.2));
         g.addColorStop(1, _rgba(rgb, 0));
@@ -1164,7 +1172,7 @@ var WeatherEffects = (() => {
       for (let j = 0; j < n; j++) {
         let r = 0.5 + rnd() * 0.5;
         if (j % 8 === 0) r *= 1.8;
-        put(STARS.palette[1], 0.3 + rnd() * 0.2, cx + (rnd() - 0.5) * 25, cy + (rnd() - 0.5) * 18, Math.min(r, STARS.maxRadius));
+        put(STARS.palette[1], 0.3 + rnd() * 0.2, cx + (rnd() - 0.5) * 25 * k, cy + (rnd() - 0.5) * 18 * k, Math.min(r, STARS.maxRadius));
       }
     }
     for (const b of batches.values()) {
@@ -1239,7 +1247,7 @@ var WeatherEffects = (() => {
     const W = Math.max(1, Math.round(w * s)), H = Math.max(1, Math.round(h * s));
     const fieldKey = `${st.count}|${W}|${H}`;
     if (st.fieldKey !== fieldKey) {
-      st.field = _buildStarField(st.count, W, H, inst.wp);
+      st.field = _buildStarField(st.count, W, H, inst.wp, s / 2);
       st.fieldKey = fieldKey;
     }
     const dpr = Math.min(s, STARS.heroDprCap);
@@ -1255,7 +1263,7 @@ var WeatherEffects = (() => {
     for (const hero of st.heroes) {
       const a = t * hero.sp + hero.ph;
       const twinkle = Math.sin(a) + Math.sin(a * 2.7) * 0.5 + Math.sin(a * 0.4) * 0.3;
-      const size = hero.size * (1 + twinkle * 0.35);
+      const size = hero.size * (1 + twinkle * 0.15);
       const op = Math.min(1, Math.max(0, hero.brightness * (1 + twinkle * 0.4))) * st.opacity;
       if (op < 0.05) continue;
       const px = hero.x * w, py = hero.y * h;
@@ -1265,7 +1273,7 @@ var WeatherEffects = (() => {
       ctx.globalAlpha = Math.min(1, op * 1.1);
       ctx.fillStyle = "#fff";
       ctx.beginPath();
-      ctx.arc(px, py, size * 0.75, 0, Math.PI * 2);
+      ctx.arc(px, py, size * 0.45, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalCompositeOperation = "source-over";
@@ -1279,21 +1287,20 @@ var WeatherEffects = (() => {
     const area = Math.max(1, w * h);
     const grow = inst.area > 0 ? Math.abs(area - inst.area) / inst.area : 1;
     const sizeChanged = grow >= 0.22;
-    const custom = cloudImage && _imgLoader(cloudImage);
     inst.speed = speed || 1;
-    inst.clouds = custom ? [custom, custom] : [_getCloudImg, _getSoftImg];
-    const field = (cur, state, seed, loaders) => {
-      const tuning = _hasClouds(state) ? _weatherTuning(state) : null;
-      if (!tuning) return null;
+    inst.cloudImg = cloudImage && _imgLoader(cloudImage) || _getCloudImg;
+    const field = (cur, state, seed, build, load) => {
+      if (!state) return null;
       if (cur && cur.state === state) return cur;
-      if (!cur || cur.density !== tuning.cloudDensity || cur.layout !== tuning.softClouds) cur = _buildCloudField(tuning, seed);
+      const tuning = _weatherTuning(state), next = build(tuning, seed);
+      if (!cur || cur.key !== next.key) cur = next;
       cur.speed = tuning.cloudSpeed;
       cur.state = state;
-      for (const load of loaders) load();
+      load();
       return cur;
     };
-    inst.cloud = field(inst.cloud, weatherState, inst.wp, inst.clouds);
-    inst.mist = field(inst.mist, mistState, inst.wp + 1, [_getMistImg]);
+    inst.cloud = field(inst.cloud, weatherState, inst.wp, _buildCloudField, inst.cloudImg);
+    inst.mist = field(inst.mist, mistState, inst.wp + 1, _buildMistField, _getMistImg);
     const starCount = stars ? stars.count : 0;
     if (starCount <= 0) {
       inst.stars = null;
@@ -1351,7 +1358,7 @@ var WeatherEffects = (() => {
     const fl = inst.flash || (inst.flash = { next: t + 1.5 + Math.random() * 2.5, age: -1, puffs: null });
     if (fl.age < 0) {
       if (t < fl.next) return null;
-      const big = inst.cloud.puffs.filter((p) => p.band >= 1 && p.band < SOFT_BAND);
+      const big = inst.cloud.puffs.filter((p) => p.band >= 1);
       if (!big.length) return null;
       const anchor = big[Math.random() * big.length | 0];
       fl.puffs = big.filter((p) => (p.x - anchor.x) ** 2 + (p.y - anchor.y) ** 2 < 0.04).slice(0, 3);
@@ -1430,7 +1437,7 @@ var WeatherEffects = (() => {
     const span = w * 1.3, sx = -w * 0.15;
     if (inst.planes) _planesFrame(inst, ctx, w, h, s, dt, t, env);
     if (inst.balloon) _balloonFrame(inst, ctx, w, h, s, dt, t, env);
-    const cloudField = (field, bands, opAmt, storm) => {
+    const cloudField = (field, bands, opAmt, storm, front) => {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
       const wind = (0.9 + 0.4 * gust) * field.speed;
@@ -1440,13 +1447,14 @@ var WeatherEffects = (() => {
         const ph = p.size * scale, pw = ph * ar * p.stretch;
         const cx = p.x * w;
         const cy = p.y * h + Math.sin(t * p.bobF + p.bobPh) * p.bobAmp * h;
-        ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * opAmt * boost(cx, cy));
+        ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * opAmt * boost(cx, cy) * (1 + p.breath * Math.sin(t * 0.09 + p.bobPh)));
         ctx.setTransform(s, 0, 0, s, cx * s, cy * s);
         if (p.rot) ctx.rotate(p.rot);
         if (p.flip) ctx.scale(-1, 1);
         ctx.drawImage(sp, -pw / 2, -ph / 2, pw, ph);
       };
       for (const p of field.puffs) {
+        if (front !== void 0 && p.front !== front) continue;
         const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
         const pw = p.size * scale * ar * p.stretch;
         p.x += p.speed * wind * dt;
@@ -1457,22 +1465,20 @@ var WeatherEffects = (() => {
       const flash = storm && _advanceFlash(inst, t, dt);
       if (flash) {
         ctx.globalCompositeOperation = "lighter";
-        for (const p of field.puffs) if (p.band < SOFT_BAND) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
+        for (const p of field.puffs) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
         for (const fp of flash.puffs) drawPuff(fp, flash.brightness * 0.55);
         ctx.globalCompositeOperation = "source-over";
       }
       ctx.setTransform(s, 0, 0, s, 0, 0);
       ctx.globalAlpha = 1;
     };
+    const mistImg = inst.mist && inst.mist.puffs.length && _getMistImg();
+    if (mistImg) cloudField(inst.mist, [[mistImg]], env.schemeDark ? MIST_DARK : 1, false, false);
     if (inst.cloud && inst.cloud.puffs.length) {
-      const cImg = inst.clouds[0](), sImg = inst.clouds[1]();
-      const bands = cImg && sImg && _cloudBandSprites(cImg, sImg, inst.cloud.state, env.schemeDark, env.backgroundRGB);
+      const img = inst.cloudImg(), bands = img && _cloudBandSprites(img, inst.cloud.state, env.schemeDark, env.backgroundRGB);
       if (bands) cloudField(inst.cloud, bands, env.schemeDark ? 1.08 : 1, true);
     }
-    if (inst.mist && inst.mist.puffs.length) {
-      const img = _getMistImg(), bands = img && _cloudBandSprites(img, img, null, null, null, true);
-      if (bands) cloudField(inst.mist, bands, (env.schemeDark ? MIST_ALPHA.dark : MIST_ALPHA.light) * (inst.mist.state === "fog" ? MIST_ALPHA.fog : 1), false);
-    }
+    if (mistImg) cloudField(inst.mist, [[mistImg]], env.schemeDark ? MIST_DARK : 1, false, true);
     if (inst.birds) _birdsFrame(inst, ctx, w, h, s, dt, t, env, gust);
     const fall = dt * inst.speed;
     if (inst.rain && inst.rain.length) {
@@ -1581,7 +1587,7 @@ var WeatherEffects = (() => {
     ctx.setTransform(s, 0, 0, s, 0, 0);
     return true;
   }
-  return Object.freeze({ hasClouds: _hasClouds, birdActivity: _birdActivity, balloonActivity: _balloonActivity, planeActivity: _planeActivity, create, set, frame });
+  return Object.freeze({ hasClouds: _hasClouds, hasMist: _hasMist, birdActivity: _birdActivity, balloonActivity: _balloonActivity, planeActivity: _planeActivity, create, set, frame });
 })();
 var ESCAPE_MAP = { "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" };
 var escapeHtml = (v) => String(v).replace(/["&<>]/g, (c) => ESCAPE_MAP[c]);
@@ -2005,12 +2011,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-UZYFX6PR.js");
+      await import("./origami-weather-editor-MMBES6BF.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-TCKVBQPY.js");
+    const { buildStubConfig } = await import("./layout-presets-XEQAXIMQ.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -3927,7 +3933,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const tuning = _weatherTuning(weatherState);
     const recipe = on && cfg.precipitation_effects !== false && tuning.precipitation || null;
     const cloudState = on && cfg.cloud_effects !== false && WeatherEffects.hasClouds(weatherState) ? weatherState : null;
-    const mistState = on && cfg.mist_effects === true && (tuning.cloudDensity > 0 || weatherState === "fog") ? weatherState : null;
+    const mistOn = typeof cfg.mist_effects === "boolean" ? cfg.mist_effects : cfg.cloud_effects !== false;
+    const mistState = on && mistOn && WeatherEffects.hasMist(weatherState) ? weatherState : null;
     const starsOn = on && cfg.night_sky_effects !== false && this._isAstroNight && tuning.starCount > 0 && tuning.starOpacity > 0;
     const stars = starsOn ? { count: tuning.starCount, opacity: tuning.starOpacity } : null;
     const factor = (key) => Math.max(0.25, Math.min(4, parseFloat(cfg[key]) || 1));

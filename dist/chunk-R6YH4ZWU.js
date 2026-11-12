@@ -254,7 +254,6 @@ var centeredItem = (name, iconName, value, extra) => ({
 });
 var CENTERED_CONFIG = Object.freeze({
   sun_moon_x: "dynamic",
-  mist_effects: true,
   card_height: "content",
   card_padding: "34px 20px",
   content_align: "between",

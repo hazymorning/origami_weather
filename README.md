@@ -72,13 +72,13 @@ The diorama loads its pictures from Origami's repository through jsDelivr. To lo
 
 <img width="800" alt="The Classic layout: the temperature and the weather on a color that changes with it, today's high and low, and a forecast for the coming days with the chance of rain, on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. A faint mist drifts across the card when it's cloudy and thickens in fog.
+The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. A soft mist drifts across the card. It is faint on clear days and thickens in fog.
 
 ### Centered
 
 <img width="800" alt="The Centered layout: the temperature in the middle with the high, the low and the wind, on a partly cloudy day and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
 
-The temperature and the current weather in the middle, with the day's high and low and the wind. In fog, banks of mist drift across the sky.
+The temperature and the current weather in the middle, with the day's high and low and the wind. The clouds drift through soft layers of mist, which fill the sky in fog.
 
 ### Home
 
@@ -657,7 +657,7 @@ grid_options:
 
 <br>
 
-The card shows an animated sky behind the content that follows the weather and the sun. Its color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past and planes pass overhead. Clouds, rain and snow add to it.
+The card shows an animated sky behind the content that follows the weather and the sun. Its color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past and planes pass overhead. Clouds, mist, rain and snow add to it.
 
 The sky and each kind of effect can be turned off, rain and snow with one switch. The effects also work on top of the other backgrounds, which `background_mode` sets: a picture for each kind of weather, a color, the plain card background or none. The card also works in Home Assistant's plain style, with just the content and nothing else going on.
 

@@ -29,7 +29,7 @@ const KEY_ORDER = Object.freeze([
     "card_frame", "full_width", "full_width_margin", "edge_fade", "edge_fade_size", "shadow", "shadow_color",
     "icon_path",
     "bg_brightness", "bg_saturation", "bg_blur", "bg_blend",
-    "background_haze", "precipitation_effects", "precipitation_speed", "cloud_effects", "cloud_image_path", "night_sky_effects", "bird_effects", "bird_density", "balloon_effects", "balloon_density", "plane_effects", "plane_density",
+    "background_haze", "precipitation_effects", "precipitation_speed", "cloud_effects", "cloud_image_path", "mist_effects", "night_sky_effects", "bird_effects", "bird_density", "balloon_effects", "balloon_density", "plane_effects", "plane_density",
     "button_containers"]);
 const CARD_THRESHOLD_KEYS = Object.freeze(["background_thresholds", "background_threshold_entity", "background_threshold_attribute"]);
 const nameFirst = (o) => { const n = typeof o.name === "string" ? o.name.trim() : ""; const { name, ...rest } = o; return n ? { name: n, ...rest } : rest; };
@@ -261,6 +261,7 @@ class WeatherCardEditor extends LitElement {
                 &:hover { background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.12); border-color: var(--primary-color); }
                 & ha-icon { --mdc-icon-size: 20px; }}
             .sensor-list { margin-top: 0; &:empty { display: none; } }
+            .card-row-body > .css-field { margin-bottom: var(--origami-e-s3); }
             /* Compact fields */
             .compact-fields {
                 display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); margin: var(--origami-e-s3) 0;}
@@ -1638,8 +1639,12 @@ class WeatherCardEditor extends LitElement {
         this._expandedCard = 0;
         this._commitContainers(areas);
     }
+    _renderContainerName(container, containerIdx) {
+        return this._cssTextField({ value: container.name, label: "Name", placeholder: "Optional, shown in this list", trim: true, onCommit: (v) => this._updateContainerField(containerIdx, "name", v || "") });
+    }
     _renderCardContainerBody(container, containerIdx) {
         return html`
+            ${this._renderContainerName(container, containerIdx)}
             ${this._renderContainerCustomCardsEditor(containerIdx)}
             ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
     }
@@ -1707,7 +1712,6 @@ class WeatherCardEditor extends LitElement {
                 @value-changed=${(e) => { e.stopPropagation(); const v = e.detail && e.detail.value && e.detail.value[key]; uf(key, v || ""); }}
             ></ha-form>`;
         const containerContent = html`<div class="vcb">
-            ${this._cssTextField({ value: container.name, label: "Name", placeholder: "Optional, shown in this list", trim: true, onCommit: (v) => uf("name", v || "") })}
             ${this._renderSubDisclosure("Arrangement", html`<div class="vcb">
                 <div class="segmented">
                     ${OPT.button_container_layout.map(o => html`<button type="button" class=${layout === o.value ? "active" : ""}
@@ -1768,6 +1772,7 @@ class WeatherCardEditor extends LitElement {
                     ${sf("margin", LABELS.button_container_margin, "auto")}
                     ${sf("custom_width", LABELS.button_container_width, "auto")}</div></div>`)}</div>`;
         return html`
+            ${this._renderContainerName(container, containerIdx)}
             <div class="sensor-list">
                 ${list.map((button, idx) => this._renderButtonRow(button, idx, list.length, containerIdx))}</div>
             <button type="button" class="add-button-btn" @click=${() => this._addButton(containerIdx)}>
@@ -2012,7 +2017,8 @@ class WeatherCardEditor extends LitElement {
                 <div class="toggle-group">
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
-                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png or mist", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
+                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
+                ${fx("mist_effects", "Mist", null, false)}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

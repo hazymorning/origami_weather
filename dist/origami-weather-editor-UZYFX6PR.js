@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-M7GYQ6FY.js";
+} from "./chunk-FBFQRRPB.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -673,6 +673,7 @@ var KEY_ORDER = Object.freeze([
   "precipitation_speed",
   "cloud_effects",
   "cloud_image_path",
+  "mist_effects",
   "night_sky_effects",
   "bird_effects",
   "bird_density",
@@ -1005,6 +1006,7 @@ var WeatherCardEditor = class extends i4 {
                 &:hover { background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.12); border-color: var(--primary-color); }
                 & ha-icon { --mdc-icon-size: 20px; }}
             .sensor-list { margin-top: 0; &:empty { display: none; } }
+            .card-row-body > .css-field { margin-bottom: var(--origami-e-s3); }
             /* Compact fields */
             .compact-fields {
                 display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); margin: var(--origami-e-s3) 0;}
@@ -2899,8 +2901,12 @@ var WeatherCardEditor = class extends i4 {
     this._expandedCard = 0;
     this._commitContainers(areas);
   }
+  _renderContainerName(container, containerIdx) {
+    return this._cssTextField({ value: container.name, label: "Name", placeholder: "Optional, shown in this list", trim: true, onCommit: (v2) => this._updateContainerField(containerIdx, "name", v2 || "") });
+  }
   _renderCardContainerBody(container, containerIdx) {
     return b2`
+            ${this._renderContainerName(container, containerIdx)}
             ${this._renderContainerCustomCardsEditor(containerIdx)}
             ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
   }
@@ -2987,7 +2993,6 @@ var WeatherCardEditor = class extends i4 {
     }}
             ></ha-form>`;
     const containerContent = b2`<div class="vcb">
-            ${this._cssTextField({ value: container.name, label: "Name", placeholder: "Optional, shown in this list", trim: true, onCommit: (v2) => uf("name", v2 || "") })}
             ${this._renderSubDisclosure("Arrangement", b2`<div class="vcb">
                 <div class="segmented">
                     ${OPT.button_container_layout.map((o5) => b2`<button type="button" class=${layout === o5.value ? "active" : ""}
@@ -3054,6 +3059,7 @@ var WeatherCardEditor = class extends i4 {
                     ${sf("margin", LABELS.button_container_margin, "auto")}
                     ${sf("custom_width", LABELS.button_container_width, "auto")}</div></div>`)}</div>`;
     return b2`
+            ${this._renderContainerName(container, containerIdx)}
             <div class="sensor-list">
                 ${list.map((button, idx) => this._renderButtonRow(button, idx, list.length, containerIdx))}</div>
             <button type="button" class="add-button-btn" @click=${() => this._addButton(containerIdx)}>
@@ -3376,7 +3382,8 @@ var WeatherCardEditor = class extends i4 {
                 <div class="toggle-group">
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
-                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c4.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png or mist", onCommit: (v2) => this._updateField("cloud_image_path", v2) }))}
+                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c4.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v2) => this._updateField("cloud_image_path", v2) }))}
+                ${fx("mist_effects", "Mist", null, false)}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

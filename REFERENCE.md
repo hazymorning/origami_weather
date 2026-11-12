@@ -80,7 +80,7 @@ buttons:
 
 State, numeric state, screen size, user, and `and`/`or`/`not` conditions are supported. A `numeric_state` condition can read an `attribute` instead of the state, or a forecast entry with `forecast: daily` or `hourly` plus `forecast_offset`. With several conditions, all of them have to pass. Visibility also works at the container level.
 
-**Missing values.** Weather services don't all send the same things, and the card leaves out what isn't there by itself. A text whose attribute is missing stays empty, a button with none of its values left is hidden along with its icons, and a separator like `/` or `·` right next to a missing value goes with it. A container whose buttons are all hidden disappears too. So no visibility conditions are needed just to cover a weather service without lows or a UV index.
+**Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is.
 
 **Free positioning.** Any button can be taken out of the normal flow and placed freely inside its container:
 
@@ -146,7 +146,7 @@ buttons:
 
 Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. A text element with `attribute: datetime` prints the matching label (day name or time), and [date codes](#dates) in its `format` change what that label says. With `icon: weather` on an icon element, the icon matches the forecasted condition.
 
-A button whose `forecast_offset` lies past the last entry the weather service sends is hidden, and so is a forecast button on a weather entity without that kind of forecast. A row can therefore hold ten days and show as many as there are, like the Classic layout does.
+A button whose `forecast_offset` lies past the last entry the weather service sends is not drawn. A row can therefore hold ten days and show as many as there are, like the Classic layout does. On a weather entity without that kind of forecast the buttons stay and print `N/A`.
 
 ```yaml
 buttons:
@@ -389,7 +389,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). |
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
-| `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` = today/now, `1` = next, etc. Past the last entry the weather service sends, the button is hidden. |
+| `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` = today/now, `1` = next, etc. Past the last entry the weather service sends, the button is not drawn. |
 | `position` | `string` | — | Set to `custom` to detach the button and place it freely inside its container. |
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
@@ -519,7 +519,8 @@ These run on top of every background, including `images` and `none`.
 | `precipitation_effects` | `boolean` | `true` | Rain, downpour, thunderstorms, snow, sleet and hail particles. |
 | `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
 | `cloud_effects` | `boolean` | `true` | The drifting cloud layer. Even clear skies get a few soft ones, and fog is drawn with them as well. |
-| `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the cloud layer is drawn with instead of the built-in clouds. A PNG or WebP with a transparent background works best. `mist` is the faint mist of the Classic layout, which draws it in white with `css`. |
+| `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the cloud layer is drawn with instead of the built-in clouds. A PNG or WebP with a transparent background works best. |
+| `mist_effects` | `boolean` | `false` | A faint mist that drifts across the card when it's cloudy and thickens into banks in fog. It works with or without the clouds. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |

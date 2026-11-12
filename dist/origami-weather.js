@@ -256,7 +256,7 @@ var WeatherEffects = (() => {
   }
   const _getCloudImg = _imgLoader(() => import("./image-assets-clouds-LW3PRVS6.js").then((m) => m.CLOUD_SPRITE));
   const _getSoftImg = _imgLoader(() => import("./image-assets-clouds-LW3PRVS6.js").then((m) => m.CLOUD_SOFT));
-  const _getMistImg = _imgLoader(() => import("./image-assets-mist-3XQ2PNA5.js").then((m) => m.CLOUD_MIST));
+  const _getMistImg = _imgLoader(() => import("./image-assets-mist-JRVGBJ55.js").then((m) => m.CLOUD_MIST));
   const _getBirdImg = _imgLoader(() => import("./image-assets-birds-Z4ZU72J5.js").then((m) => m.BIRD_SHEET));
   const _getBalloonImg = _imgLoader(BALLOON_SHEET);
   const _getPlaneImg = _imgLoader(() => import("./image-assets-planes-H3FJKFTA.js").then((m) => m.PLANE_SHEET));
@@ -352,6 +352,8 @@ var WeatherEffects = (() => {
   ]);
   const SOFT_BAND = CLOUD_BANDS.length;
   const SOFT_SHADE = 0.15;
+  const MIST_PALETTE = Object.freeze({ top: [255, 255, 255], bot: [255, 255, 255], shadow: [255, 255, 255] });
+  const MIST_ALPHA = Object.freeze({ light: 0.29, dark: 0.072, fog: 4.6 });
   const SOFT_LAYOUTS = Object.freeze({
     fair: [
       { size: 24, alpha: 0.5, speed: -8e-4, count: 1, y: [0.24, 0.4], x: [-0.2, 1.2] },
@@ -388,17 +390,17 @@ var WeatherEffects = (() => {
     cx.drawImage(img, 0, 0, c.width, c.height);
     return c;
   }
-  function _cloudBandSprites(img, soft, state, schemeDark, backgroundRGB) {
+  function _cloudBandSprites(img, soft, state, schemeDark, backgroundRGB, mist) {
     if (!(img.naturalWidth || img.width) || !(soft.naturalWidth || soft.width)) return null;
     let a = _cloudAtlas.get(img);
     if (!a) {
       const src = _fit(img, 512);
       _cloudAtlas.set(img, a = { srcs: _cloudVariantSources(src), soft: soft === img ? src : soft, bands: /* @__PURE__ */ new Map() });
     }
-    const key = `${state}|${schemeDark}|${backgroundRGB}`;
+    const key = mist ? "" : `${state}|${schemeDark}|${backgroundRGB}`;
     let bands = a.bands.get(key);
     if (bands) return bands;
-    const pal = _cloudPalette(state, schemeDark, backgroundRGB);
+    const pal = mist ? MIST_PALETTE : _cloudPalette(state, schemeDark, backgroundRGB);
     const cl = (v) => Math.max(0, Math.min(255, Math.round(v)));
     bands = CLOUD_BANDS.map((d) => {
       const top = pal.top.map((v) => cl(v * d.bright));
@@ -1271,24 +1273,27 @@ var WeatherEffects = (() => {
     ctx.globalAlpha = 1;
   }
   function create() {
-    return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
+    return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, mist: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
   }
-  function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage) {
+  function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState) {
     const area = Math.max(1, w * h);
     const grow = inst.area > 0 ? Math.abs(area - inst.area) / inst.area : 1;
     const sizeChanged = grow >= 0.22;
-    const custom = cloudImage === "mist" ? _getMistImg : cloudImage && _imgLoader(cloudImage);
+    const custom = cloudImage && _imgLoader(cloudImage);
     inst.speed = speed || 1;
     inst.clouds = custom ? [custom, custom] : [_getCloudImg, _getSoftImg];
-    const tuning = _hasClouds(weatherState) ? _weatherTuning(weatherState) : null;
-    if (!tuning) {
-      inst.cloud = null;
-    } else if (!inst.cloud || inst.cloud.state !== weatherState) {
-      if (!inst.cloud || inst.cloud.density !== tuning.cloudDensity || inst.cloud.layout !== tuning.softClouds) inst.cloud = _buildCloudField(tuning, inst.wp);
-      inst.cloud.speed = tuning.cloudSpeed;
-      inst.cloud.state = weatherState;
-      for (const load of inst.clouds) load();
-    }
+    const field = (cur, state, seed, loaders) => {
+      const tuning = _hasClouds(state) ? _weatherTuning(state) : null;
+      if (!tuning) return null;
+      if (cur && cur.state === state) return cur;
+      if (!cur || cur.density !== tuning.cloudDensity || cur.layout !== tuning.softClouds) cur = _buildCloudField(tuning, seed);
+      cur.speed = tuning.cloudSpeed;
+      cur.state = state;
+      for (const load of loaders) load();
+      return cur;
+    };
+    inst.cloud = field(inst.cloud, weatherState, inst.wp, inst.clouds);
+    inst.mist = field(inst.mist, mistState, inst.wp + 1, [_getMistImg]);
     const starCount = stars ? stars.count : 0;
     if (starCount <= 0) {
       inst.stars = null;
@@ -1382,7 +1387,7 @@ var WeatherEffects = (() => {
     return brightness > 0.01 ? { puffs: fl.puffs, brightness } : null;
   }
   function frame(inst, ctx, w, h, s, dt, t, env, starCtx) {
-    const activeEffects = !!inst.key || !!inst.cloud || !!inst.stars || !!inst.birds || !!inst.balloon || !!inst.planes;
+    const activeEffects = !!inst.key || !!inst.cloud || !!inst.mist || !!inst.stars || !!inst.birds || !!inst.balloon || !!inst.planes;
     ctx.setTransform(s, 0, 0, s, 0, 0);
     ctx.clearRect(0, 0, w, h);
     if (!activeEffects) {
@@ -1425,44 +1430,48 @@ var WeatherEffects = (() => {
     const span = w * 1.3, sx = -w * 0.15;
     if (inst.planes) _planesFrame(inst, ctx, w, h, s, dt, t, env);
     if (inst.balloon) _balloonFrame(inst, ctx, w, h, s, dt, t, env);
+    const cloudField = (field, bands, opAmt, storm) => {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      const wind = (0.9 + 0.4 * gust) * field.speed;
+      const scale = Math.max(1, Math.min(2.4, Math.sqrt(w * h) / 300));
+      const drawPuff = (p, alpha) => {
+        const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
+        const ph = p.size * scale, pw = ph * ar * p.stretch;
+        const cx = p.x * w;
+        const cy = p.y * h + Math.sin(t * p.bobF + p.bobPh) * p.bobAmp * h;
+        ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * opAmt * boost(cx, cy));
+        ctx.setTransform(s, 0, 0, s, cx * s, cy * s);
+        if (p.rot) ctx.rotate(p.rot);
+        if (p.flip) ctx.scale(-1, 1);
+        ctx.drawImage(sp, -pw / 2, -ph / 2, pw, ph);
+      };
+      for (const p of field.puffs) {
+        const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
+        const pw = p.size * scale * ar * p.stretch;
+        p.x += p.speed * wind * dt;
+        if (p.x * w - pw / 2 > w) p.x -= (w + pw) / w;
+        else if (p.x * w + pw / 2 < 0) p.x += (w + pw) / w;
+        drawPuff(p, null);
+      }
+      const flash = storm && _advanceFlash(inst, t, dt);
+      if (flash) {
+        ctx.globalCompositeOperation = "lighter";
+        for (const p of field.puffs) if (p.band < SOFT_BAND) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
+        for (const fp of flash.puffs) drawPuff(fp, flash.brightness * 0.55);
+        ctx.globalCompositeOperation = "source-over";
+      }
+      ctx.setTransform(s, 0, 0, s, 0, 0);
+      ctx.globalAlpha = 1;
+    };
     if (inst.cloud && inst.cloud.puffs.length) {
       const cImg = inst.clouds[0](), sImg = inst.clouds[1]();
       const bands = cImg && sImg && _cloudBandSprites(cImg, sImg, inst.cloud.state, env.schemeDark, env.backgroundRGB);
-      if (bands) {
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        const wind = (0.9 + 0.4 * gust) * inst.cloud.speed;
-        const opAmt = env.schemeDark ? 1.08 : 1;
-        const scale = Math.max(1, Math.min(2.4, Math.sqrt(w * h) / 300));
-        const drawPuff = (p, alpha) => {
-          const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
-          const ph = p.size * scale, pw = ph * ar * p.stretch;
-          const cx = p.x * w;
-          const cy = p.y * h + Math.sin(t * p.bobF + p.bobPh) * p.bobAmp * h;
-          ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * opAmt * boost(cx, cy));
-          ctx.setTransform(s, 0, 0, s, cx * s, cy * s);
-          if (p.rot) ctx.rotate(p.rot);
-          if (p.flip) ctx.scale(-1, 1);
-          ctx.drawImage(sp, -pw / 2, -ph / 2, pw, ph);
-        };
-        for (const p of inst.cloud.puffs) {
-          const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
-          const pw = p.size * scale * ar * p.stretch;
-          p.x += p.speed * wind * dt;
-          if (p.x * w - pw / 2 > w) p.x -= (w + pw) / w;
-          else if (p.x * w + pw / 2 < 0) p.x += (w + pw) / w;
-          drawPuff(p, null);
-        }
-        const flash = _advanceFlash(inst, t, dt);
-        if (flash) {
-          ctx.globalCompositeOperation = "lighter";
-          for (const p of inst.cloud.puffs) if (p.band < SOFT_BAND) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
-          for (const fp of flash.puffs) drawPuff(fp, flash.brightness * 0.55);
-          ctx.globalCompositeOperation = "source-over";
-        }
-        ctx.setTransform(s, 0, 0, s, 0, 0);
-        ctx.globalAlpha = 1;
-      }
+      if (bands) cloudField(inst.cloud, bands, env.schemeDark ? 1.08 : 1, true);
+    }
+    if (inst.mist && inst.mist.puffs.length) {
+      const img = _getMistImg(), bands = img && _cloudBandSprites(img, img, null, null, null, true);
+      if (bands) cloudField(inst.mist, bands, (env.schemeDark ? MIST_ALPHA.dark : MIST_ALPHA.light) * (inst.mist.state === "fog" ? MIST_ALPHA.fog : 1), false);
     }
     if (inst.birds) _birdsFrame(inst, ctx, w, h, s, dt, t, env, gust);
     const fall = dt * inst.speed;
@@ -1996,12 +2005,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-NEMZRI5X.js");
+      await import("./origami-weather-editor-UZYFX6PR.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-GG5XZFF7.js");
+    const { buildStubConfig } = await import("./layout-presets-TCKVBQPY.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2243,8 +2252,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
         }
       }
     }
-    const missing = !!(sensor && attribute && sensor.attributes[attribute] == null);
-    return { formatted, sensor, haFormatted, rawNumeric, missing, date };
+    return { formatted, sensor, haFormatted, rawNumeric, date };
   }
   _syncForecasts() {
     if (!(this._hass && this._hass.connection)) return;
@@ -2314,19 +2322,21 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   _resolveForecastValue(hass, button) {
     const type = button.forecast === "hourly" ? "hourly" : "daily";
     const offset = Math.max(0, parseInt(button.forecast_offset, 10) || 0);
-    const none = { formatted: "", condition: null, datetime: null, none: true };
+    const missing = { formatted: "N/A", condition: null, datetime: null };
     const st = hass.states[button.entity], sf = st && st.attributes ? Number(st.attributes.supported_features) : NaN;
-    if (Number.isFinite(sf) && !(sf & (type === "hourly" ? 2 : 1))) return none;
+    if (Number.isFinite(sf) && !(sf & (type === "hourly" ? 2 : 1))) return missing;
     const _forecastEntry = this._forecastData.get(`${button.entity}|${type}`);
     const forecast = _forecastEntry && _forecastEntry.processed;
     if (!forecast) return { formatted: "", condition: null, datetime: null, loading: true };
-    if (offset >= forecast.length) return none;
+    if (!forecast.length) return missing;
+    if (offset >= forecast.length) return { formatted: "", condition: null, datetime: null, none: true };
     const entry = forecast[offset];
     let label = entry.condition || "\u2014";
     if (entry.condition && typeof hass.localize === "function") label = hass.localize(`component.weather.entity_component._.state.${entry.condition}`) || label;
     return { formatted: label, condition: entry.condition, datetime: entry.datetime, entry };
   }
   _reshapeValue(hass, r, txt, hasFormat, unitEntity, unitAttr) {
+    if (r.rawNumeric == null) return { value: r.formatted, unit: "" };
     const custom = strftime(hass, r.date, txt.format);
     if (custom) return { value: custom, unit: "" };
     let value = r.formatted, unit = hasFormat ? txt.format : "";
@@ -2349,7 +2359,6 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const tight = hasFormat || txt.fancy_unit === true;
     if (txt.entity) {
       const r = this._resolveSensorValue(hass, txt.entity, txt.attribute);
-      if (r.missing) return { value: "", unit: "", tight: true, missing: true, sig: `e:${txt.entity}|${txt.attribute}|na` };
       const { value: value2, unit: unit2 } = this._reshapeValue(hass, r, txt, hasFormat, txt.entity, txt.attribute);
       return { value: value2, unit: unit2, tight, sig: `e:${txt.entity}|${txt.attribute || ""}|${txt.precision ?? ""}|${value2}${unit2}` };
     }
@@ -2359,7 +2368,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     }
     if (txt.attribute) {
       if (ctx.isForecast) {
-        if (!ctx.forecastEntry) return { value: "", unit: "", tight: true, sig: "forecast:loading" };
+        if (!ctx.forecastEntry) return { value: ctx.formatted, unit: "", tight: true, sig: `forecast:loading|${ctx.formatted}` };
         if (txt.attribute === "datetime") {
           const custom = strftime(hass, ctx.forecastDatetime, txt.format);
           if (custom) return { value: custom, unit: "", tight: true, sig: `forecast:datetime|${custom}` };
@@ -2367,7 +2376,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
           return { value: value4, unit: hasFormat ? txt.format : "", tight: true, sig: `forecast:datetime|${value4}` };
         }
         const raw = ctx.forecastEntry[txt.attribute];
-        if (raw == null) return { value: "", unit: "", tight: true, missing: true, sig: `forecast:${txt.attribute}|na` };
+        if (raw == null) return { value: "N/A", unit: "", tight: true, sig: `forecast:${txt.attribute}|na` };
         if (txt.attribute === "condition" && typeof raw === "string") {
           const value4 = typeof hass.localize === "function" && hass.localize(`component.weather.entity_component._.state.${raw}`) || raw;
           return { value: value4, unit: hasFormat ? txt.format : "", tight: true, sig: `forecast:condition|${value4}` };
@@ -2384,11 +2393,9 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
         return { value: value3, unit: unit3, tight: hasFormat || txt.fancy_unit === true, sig: `forecast:${txt.attribute}|${value3}${unit3}` };
       }
       const r = this._resolveSensorValue(hass, button.entity, txt.attribute);
-      if (r.missing) return { value: "", unit: "", tight: true, missing: true, sig: `a:${txt.attribute}|na` };
       const { value: value2, unit: unit2 } = this._reshapeValue(hass, r, txt, hasFormat, button.entity, txt.attribute);
       return { value: value2, unit: unit2, tight, sig: `a:${txt.attribute}|${txt.precision ?? ""}|${value2}${unit2}` };
     }
-    if (ctx.primaryResolved && ctx.primaryResolved.missing) return { value: "", unit: "", tight: true, missing: true, sig: "v:na" };
     const { value, unit } = ctx.primaryResolved ? this._reshapeValue(hass, ctx.primaryResolved, txt, hasFormat, button.entity, button.attribute) : { value: ctx.formatted, unit: hasFormat ? txt.format : "" };
     return { value, unit, tight, sig: `v:${value}${unit}` };
   }
@@ -3284,7 +3291,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (o[p + "fill"] !== false) html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ""}"></div>`;
     if (rb > ra) html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + "range_color"] ? `;background:${cssValue(o[p + "range_color"])}` : ""}"></div>`;
     if (marked) html += values.filter((v) => v.size && !isNaN(v.value)).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? " needle" : ""}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ""}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ""}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ""}</div>`).join("");
-    return { style: style.join(";"), html, len, overflow: marked && values.some((v) => v.size > w), empty: values.every((v) => isNaN(v.value)) };
+    return { style: style.join(";"), html, len, overflow: marked && values.some((v) => v.size > w) };
   }
   _buildIconElement(el, resolved, color) {
     const styleParts = color ? [`color:${cssValue(color)}`] : [];
@@ -3320,13 +3327,13 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (iconStrategy === "builtin") return `<svg class="weather-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${BUILTIN_ICONS[iconValue] || BUILTIN_ICONS["default"]}</svg>`;
     return `<ha-icon icon="${escapeHtml(iconValue)}"></ha-icon>`;
   }
-  _buildTextElement(hass, button, txt, textCtx, marqueeSpeed, marqueeRtl, pre) {
+  _buildTextElement(hass, button, txt, textCtx, marqueeSpeed, marqueeRtl) {
     const _wOp = (w) => {
       const n = parseFloat(w);
       if (isNaN(n)) return "";
       return Math.min(1, Math.max(0.4, 0.4 + (n - 100) * 0.6 / 800)).toFixed(2);
     };
-    const resolved = pre || this._resolveButtonText(hass, button, txt, textCtx);
+    const resolved = this._resolveButtonText(hass, button, txt, textCtx);
     const value = escapeHtml(resolved.value), unit = escapeHtml(resolved.unit);
     const content = txt.fancy_unit === true ? `${value}<span class="fancy-unit">${unit}</span>` : resolved.tight ? `${value}${unit}` : unit ? `${value} ${unit}` : value;
     const overflow = (txt.overflow || "ellipsis").toString().toLowerCase().trim();
@@ -3440,15 +3447,6 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const marqueeSpeed = Math.max(5, parseFloat(button.marquee_speed) || 30);
     const marqueeRtl = button.marquee_rtl === true, width = (button.width || "").toString().trim(), height = (button.height || "").toString().trim();
     const textCtx = { isForecast, forecastEntry, forecastDatetime, forecastTextAttr, formatted, primaryResolved };
-    const resolvedText = new Map(textEls.map((el) => [el, this._resolveButtonText(hass, button, el, textCtx)]));
-    const isStatic = (el) => el.text !== void 0 && el.text !== "";
-    const dataTexts = textEls.filter((el) => !isStatic(el) && !/_unit$/.test(el.attribute || ""));
-    if (!forecastLoading && dataTexts.length && dataTexts.every((el) => resolvedText.get(el).missing)) return skip(`missing-${idx}`, true);
-    const missingAt = (i) => {
-      const el = elements[i];
-      return !!el && el.type === "text" && !isStatic(el) && !!resolvedText.get(el).missing;
-    };
-    const lonelySeparator = (el, i) => isStatic(el) && /^[\s/|·•\-–—]+$/.test(String(el.text)) && (missingAt(i - 1) || missingAt(i + 1));
     const gauge = (o, p) => this._buildGauge(o, p, (def) => this._resolveGaugeValue(hass, button, def, textCtx));
     const threshold = (o, def) => Array.isArray(o.color_thresholds) && o.color_thresholds.length ? pickThreshold(o.color_thresholds, this._resolveGaugeValue(hass, button, def, textCtx)) : "";
     const parts = [];
@@ -3458,10 +3456,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       else parts.push({ html, icon });
     };
     let hasAnyMarquee = false, firstIconStrategy = "static", firstIconSet = false, barCount = 0, barOverflow = false;
-    for (const [ei, el] of elements.entries()) {
+    for (const el of elements) {
       if (el.type === "text") {
-        if (lonelySeparator(el, ei)) continue;
-        const b = this._buildTextElement(hass, button, el, textCtx, marqueeSpeed, marqueeRtl, resolvedText.get(el));
+        const b = this._buildTextElement(hass, button, el, textCtx, marqueeSpeed, marqueeRtl);
         push(b.html);
         if (b.hasMarquee) hasAnyMarquee = true;
       } else if (el.type === "icon") {
@@ -3472,8 +3469,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
         push(this._buildIconElement(el, r, threshold(el, el) || el.color), true);
       } else if (el.type === "bar") {
-        const g = gauge(el, "bar_"), gi = barCount++;
-        if (!g.empty || forecastLoading) push(`<div class="button-bar${g.len ? " has-len" : ""}" data-gauge="${idx}-${gi}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
+        const g = gauge(el, "bar_");
+        push(`<div class="button-bar${g.len ? " has-len" : ""}" data-gauge="${idx}-${barCount++}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
         barOverflow = barOverflow || g.overflow;
       }
     }
@@ -3930,6 +3927,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const tuning = _weatherTuning(weatherState);
     const recipe = on && cfg.precipitation_effects !== false && tuning.precipitation || null;
     const cloudState = on && cfg.cloud_effects !== false && WeatherEffects.hasClouds(weatherState) ? weatherState : null;
+    const mistState = on && cfg.mist_effects === true && (tuning.cloudDensity > 0 || weatherState === "fog") ? weatherState : null;
     const starsOn = on && cfg.night_sky_effects !== false && this._isAstroNight && tuning.starCount > 0 && tuning.starOpacity > 0;
     const stars = starsOn ? { count: tuning.starCount, opacity: tuning.starOpacity } : null;
     const factor = (key) => Math.max(0.25, Math.min(4, parseFloat(cfg[key]) || 1));
@@ -3938,13 +3936,13 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       return activity > 0 ? { activity, state: weatherState, density: factor(`${kind}_density`) } : null;
     };
     const birds = actor("bird", !this._schemeDark), balloon = actor("balloon", true), planes = actor("plane", true);
-    const active = !!recipe || !!cloudState || !!stars || !!birds || !!balloon || !!planes;
+    const active = !!recipe || !!cloudState || !!mistState || !!stars || !!birds || !!balloon || !!planes;
     if (active && !this._sizeEffectsCanvas()) {
       this._effectsActive = false;
       els.root.classList.remove("has-weather-effects");
       return;
     }
-    WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor("precipitation_speed"), String(cfg.cloud_image_path || "").trim());
+    WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor("precipitation_speed"), String(cfg.cloud_image_path || "").trim(), mistState);
     this._effectsActive = active;
     els.root.classList.toggle("has-weather-effects", active);
     els.root.classList.toggle("has-star-canvas", !!stars);

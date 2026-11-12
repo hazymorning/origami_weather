@@ -32,7 +32,7 @@ var dioramaItem = (iconName, label, values, extra) => ({
   name: label,
   entity: PRESET_ENTITY_TOKEN,
   ...extra,
-  elements: [icon(iconName, { margin: ICON_SPACE[iconName] }), text({ text: label, weight: "500" }), ...values]
+  elements: [icon(iconName, { margin: ICON_SPACE[iconName] }), ...label ? [text({ text: label, weight: "500" })] : [], ...values]
 });
 var dioramaSun = (rising) => dioramaItem(rising ? "mdi:weather-sunset-up" : "mdi:weather-sunset-down", rising ? "Sunrise" : "Sunset", [text({ weight: "700" })], {
   name: rising ? "Sunrise (at night)" : "Sunset (by day)",
@@ -53,8 +53,6 @@ var DIORAMA_CONFIG = Object.freeze({
   weather_image_path_dark: "https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/",
   weather_image_type: "webp",
   weather_image_front: true,
-  background_color: "#e2e5e7",
-  background_color_dark: "#1b1e20",
   background_thresholds: thresholds(DIORAMA_PAPER),
   shadow_color: "inset 0 1px 3px rgba(0, 0, 0, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.14)",
   card_tap_action: { action: "more-info" },
@@ -84,11 +82,11 @@ var DIORAMA_CONFIG = Object.freeze({
       button_icon_size: "14px",
       button_gap: "4px",
       buttons: [
-        dioramaItem("weather", "Today", [
+        dioramaItem("weather", "", [
           text({ attribute: "temperature", format: "\xB0", weight: "700" }),
           text({ text: "/", weight: "500" }),
           text({ attribute: "templow", format: "\xB0", weight: "700" })
-        ], { forecast: "daily" }),
+        ], { name: "Today", forecast: "daily" }),
         dioramaItem("mdi:weather-windy", "Wind", [text({ attribute: "wind_speed", precision: 0, weight: "700" })]),
         dioramaSun(false),
         dioramaSun(true),
@@ -173,7 +171,8 @@ var CLASSIC_CONFIG = Object.freeze({
   color_mode: "dark",
   sun_enabled: false,
   moon_enabled: false,
-  cloud_image_path: "mist",
+  cloud_effects: false,
+  mist_effects: true,
   bird_effects: false,
   balloon_effects: false,
   plane_effects: false,
@@ -188,8 +187,7 @@ var CLASSIC_CONFIG = Object.freeze({
   gradient_color_2: "rgba(255, 255, 255, 0)",
   gradient_stop_2: 70,
   card_height: "content",
-  card_padding: "22px",
-  css: "#weather-effects { filter: brightness(0) invert(1); }",
+  card_padding: "var(--ha-space-4, 16px)",
   button_containers: [
     {
       name: "Now",
@@ -256,6 +254,7 @@ var centeredItem = (name, iconName, value, extra) => ({
 });
 var CENTERED_CONFIG = Object.freeze({
   sun_moon_x: "dynamic",
+  mist_effects: true,
   card_height: "content",
   card_padding: "34px 20px",
   content_align: "between",

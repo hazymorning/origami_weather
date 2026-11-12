@@ -6,7 +6,7 @@ const LABELS = Object.freeze({
     color_mode: "Light / dark mode", card_height: "Card height",
     background_mode: "Card background",
     card_padding: "Card padding", card_offset: "Card offset", card_tap_action: "Tap action",
-    weather_image_path: "Light mode folder", weather_image_path_dark: "Dark mode folder",
+    weather_image_path: "Light mode folder", weather_image_path_dark: "Dark mode folder", weather_image_type: "File type",
     button_text_size: "Text size",
     button_style: "Button style", button_container_columns: "Columns",
     button_padding: "Button padding",
@@ -23,27 +23,31 @@ const KEY_ORDER = Object.freeze([
     "sun_entity", "sun_enabled", "moon_enabled", "sun_moon_size", "sun_moon_x", "sun_moon_y",
     "color_mode", "dark_theme_adaptation", "card_height", "card_padding",
     "background_mode", "background_color", "background_color_dark", "background_threshold_entity", "background_threshold_attribute", "background_thresholds",
-    "weather_image_path", "weather_image_path_dark",
+    "weather_image_path", "weather_image_path_dark", "weather_image_type", "weather_image_front",
     "gradient", "gradient_type", "gradient_angle", "gradient_x", "gradient_y", "gradient_color_1", "gradient_color_2", "gradient_stop_1", "gradient_stop_2",
     "card_tap_action", "card_offset",
     "card_frame", "full_width", "full_width_margin", "edge_fade", "edge_fade_size", "shadow", "shadow_color",
     "icon_path",
     "bg_brightness", "bg_saturation", "bg_blur", "bg_blend",
-    "background_haze", "precipitation_effects", "cloud_effects", "night_sky_effects", "bird_effects", "balloon_effects", "plane_effects",
+    "background_haze", "precipitation_effects", "precipitation_speed", "cloud_effects", "cloud_image_path", "night_sky_effects", "bird_effects", "bird_density", "balloon_effects", "balloon_density", "plane_effects", "plane_density",
     "button_containers"]);
 const CARD_THRESHOLD_KEYS = Object.freeze(["background_thresholds", "background_threshold_entity", "background_threshold_attribute"]);
+const nameFirst = (o) => { const n = typeof o.name === "string" ? o.name.trim() : ""; const { name, ...rest } = o; return n ? { name: n, ...rest } : rest; };
 const buttonStyle = (v) => { const s = (v || "").toString().toLowerCase(); return s === "vertical" || s === "split" ? s : "inline"; };
 const DISPLAY_DEFAULTS = Object.freeze({
     color_mode: "sun", sun_entity: "sun.sun", background_mode: "default",
     sun_moon_size: 80, sun_moon_x: 50,
-    bg_brightness: 1.0, bg_saturation: 1.0, bg_blur: 0, bg_blend: 0, gradient_angle: 180, gradient_x: 50, gradient_y: 50, gradient_stop_1: 0, gradient_stop_2: 100});
+    bg_brightness: 1.0, bg_saturation: 1.0, bg_blur: 0, bg_blend: 0, gradient_angle: 180, gradient_x: 50, gradient_y: 50, gradient_stop_1: 0, gradient_stop_2: 100,
+    precipitation_speed: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
 const OPT = Object.freeze({
     visual_mode: [
         { value: "images", label: "Custom images" },
         { value: "default", label: "Default" }, { value: "card", label: "Home Assistant card" },
         { value: "color", label: "Custom color" }, { value: "none", label: "No background" }],
+    weather_image_type: [{ value: "", label: "Automatic (default)" }, ...["webp", "png", "jpg", "jpeg", "gif", "svg", "mp4"].map(value => ({ value, label: value.toUpperCase() }))],
     color_mode: [
-        { value: "sun",   label: "Follow the sun" }, { value: "theme", label: "Follow my theme" }], button_overflow: [
+        { value: "sun",   label: "Follow the sun" }, { value: "theme", label: "Follow my theme" },
+        { value: "dark",  label: "Always dark" }, { value: "light", label: "Always light" }], button_overflow: [
         { value: "ellipsis", label: "Ellipsis (…)" }, { value: "marquee", label: "Scrolling text" }, { value: "clip", label: "Clip" }, { value: "wrap", label: "Wrap" }], button_container_layout: [
         { value: "wrap",              label: "Flex" }, { value: "grid",              label: "Grid" },
         { value: "horizontal-scroll", label: "Scroll X" }, { value: "vertical-scroll",   label: "Scroll Y" }], button_container_flow: [
@@ -80,6 +84,9 @@ class WeatherCardEditor extends LitElement {
             _config: { type: Object, state: true },
             _expandedCard: { type: Number, state: true }, _expandedButton: { type: Number, state: true },
             _expandedContainer: { type: Number, state: true }, _openPanel: { type: String, state: true },};}
+    constructor() {
+        super();
+        this.addEventListener("keydown", (e) => { const t = e.composedPath()[0]; if (e.key === "Enter" && t instanceof HTMLInputElement && t.getRootNode() === this.shadowRoot) t.blur(); });}
     set hass(val) {
         const old = this._hass; this._hass = val;
         if (!old && val) {
@@ -143,7 +150,7 @@ class WeatherCardEditor extends LitElement {
                 font-size: var(--origami-e-f-header); font-weight: 500; color: var(--primary-text-color);
                 & ha-icon { --mdc-icon-size: 20px; color: var(--secondary-text-color); }}
             .preset-grid {
-                display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--origami-e-s2);}
+                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--origami-e-s2);}
             .preset-card {
                 display: flex; flex-direction: column; align-items: flex-start; gap: var(--origami-e-s1);
                 padding: var(--origami-e-s3) var(--origami-e-s4); border: 1px solid transparent;
@@ -285,6 +292,8 @@ class WeatherCardEditor extends LitElement {
                     --ha-switch-checked-thumb-border-color: transparent;
                     --ha-switch-checked-background-color: var(--primary-color);
                     --ha-switch-checked-thumb-background-color: var(--text-primary-color, #fff); }}
+            .toggle-sub { padding: 0 var(--origami-e-s2) var(--origami-e-s3) var(--origami-e-s3); & .wbk-slider { padding: 0; background: none; } }
+            .toggle-sub + .toggle-row { border-top: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06); }
             .fc-box {
                 margin: var(--origami-e-s3) 0; padding: var(--origami-e-s3) var(--origami-e-s4); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08);
                 border: 1px solid rgba(var(--rgb-primary-color, 0, 120, 212), 0.18);
@@ -490,8 +499,8 @@ class WeatherCardEditor extends LitElement {
         this._cachedFormData = c; this._cachedFormConfig = this._config;
         return c;}
     _setVisualMode(mode) {
-        const clear = ["weather_image_path", "weather_image_path_dark"];
-        const withColor = mode === "color" ? clear : [...clear, "background_color", "background_color_dark", ...CARD_THRESHOLD_KEYS];
+        const clear = ["weather_image_path", "weather_image_path_dark", "weather_image_type", "weather_image_front"];
+        const withColor = mode === "color" || mode === "images" ? clear : [...clear, "background_color", "background_color_dark", ...CARD_THRESHOLD_KEYS];
         if (mode === "card") {
             this._patch({ background_mode: mode, color_mode: "theme" }, { strip: withColor });
         } else if (mode === "none" || mode === "color") {
@@ -831,7 +840,10 @@ class WeatherCardEditor extends LitElement {
         const firstStatic = els.find(e => e && e.type === "text" && typeof e.text === "string" && e.text.trim());
         const name = (firstStatic ? firstStatic.text : "").toString().trim(), entity = (button && button.entity || "").toString().trim();
         const attribute = (button && button.attribute || "").toString().trim();
-        const two = (main, meta) => html`<span class="row-title-main">${main}</span>${meta ? html`<span class="row-title-meta">${meta}</span>` : ""}`;
+        const own = (button && typeof button.name === "string" ? button.name : "").trim();
+        const two = (main, meta) => own
+            ? html`<span class="row-title-main">${own}</span><span class="row-title-meta">${[main, meta].filter(Boolean).join(" · ")}</span>`
+            : html`<span class="row-title-main">${main}</span>${meta ? html`<span class="row-title-meta">${meta}</span>` : ""}`;
         if (!entity) return two(name || "Choose an entity", name ? "no entity" : "");
         const st = this.hass && this.hass.states && this.hass.states[entity], friendly = st && st.attributes && st.attributes.friendly_name;
         const label = friendly || entity;
@@ -875,7 +887,7 @@ class WeatherCardEditor extends LitElement {
         for (const k of Object.keys(out)) {
             const v = out[k];
             if (v === "" || v === null || v === undefined || (v === false && !['background', 'icon_background', 'shadow', 'ring_fill'].includes(k))) delete out[k];}
-        return out;}
+        return nameFirst(out);}
     _cleanElement(el) {
         const out = { ...(el || {}) };
         const type = out.type === "icon" || out.type === "bar" ? out.type : "text";
@@ -917,7 +929,7 @@ class WeatherCardEditor extends LitElement {
             if (Array.isArray(v)) { if (v.length === 0) delete out[k]; continue; }
             if (v === "" || v === null || v === undefined || v === false) delete out[k];
         }
-        return out;}
+        return nameFirst(out);}
     _updateButtonAt(containerIdx, idx, newButton) {
         const list = this._getButtonsForContainer(containerIdx).map((c, i) => i === idx ? this._cleanButton(newButton) : c);
         this._commitButtonsInContainer(containerIdx, list);}
@@ -1028,7 +1040,11 @@ class WeatherCardEditor extends LitElement {
         const update = (next) => this._updateButtonAt(containerIdx, idx, next);
         const buttonForm = (schema) => html`<ha-form .hass=${this.hass} .data=${button}
                 .schema=${schema} .computeLabel=${this._buttonLabel}
-                @value-changed=${(e) => { e.stopPropagation(); update((e.detail && e.detail.value) || {}); }}></ha-form>`;
+                @value-changed=${(e) => { e.stopPropagation(); const n = { ...((e.detail && e.detail.value) || {}) };
+                    const st = !n.forecast && n.entity !== button.entity && this.hass.states[n.entity], gone = (a) => st && a && !(a in st.attributes);
+                    if (gone(n.attribute)) delete n.attribute;
+                    if (Array.isArray(n.elements)) n.elements = n.elements.map(el => el && !el.entity && gone(el.attribute) ? { ...el, attribute: undefined } : el);
+                    update(n); }}></ha-form>`;
         const container = this._getContainers()[containerIdx] || {};
         const containerScrollable = ["horizontal-scroll", "vertical-scroll"].includes((container.layout || "").toString().toLowerCase());
         const BTN_INHERIT = { text_size: "button_text_size", padding: "button_padding", inner_gap: "button_gap" };
@@ -1278,7 +1294,7 @@ class WeatherCardEditor extends LitElement {
             const cssFor = (key, text, placeholder) => this._cssTextField({ value: obj[key], label: text, placeholder, trim: true, onCommit: (v) => write(key, v) });
             const hasRange = [obj[p+"range_from"], obj[p+"range_to"]].some(v => v !== undefined && v !== null && String(v) !== "");
             return html`<div class="vcb-grid">${cssFor(p+"min","Min","0")}${cssFor(p+"max","Max","100")}</div>
-                <div class="vcb-grid">${prefix==="ring"?html`${cssFor("ring_width","Thickness","4")}${cssFor("ring_gap","Gap","3")}${cssFor("ring_start","Start angle","0")}${cssFor("ring_arc","Arc","360")}`:html`${cssFor("bar_height","Thickness","4")}`}</div>
+                <div class="vcb-grid">${prefix==="ring"?html`${cssFor("ring_width","Thickness","4")}${cssFor("ring_gap","Gap","3")}${cssFor("ring_start","Start angle","0")}${cssFor("ring_arc","Arc","360")}`:html`${cssFor("bar_height","Thickness","4")}${cssFor("bar_width","Length","Full width")}`}</div>
                 ${extra || ""}
                 ${this._renderColorPicker(`${label} color`,obj[p+"color"]||"",(h,o)=>{ write(p+"color", h ? this._serializeColor(h,o) : ""); })}
                 <div class="field-group">
@@ -1391,6 +1407,8 @@ class WeatherCardEditor extends LitElement {
             <div class="vcb-nested-group">${elements.map((el, ei) => elementSection(el, ei))}</div>
             ${addElBar}`;
         const body = html`<div class="vcb">
+            ${this._cssTextField({ value: button.name, label: "Name", placeholder: "Optional, shown in this list", trim: true,
+                onCommit: (v) => { const n = { ...button }; if (v) n.name = v; else delete n.name; update(n); } })}
             ${typePicker}
             ${entitySection}
             ${emptyNudge}
@@ -1585,7 +1603,7 @@ class WeatherCardEditor extends LitElement {
                     const expanded = this._expandedContainer === ai;
                     const isCard = !!container.custom_cards;
                     const title = this._containerTitle(container, ai);
-                    const label = isCard ? "Card" : "Buttons";
+                    const label = (container.name || "").toString().trim() || (isCard ? "Card" : "Buttons");
                     const body = expanded ? (isCard ? this._renderCardContainerBody(container, ai) : this._renderButtonContainerBody(container, ai)) : "";
                     return this._renderListRow({
                         idx: ai, total: areas.length, expanded, body,
@@ -1689,6 +1707,7 @@ class WeatherCardEditor extends LitElement {
                 @value-changed=${(e) => { e.stopPropagation(); const v = e.detail && e.detail.value && e.detail.value[key]; uf(key, v || ""); }}
             ></ha-form>`;
         const containerContent = html`<div class="vcb">
+            ${this._cssTextField({ value: container.name, label: "Name", placeholder: "Optional, shown in this list", trim: true, onCommit: (v) => uf("name", v || "") })}
             ${this._renderSubDisclosure("Arrangement", html`<div class="vcb">
                 <div class="segmented">
                     ${OPT.button_container_layout.map(o => html`<button type="button" class=${layout === o.value ? "active" : ""}
@@ -1738,7 +1757,7 @@ class WeatherCardEditor extends LitElement {
                             @change=${(e) => uf("separator", e.target.checked || "")}></ha-switch></label></div>
                 ${container.grouped === true ? this._renderContainerColorPicker(containerIdx, "background_color", "Group color") : ""}</div>`)}
             ${this._renderSubDisclosure("Background image", html`<div class="vcb">
-                ${sf("image", "Image path", "/local/home.png or demo-home-image")}
+                ${sf("image", "Image path", "/local/floorplan.png, home or old-home")}
                 ${sf("image_dark", "Dark mode image", "/local/home-dark.png")}
                 <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Sized by the container width. Free-positioned buttons sit on top.</span></div></div>`)}
             ${this._renderSubDisclosure("Position", this._renderPosition(container, (n) => this._updateContainerAt(containerIdx, n)))}
@@ -1922,6 +1941,11 @@ class WeatherCardEditor extends LitElement {
             if (v <= 12) return `${v}px — Strong`;
             return `${v}px — Heavy`;
         };
+        const fx = (key, label, sub, def = true) => {
+            const on = def ? c[key] !== false : c[key] === true;
+            return html`<label class="toggle-row"><span>${label}</span><ha-switch .checked=${on}
+                @change=${(e) => this._updateField(key, e.target.checked === def ? "" : e.target.checked)}></ha-switch></label>${on && sub ? html`<div class="toggle-sub">${sub}</div>` : ""}`;
+        };
         return html`
             <div class="fc-box" style="margin-top:0">
                 <ha-form
@@ -1932,16 +1956,16 @@ class WeatherCardEditor extends LitElement {
                     @value-changed=${(e) => { e.stopPropagation(); const v = e.detail && e.detail.value && e.detail.value.background_mode; if (v && v !== mode) this._setVisualMode(v); }}
                 ></ha-form>
             </div>
-            ${mode === "color" ? html`<div class="fc-box">
+            ${mode === "color" || mode === "images" ? html`<div class="fc-box">
                 ${this._renderColorPicker("Card color", c.background_color || "", (h, o) => this._updateField("background_color", h ? this._serializeColor(h, o) : ""))}
-                ${this._renderColorPicker("Dark mode color", c.background_color_dark || "", (h, o) => this._updateField("background_color_dark", h ? this._serializeColor(h, o) : ""))}
+                ${this._renderColorPicker(c.color_mode === "dark" || c.color_mode === "light" ? "Night color" : "Dark mode color", c.background_color_dark || "", (h, o) => this._updateField("background_color_dark", h ? this._serializeColor(h, o) : ""))}
                 <div class="toggle-group"><label class="toggle-row"><span>Color thresholds</span>
                     <ha-switch .checked=${cardThresholds.length > 0}
                         @change=${(e) => { if (e.target.checked) this._patch({ background_thresholds: [{ value: "", color: "#ff9800" }] });
                             else this._patch({}, { strip: CARD_THRESHOLD_KEYS }); }}></ha-switch></label></div>
                 ${cardThresholds.length ? html`
                     <ha-form .hass=${this.hass} .data=${{ background_threshold_entity: c.background_threshold_entity || "" }}
-                        .schema=${[{ name: "background_threshold_entity", selector: { entity: {} } }]} .computeLabel=${() => "Entity"}
+                        .schema=${[{ name: "background_threshold_entity", selector: { entity: {} } }]} .computeLabel=${() => "Entity"} .computeHelper=${() => "Leave empty to follow the card's weather"}
                         @value-changed=${(e) => { e.stopPropagation(); this._updateField("background_threshold_entity", (e.detail && e.detail.value && e.detail.value.background_threshold_entity) || ""); }}></ha-form>
                     ${(c.background_threshold_entity || "").trim() ? html`<ha-form .hass=${this.hass} .data=${{ background_threshold_attribute: c.background_threshold_attribute || "" }}
                         .schema=${[{ name: "background_threshold_attribute", selector: { attribute: { entity_id: c.background_threshold_entity } } }]} .computeLabel=${() => "Attribute"}
@@ -1952,6 +1976,8 @@ class WeatherCardEditor extends LitElement {
                 <div class="settings-group">
                     ${this._renderClearableText("weather_image_path")}
                     ${this._renderClearableText("weather_image_path_dark")}
+                    ${this._renderForm([{ name: "weather_image_type", selector: { select: { mode: "dropdown", options: OPT.weather_image_type } } }])}
+                    <div class="toggle-group">${fx("weather_image_front", "In front of sun, moon and stars", null, false)}</div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:var(--origami-e-s2);margin-top:var(--origami-e-s3)">
                     ${this._renderSlider("bg_blur", LABELS.bg_blur, 0, 20, 1, null, blurStatus)}
@@ -1974,7 +2000,7 @@ class WeatherCardEditor extends LitElement {
             ${this._renderDisclosure("Color settings", html`
                 <div class="fc-box" style="margin-top:0">
                     ${this._renderForm([{ name: "color_mode", selector: { select: { mode: "dropdown", options: OPT.color_mode } } }])}
-                    ${showBgFilters && c.color_mode !== "theme" ? html`<div class="toggle-group"><label class="toggle-row"><span>Adapt to dark theme</span>
+                    ${showBgFilters && c.color_mode !== "theme" && c.color_mode !== "dark" ? html`<div class="toggle-group"><label class="toggle-row"><span>Adapt to dark theme</span>
                         <ha-switch .checked=${c.dark_theme_adaptation !== false}
                             @change=${(e) => this._updateField("dark_theme_adaptation", e.target.checked ? "" : false)}></ha-switch></label></div>` : ""}
                 </div>
@@ -1984,27 +2010,13 @@ class WeatherCardEditor extends LitElement {
                 ${this._renderSlider("bg_blend", LABELS.bg_blend, 0, 100, 1)}</div>` : ""}`)}
             ${this._renderDisclosure("Animation effects", html`<div class="settings-group">
                 <div class="toggle-group">
-                <label class="toggle-row"><span>Background haze</span>
-                    <ha-switch .checked=${(this._formData || {}).background_haze !== false}
-                        @change=${(e) => this._updateField("background_haze", e.target.checked ? "" : false)}></ha-switch></label>
-                <label class="toggle-row"><span>Precipitation</span>
-                    <ha-switch .checked=${(this._formData || {}).precipitation_effects !== false}
-                        @change=${(e) => this._updateField("precipitation_effects", e.target.checked ? "" : false)}></ha-switch></label>
-                <label class="toggle-row"><span>Clouds</span>
-                    <ha-switch .checked=${(this._formData || {}).cloud_effects !== false}
-                        @change=${(e) => this._updateField("cloud_effects", e.target.checked ? "" : false)}></ha-switch></label>
-                <label class="toggle-row"><span>Stars</span>
-                    <ha-switch .checked=${(this._formData || {}).night_sky_effects !== false}
-                        @change=${(e) => this._updateField("night_sky_effects", e.target.checked ? "" : false)}></ha-switch></label>
-                <label class="toggle-row"><span>Birds</span>
-                    <ha-switch .checked=${(this._formData || {}).bird_effects !== false}
-                        @change=${(e) => this._updateField("bird_effects", e.target.checked ? "" : false)}></ha-switch></label>
-                <label class="toggle-row"><span>Balloon</span>
-                    <ha-switch .checked=${(this._formData || {}).balloon_effects !== false}
-                        @change=${(e) => this._updateField("balloon_effects", e.target.checked ? "" : false)}></ha-switch></label>
-                <label class="toggle-row"><span>Planes</span>
-                    <ha-switch .checked=${(this._formData || {}).plane_effects !== false}
-                        @change=${(e) => this._updateField("plane_effects", e.target.checked ? "" : false)}></ha-switch></label></div></div>`)}
+                ${fx("background_haze", "Background haze", null, mode === "default")}
+                ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
+                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
+                ${fx("night_sky_effects", "Stars")}
+                ${fx("bird_effects", "Birds")}
+                ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}
+                ${fx("plane_effects", "Planes", this._renderSlider("plane_density", "Frequency", 0.25, 4, 0.25))}</div></div>`)}
             `;}
     _renderCardFrameToggle() {
         const c = this._formData || {};

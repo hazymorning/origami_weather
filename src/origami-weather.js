@@ -1,5 +1,4 @@
-import { CLOUD_SPRITE, CLOUD_SOFT, MOON_SURFACE, BIRD_SHEET, BALLOON_SHEET, PLANE_SHEET, DEMO_HOME } from './image-assets.js';
-import { buildStubConfig } from './layout-presets.js';
+import { MOON_SURFACE, BALLOON_SHEET, OLD_HOME_IMAGE } from './image-assets.js';
 console.info(
     "%c ◪ Origami Weather ",
     "color: #fff; border-radius: 6px; background: linear-gradient(135deg, #888 0%, #000 100%); font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; padding: 4px 8px;"
@@ -220,23 +219,29 @@ const WeatherEffects = (() => {
         _sprites.set(key, c);
         return c;
     }
+    const _loaders = new Map();
     function _imgLoader(src) {
+        if (_loaders.has(src)) return _loaders.get(src);
         let img = null, started = false;
-        return () => {
+        const get = () => {
             if (!started) {
                 started = true;
-                const i = new Image();
-                i.onload = () => { img = i; };
-                i.src = src;
+                Promise.resolve(typeof src === 'function' ? src() : src).then((url) => {
+                    const i = new Image();
+                    i.onload = () => { img = i; };
+                    i.src = url;
+                }).catch(() => {});
             }
             return img;
         };
+        _loaders.set(src, get);
+        return get;
     }
-    const _getCloudImg = _imgLoader(CLOUD_SPRITE);
-    const _getSoftImg = _imgLoader(CLOUD_SOFT);
-    const _getBirdImg = _imgLoader(BIRD_SHEET);
+    const _getCloudImg = _imgLoader(() => import('./image-assets-clouds.js').then((m) => m.CLOUD_SPRITE));
+    const _getSoftImg = _imgLoader(() => import('./image-assets-clouds.js').then((m) => m.CLOUD_SOFT));
+    const _getBirdImg = _imgLoader(() => import('./image-assets-birds.js').then((m) => m.BIRD_SHEET));
     const _getBalloonImg = _imgLoader(BALLOON_SHEET);
-    const _getPlaneImg = _imgLoader(PLANE_SHEET);
+    const _getPlaneImg = _imgLoader(() => import('./image-assets-planes.js').then((m) => m.PLANE_SHEET));
     const _sizeScale = (w, h) => 0.65 + 0.35 * Math.max(0.8, Math.min(1.8, Math.sqrt(w * h) / 380));
     function _cloudSprite(src, top, bot, res) {
         const iw = src.naturalWidth || src.width;
@@ -351,12 +356,22 @@ const WeatherEffects = (() => {
         ],
     });
     const _softLayout = (tuning) => SOFT_LAYOUTS[tuning.softClouds] || [];
-    const _cloudAtlas = { img: null, soft: null, srcs: null, bands: new Map() };
+    const _cloudAtlas = new WeakMap();
+    function _fit(img, max) {
+        const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = max / Math.max(w, h);
+        if (k >= 1) return img;
+        const c = document.createElement('canvas');
+        c.width = Math.round(w * k); c.height = Math.round(h * k);
+        const cx = c.getContext('2d');
+        cx.imageSmoothingQuality = 'high';
+        cx.drawImage(img, 0, 0, c.width, c.height);
+        return c;
+    }
     function _cloudBandSprites(img, soft, state, schemeDark, backgroundRGB) {
         if (!(img.naturalWidth || img.width) || !(soft.naturalWidth || soft.width)) return null;
-        const a = _cloudAtlas;
+        let a = _cloudAtlas.get(img);
+        if (!a) { const src = _fit(img, 512); _cloudAtlas.set(img, a = { srcs: _cloudVariantSources(src), soft: soft === img ? src : soft, bands: new Map() }); }
         const key = `${state}|${schemeDark}|${backgroundRGB}`;
-        if (a.img !== img || a.soft !== soft) { a.img = img; a.soft = soft; a.srcs = _cloudVariantSources(img); a.bands.clear(); }
         let bands = a.bands.get(key);
         if (bands) return bands;
         const pal = _cloudPalette(state, schemeDark, backgroundRGB);
@@ -366,7 +381,7 @@ const WeatherEffects = (() => {
             const bot = pal.bot.map(v => cl(v * d.bright));
             return a.srcs.map(s => _cloudSprite(s, top, bot, d.res));
         });
-        bands.push([_cloudSprite(soft, pal.top, _mix(pal.bot, pal.shadow, SOFT_SHADE), 1)]);
+        bands.push([_cloudSprite(a.soft, pal.top, _mix(pal.bot, pal.shadow, SOFT_SHADE), 1)]);
         if (a.bands.size >= 4) a.bands.clear();
         a.bands.set(key, bands);
         return bands;
@@ -1046,10 +1061,13 @@ const WeatherEffects = (() => {
     function create() {
         return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
     }
-    function set(inst, key, w, h, weatherState, stars, birds, balloon, planes) {
+    function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage) {
         const area = Math.max(1, w * h);
         const grow = inst.area > 0 ? Math.abs(area - inst.area) / inst.area : 1;
         const sizeChanged = grow >= 0.22;
+        const custom = cloudImage && _imgLoader(cloudImage);
+        inst.speed = speed || 1;
+        inst.clouds = custom ? [custom, custom] : [_getCloudImg, _getSoftImg];
         const tuning = _hasClouds(weatherState) ? _weatherTuning(weatherState) : null;
         if (!tuning) {
             inst.cloud = null;
@@ -1057,8 +1075,7 @@ const WeatherEffects = (() => {
             if (!inst.cloud || inst.cloud.density !== tuning.cloudDensity || inst.cloud.layout !== tuning.softClouds) inst.cloud = _buildCloudField(tuning, inst.wp);
             inst.cloud.speed = tuning.cloudSpeed;
             inst.cloud.state = weatherState;
-            _getCloudImg();
-            _getSoftImg();
+            for (const load of inst.clouds) load();
         }
         const starCount = stars ? stars.count : 0;
         if (starCount <= 0) {
@@ -1179,7 +1196,7 @@ const WeatherEffects = (() => {
         if (inst.planes) _planesFrame(inst, ctx, w, h, s, dt, t, env);
         if (inst.balloon) _balloonFrame(inst, ctx, w, h, s, dt, t, env);
         if (inst.cloud && inst.cloud.puffs.length) {
-            const cImg = _getCloudImg(), sImg = _getSoftImg();
+            const cImg = inst.clouds[0](), sImg = inst.clouds[1]();
             const bands = cImg && sImg && _cloudBandSprites(cImg, sImg, inst.cloud.state, env.schemeDark, env.backgroundRGB);
             if (bands) {
                 ctx.imageSmoothingEnabled = true;
@@ -1218,19 +1235,20 @@ const WeatherEffects = (() => {
             }
         }
         if (inst.birds) _birdsFrame(inst, ctx, w, h, s, dt, t, env, gust);
+        const fall = dt * inst.speed;
         if (inst.rain && inst.rain.length) {
             const recipe = RAIN[inst.rainKey];
             const sp = _sprite('streak', env.schemeDark);
             const lean = recipe.lean * gust;
-            const stretch = Math.min(dt, 1 / 24);
+            const stretch = Math.min(dt, 1 / 24) * inst.speed;
             const maxLen = h * 0.22;
             ctx.setTransform(s, 0, s * lean, s, 0, 0);
             const dark = env.schemeDark;
             ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
             const aCap = dark ? 0.62 : 0.95;
             for (const p of inst.rain) {
-                p.y += p.vy * dt / h;
-                p.x += p.vy * lean * 0.9 * dt / span;
+                p.y += p.vy * fall / h;
+                p.x += p.vy * lean * 0.9 * fall / span;
                 let y = p.y * (h + 40) - 20;
                 if (y > h + 24) { p.y = (Math.random() * -0.22); p.x = Math.random(); p.sd = Math.random(); y = p.y * (h + 40) - 20; }
                 if (p.x > 1) p.x -= 1; else if (p.x < 0) p.x += 1;
@@ -1257,12 +1275,12 @@ const WeatherEffects = (() => {
         if (inst.hail && inst.hail.length) {
             const sp = _sprite('hail', env.schemeDark);
             const tr = _sprite('streak', env.schemeDark);
-            const stretch = Math.min(dt, 1 / 24);
+            const stretch = Math.min(dt, 1 / 24) * inst.speed;
             const lean = 0.07 * gust;
             ctx.setTransform(s, 0, s * lean, s, 0, 0);
             for (const p of inst.hail) {
-                p.y += p.vy * dt / h;
-                p.x += p.vy * lean * 0.9 * dt / span;
+                p.y += p.vy * fall / h;
+                p.x += p.vy * lean * 0.9 * fall / span;
                 let y = p.y * (h + 40) - 20;
                 if (y > h + 24) { p.y = (Math.random() * -0.22); p.x = Math.random(); y = p.y * (h + 40) - 20; }
                 if (p.x > 1) p.x -= 1; else if (p.x < 0) p.x += 1;
@@ -1287,8 +1305,8 @@ const WeatherEffects = (() => {
             ctx.setTransform(s, 0, 0, s, 0, 0);
             const wind = drift * 7;
             for (const p of inst.snow) {
-                p.y += p.vy * dt / h;
-                p.x += wind * (0.4 + p.z * 0.6) * dt / span;
+                p.y += p.vy * fall / h;
+                p.x += wind * (0.4 + p.z * 0.6) * fall / span;
                 let y = p.y * (h + 24) - 12;
                 if (y > h + 14) { p.y = Math.random() * -0.12; p.x = Math.random(); p.ph = Math.random() * Math.PI * 2; y = p.y * (h + 24) - 12; }
                 if (p.x > 1) p.x -= 1; else if (p.x < 0) p.x += 1;
@@ -1320,6 +1338,8 @@ const _SAFE_JUSTIFY = new Set(['center', 'flex-end']);
 const ALIGN_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch', baseline: 'baseline' });
 const FORECAST_CACHE = new Map();
 const FORECAST_CACHE_MAX = 50;
+const WEATHER_MEDIA_EXTS = Object.freeze(['', '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.mp4']);
+const WEATHER_MEDIA_FOUND = new Map();
 const _FORECAST_UNIT_MAP = { temperature: 'temperature_unit', templow: 'temperature_unit', wind_speed: 'wind_speed_unit', precipitation: 'precipitation_unit', pressure: 'pressure_unit', visibility: 'visibility_unit', dew_point: 'temperature_unit' };
 const _FORECAST_UNIT_FALLBACK = { humidity: '%', precipitation_probability: '%', cloud_coverage: '%', wind_bearing: '°', uv_index: '' };
 function collectConditionEntities(conditions) {
@@ -1339,11 +1359,23 @@ function normalizeLength(v) {
     if (!s) return '';
     return s.split(/\s+/).map(tok => {
         if (!tok) return tok;
-        if (tok === '0') return '0';
+        if (tok === '0') return '0px';
         return /^[+-]?(\d+\.?\d*|\.\d+)$/.test(tok) ? tok + 'px' : tok;
     }).join(' ');
 }
 function cssLength(v) { return cssValue(normalizeLength(v)); }
+const _BUILTIN_IMAGES = { home: () => import('./image-assets-home.js').then((m) => m.HOME_IMAGE), 'old-home': OLD_HOME_IMAGE, 'demo-home-image': OLD_HOME_IMAGE };
+const _builtinLoaded = new Map(), _builtinPending = new Map();
+function _builtinImage(src) {
+    if (!Object.prototype.hasOwnProperty.call(_BUILTIN_IMAGES, src)) return undefined;
+    const b = _BUILTIN_IMAGES[src];
+    if (typeof b === 'string') return b;
+    return _builtinLoaded.has(src) ? _builtinLoaded.get(src) : null;
+}
+function _loadBuiltinImage(src) {
+    if (!_builtinPending.has(src)) _builtinPending.set(src, _BUILTIN_IMAGES[src]().then((svg) => { _builtinLoaded.set(src, svg); }, () => { _builtinLoaded.set(src, ''); }));
+    return _builtinPending.get(src);
+}
 function _elBoxStyle(el) {
     let s = '';
     if (el && el.margin !== undefined && el.margin !== '') s += `;margin:${cssLength(el.margin)}`;
@@ -1591,7 +1623,7 @@ class WeatherCard extends HTMLElement {
         this._refButtonEntities = refs;
         const isAstroNight = !!sunObj && (sunObj.state || '').toLowerCase() === 'below_horizon';
         const colorMode = (cfg.color_mode || 'sun').toLowerCase();
-        if (colorMode !== 'theme' && !sunObj) this._warnMissingSun();
+        if (colorMode === 'sun' && !sunObj) this._warnMissingSun();
         const schemeDark = WeatherCard._schemeDarkFromColorMode(colorMode, themeDark, isAstroNight);
         const hasAstroNightChanged = this._isAstroNight !== isAstroNight;
         const hasSchemeDarkChanged = this._schemeDark !== schemeDark;
@@ -1614,14 +1646,9 @@ class WeatherCard extends HTMLElement {
             }
             if (Array.isArray(s.elements)) {
                 for (const el of s.elements) {
-                    if (!el) continue;
-                    if (el.type === 'text' && el.entity) {
-                        const te = hass.states[el.entity];
-                        if (te) sig += `|tx:${el.attribute ? (te.attributes[el.attribute] != null ? te.attributes[el.attribute] : '') : te.state}`;
-                    } else if (el.type === 'icon' && (el.entity || el.attribute)) {
-                        const ie = hass.states[el.entity || s.entity];
-                        if (ie) sig += `|ic:${el.attribute ? (ie.attributes[el.attribute] != null ? ie.attributes[el.attribute] : '') : ie.state}`;
-                    }
+                    if (!el || (el.type !== 'text' && el.type !== 'icon') || !(el.entity || el.attribute)) continue;
+                    const ee = hass.states[el.entity || s.entity];
+                    if (ee) sig += `|${el.type}:${el.attribute ? (ee.attributes[el.attribute] != null ? ee.attributes[el.attribute] : '') : ee.state}`;
                 }
             }
             for (const def of s._gaugeDefs) {
@@ -1655,6 +1682,7 @@ class WeatherCard extends HTMLElement {
         if (isAstroNight && weatherState === 'sunny') weatherState = 'clear-night';
         if (!isAstroNight && weatherState === 'clear-night') weatherState = 'sunny';
         if (weatherState === 'exceptional' && isAstroNight) weatherState = 'clear-night';
+        this._weatherState = weatherState;
         this._updateSchemeStyles(weatherState);
         this._updateTextElements(hass, weatherState);
         this._updateWeatherBackground(weatherState, schemeDark);
@@ -1686,7 +1714,8 @@ class WeatherCard extends HTMLElement {
         }
         return document.createElement("origami-weather-editor");
     }
-    static getStubConfig(hass) {
+    static async getStubConfig(hass) {
+        const { buildStubConfig } = await import('./layout-presets.js');
         return buildStubConfig(hass);
     }
     static _migrateConfig(config) {
@@ -1849,7 +1878,7 @@ class WeatherCard extends HTMLElement {
         return half > 0 ? Math.min(1, Math.max(0, 0.5 + (now - mid) / (2 * half))) : 0.5;
     }
     static _schemeDarkFromColorMode(colorMode, themeIsDark, isAstroNight) {
-        return colorMode === 'theme' ? themeIsDark : isAstroNight;
+        return colorMode === 'theme' ? themeIsDark : colorMode === 'dark' || (colorMode !== 'light' && isAstroNight);
     }
     static _sunPalette(warm, saturation) {
         const wash = 1 - saturation;
@@ -1895,6 +1924,7 @@ class WeatherCard extends HTMLElement {
     _resolveSensorValue(hass, entityId, attribute) {
         let formatted = 'N/A', haFormatted = false, rawNumeric = null;
         const sensor = hass.states[entityId];
+        if (sensor && attribute && sensor.attributes[attribute] == null && !entityId.startsWith('weather.')) attribute = undefined;
         if (sensor && attribute) {
             const raw = sensor.attributes[attribute];
             if (raw !== undefined && raw !== null) {
@@ -1922,7 +1952,8 @@ class WeatherCard extends HTMLElement {
                 }
             }
         }
-        return { formatted, sensor, haFormatted, rawNumeric };
+        const missing = !!(sensor && attribute && sensor.attributes[attribute] == null);
+        return { formatted, sensor, haFormatted, rawNumeric, missing };
     }
     _syncForecasts() {
         if (!(this._hass && this._hass.connection)) return;
@@ -1964,6 +1995,7 @@ class WeatherCard extends HTMLElement {
             this._forecastSubs.set(key, unsub);
         }).catch(() => {
             if (this._forecastSubs.get(key) === pending) this._forecastSubs.delete(key);
+            if (!this._forecastData.has(key)) this._onForecastData(key, [], type === 'daily');
         });
     }
     _onForecastData(key, raw, daily) {
@@ -1983,10 +2015,14 @@ class WeatherCard extends HTMLElement {
     _resolveForecastValue(hass, button) {
         const type = button.forecast === 'hourly' ? 'hourly' : 'daily';
         const offset = Math.max(0, parseInt(button.forecast_offset, 10) || 0);
+        const none = { formatted: '', condition: null, datetime: null, none: true };
+        const st = hass.states[button.entity], sf = st && st.attributes ? Number(st.attributes.supported_features) : NaN;
+        if (Number.isFinite(sf) && !(sf & (type === 'hourly' ? 2 : 1))) return none;
         const _forecastEntry = this._forecastData.get(`${button.entity}|${type}`);
         const forecast = _forecastEntry && _forecastEntry.processed;
-        if (!forecast || !forecast.length) return { formatted: '', condition: null, datetime: null, loading: true };
-        const entry = forecast[Math.min(offset, forecast.length - 1)];
+        if (!forecast) return { formatted: '', condition: null, datetime: null, loading: true };
+        if (offset >= forecast.length) return none;
+        const entry = forecast[offset];
         let label = entry.condition || '—';
         if (entry.condition && typeof hass.localize === 'function') label = hass.localize(`component.weather.entity_component._.state.${entry.condition}`) || label;
         return { formatted: label, condition: entry.condition, datetime: entry.datetime, entry };
@@ -2010,6 +2046,7 @@ class WeatherCard extends HTMLElement {
         const tight = hasFormat || txt.fancy_unit === true;
         if (txt.entity) {
             const r = this._resolveSensorValue(hass, txt.entity, txt.attribute);
+            if (r.missing) return { value: '', unit: '', tight: true, missing: true, sig: `e:${txt.entity}|${txt.attribute}|na` };
             const { value, unit } = this._reshapeValue(hass, r, txt, hasFormat, txt.entity, txt.attribute);
             return { value, unit, tight, sig: `e:${txt.entity}|${txt.attribute || ''}|${txt.precision ?? ''}|${value}${unit}` };
         }
@@ -2025,7 +2062,7 @@ class WeatherCard extends HTMLElement {
                     return { value, unit: hasFormat ? txt.format : '', tight: true, sig: `forecast:datetime|${value}` };
                 }
                 const raw = ctx.forecastEntry[txt.attribute];
-                if (raw == null) return { value: 'N/A', unit: '', tight: true, sig: `forecast:${txt.attribute}|na` };
+                if (raw == null) return { value: '', unit: '', tight: true, missing: true, sig: `forecast:${txt.attribute}|na` };
                 if (txt.attribute === 'condition' && typeof raw === 'string') {
                     const value = (typeof hass.localize === 'function' && hass.localize(`component.weather.entity_component._.state.${raw}`)) || raw;
                     return { value, unit: hasFormat ? txt.format : '', tight: true, sig: `forecast:condition|${value}` };
@@ -2042,9 +2079,11 @@ class WeatherCard extends HTMLElement {
                 return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `forecast:${txt.attribute}|${value}${unit}` };
             }
             const r = this._resolveSensorValue(hass, button.entity, txt.attribute);
+            if (r.missing) return { value: '', unit: '', tight: true, missing: true, sig: `a:${txt.attribute}|na` };
             const { value, unit } = this._reshapeValue(hass, r, txt, hasFormat, button.entity, txt.attribute);
             return { value, unit, tight, sig: `a:${txt.attribute}|${txt.precision ?? ''}|${value}${unit}` };
         }
+        if (ctx.primaryResolved && ctx.primaryResolved.missing) return { value: '', unit: '', tight: true, missing: true, sig: 'v:na' };
         const { value, unit } = ctx.primaryResolved
             ? this._reshapeValue(hass, ctx.primaryResolved, txt, hasFormat, button.entity, button.attribute)
             : { value: ctx.formatted, unit: hasFormat ? txt.format : '' };
@@ -2172,6 +2211,7 @@ class WeatherCard extends HTMLElement {
             #weather-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
             #weather-bg > img, #weather-bg > video { display: block; width: 100%; height: 100%; object-fit: cover; border: none; outline: none; filter: brightness(var(--origami-bg-brightness, 1)) saturate(var(--origami-bg-saturation, 1)) blur(var(--origami-bg-blur, 0px)) var(--_origami-dark-theme-filter, ); }
             #card-root.has-weather-bg #weather-bg { display: block; }
+            #card-root.image-front #weather-bg { z-index: 3; }
             #default-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
             #sky-base { position: absolute; inset: 0; border-radius: inherit; }
             #card-root.scheme-light #sky-base { background: var(--origami-default-bg-light, linear-gradient(125deg, #bdd8ee 0%, #d3e6f2 55%, #e4f0f7 100%)); }
@@ -2192,7 +2232,8 @@ class WeatherCard extends HTMLElement {
             @keyframes wbkO1 { 0%, 100% { opacity: 0.82; } 45% { opacity: 1; } }
             @keyframes wbkO2 { 0%, 100% { opacity: 1; } 55% { opacity: 0.78; } }
             @keyframes wbkO3 { 0%, 100% { opacity: 0.88; } 40% { opacity: 1; } 72% { opacity: 0.8; } }
-            #card-root.has-default-bg #default-bg { display: block; }
+            #card-root:is(.has-default-bg, .haze-only) #default-bg { display: block; }
+            #card-root.haze-only #sky-base { display: none; }
             #sun-moon-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 2; overflow: hidden; overflow: clip; display: none; }
             #card-root.has-sun-moon #sun-moon-layer { display: block; }
             #sun-moon { position: absolute; z-index: 1; left: var(--origami-sun-moon-x, 50%); top: clamp(calc(var(--origami-sun-moon-size, 80px) / 2 + 6px), var(--origami-sun-moon-y, 100%), 100%); width: var(--origami-sun-moon-size, 80px); height: var(--origami-sun-moon-size, 80px); transform: translate(-50%, -50%); }
@@ -2292,7 +2333,7 @@ class WeatherCard extends HTMLElement {
             #card-root.scheme-dark #sun-rays::before, #card-root.scheme-dark #sun-rays::after { mix-blend-mode: screen; }
             #card-root.scheme-dark { --origami-sun-ray-shine: rgba(178,204,248,0.14); }
             @keyframes wbkRayShine { 0%, 100% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.35); } 50% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.9); } }
-            #content-layer { position: relative; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; z-index: 5; }
+            #content-layer { position: relative; container-type: inline-size; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; z-index: 5; }
             #content-layer.direction-row { flex-wrap: wrap; }
             #content-layer.direction-row > .buttons-group, #content-layer.direction-row > .cards-group { flex: 1 1 0; min-width: 0; }
             #content-layer > .buttons-group.has-custom-width, #content-layer > .cards-group.has-custom-width { flex: 0 0 auto; width: var(--origami-container-width); align-self: auto; }
@@ -2368,7 +2409,7 @@ class WeatherCard extends HTMLElement {
             .button .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.1em); opacity: 0.9; }
             .button .button-icon svg.weather-icon { display: block; width: var(--weather-icon-size, 1.1em); height: var(--weather-icon-size, 1.1em); opacity: 0.9; }
             .button .button-icon img.custom-bottom-icon { display: block; height: var(--weather-icon-size, 1.1em); width: var(--weather-icon-size, 1.1em); object-fit: contain; }
-            .button .button-text { flex: 0 1 auto; min-width: 0; max-width: 100%; line-height: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: var(--_button-no-bg-shadow, none); padding-block: 0.1em; margin-block: -0.1em; }
+            .button .button-text { flex: 0 1 auto; min-width: 0; max-width: 100%; line-height: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: var(--_button-no-bg-shadow, none); padding: 0.1em 0.06em; margin: -0.1em -0.06em; }
             .button .button-text:empty { display: none; }
             .button .button-text.marquee-host { flex: 1 1 auto; }
             .button .button-text .fancy-unit { font-size: 0.55em; font-weight: 500; opacity: 0.7; vertical-align: baseline; position: relative; top: -0.45em; margin-left: 3px; }
@@ -2437,7 +2478,8 @@ class WeatherCard extends HTMLElement {
             .button-bar > .gauge-marker { top: 50%; left: calc(var(--origami-gauge-pos) * (100% - var(--origami-marker-size)) + var(--origami-marker-size) / 2); }
             .button.button-bar-type { flex-wrap: wrap; }
             .button.button-bar-type.format-vertical { flex-wrap: nowrap; }
-            .button.button-bar-type.format-vertical .button-bar { align-self: stretch; }
+            .button.button-bar-type.format-vertical .button-bar { align-self: stretch; width: auto; }
+            .button.button-bar-type .button-bar.has-len { width: min(var(--origami-bar-len), 100%); align-self: auto; }
             .button.button-loading { position: relative; }
             .button.button-loading .button-icon,
             .button.button-loading .button-text,
@@ -2570,12 +2612,11 @@ class WeatherCard extends HTMLElement {
         this._prevWeatherClass = cls;
     }
     _resolveCardBackgroundColor(cfg) {
-        const dark = this._schemeDark, base = ((dark && cfg.background_color_dark) || cfg.background_color || '').toString().trim();
+        const dark = /^(dark|light)$/i.test(cfg.color_mode || '') ? this._isAstroNight : this._schemeDark, base = ((dark && cfg.background_color_dark) || cfg.background_color || '').toString().trim();
         const thresholds = Array.isArray(cfg.background_thresholds) ? cfg.background_thresholds : [];
         if (!thresholds.length || !this._hass) return base;
         const entity = cfg.background_threshold_entity;
-        if (!entity) return base;
-        const value = this._sensorValue(this._hass, entity, cfg.background_threshold_attribute);
+        const value = entity ? this._sensorValue(this._hass, entity, cfg.background_threshold_attribute) : this._weatherState;
         return pickThreshold(dark ? thresholds.map(t => ({ ...t, color: t.color_dark || t.color })) : thresholds, value) || base;
     }
     _applyConfigStyles() {
@@ -2593,9 +2634,10 @@ class WeatherCard extends HTMLElement {
         const cardFrame = cfg.card_frame !== false;
         root.classList.toggle('no-card-frame', !cardFrame);
         const bgMode = this._backgroundMode(cfg);
+        const cardColor = bgMode === 'color' || bgMode === 'images' ? cssValue(this._resolveCardBackgroundColor(cfg)) : '';
         root.classList.toggle('bg-ha-card', bgMode === 'card');
-        root.classList.toggle('bg-custom-color', bgMode === 'color');
-        this._cssVar(root, '--origami-card-bg-color', bgMode === 'color' ? cssValue(this._resolveCardBackgroundColor(cfg)) : '', '_prevCardBgColor');
+        root.classList.toggle('bg-custom-color', bgMode === 'color' || !!cardColor);
+        this._cssVar(root, '--origami-card-bg-color', cardColor, '_prevCardBgColor');
         const fw = cfg.full_width === true;
         this.classList.toggle('full-width', fw);
         const fwMargin = fw ? (cfg.full_width_margin || '').toString().trim() : '';
@@ -2622,7 +2664,10 @@ class WeatherCard extends HTMLElement {
         this._cssVar(root, '--origami-edge-fade-size', efSize ? normalizeLength(efSize) : '', '_prevEdgeFadeSize');
         this._cssVar(root, '--origami-gradient', cfg.gradient === true ? `${cfg.gradient_type === 'radial' ? `radial-gradient(at ${cfg.gradient_x ?? 50}% ${cfg.gradient_y ?? 50}%, ` : `linear-gradient(${cfg.gradient_angle ?? 180}deg, `}${cfg.gradient_color_1 || 'transparent'} ${cfg.gradient_stop_1 ?? 0}%, ${cfg.gradient_color_2 || 'transparent'} ${cfg.gradient_stop_2 ?? 100}%)` : '', '_prevGradient');
         root.classList.toggle('has-custom-shadow', cfg.shadow !== false);
-        root.classList.toggle('no-haze', cfg.background_haze === false);
+        const haze = bgMode === 'default' ? cfg.background_haze !== false : cfg.background_haze === true;
+        root.classList.toggle('no-haze', !haze);
+        root.classList.toggle('haze-only', haze && bgMode !== 'default');
+        root.classList.toggle('image-front', cfg.weather_image_front === true);
         this._cssVar(root, '--origami-shadow', (cfg.shadow_color || '').toString().trim(), '_prevShadow');
         const caKey = (cfg.content_align || '').toString().toLowerCase();
         const caVal = JUSTIFY_MAP[caKey] || '';
@@ -2637,7 +2682,7 @@ class WeatherCard extends HTMLElement {
         const sunMoonX = cfg.sun_moon_x != null && cfg.sun_moon_x !== '' && cfg.sun_moon_x !== 'dynamic' ? (isNaN(cfg.sun_moon_x) ? String(cfg.sun_moon_x).trim() : `${parseFloat(cfg.sun_moon_x)}%`) : '';
         this._cssVar(root, '--origami-sun-moon-size', sunMoonSize, '_prevSunMoonSize');
         this._cssVar(root, '--origami-sun-moon-x', sunMoonX, '_prevSunMoonX');
-        const padParts = cssLength(cfg.card_padding).split(' ');
+        const padParts = cssLength(cfg.card_padding).match(/(?:[^\s(]+|\([^)]*\))+/g) || [''];
         this._cssVar(root, '--_origami-pad-v', padParts[0], '_prevPadV');
         this._cssVar(root, '--_origami-pad-h', padParts[1] || padParts[0], '_prevPadH');
         if (!this._containerStyleCache) this._containerStyleCache = [];
@@ -2687,10 +2732,16 @@ class WeatherCard extends HTMLElement {
         const image = (container.image || '').toString().trim(), imageDark = image && (container.image_dark || '').toString().trim();
         if (cache.image !== `${image}|${imageDark}`) {
             cache.image = `${image}|${imageDark}`;
-            for (const n of cg.querySelectorAll('.group-image')) n.remove();
-            const img = (src, mode) => src === 'demo-home-image' ? DEMO_HOME.replace('group-image', `group-image${mode}`) : `<img class="group-image${mode}" src="${escapeHtml(src)}">`;
-            if (image) cg.insertAdjacentHTML('afterbegin', img(image, imageDark && ' light') + (imageDark && img(imageDark, ' dark')));
-            cg.classList.toggle('has-image', !!image);
+            const waiting = [image, imageDark].filter((s) => s && _builtinImage(s) === null);
+            if (waiting.length) {
+                cache.image = null;
+                Promise.all(waiting.map(_loadBuiltinImage)).then(() => { this._lastSnapshot = null; this.hass = this._hass; });
+            } else {
+                for (const n of cg.querySelectorAll('.group-image')) n.remove();
+                const img = (src, mode) => { const svg = _builtinImage(src); return svg === undefined ? `<img class="group-image${mode}" src="${escapeHtml(src)}">` : svg ? svg.replace('group-image', `group-image${mode}`) : ''; };
+                if (image) cg.insertAdjacentHTML('afterbegin', img(image, imageDark && ' light') + (imageDark && img(imageDark, ' dark')));
+                cg.classList.toggle('has-image', !!image);
+            }
         }
         const free = freeStyle(container), freeSig = String(free);
         if (cache.freeSig !== freeSig) {
@@ -2814,6 +2865,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 this._renderButton(button, idx, hass, weatherState, showBottomBg, containerBlurred, buttonFormat, ai, containerCtx)
             );
             allRendered.push(...rendered.filter(r => !r.hidden));
+            if (rendered.length && rendered.every(r => r.hidden)) els.group.style.display = 'none';
             if (!this._containerRenderCache[ai]) this._containerRenderCache[ai] = {};
             const ac = this._containerRenderCache[ai];
             const rowSig = rendered.map(r => r.sig).join('§');
@@ -2878,11 +2930,13 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (n.marker_icon_size > 0) style.push(`--origami-marker-icon-size:${n.marker_icon_size}px`);
         if (n.start) style.push(`--origami-gauge-start:${n.start}deg`);
         if (arc < 360) style.push(`--origami-gauge-arc:${arc}deg`);
+        const len = p === 'bar_' && n.width > 0 ? n.width : 0;
+        if (len) style.push(`--origami-bar-len:${len}px`);
         let html = '<div class="gauge-track"></div>';
         if (o[p + 'fill'] !== false) html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ''}"></div>`;
         if (rb > ra) html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + 'range_color'] ? `;background:${cssValue(o[p + 'range_color'])}` : ''}"></div>`;
-        if (marked) html += values.filter(v => v.size).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? ' needle' : ''}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ''}</div>`).join('');
-        return { style: style.join(';'), html, overflow: marked && values.some(v => v.size > w) };
+        if (marked) html += values.filter(v => v.size && !isNaN(v.value)).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? ' needle' : ''}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ''}</div>`).join('');
+        return { style: style.join(';'), html, len, overflow: marked && values.some(v => v.size > w), empty: values.every(v => isNaN(v.value)) };
     }
     _buildIconElement(el, resolved, color) {
         const styleParts = color ? [`color:${cssValue(color)}`] : [];
@@ -2921,9 +2975,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (iconStrategy === 'builtin') return `<svg class="weather-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${BUILTIN_ICONS[iconValue] || BUILTIN_ICONS['default']}</svg>`;
         return `<ha-icon icon="${escapeHtml(iconValue)}"></ha-icon>`;
     }
-    _buildTextElement(hass, button, txt, textCtx, marqueeSpeed, marqueeRtl) {
+    _buildTextElement(hass, button, txt, textCtx, marqueeSpeed, marqueeRtl, pre) {
         const _wOp = (w) => { const n = parseFloat(w); if (isNaN(n)) return ''; return Math.min(1, Math.max(0.4, 0.4 + (n - 100) * 0.6 / 800)).toFixed(2); };
-        const resolved = this._resolveButtonText(hass, button, txt, textCtx);
+        const resolved = pre || this._resolveButtonText(hass, button, txt, textCtx);
         const value = escapeHtml(resolved.value), unit = escapeHtml(resolved.unit);
         const content = txt.fancy_unit === true
             ? `${value}<span class="fancy-unit">${unit}</span>`
@@ -2953,7 +3007,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 sensorObj: null, iconStrategy: 'static', iconValue, primaryResolved: null,
                 formatted: f.formatted, isForecast: true,
                 forecastCondition: f.condition, forecastDatetime: f.datetime,
-                forecastLoading: !!f.loading, forecastEntry: f.entry || null, forecastTextAttr,
+                forecastLoading: !!f.loading, forecastNone: !!f.none, forecastEntry: f.entry || null, forecastTextAttr,
             };
         }
         const primaryResolved = this._resolveSensorValue(hass, button.entity, button.attribute);
@@ -2982,8 +3036,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const isRingType = button.type === 'ring';
         const {
             sensorObj, iconStrategy, iconValue, formatted, primaryResolved,
-            isForecast, forecastCondition, forecastDatetime, forecastLoading, forecastEntry, forecastTextAttr,
+            isForecast, forecastCondition, forecastDatetime, forecastLoading, forecastNone, forecastEntry, forecastTextAttr,
         } = this._resolveButtonData(button, hass, textEls);
+        if (forecastNone) return skip(`none-${idx}`, true);
         const resolveIconEl = (el) => {
             const ownIcon = iconSourceValue(hass, button, el) || el.icon;
             const configIcon = ownIcon || (iconStrategy === 'native' ? '' : iconValue);
@@ -3006,14 +3061,21 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const marqueeSpeed = Math.max(5, parseFloat(button.marquee_speed) || 30);
         const marqueeRtl = button.marquee_rtl === true, width = (button.width || '').toString().trim(), height = (button.height || '').toString().trim();
         const textCtx = { isForecast, forecastEntry, forecastDatetime, forecastTextAttr, formatted, primaryResolved };
+        const resolvedText = new Map(textEls.map(el => [el, this._resolveButtonText(hass, button, el, textCtx)]));
+        const isStatic = el => el.text !== undefined && el.text !== '';
+        const dataTexts = textEls.filter(el => !isStatic(el) && !/_unit$/.test(el.attribute || ''));
+        if (!forecastLoading && dataTexts.length && dataTexts.every(el => resolvedText.get(el).missing)) return skip(`missing-${idx}`, true);
+        const missingAt = i => { const el = elements[i]; return !!el && el.type === 'text' && !isStatic(el) && !!resolvedText.get(el).missing; };
+        const lonelySeparator = (el, i) => isStatic(el) && /^[\s/|·•\-–—]+$/.test(String(el.text)) && (missingAt(i - 1) || missingAt(i + 1));
         const gauge = (o, p) => this._buildGauge(o, p, def => this._resolveGaugeValue(hass, button, def, textCtx));
         const threshold = (o, def) => Array.isArray(o.color_thresholds) && o.color_thresholds.length ? pickThreshold(o.color_thresholds, this._resolveGaugeValue(hass, button, def, textCtx)) : '';
         const parts = [];
         const push = (html, icon) => { const last = parts[parts.length - 1]; if (!icon && last && !last.icon) last.html += html; else parts.push({ html, icon }); };
         let hasAnyMarquee = false, firstIconStrategy = 'static', firstIconSet = false, barCount = 0, barOverflow = false;
-        for (const el of elements) {
+        for (const [ei, el] of elements.entries()) {
             if (el.type === 'text') {
-                const b = this._buildTextElement(hass, button, el, textCtx, marqueeSpeed, marqueeRtl);
+                if (lonelySeparator(el, ei)) continue;
+                const b = this._buildTextElement(hass, button, el, textCtx, marqueeSpeed, marqueeRtl, resolvedText.get(el));
                 push(b.html);
                 if (b.hasMarquee) hasAnyMarquee = true;
             } else if (el.type === 'icon') {
@@ -3021,8 +3083,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 if (!firstIconSet) { firstIconStrategy = r.strategy; firstIconSet = true; }
                 push(this._buildIconElement(el, r, threshold(el, el) || el.color), true);
             } else if (el.type === 'bar') {
-                const g = gauge(el, 'bar_');
-                push(`<div class="button-bar" data-gauge="${idx}-${barCount++}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
+                const g = gauge(el, 'bar_'), gi = barCount++;
+                if (!g.empty || forecastLoading) push(`<div class="button-bar${g.len ? ' has-len' : ''}" data-gauge="${idx}-${gi}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
                 barOverflow = barOverflow || g.overflow;
             }
         }
@@ -3118,7 +3180,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         this._weatherBgState = weatherState;
         this._weatherBgSchemeDark = useDarkScheme;
         const folder = basePath.endsWith('/') ? basePath : basePath + '/';
-        const exts = ['', '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.mp4'];
+        const type = String(cfg.weather_image_type || '').trim().replace(/^\./, ''), found = WEATHER_MEDIA_FOUND.get(folder);
+        const exts = type ? [`.${type}`] : found === undefined ? WEATHER_MEDIA_EXTS : [found, ...WEATHER_MEDIA_EXTS.filter(e => e !== found)];
         container.innerHTML = '';
         const probeId = this._weatherBgProbeId = (this._weatherBgProbeId || 0) + 1;
         this._probeWeatherMedia(container, root, folder, weatherState, exts, 0, probeId);
@@ -3137,13 +3200,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const url = `${folder}${state}${exts[idx]}`;
         const apply = (el) => {
             if (this._weatherBgProbeId !== probeId) return;
+            WEATHER_MEDIA_FOUND.set(folder, exts[idx]);
             container.innerHTML = '';
             container.appendChild(el);
             root.classList.add('has-weather-bg');
             this._weatherBgActive = true;
             this._startAnimation();
         };
-        if (exts[idx] === '.mp4') {
+        if (/^\.(mp4|webm)$/i.test(exts[idx])) {
             const video = document.createElement('video');
             video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
             video.setAttribute('muted', '');
@@ -3210,7 +3274,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     }
     _updateHazeStyles(weatherState, schemeDark) {
         const root = this._elements?.root;
-        if (!root || this._backgroundMode() !== 'default') return;
+        if (!root) return;
         const scheme = schemeDark ? 'dark' : 'light';
         const sig = `${weatherState}|${scheme}`;
         if (this._hazeStyleSig === sig) return;
@@ -3454,9 +3518,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const cloudState = (on && cfg.cloud_effects !== false && WeatherEffects.hasClouds(weatherState)) ? weatherState : null;
         const starsOn = on && cfg.night_sky_effects !== false && this._isAstroNight && tuning.starCount > 0 && tuning.starOpacity > 0;
         const stars = starsOn ? { count: tuning.starCount, opacity: tuning.starOpacity } : null;
+        const factor = (key) => Math.max(0.25, Math.min(4, parseFloat(cfg[key]) || 1));
         const actor = (kind, allowed) => {
             const activity = (on && allowed && cfg[`${kind}_effects`] !== false) ? WeatherEffects[`${kind}Activity`](weatherState) : 0;
-            return activity > 0 ? { activity, state: weatherState, density: Math.max(0.25, Math.min(4, parseFloat(cfg[`${kind}_density`]) || 1)) } : null;
+            return activity > 0 ? { activity, state: weatherState, density: factor(`${kind}_density`) } : null;
         };
         const birds = actor('bird', !this._schemeDark), balloon = actor('balloon', true), planes = actor('plane', true);
         const active = !!recipe || !!cloudState || !!stars || !!birds || !!balloon || !!planes;
@@ -3465,7 +3530,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             els.root.classList.remove('has-weather-effects');
             return;
         }
-        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes);
+        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor('precipitation_speed'), String(cfg.cloud_image_path || '').trim());
         this._effectsActive = active;
         els.root.classList.toggle('has-weather-effects', active);
         els.root.classList.toggle('has-star-canvas', !!stars);

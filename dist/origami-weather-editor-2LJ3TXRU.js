@@ -1,0 +1,3468 @@
+import {
+  LAYOUT_PRESETS,
+  instantiatePreset
+} from "./chunk-TKEGWGDU.js";
+
+// node_modules/@lit/reactive-element/css-tag.js
+/**
+ * @license
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+var t = globalThis;
+var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s = /* @__PURE__ */ Symbol();
+var o = /* @__PURE__ */ new WeakMap();
+var n = class {
+  constructor(t3, e4, o5) {
+    if (this._$cssResult$ = true, o5 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t3, this.t = e4;
+  }
+  get styleSheet() {
+    let t3 = this.o;
+    const s4 = this.t;
+    if (e && void 0 === t3) {
+      const e4 = void 0 !== s4 && 1 === s4.length;
+      e4 && (t3 = o.get(s4)), void 0 === t3 && ((this.o = t3 = new CSSStyleSheet()).replaceSync(this.cssText), e4 && o.set(s4, t3));
+    }
+    return t3;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r = (t3) => new n("string" == typeof t3 ? t3 : t3 + "", void 0, s);
+var i = (t3, ...e4) => {
+  const o5 = 1 === t3.length ? t3[0] : e4.reduce((e5, s4, o6) => e5 + ((t4) => {
+    if (true === t4._$cssResult$) return t4.cssText;
+    if ("number" == typeof t4) return t4;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t4 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s4) + t3[o6 + 1], t3[0]);
+  return new n(o5, t3, s);
+};
+var S = (s4, o5) => {
+  if (e) s4.adoptedStyleSheets = o5.map((t3) => t3 instanceof CSSStyleSheet ? t3 : t3.styleSheet);
+  else for (const e4 of o5) {
+    const o6 = document.createElement("style"), n4 = t.litNonce;
+    void 0 !== n4 && o6.setAttribute("nonce", n4), o6.textContent = e4.cssText, s4.appendChild(o6);
+  }
+};
+var c = e ? (t3) => t3 : (t3) => t3 instanceof CSSStyleSheet ? ((t4) => {
+  let e4 = "";
+  for (const s4 of t4.cssRules) e4 += s4.cssText;
+  return r(e4);
+})(t3) : t3;
+
+// node_modules/@lit/reactive-element/reactive-element.js
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+var { is: i2, defineProperty: e2, getOwnPropertyDescriptor: h, getOwnPropertyNames: r2, getOwnPropertySymbols: o2, getPrototypeOf: n2 } = Object;
+var a = globalThis;
+var c2 = a.trustedTypes;
+var l = c2 ? c2.emptyScript : "";
+var p = a.reactiveElementPolyfillSupport;
+var d = (t3, s4) => t3;
+var u = { toAttribute(t3, s4) {
+  switch (s4) {
+    case Boolean:
+      t3 = t3 ? l : null;
+      break;
+    case Object:
+    case Array:
+      t3 = null == t3 ? t3 : JSON.stringify(t3);
+  }
+  return t3;
+}, fromAttribute(t3, s4) {
+  let i5 = t3;
+  switch (s4) {
+    case Boolean:
+      i5 = null !== t3;
+      break;
+    case Number:
+      i5 = null === t3 ? null : Number(t3);
+      break;
+    case Object:
+    case Array:
+      try {
+        i5 = JSON.parse(t3);
+      } catch (t4) {
+        i5 = null;
+      }
+  }
+  return i5;
+} };
+var f = (t3, s4) => !i2(t3, s4);
+var b = { attribute: true, type: String, converter: u, reflect: false, useDefault: false, hasChanged: f };
+Symbol.metadata ??= /* @__PURE__ */ Symbol("metadata"), a.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+var y = class extends HTMLElement {
+  static addInitializer(t3) {
+    this._$Ei(), (this.l ??= []).push(t3);
+  }
+  static get observedAttributes() {
+    return this.finalize(), this._$Eh && [...this._$Eh.keys()];
+  }
+  static createProperty(t3, s4 = b) {
+    if (s4.state && (s4.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t3) && ((s4 = Object.create(s4)).wrapped = true), this.elementProperties.set(t3, s4), !s4.noAccessor) {
+      const i5 = /* @__PURE__ */ Symbol(), h3 = this.getPropertyDescriptor(t3, i5, s4);
+      void 0 !== h3 && e2(this.prototype, t3, h3);
+    }
+  }
+  static getPropertyDescriptor(t3, s4, i5) {
+    const { get: e4, set: r4 } = h(this.prototype, t3) ?? { get() {
+      return this[s4];
+    }, set(t4) {
+      this[s4] = t4;
+    } };
+    return { get: e4, set(s5) {
+      const h3 = e4?.call(this);
+      r4?.call(this, s5), this.requestUpdate(t3, h3, i5);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t3) {
+    return this.elementProperties.get(t3) ?? b;
+  }
+  static _$Ei() {
+    if (this.hasOwnProperty(d("elementProperties"))) return;
+    const t3 = n2(this);
+    t3.finalize(), void 0 !== t3.l && (this.l = [...t3.l]), this.elementProperties = new Map(t3.elementProperties);
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d("finalized"))) return;
+    if (this.finalized = true, this._$Ei(), this.hasOwnProperty(d("properties"))) {
+      const t4 = this.properties, s4 = [...r2(t4), ...o2(t4)];
+      for (const i5 of s4) this.createProperty(i5, t4[i5]);
+    }
+    const t3 = this[Symbol.metadata];
+    if (null !== t3) {
+      const s4 = litPropertyMetadata.get(t3);
+      if (void 0 !== s4) for (const [t4, i5] of s4) this.elementProperties.set(t4, i5);
+    }
+    this._$Eh = /* @__PURE__ */ new Map();
+    for (const [t4, s4] of this.elementProperties) {
+      const i5 = this._$Eu(t4, s4);
+      void 0 !== i5 && this._$Eh.set(i5, t4);
+    }
+    this.elementStyles = this.finalizeStyles(this.styles);
+  }
+  static finalizeStyles(s4) {
+    const i5 = [];
+    if (Array.isArray(s4)) {
+      const e4 = new Set(s4.flat(1 / 0).reverse());
+      for (const s5 of e4) i5.unshift(c(s5));
+    } else void 0 !== s4 && i5.push(c(s4));
+    return i5;
+  }
+  static _$Eu(t3, s4) {
+    const i5 = s4.attribute;
+    return false === i5 ? void 0 : "string" == typeof i5 ? i5 : "string" == typeof t3 ? t3.toLowerCase() : void 0;
+  }
+  constructor() {
+    super(), this._$Ep = void 0, this.isUpdatePending = false, this.hasUpdated = false, this._$Em = null, this._$Ev();
+  }
+  _$Ev() {
+    this._$ES = new Promise((t3) => this.enableUpdating = t3), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t3) => t3(this));
+  }
+  addController(t3) {
+    (this._$EO ??= /* @__PURE__ */ new Set()).add(t3), void 0 !== this.renderRoot && this.isConnected && t3.hostConnected?.();
+  }
+  removeController(t3) {
+    this._$EO?.delete(t3);
+  }
+  _$E_() {
+    const t3 = /* @__PURE__ */ new Map(), s4 = this.constructor.elementProperties;
+    for (const i5 of s4.keys()) this.hasOwnProperty(i5) && (t3.set(i5, this[i5]), delete this[i5]);
+    t3.size > 0 && (this._$Ep = t3);
+  }
+  createRenderRoot() {
+    const t3 = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
+    return S(t3, this.constructor.elementStyles), t3;
+  }
+  connectedCallback() {
+    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(true), this._$EO?.forEach((t3) => t3.hostConnected?.());
+  }
+  enableUpdating(t3) {
+  }
+  disconnectedCallback() {
+    this._$EO?.forEach((t3) => t3.hostDisconnected?.());
+  }
+  attributeChangedCallback(t3, s4, i5) {
+    this._$AK(t3, i5);
+  }
+  _$ET(t3, s4) {
+    const i5 = this.constructor.elementProperties.get(t3), e4 = this.constructor._$Eu(t3, i5);
+    if (void 0 !== e4 && true === i5.reflect) {
+      const h3 = (void 0 !== i5.converter?.toAttribute ? i5.converter : u).toAttribute(s4, i5.type);
+      this._$Em = t3, null == h3 ? this.removeAttribute(e4) : this.setAttribute(e4, h3), this._$Em = null;
+    }
+  }
+  _$AK(t3, s4) {
+    const i5 = this.constructor, e4 = i5._$Eh.get(t3);
+    if (void 0 !== e4 && this._$Em !== e4) {
+      const t4 = i5.getPropertyOptions(e4), h3 = "function" == typeof t4.converter ? { fromAttribute: t4.converter } : void 0 !== t4.converter?.fromAttribute ? t4.converter : u;
+      this._$Em = e4;
+      const r4 = h3.fromAttribute(s4, t4.type);
+      this[e4] = r4 ?? this._$Ej?.get(e4) ?? r4, this._$Em = null;
+    }
+  }
+  requestUpdate(t3, s4, i5, e4 = false, h3) {
+    if (void 0 !== t3) {
+      const r4 = this.constructor;
+      if (false === e4 && (h3 = this[t3]), i5 ??= r4.getPropertyOptions(t3), !((i5.hasChanged ?? f)(h3, s4) || i5.useDefault && i5.reflect && h3 === this._$Ej?.get(t3) && !this.hasAttribute(r4._$Eu(t3, i5)))) return;
+      this.C(t3, s4, i5);
+    }
+    false === this.isUpdatePending && (this._$ES = this._$EP());
+  }
+  C(t3, s4, { useDefault: i5, reflect: e4, wrapped: h3 }, r4) {
+    i5 && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t3) && (this._$Ej.set(t3, r4 ?? s4 ?? this[t3]), true !== h3 || void 0 !== r4) || (this._$AL.has(t3) || (this.hasUpdated || i5 || (s4 = void 0), this._$AL.set(t3, s4)), true === e4 && this._$Em !== t3 && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t3));
+  }
+  async _$EP() {
+    this.isUpdatePending = true;
+    try {
+      await this._$ES;
+    } catch (t4) {
+      Promise.reject(t4);
+    }
+    const t3 = this.scheduleUpdate();
+    return null != t3 && await t3, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    if (!this.isUpdatePending) return;
+    if (!this.hasUpdated) {
+      if (this.renderRoot ??= this.createRenderRoot(), this._$Ep) {
+        for (const [t5, s5] of this._$Ep) this[t5] = s5;
+        this._$Ep = void 0;
+      }
+      const t4 = this.constructor.elementProperties;
+      if (t4.size > 0) for (const [s5, i5] of t4) {
+        const { wrapped: t5 } = i5, e4 = this[s5];
+        true !== t5 || this._$AL.has(s5) || void 0 === e4 || this.C(s5, void 0, i5, e4);
+      }
+    }
+    let t3 = false;
+    const s4 = this._$AL;
+    try {
+      t3 = this.shouldUpdate(s4), t3 ? (this.willUpdate(s4), this._$EO?.forEach((t4) => t4.hostUpdate?.()), this.update(s4)) : this._$EM();
+    } catch (s5) {
+      throw t3 = false, this._$EM(), s5;
+    }
+    t3 && this._$AE(s4);
+  }
+  willUpdate(t3) {
+  }
+  _$AE(t3) {
+    this._$EO?.forEach((t4) => t4.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t3)), this.updated(t3);
+  }
+  _$EM() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$ES;
+  }
+  shouldUpdate(t3) {
+    return true;
+  }
+  update(t3) {
+    this._$Eq &&= this._$Eq.forEach((t4) => this._$ET(t4, this[t4])), this._$EM();
+  }
+  updated(t3) {
+  }
+  firstUpdated(t3) {
+  }
+};
+y.elementStyles = [], y.shadowRootOptions = { mode: "open" }, y[d("elementProperties")] = /* @__PURE__ */ new Map(), y[d("finalized")] = /* @__PURE__ */ new Map(), p?.({ ReactiveElement: y }), (a.reactiveElementVersions ??= []).push("2.1.2");
+
+// node_modules/lit-html/lit-html.js
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+var t2 = globalThis;
+var i3 = (t3) => t3;
+var s2 = t2.trustedTypes;
+var e3 = s2 ? s2.createPolicy("lit-html", { createHTML: (t3) => t3 }) : void 0;
+var h2 = "$lit$";
+var o3 = `lit$${Math.random().toFixed(9).slice(2)}$`;
+var n3 = "?" + o3;
+var r3 = `<${n3}>`;
+var l2 = document;
+var c3 = () => l2.createComment("");
+var a2 = (t3) => null === t3 || "object" != typeof t3 && "function" != typeof t3;
+var u2 = Array.isArray;
+var d2 = (t3) => u2(t3) || "function" == typeof t3?.[Symbol.iterator];
+var f2 = "[ 	\n\f\r]";
+var v = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _ = /-->/g;
+var m = />/g;
+var p2 = RegExp(`>|${f2}(?:([^\\s"'>=/]+)(${f2}*=${f2}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g = /'/g;
+var $ = /"/g;
+var y2 = /^(?:script|style|textarea|title)$/i;
+var x = (t3) => (i5, ...s4) => ({ _$litType$: t3, strings: i5, values: s4 });
+var b2 = x(1);
+var w = x(2);
+var T = x(3);
+var E = /* @__PURE__ */ Symbol.for("lit-noChange");
+var A = /* @__PURE__ */ Symbol.for("lit-nothing");
+var C = /* @__PURE__ */ new WeakMap();
+var P = l2.createTreeWalker(l2, 129);
+function V(t3, i5) {
+  if (!u2(t3) || !t3.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return void 0 !== e3 ? e3.createHTML(i5) : i5;
+}
+var N = (t3, i5) => {
+  const s4 = t3.length - 1, e4 = [];
+  let n4, l3 = 2 === i5 ? "<svg>" : 3 === i5 ? "<math>" : "", c4 = v;
+  for (let i6 = 0; i6 < s4; i6++) {
+    const s5 = t3[i6];
+    let a3, u3, d3 = -1, f3 = 0;
+    for (; f3 < s5.length && (c4.lastIndex = f3, u3 = c4.exec(s5), null !== u3); ) f3 = c4.lastIndex, c4 === v ? "!--" === u3[1] ? c4 = _ : void 0 !== u3[1] ? c4 = m : void 0 !== u3[2] ? (y2.test(u3[2]) && (n4 = RegExp("</" + u3[2], "g")), c4 = p2) : void 0 !== u3[3] && (c4 = p2) : c4 === p2 ? ">" === u3[0] ? (c4 = n4 ?? v, d3 = -1) : void 0 === u3[1] ? d3 = -2 : (d3 = c4.lastIndex - u3[2].length, a3 = u3[1], c4 = void 0 === u3[3] ? p2 : '"' === u3[3] ? $ : g) : c4 === $ || c4 === g ? c4 = p2 : c4 === _ || c4 === m ? c4 = v : (c4 = p2, n4 = void 0);
+    const x2 = c4 === p2 && t3[i6 + 1].startsWith("/>") ? " " : "";
+    l3 += c4 === v ? s5 + r3 : d3 >= 0 ? (e4.push(a3), s5.slice(0, d3) + h2 + s5.slice(d3) + o3 + x2) : s5 + o3 + (-2 === d3 ? i6 : x2);
+  }
+  return [V(t3, l3 + (t3[s4] || "<?>") + (2 === i5 ? "</svg>" : 3 === i5 ? "</math>" : "")), e4];
+};
+var S2 = class _S {
+  constructor({ strings: t3, _$litType$: i5 }, e4) {
+    let r4;
+    this.parts = [];
+    let l3 = 0, a3 = 0;
+    const u3 = t3.length - 1, d3 = this.parts, [f3, v2] = N(t3, i5);
+    if (this.el = _S.createElement(f3, e4), P.currentNode = this.el.content, 2 === i5 || 3 === i5) {
+      const t4 = this.el.content.firstChild;
+      t4.replaceWith(...t4.childNodes);
+    }
+    for (; null !== (r4 = P.nextNode()) && d3.length < u3; ) {
+      if (1 === r4.nodeType) {
+        if (r4.hasAttributes()) for (const t4 of r4.getAttributeNames()) if (t4.endsWith(h2)) {
+          const i6 = v2[a3++], s4 = r4.getAttribute(t4).split(o3), e5 = /([.?@])?(.*)/.exec(i6);
+          d3.push({ type: 1, index: l3, name: e5[2], strings: s4, ctor: "." === e5[1] ? I : "?" === e5[1] ? L : "@" === e5[1] ? z : H }), r4.removeAttribute(t4);
+        } else t4.startsWith(o3) && (d3.push({ type: 6, index: l3 }), r4.removeAttribute(t4));
+        if (y2.test(r4.tagName)) {
+          const t4 = r4.textContent.split(o3), i6 = t4.length - 1;
+          if (i6 > 0) {
+            r4.textContent = s2 ? s2.emptyScript : "";
+            for (let s4 = 0; s4 < i6; s4++) r4.append(t4[s4], c3()), P.nextNode(), d3.push({ type: 2, index: ++l3 });
+            r4.append(t4[i6], c3());
+          }
+        }
+      } else if (8 === r4.nodeType) if (r4.data === n3) d3.push({ type: 2, index: l3 });
+      else {
+        let t4 = -1;
+        for (; -1 !== (t4 = r4.data.indexOf(o3, t4 + 1)); ) d3.push({ type: 7, index: l3 }), t4 += o3.length - 1;
+      }
+      l3++;
+    }
+  }
+  static createElement(t3, i5) {
+    const s4 = l2.createElement("template");
+    return s4.innerHTML = t3, s4;
+  }
+};
+function M(t3, i5, s4 = t3, e4) {
+  if (i5 === E) return i5;
+  let h3 = void 0 !== e4 ? s4._$Co?.[e4] : s4._$Cl;
+  const o5 = a2(i5) ? void 0 : i5._$litDirective$;
+  return h3?.constructor !== o5 && (h3?._$AO?.(false), void 0 === o5 ? h3 = void 0 : (h3 = new o5(t3), h3._$AT(t3, s4, e4)), void 0 !== e4 ? (s4._$Co ??= [])[e4] = h3 : s4._$Cl = h3), void 0 !== h3 && (i5 = M(t3, h3._$AS(t3, i5.values), h3, e4)), i5;
+}
+var R = class {
+  constructor(t3, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t3, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t3) {
+    const { el: { content: i5 }, parts: s4 } = this._$AD, e4 = (t3?.creationScope ?? l2).importNode(i5, true);
+    P.currentNode = e4;
+    let h3 = P.nextNode(), o5 = 0, n4 = 0, r4 = s4[0];
+    for (; void 0 !== r4; ) {
+      if (o5 === r4.index) {
+        let i6;
+        2 === r4.type ? i6 = new k(h3, h3.nextSibling, this, t3) : 1 === r4.type ? i6 = new r4.ctor(h3, r4.name, r4.strings, this, t3) : 6 === r4.type && (i6 = new Z(h3, this, t3)), this._$AV.push(i6), r4 = s4[++n4];
+      }
+      o5 !== r4?.index && (h3 = P.nextNode(), o5++);
+    }
+    return P.currentNode = l2, e4;
+  }
+  p(t3) {
+    let i5 = 0;
+    for (const s4 of this._$AV) void 0 !== s4 && (void 0 !== s4.strings ? (s4._$AI(t3, s4, i5), i5 += s4.strings.length - 2) : s4._$AI(t3[i5])), i5++;
+  }
+};
+var k = class _k {
+  get _$AU() {
+    return this._$AM?._$AU ?? this._$Cv;
+  }
+  constructor(t3, i5, s4, e4) {
+    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t3, this._$AB = i5, this._$AM = s4, this.options = e4, this._$Cv = e4?.isConnected ?? true;
+  }
+  get parentNode() {
+    let t3 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === t3?.nodeType && (t3 = i5.parentNode), t3;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t3, i5 = this) {
+    t3 = M(this, t3, i5), a2(t3) ? t3 === A || null == t3 || "" === t3 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t3 !== this._$AH && t3 !== E && this._(t3) : void 0 !== t3._$litType$ ? this.$(t3) : void 0 !== t3.nodeType ? this.T(t3) : d2(t3) ? this.k(t3) : this._(t3);
+  }
+  O(t3) {
+    return this._$AA.parentNode.insertBefore(t3, this._$AB);
+  }
+  T(t3) {
+    this._$AH !== t3 && (this._$AR(), this._$AH = this.O(t3));
+  }
+  _(t3) {
+    this._$AH !== A && a2(this._$AH) ? this._$AA.nextSibling.data = t3 : this.T(l2.createTextNode(t3)), this._$AH = t3;
+  }
+  $(t3) {
+    const { values: i5, _$litType$: s4 } = t3, e4 = "number" == typeof s4 ? this._$AC(t3) : (void 0 === s4.el && (s4.el = S2.createElement(V(s4.h, s4.h[0]), this.options)), s4);
+    if (this._$AH?._$AD === e4) this._$AH.p(i5);
+    else {
+      const t4 = new R(e4, this), s5 = t4.u(this.options);
+      t4.p(i5), this.T(s5), this._$AH = t4;
+    }
+  }
+  _$AC(t3) {
+    let i5 = C.get(t3.strings);
+    return void 0 === i5 && C.set(t3.strings, i5 = new S2(t3)), i5;
+  }
+  k(t3) {
+    u2(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s4, e4 = 0;
+    for (const h3 of t3) e4 === i5.length ? i5.push(s4 = new _k(this.O(c3()), this.O(c3()), this, this.options)) : s4 = i5[e4], s4._$AI(h3), e4++;
+    e4 < i5.length && (this._$AR(s4 && s4._$AB.nextSibling, e4), i5.length = e4);
+  }
+  _$AR(t3 = this._$AA.nextSibling, s4) {
+    for (this._$AP?.(false, true, s4); t3 !== this._$AB; ) {
+      const s5 = i3(t3).nextSibling;
+      i3(t3).remove(), t3 = s5;
+    }
+  }
+  setConnected(t3) {
+    void 0 === this._$AM && (this._$Cv = t3, this._$AP?.(t3));
+  }
+};
+var H = class {
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  constructor(t3, i5, s4, e4, h3) {
+    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t3, this.name = i5, this._$AM = e4, this.options = h3, s4.length > 2 || "" !== s4[0] || "" !== s4[1] ? (this._$AH = Array(s4.length - 1).fill(new String()), this.strings = s4) : this._$AH = A;
+  }
+  _$AI(t3, i5 = this, s4, e4) {
+    const h3 = this.strings;
+    let o5 = false;
+    if (void 0 === h3) t3 = M(this, t3, i5, 0), o5 = !a2(t3) || t3 !== this._$AH && t3 !== E, o5 && (this._$AH = t3);
+    else {
+      const e5 = t3;
+      let n4, r4;
+      for (t3 = h3[0], n4 = 0; n4 < h3.length - 1; n4++) r4 = M(this, e5[s4 + n4], i5, n4), r4 === E && (r4 = this._$AH[n4]), o5 ||= !a2(r4) || r4 !== this._$AH[n4], r4 === A ? t3 = A : t3 !== A && (t3 += (r4 ?? "") + h3[n4 + 1]), this._$AH[n4] = r4;
+    }
+    o5 && !e4 && this.j(t3);
+  }
+  j(t3) {
+    t3 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t3 ?? "");
+  }
+};
+var I = class extends H {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t3) {
+    this.element[this.name] = t3 === A ? void 0 : t3;
+  }
+};
+var L = class extends H {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t3) {
+    this.element.toggleAttribute(this.name, !!t3 && t3 !== A);
+  }
+};
+var z = class extends H {
+  constructor(t3, i5, s4, e4, h3) {
+    super(t3, i5, s4, e4, h3), this.type = 5;
+  }
+  _$AI(t3, i5 = this) {
+    if ((t3 = M(this, t3, i5, 0) ?? A) === E) return;
+    const s4 = this._$AH, e4 = t3 === A && s4 !== A || t3.capture !== s4.capture || t3.once !== s4.once || t3.passive !== s4.passive, h3 = t3 !== A && (s4 === A || e4);
+    e4 && this.element.removeEventListener(this.name, this, s4), h3 && this.element.addEventListener(this.name, this, t3), this._$AH = t3;
+  }
+  handleEvent(t3) {
+    "function" == typeof this._$AH ? this._$AH.call(this.options?.host ?? this.element, t3) : this._$AH.handleEvent(t3);
+  }
+};
+var Z = class {
+  constructor(t3, i5, s4) {
+    this.element = t3, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s4;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t3) {
+    M(this, t3);
+  }
+};
+var B = t2.litHtmlPolyfillSupport;
+B?.(S2, k), (t2.litHtmlVersions ??= []).push("3.3.3");
+var D = (t3, i5, s4) => {
+  const e4 = s4?.renderBefore ?? i5;
+  let h3 = e4._$litPart$;
+  if (void 0 === h3) {
+    const t4 = s4?.renderBefore ?? null;
+    e4._$litPart$ = h3 = new k(i5.insertBefore(c3(), t4), t4, void 0, s4 ?? {});
+  }
+  return h3._$AI(t3), h3;
+};
+
+// node_modules/lit-element/lit-element.js
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+var s3 = globalThis;
+var i4 = class extends y {
+  constructor() {
+    super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
+  }
+  createRenderRoot() {
+    const t3 = super.createRenderRoot();
+    return this.renderOptions.renderBefore ??= t3.firstChild, t3;
+  }
+  update(t3) {
+    const r4 = this.render();
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t3), this._$Do = D(r4, this.renderRoot, this.renderOptions);
+  }
+  connectedCallback() {
+    super.connectedCallback(), this._$Do?.setConnected(true);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback(), this._$Do?.setConnected(false);
+  }
+  render() {
+    return E;
+  }
+};
+i4._$litElement$ = true, i4["finalized"] = true, s3.litElementHydrateSupport?.({ LitElement: i4 });
+var o4 = s3.litElementPolyfillSupport;
+o4?.({ LitElement: i4 });
+(s3.litElementVersions ??= []).push("4.2.2");
+
+// node_modules/lit-html/is-server.js
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+// src/origami-weather-editor.js
+var LABELS = Object.freeze({
+  weather_entity: "",
+  sun_entity: "Sun entity",
+  sun_moon_size: "Diameter",
+  sun_moon_x: "Horizontal position",
+  sun_moon_y: "Vertical position",
+  color_mode: "Light / dark mode",
+  card_height: "Card height",
+  background_mode: "Card background",
+  card_padding: "Card padding",
+  card_offset: "Card offset",
+  card_tap_action: "Tap action",
+  weather_image_path: "Light mode folder",
+  weather_image_path_dark: "Dark mode folder",
+  weather_image_type: "File type",
+  button_text_size: "Text size",
+  button_style: "Button style",
+  button_container_columns: "Columns",
+  button_padding: "Button padding",
+  button_container_padding: "Inner padding",
+  button_container_margin: "Outer offset",
+  button_container_gap: "Button gap",
+  button_gap: "Element gap",
+  button_icon_size: "Icon size",
+  button_container_grouped: "Shared background",
+  button_container_separator: "Divider",
+  button_icon_background: "Icon background",
+  button_icon_padding: "Icon padding",
+  content_align: "Content alignment",
+  content_direction: "Content direction",
+  button_container_width: "Container width",
+  icon_path: "SVG icon folder",
+  css: "",
+  bg_brightness: "Background brightness",
+  bg_saturation: "Color intensity",
+  bg_blur: "Background blur",
+  bg_blend: "Blend with dashboard"
+});
+var BUTTON_LABELS = Object.freeze({ entity: "", tap_action: "Tap action" });
+var KEY_ORDER = Object.freeze([
+  "type",
+  "name",
+  "entity",
+  "weather_entity",
+  "sun_entity",
+  "sun_enabled",
+  "moon_enabled",
+  "sun_moon_size",
+  "sun_moon_x",
+  "sun_moon_y",
+  "color_mode",
+  "dark_theme_adaptation",
+  "card_height",
+  "card_padding",
+  "background_mode",
+  "background_color",
+  "background_color_dark",
+  "background_threshold_entity",
+  "background_threshold_attribute",
+  "background_thresholds",
+  "weather_image_path",
+  "weather_image_path_dark",
+  "weather_image_type",
+  "weather_image_front",
+  "gradient",
+  "gradient_type",
+  "gradient_angle",
+  "gradient_x",
+  "gradient_y",
+  "gradient_color_1",
+  "gradient_color_2",
+  "gradient_stop_1",
+  "gradient_stop_2",
+  "card_tap_action",
+  "card_offset",
+  "card_frame",
+  "full_width",
+  "full_width_margin",
+  "edge_fade",
+  "edge_fade_size",
+  "shadow",
+  "shadow_color",
+  "icon_path",
+  "bg_brightness",
+  "bg_saturation",
+  "bg_blur",
+  "bg_blend",
+  "background_haze",
+  "precipitation_effects",
+  "precipitation_speed",
+  "cloud_effects",
+  "cloud_image_path",
+  "night_sky_effects",
+  "bird_effects",
+  "bird_density",
+  "balloon_effects",
+  "balloon_density",
+  "plane_effects",
+  "plane_density",
+  "button_containers"
+]);
+var CARD_THRESHOLD_KEYS = Object.freeze(["background_thresholds", "background_threshold_entity", "background_threshold_attribute"]);
+var nameFirst = (o5) => {
+  const n4 = typeof o5.name === "string" ? o5.name.trim() : "";
+  const { name, ...rest } = o5;
+  return n4 ? { name: n4, ...rest } : rest;
+};
+var buttonStyle = (v2) => {
+  const s4 = (v2 || "").toString().toLowerCase();
+  return s4 === "vertical" || s4 === "split" ? s4 : "inline";
+};
+var DISPLAY_DEFAULTS = Object.freeze({
+  color_mode: "sun",
+  sun_entity: "sun.sun",
+  background_mode: "default",
+  sun_moon_size: 80,
+  sun_moon_x: 50,
+  bg_brightness: 1,
+  bg_saturation: 1,
+  bg_blur: 0,
+  bg_blend: 0,
+  gradient_angle: 180,
+  gradient_x: 50,
+  gradient_y: 50,
+  gradient_stop_1: 0,
+  gradient_stop_2: 100,
+  precipitation_speed: 1,
+  balloon_density: 1,
+  plane_density: 1,
+  weather_image_type: ""
+});
+var OPT = Object.freeze({
+  visual_mode: [
+    { value: "images", label: "Custom images" },
+    { value: "default", label: "Default" },
+    { value: "card", label: "Home Assistant card" },
+    { value: "color", label: "Custom color" },
+    { value: "none", label: "No background" }
+  ],
+  weather_image_type: [{ value: "", label: "Automatic (default)" }, ...["webp", "png", "jpg", "jpeg", "gif", "svg", "mp4"].map((value) => ({ value, label: value.toUpperCase() }))],
+  color_mode: [
+    { value: "sun", label: "Follow the sun" },
+    { value: "theme", label: "Follow my theme" },
+    { value: "dark", label: "Always dark" },
+    { value: "light", label: "Always light" }
+  ],
+  button_overflow: [
+    { value: "ellipsis", label: "Ellipsis (\u2026)" },
+    { value: "marquee", label: "Scrolling text" },
+    { value: "clip", label: "Clip" },
+    { value: "wrap", label: "Wrap" }
+  ],
+  button_container_layout: [
+    { value: "wrap", label: "Flex" },
+    { value: "grid", label: "Grid" },
+    { value: "horizontal-scroll", label: "Scroll X" },
+    { value: "vertical-scroll", label: "Scroll Y" }
+  ],
+  button_container_flow: [
+    { value: "flow", label: "Flow" },
+    { value: "fixed", label: "Fixed" }
+  ],
+  button_container_align: [
+    { value: "start", label: "Left" },
+    { value: "center", label: "Center" },
+    { value: "end", label: "Right" },
+    { value: "spread", label: "Spread" }
+  ],
+  justify_content: [
+    { value: "", label: "Left (default)" },
+    { value: "center", label: "Center" },
+    { value: "end", label: "Right" },
+    { value: "between", label: "Space between" },
+    { value: "around", label: "Space around" },
+    { value: "evenly", label: "Space evenly" }
+  ],
+  justify_content_column: [
+    { value: "", label: "Top (default)" },
+    { value: "center", label: "Center" },
+    { value: "end", label: "Bottom" },
+    { value: "between", label: "Space between" },
+    { value: "around", label: "Space around" },
+    { value: "evenly", label: "Space evenly" }
+  ],
+  align_items_row: [
+    { value: "", label: "Full width (default)" },
+    { value: "start", label: "Left" },
+    { value: "center", label: "Center" },
+    { value: "end", label: "Right" }
+  ],
+  align_items: [
+    { value: "", label: "Center (default)" },
+    { value: "start", label: "Top" },
+    { value: "end", label: "Bottom" },
+    { value: "stretch", label: "Stretch" },
+    { value: "baseline", label: "Baseline" }
+  ],
+  content_align: [
+    { value: "", label: "Top (default)" },
+    { value: "end", label: "Bottom" },
+    { value: "center", label: "Center" },
+    { value: "between", label: "Space between" },
+    { value: "around", label: "Space around" },
+    { value: "evenly", label: "Space evenly" }
+  ],
+  content_direction: [
+    { value: "column", label: "Column (stacked)" },
+    { value: "row", label: "Row (side by side)" }
+  ]
+});
+var FC_ATTRIBUTES = Object.freeze([
+  { value: "condition", label: "Condition" },
+  { value: "temperature", label: "Temperature (high)" },
+  { value: "templow", label: "Temperature (low)" },
+  { value: "precipitation_probability", label: "Rain probability" },
+  { value: "precipitation", label: "Precipitation" },
+  { value: "humidity", label: "Humidity" },
+  { value: "wind_speed", label: "Wind speed" },
+  { value: "wind_bearing", label: "Wind bearing" },
+  { value: "pressure", label: "Pressure" },
+  { value: "cloud_coverage", label: "Cloud coverage" },
+  { value: "uv_index", label: "UV index" }
+]);
+var FC_TEXT_ATTRIBUTES = Object.freeze([{ value: "datetime", label: "Time label" }, ...FC_ATTRIBUTES]);
+var WeatherCardEditor = class extends i4 {
+  static get properties() {
+    return {
+      _config: { type: Object, state: true },
+      _expandedCard: { type: Number, state: true },
+      _expandedButton: { type: Number, state: true },
+      _expandedContainer: { type: Number, state: true },
+      _openPanel: { type: String, state: true }
+    };
+  }
+  constructor() {
+    super();
+    this.addEventListener("keydown", (e4) => {
+      const t3 = e4.composedPath()[0];
+      if (e4.key === "Enter" && t3 instanceof HTMLInputElement && t3.getRootNode() === this.shadowRoot) t3.blur();
+    });
+  }
+  set hass(val) {
+    const old = this._hass;
+    this._hass = val;
+    if (!old && val) {
+      this.requestUpdate();
+    } else if (old && val) {
+      if (!this._hassThrottle) {
+        this._hassThrottle = true;
+        setTimeout(() => {
+          this._hassThrottle = false;
+          this._requestUpdateIfIdle();
+        }, 2e3);
+      }
+    }
+  }
+  _isEditing() {
+    const el = this.shadowRoot && this.shadowRoot.activeElement;
+    if (!el) return false;
+    const tag = el.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") {
+      const t3 = (el.getAttribute("type") || "text").toLowerCase();
+      return t3 === "text" || t3 === "number" || t3 === "range";
+    }
+    return false;
+  }
+  _requestUpdateIfIdle() {
+    if (!this._isEditing()) this.requestUpdate();
+  }
+  get hass() {
+    return this._hass;
+  }
+  static get styles() {
+    return i`
+            :host {
+                --origami-e-s1: 4px; --origami-e-s2: 8px; --origami-e-s3: 12px; --origami-e-s4: 16px; --origami-e-r-box: 10px; --origami-e-r-ctrl: 8px; --origami-e-r-inline: 6px;
+                --origami-e-f-meta: 12px; --origami-e-f-label: 13px; --origami-e-f-body: 14px; --origami-e-f-header: 15px;
+                --origami-e-t: 150ms ease;
+                --mdc-text-field-fill-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06);
+                --mdc-typography-subtitle1-font-size: var(--origami-e-f-label); --mdc-typography-subtitle1-font-weight: 400;
+                --mdc-typography-body2-font-size: var(--origami-e-f-meta);
+                display: block;}
+            /* Spacing */
+            ha-form { display: block; }
+            ha-expansion-panel {
+                display: block; margin-top: var(--origami-e-s3); --ha-card-border-radius: var(--origami-e-r-box);
+                & ha-form { margin-top: var(--origami-e-s2); }}
+            ha-form + ha-form { margin-top: var(--origami-e-s1); }
+            .settings-group > * + *,
+            .disclosure-body > * + * { margin-top: var(--origami-e-s2); }
+            .settings-group > :first-child,
+            .disclosure-body > :first-child { margin-top: 0; }
+            .settings-group > .settings-group-label + *,
+            .settings-group > .section-title + *,
+            .disclosure-body > .settings-group-label + *,
+            .disclosure-body > .section-title + *,
+            .vcb > .settings-group-label + *,
+            .vcb-section-body > .settings-group-label + *,
+            .vcb .settings-group-label + * { margin-top: 0; }
+            .settings-group > .settings-group-label:first-child,
+            .settings-group > .section-title:first-child,
+            .disclosure-body > .settings-group-label:first-child,
+            .disclosure-body > .section-title:first-child,
+            .vcb > .settings-group-label:first-child,
+            .vcb-section-body > .settings-group-label:first-child,
+            .free-pos-layout > div > .settings-group-label:first-child,
+            .field-group > .field-group-label:first-child { padding-top: 0; }
+            /* Panel headers */
+            .panel-header {
+                display: flex; align-items: center; gap: var(--origami-e-s2);
+                font-size: var(--origami-e-f-header); font-weight: 500; color: var(--primary-text-color);
+                & ha-icon { --mdc-icon-size: 20px; color: var(--secondary-text-color); }}
+            .preset-grid {
+                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--origami-e-s2);}
+            .preset-card {
+                display: flex; flex-direction: column; align-items: flex-start; gap: var(--origami-e-s1);
+                padding: var(--origami-e-s3) var(--origami-e-s4); border: 1px solid transparent;
+                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); border-radius: var(--origami-e-r-box);
+                cursor: pointer; text-align: left; transition: border-color var(--origami-e-t), background var(--origami-e-t);
+                &:hover { border-color: var(--primary-color); background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.1); }
+                & ha-icon { --mdc-icon-size: 24px; color: var(--primary-color); }
+                & .preset-name { font-size: var(--origami-e-f-body); font-weight: 500; color: var(--primary-text-color); }
+                & .preset-desc { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); line-height: 1.35; }}
+            /* Shared backgrounds */
+            .info, .card-row, details.disclosure {
+                background: var(--secondary-background-color); border-radius: var(--origami-e-r-box);}
+            details.disclosure details.disclosure,
+            details.disclosure .card-row {
+                background: linear-gradient(rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05), rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05)), var(--secondary-background-color);}
+            .disclosure-body > :last-child { margin-bottom: 0; }
+            /* Info blocks */
+            .info {
+                padding: var(--origami-e-s3) var(--origami-e-s4); margin: 0 0 var(--origami-e-s3) 0;
+                font-size: var(--origami-e-f-label); line-height: 1.5; color: var(--secondary-text-color);
+                & b { color: var(--primary-text-color); font-weight: 500; }
+                & code { background: var(--primary-background-color); padding: 1px 6px; border-radius: 4px; font-size: var(--origami-e-f-meta); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }}
+            /* Grid layouts */
+            .card-size-row {
+                display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--origami-e-s2); }
+            /* Composite field groups */
+            .composite-grid-4 input {
+                flex: 1; min-width: 120px; padding: var(--origami-e-s2) var(--origami-e-s3);
+                border: 1px solid transparent; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07);
+                color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl);
+                font-size: var(--origami-e-f-body); box-sizing: border-box; transition: border-color var(--origami-e-t);
+                &:focus { outline: none; border-color: var(--primary-color); }}
+            .composite-grid-4 {
+                display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--origami-e-s2);
+                & label { display: flex; flex-direction: column; gap: var(--origami-e-s1); }
+                & > label > span { margin-bottom: 0; padding-left: 2px; }
+                & input { flex: none; min-width: 0; width: 100%; }}
+            /* Segmented controls */
+            .segmented {
+                display: flex; flex-wrap: wrap; width: 100%; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07);
+                border-radius: var(--origami-e-r-ctrl); padding: 0; gap: 1px; box-sizing: border-box;
+                & button {
+                    flex: 1 1 auto; min-width: 52px; padding: var(--origami-e-s2) var(--origami-e-s3); border: 0;
+                    background: transparent; color: var(--primary-text-color); font-size: var(--origami-e-f-body);
+                    cursor: pointer; transition: background var(--origami-e-t), color var(--origami-e-t);
+                    text-align: center; border-radius: var(--origami-e-r-ctrl);
+                    &:hover:not(.active) { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); }
+                    &.active { background: var(--primary-color); color: var(--text-primary-color, white); }}}
+            .segmented.segmented-compact { & button { min-width: 0; padding: var(--origami-e-s2) var(--origami-e-s1); font-size: var(--origami-e-f-meta); } }
+            /* Disclosure / details */
+            details.disclosure {
+                margin-top: var(--origami-e-s3); overflow: hidden;
+                & > summary {
+                    list-style: none; cursor: pointer; display: flex; align-items: center; gap: var(--origami-e-s2); padding: var(--origami-e-s3) var(--origami-e-s4);
+                    font-size: var(--origami-e-f-label); font-weight: 500; color: var(--primary-text-color);
+                    user-select: none; transition: background var(--origami-e-t);
+                    &::-webkit-details-marker { display: none; }
+                    &:hover { background: var(--divider-color); }
+                    & ha-icon { --mdc-icon-size: 18px; color: var(--secondary-text-color); }
+                    & .chevron { transition: transform var(--origami-e-t); }}
+                &[open] > summary .chevron { transform: rotate(90deg); }
+                & > .disclosure-body { padding: var(--origami-e-s4) var(--origami-e-s4) var(--origami-e-s3) var(--origami-e-s4); }}
+            details.sub-disclosure {
+                border-top: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06);
+                & > summary {
+                    list-style: none; cursor: pointer; display: flex; align-items: center; gap: var(--origami-e-s2); padding: 8px 0 2px;
+                    font-size: var(--origami-e-f-label); font-weight: 500; color: var(--primary-text-color);
+                    user-select: none; transition: background var(--origami-e-t);
+                    &::-webkit-details-marker { display: none; }
+                    & ha-icon { --mdc-icon-size: 16px; color: var(--secondary-text-color); }
+                    & .chevron { transition: transform var(--origami-e-t); }}
+                &[open] > summary .chevron { transform: rotate(90deg); }
+                & > .disclosure-body { padding: var(--origami-e-s2) 0 var(--origami-e-s3); }}
+            /* Card rows (cards editor) */
+            .card-row {
+                margin-bottom: var(--origami-e-s2); overflow: hidden;
+                & .card-row-head {
+                    display: flex; align-items: center; gap: var(--origami-e-s2);
+                    padding: var(--origami-e-s3) var(--origami-e-s4); cursor: pointer; user-select: none;
+                    transition: background var(--origami-e-t);
+                    &:hover { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05); }
+                    & > .chevron { --mdc-icon-size: 20px; color: var(--secondary-text-color); transition: transform var(--origami-e-t); }}
+                &.expanded .card-row-head > .chevron { transform: rotate(90deg); }
+                & .card-row-title {
+                    flex: 1; min-width: 0; font-size: var(--origami-e-f-body); font-weight: 500; color: var(--primary-text-color);
+                    display: flex; flex-direction: column; gap: 1px; overflow: hidden;
+                    & > span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                    & .row-title-meta {
+                        font-size: var(--origami-e-f-meta); font-weight: 400; color: var(--secondary-text-color); line-height: 1.25; }
+                    & .row-title-main { line-height: 1.3; }}
+                & .card-row-actions {
+                    display: flex; gap: 2px;
+                    & button {
+                        width: 32px; height: 32px; border: 0; background: transparent;
+                        color: var(--secondary-text-color); border-radius: var(--origami-e-r-inline);
+                        cursor: pointer; display: flex; align-items: center; justify-content: center;
+                        transition: background var(--origami-e-t), color var(--origami-e-t);
+                        &:hover:not(:disabled) { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); color: var(--primary-text-color); }
+                        &:disabled { opacity: 0.3; cursor: not-allowed; }}
+                    & ha-icon { --mdc-icon-size: 18px; }}
+                & .card-row-body { padding: var(--origami-e-s3) var(--origami-e-s4) var(--origami-e-s4); background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.03); }}
+            /* Add buttons */
+            .add-card-btn, .add-button-btn {
+                display: flex; align-items: center; justify-content: center; gap: var(--origami-e-s2);
+                width: 100%; padding: var(--origami-e-s3); border: 1.5px solid rgba(var(--rgb-primary-color, 0, 120, 212), 0.4);
+                background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.06); color: var(--primary-color); border-radius: var(--origami-e-r-box);
+                font-size: var(--origami-e-f-body); font-weight: 500; cursor: pointer; transition: background var(--origami-e-t), border-color var(--origami-e-t);
+                &:hover { background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.12); border-color: var(--primary-color); }
+                & ha-icon { --mdc-icon-size: 20px; }}
+            .sensor-list { margin-top: 0; &:empty { display: none; } }
+            /* Compact fields */
+            .compact-fields {
+                display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); margin: var(--origami-e-s3) 0;}
+            .compact-field {
+                display: flex; flex-direction: column; gap: var(--origami-e-s1);
+                & .compact-field-label { margin-bottom: 0; }
+                & input { width: 100%; min-width: 0; box-sizing: border-box; }
+                & input {
+                    padding: var(--origami-e-s2) var(--origami-e-s3); border: 1px solid transparent;
+                    background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); color: var(--primary-text-color);
+                    border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); transition: border-color var(--origami-e-t);
+                    &:focus { outline: none; border-color: var(--primary-color); }}}
+            .compact-field .card-height-value { margin-top: 3px; }
+            /* Toggle groups */
+            .toggle-group {
+                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06);
+                border-radius: var(--origami-e-r-box); overflow: hidden; margin: var(--origami-e-s2) 0;}
+            .toggle-row {
+                display: flex; align-items: center; justify-content: space-between; gap: var(--origami-e-s3); padding: 10px var(--origami-e-s2) 10px var(--origami-e-s3);
+                cursor: pointer; box-sizing: border-box;
+                & + .toggle-row { border-top: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06); }
+                & > span { font-size: var(--origami-e-f-body); color: var(--primary-text-color); }
+                & ha-switch { flex-shrink: 0; margin: 0; padding: 0;
+                    --ha-switch-background-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.12);
+                    --ha-switch-thumb-background-color: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.35);
+                    --ha-switch-border-color: transparent;
+                    --ha-switch-thumb-border-color: transparent;
+                    --ha-switch-checked-border-color: transparent;
+                    --ha-switch-checked-thumb-border-color: transparent;
+                    --ha-switch-checked-background-color: var(--primary-color);
+                    --ha-switch-checked-thumb-background-color: var(--text-primary-color, #fff); }}
+            .toggle-sub { padding: 0 var(--origami-e-s2) var(--origami-e-s3) var(--origami-e-s3); & .wbk-slider { padding: 0; background: none; } }
+            .toggle-sub + .toggle-row { border-top: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06); }
+            .fc-box {
+                margin: var(--origami-e-s3) 0; padding: var(--origami-e-s3) var(--origami-e-s4); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08);
+                border: 1px solid rgba(var(--rgb-primary-color, 0, 120, 212), 0.18);
+                border-radius: var(--origami-e-r-box);}
+            .fc-box ha-form { margin-top: var(--origami-e-s2); }
+            /* Icon combo & weather icon */
+            .icon-combo {
+                display: flex; align-items: center; gap: var(--origami-e-s1);
+                & ha-icon-picker { flex: 1; min-width: 0; }
+                & .icon-weather-btn {
+                    flex-shrink: 0; padding: var(--origami-e-s2) var(--origami-e-s3); border: 0;
+                    border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-meta); cursor: pointer;
+                    transition: background var(--origami-e-t), color var(--origami-e-t);
+                    &.active { background: var(--primary-color); color: var(--text-primary-color, white); }
+                    &:not(.active) { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09); color: var(--primary-text-color); }
+                    &:hover:not(.active) { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.16); }}}
+            .weather-icon-active {
+                display: flex; align-items: center; gap: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3);
+                background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.07); border: 1px solid rgba(var(--rgb-primary-color, 0, 120, 212), 0.18);
+                border-radius: var(--origami-e-r-ctrl);}
+            .weather-icon-active-text {
+                flex: 1; display: flex; flex-direction: column; gap: 1px;
+                & span:first-child { font-size: var(--origami-e-f-label); font-weight: 500; color: var(--primary-text-color); }}
+            .weather-icon-active-sub { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); }
+            .weather-icon-active .icon-weather-btn {
+                flex-shrink: 0; padding: var(--origami-e-s1) var(--origami-e-s2); border: 0;
+                border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-meta); cursor: pointer;
+                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09); color: var(--primary-text-color);
+                transition: background var(--origami-e-t);
+                &:hover { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.16); }}
+            /* Button type picker */
+            .button-type-picker { display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); margin: 0 0 var(--origami-e-s3) 0; }
+            .button-type-btn { display: flex; align-items: center; gap: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); border: 1.5px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.12); border-radius: var(--origami-e-r-box); background: transparent; color: var(--primary-text-color); text-align: left; cursor: pointer; transition: border-color var(--origami-e-t), background var(--origami-e-t); &:hover { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.05); } &.active { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08); } & .button-type-icon { --mdc-icon-size: 18px; color: var(--secondary-text-color); flex-shrink: 0; } & .button-type-icon.active-icon { color: var(--primary-color); } & .button-type-text { display: flex; flex-direction: column; gap: 1px; } & .button-type-name { font-size: var(--origami-e-f-label); font-weight: 500; line-height: 1.2; } & .button-type-desc { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); line-height: 1.2; } }
+            /* CSS value fields */
+            .css-field-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: var(--origami-e-s2); margin-top: var(--origami-e-s2); }
+            .css-field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+            .css-field { display: flex; flex-direction: column; gap: var(--origami-e-s1); & .css-field-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; margin-bottom: 0; } & input { width: 100%; box-sizing: border-box; height: 36px; padding: 0 10px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); background: var(--mdc-text-field-fill-color, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06)); color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit; transition: border-color var(--origami-e-t); &:focus { outline: none; border-color: var(--primary-color); } &::placeholder { color: var(--secondary-text-color); opacity: 0.7; } } }
+            /* Overridden fields */
+            .css-field.overridden > input { border-color: rgba(var(--rgb-primary-color, 0, 120, 212), 0.55); }
+            .bound-mode { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); color: var(--secondary-text-color); cursor: pointer; flex-shrink: 0; transition: background var(--origami-e-t), color var(--origami-e-t); }
+            .bound-mode:hover { background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.20); }
+            .bound-mode.active { background: var(--primary-color); color: var(--text-primary-color, #fff); }
+            .bound-ref { display: flex; gap: var(--origami-e-s1); & select { flex: 1 1 0; min-width: 0; height: 36px; padding: 0 6px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); background: var(--mdc-text-field-fill-color, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06)); color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit; } }
+            .revert-dot { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: var(--primary-color); cursor: pointer; flex-shrink: 0; opacity: 0.75; transition: opacity var(--origami-e-t), transform var(--origami-e-t); }
+            .revert-dot:hover { opacity: 1; transform: scale(1.35); }
+            /* Section headings */
+            .settings-group { margin-top: var(--origami-e-s4); }
+            .settings-group:first-child { margin-top: 0; }
+            /* Unified label system */
+            .settings-group-label,
+            .section-title,
+            .field-group-label {
+                font-size: var(--origami-e-f-label); font-weight: 600; text-transform: none; letter-spacing: normal;
+                color: var(--primary-text-color);
+                margin: 0; padding: var(--origami-e-s3) 0 var(--origami-e-s1) 0;
+                display: flex; align-items: center; gap: var(--origami-e-s1); line-height: 1.3;}
+            .field-group-label { padding: 0; }
+            .field-label,
+            .compact-field-label,
+            .css-field-label,
+            .offset-field-label,
+            .wbk-slider-label,
+            .button-color-label,
+            .button-color-opacity-label,
+            .threshold-label,
+            .vcb-section-title,
+            .composite-grid-4 > label > span {
+                font-size: var(--origami-e-f-label); font-weight: 500; text-transform: none; letter-spacing: normal;
+                color: var(--primary-text-color); line-height: 1.3;
+                margin: 0 0 var(--origami-e-s1) 0; padding-left: 2px;}
+            .field-group {
+                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05);
+                border-radius: var(--origami-e-r-box); padding: var(--origami-e-s3);
+                margin-top: var(--origami-e-s2);}
+            .field-group > .toggle-group:first-child { margin-top: 0; }
+            .field-group > .toggle-group:last-child { margin-bottom: 0; }
+            /* Button nudge strips */
+            .button-nudge { display: flex; align-items: flex-start; gap: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); margin: var(--origami-e-s1) 0; border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); line-height: 1.5; & code { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.08); padding: 0 4px; border-radius: 3px; } }
+            .button-nudge.warning { background: rgba(var(--rgb-warning-color, 255, 152, 0), 0.10); border: 1px solid rgba(var(--rgb-warning-color, 255, 152, 0), 0.25); }
+            .button-nudge.info { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.04); border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09); }
+            /* Button color picker */
+            .button-color-box { margin-top: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); border-radius: var(--origami-e-r-ctrl); background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.03); }
+            .button-color-row { display: flex; align-items: center; gap: var(--origami-e-s2); }
+            .button-color-label { flex: 1; margin-bottom: 0; }
+            .button-color-swatch { width: 36px; height: 28px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); border-radius: var(--origami-e-r-inline); padding: 1px 2px; background: none; cursor: pointer; flex-shrink: 0; }
+            .button-color-clear { width: 24px; height: 24px; border: 0; border-radius: 50%; padding: 0; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.08); color: var(--secondary-text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background var(--origami-e-t); &:hover { background: rgba(var(--rgb-error-color, 211, 47, 47), 0.15); color: var(--error-color); } }
+            .button-color-opacity-row { display: flex; align-items: center; gap: var(--origami-e-s2); margin-top: var(--origami-e-s2); }
+            .button-color-opacity-label { white-space: nowrap; margin-bottom: 0; }
+            .button-color-opacity { flex: 1; height: 4px; accent-color: var(--primary-color); cursor: pointer; }
+            .button-color-opacity-val { font-size: 11px; color: var(--secondary-text-color); width: 32px; text-align: right; flex-shrink: 0; }
+            /* Sliders */
+            .wbk-slider {
+                display: flex; flex-direction: column; gap: var(--origami-e-s1); padding: var(--origami-e-s3);
+                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05);
+                border-radius: var(--origami-e-r-box);}
+            .wbk-slider-head { display: flex; align-items: center; justify-content: space-between; gap: var(--origami-e-s2); margin-bottom: var(--origami-e-s1); }
+            .wbk-slider-label { flex: 1; margin-bottom: 0; }
+            .wbk-slider-num {
+                width: 48px; flex-shrink: 0; text-align: right; border: none; background: none;
+                color: var(--primary-color); font-size: var(--origami-e-f-label); font-weight: 600;
+                font-family: inherit; padding: 0; outline: none; -moz-appearance: textfield;
+                &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { -webkit-appearance: none; }}
+            .wbk-slider-range {
+                width: 100%; height: 4px; accent-color: var(--primary-color); cursor: pointer;
+                appearance: none; -webkit-appearance: none; display: block;
+                background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) var(--origami-slider-pct, 50%), rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18) var(--origami-slider-pct, 50%));
+                border-radius: 2px; border: none; outline: none;
+                &::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--primary-color); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+                &::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: none; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }}
+            .wbk-slider-helper { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); margin-top: var(--origami-e-s1); line-height: 1.4; }
+            .wbk-slider-status { font-size: var(--origami-e-f-meta); color: var(--primary-color); margin-top: 2px; line-height: 1.4; font-weight: 500; }
+            /* Free container positioning */
+            .free-pos-layout { display: grid; grid-template-columns: auto 1fr; gap: var(--origami-e-s3); align-items: start; }
+            .offset-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); }
+            .offset-field { display: flex; flex-direction: column; gap: var(--origami-e-s1); & .offset-field-label { margin-bottom: 0; } & input { width: 100%; box-sizing: border-box; height: 36px; padding: 0 10px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.18); background: var(--mdc-text-field-fill-color, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06)); color: var(--primary-text-color); border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit; &:focus { outline: none; border-color: var(--primary-color); } &::placeholder { color: var(--secondary-text-color); opacity: 0.7; } } }
+            .anchor-grid { display: grid; grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); gap: 4px; }
+            .anchor-cell { width: 30px; height: 30px; border: 1.5px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.15); border-radius: var(--origami-e-r-ctrl); background: transparent; cursor: pointer; transition: border-color var(--origami-e-t), background var(--origami-e-t); &:hover:not(.active) { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.07); } &.active { border-color: var(--primary-color); background: var(--primary-color); } }
+            .clearable-field { position: relative; & ha-form { padding-right: 0; } & .clear-btn { position: absolute; top: 8px; right: 4px; width: 24px; height: 24px; padding: 0; margin: 0; border: none; background: transparent; color: var(--secondary-text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; opacity: 0.6; transition: opacity var(--origami-e-t), color var(--origami-e-t); z-index: 1; &:hover { opacity: 1; color: var(--error-color); } & ha-icon { --mdc-icon-size: 16px; } } }
+            /* Ring threshold rows */
+            .ring-threshold-row {
+                display: flex; align-items: center; gap: var(--origami-e-s2); padding: var(--origami-e-s2) 0;
+                & + .ring-threshold-row { border-top: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06); padding-top: var(--origami-e-s2); } }
+            .ring-threshold-row .button-color-swatch { width: 28px; height: 22px; flex-shrink: 0; }
+            .ring-threshold-row input[type="text"] {
+                flex: 1; min-width: 0; height: 30px; padding: 0 8px; border: 1px solid transparent;
+                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); color: var(--primary-text-color);
+                border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-body); font-family: inherit;
+                &:focus { outline: none; border-color: var(--primary-color); } }
+            .ring-threshold-row .threshold-label { white-space: nowrap; margin-bottom: 0; padding-left: 0; }
+            .ring-threshold-del {
+                width: 22px; height: 22px; border: 0; border-radius: 50%; padding: 0;
+                background: transparent; color: var(--secondary-text-color); cursor: pointer;
+                display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+                transition: background var(--origami-e-t), color var(--origami-e-t);
+                &:hover { background: rgba(var(--rgb-error-color, 211, 47, 47), 0.12); color: var(--error-color); } }
+            .ring-threshold-add {
+                display: flex; align-items: center; justify-content: center; gap: var(--origami-e-s2);
+                width: 100%; padding: var(--origami-e-s2); margin-top: var(--origami-e-s2); border: 1.5px solid rgba(var(--rgb-primary-color, 0, 120, 212), 0.4);
+                border-radius: var(--origami-e-r-ctrl); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.06); color: var(--primary-color);
+                font-size: var(--origami-e-f-label); font-weight: 500; cursor: pointer; transition: background var(--origami-e-t), border-color var(--origami-e-t);
+                &:hover { background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.12); border-color: var(--primary-color); }
+                & ha-icon { --mdc-icon-size: 16px; }}
+            /* Visual Button Builder */
+            .vcb { display: flex; flex-direction: column; gap: var(--origami-e-s2); }
+            /* Layout picker: icon placement x text stacking, as pictures */
+            .layout-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--origami-e-s2); }
+            .layout-card { border: 1.5px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); border-radius: var(--origami-e-r-box); padding: 9px 4px; cursor: pointer; background: transparent; transition: border-color 0.12s, background 0.12s; display: flex; align-items: center; justify-content: center; min-height: 42px; }
+            .layout-card:hover { border-color: rgba(var(--rgb-primary-color, 0, 120, 212), 0.4); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.03); }
+            .layout-card.active { border-color: var(--primary-color); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.08); }
+            .lp-fig { display: flex; align-items: center; gap: 4px; }
+            .lp-fig.vertical { flex-direction: column; gap: 3px; }
+            .lp-fig.split { flex-direction: row-reverse; }
+            .lp-fig.split .lp-txt { flex-direction: column; align-items: flex-start; }
+            .lp-sq { width: 10px; height: 10px; border-radius: 3px; background: var(--primary-color); opacity: 0.35; flex-shrink: 0; }
+            .layout-card.active .lp-sq { opacity: 0.6; }
+            .lp-txt { display: flex; gap: 3px; align-items: center; }
+            .lp-bar { height: 3px; border-radius: 1.5px; background: var(--primary-text-color); }
+            .lp-bar.lg { width: 14px; opacity: 0.4; }
+            .lp-bar.sm { width: 9px; opacity: 0.25; }
+            .layout-card.active .lp-bar.lg { opacity: 0.6; }
+            .layout-card.active .lp-bar.sm { opacity: 0.4; }
+            .vcb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--origami-e-s2); }
+            .vcb-section { border-top: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06); }
+            .vcb-section-head { display: flex; align-items: center; gap: var(--origami-e-s2); padding: 8px 0 2px; cursor: pointer; user-select: none; }
+            .vcb-section-head ha-icon { --mdc-icon-size: 16px; color: var(--secondary-text-color); }
+            .vcb-section-head ha-icon.chevron { transition: transform 0.12s; }
+            .vcb-section-head.open ha-icon.chevron { transform: rotate(90deg); }
+            .vcb-section-title { flex: 1; margin-bottom: 0; padding-left: 0; }
+            .vcb-section-body { padding: var(--origami-e-s2) 0 var(--origami-e-s3); }
+            .vcb-section-body > * + * { margin-top: 6px; }
+            .vcb-reorder { display: flex; gap: 2px; margin-left: auto; }
+            .vcb-reorder button { width: 22px; height: 20px; border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); border-radius: 4px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--secondary-text-color); padding: 0; transition: background 0.12s, color 0.12s; }
+            .vcb-reorder button:hover { background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.12); color: var(--primary-color); }
+            .vcb-reorder button:disabled { opacity: 0.15; cursor: default; pointer-events: none; }
+            .vcb-reorder button ha-icon { --mdc-icon-size: 13px; }
+            .vcb-section.dimmed > .vcb-section-head { opacity: 0.45; }
+            .vcb-section.dimmed > .vcb-section-head:hover { opacity: 0.7; }
+            .vcb-nested-group { margin-left: 12px; padding-left: 10px; border-left: 2px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.06); }
+            .vcb-add-el { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--origami-e-s2); margin-top: var(--origami-e-s2); }
+            .vcb-add-el .add-card-btn { margin-top: 0; }
+        `;
+  }
+  setConfig(config) {
+    const c4 = { ...config || {} };
+    let autofilled = false;
+    if (!c4.weather_entity && this.hass && this.hass.states) {
+      const firstWeather = Object.keys(this.hass.states).find((id) => id.startsWith("weather."));
+      if (firstWeather) {
+        c4.weather_entity = firstWeather;
+        autofilled = true;
+      }
+    }
+    if ("sun_moon_enabled" in c4) {
+      if (c4.sun_moon_enabled === false) {
+        if (c4.sun_enabled === void 0) c4.sun_enabled = false;
+        if (c4.moon_enabled === void 0) c4.moon_enabled = false;
+      }
+      delete c4.sun_moon_enabled;
+      autofilled = true;
+    }
+    if ("moon_phase_entity" in c4) {
+      delete c4.moon_phase_entity;
+      autofilled = true;
+    }
+    this._config = this._cleanConfig(c4);
+    if (autofilled) Promise.resolve().then(() => this._emit());
+  }
+  get _formData() {
+    if (this._cachedFormData && this._cachedFormConfig === this._config) {
+      return this._cachedFormData;
+    }
+    const c4 = { ...DISPLAY_DEFAULTS, ...this._config || {} };
+    this._cachedFormData = c4;
+    this._cachedFormConfig = this._config;
+    return c4;
+  }
+  _setVisualMode(mode) {
+    const clear = ["weather_image_path", "weather_image_path_dark", "weather_image_type", "weather_image_front"];
+    const withColor = mode === "color" || mode === "images" ? clear : [...clear, "background_color", "background_color_dark", ...CARD_THRESHOLD_KEYS];
+    if (mode === "card") {
+      this._patch({ background_mode: mode, color_mode: "theme" }, { strip: withColor });
+    } else if (mode === "none" || mode === "color") {
+      this._patch({ background_mode: mode }, { strip: withColor });
+    } else if (mode === "images") {
+      this._patch({ background_mode: "images", weather_image_path: "/local/weather-images/light" }, { strip: withColor.filter((k2) => k2 !== "weather_image_path") });
+    } else {
+      this._patch({ background_mode: "default" }, { strip: withColor });
+    }
+  }
+  _getContainers() {
+    const areas = (this._config || {}).button_containers;
+    return Array.isArray(areas) && areas.length > 0 ? areas.map((a3) => a3 && typeof a3 === "object" ? a3 : {}) : [];
+  }
+  _getButtonsForContainer(containerIdx) {
+    const container = this._getContainers()[containerIdx];
+    const buttons = container && container.buttons;
+    return Array.isArray(buttons) && buttons.length > 0 ? buttons.map((s4) => s4 && typeof s4 === "object" ? s4 : {}) : [];
+  }
+  _commitContainers(list) {
+    if (!Array.isArray(list) || list.length === 0) {
+      this._patch({}, { strip: ["button_containers"] });
+      return;
+    }
+    this._patch({ button_containers: list });
+  }
+  _updateContainerAt(idx, newContainer) {
+    const list = this._getContainers().map((a3, i5) => i5 === idx ? newContainer : a3);
+    this._commitContainers(list);
+  }
+  _commitButtonsInContainer(containerIdx, buttons) {
+    const areas = [...this._getContainers()];
+    const container = { ...areas[containerIdx] };
+    if (!buttons || buttons.length === 0) delete container.buttons;
+    else container.buttons = buttons;
+    areas[containerIdx] = container;
+    this._commitContainers(areas);
+  }
+  _updateContainerField(containerIdx, key, value) {
+    const container = { ...this._getContainers()[containerIdx] || {} };
+    const isEmpty = value === null || value === void 0 || value === "";
+    if (isEmpty) delete container[key];
+    else container[key] = value;
+    this._updateContainerAt(containerIdx, container);
+  }
+  _containerTitle(container, idx) {
+    const hasVis = Array.isArray(container.visibility) && container.visibility.length > 0;
+    if (container.custom_cards) {
+      const cards = Array.isArray(container.custom_cards) ? container.custom_cards : [];
+      return `${cards.length} card${cards.length !== 1 ? "s" : ""}${hasVis ? " \xB7 conditional" : ""}`;
+    }
+    const count = Array.isArray(container.buttons) ? container.buttons.length : 0;
+    return `${count} button${count !== 1 ? "s" : ""}${hasVis ? " \xB7 conditional" : ""}`;
+  }
+  _computeLabel = (schema) => {
+    if (!schema || !schema.name) return "";
+    if (schema.name in LABELS) return LABELS[schema.name];
+    return schema.name;
+  };
+  _valueChanged(ev) {
+    ev.stopPropagation();
+    if (!this._config) return;
+    this._patch({ ...ev.detail && ev.detail.value || {} }, { replace: true });
+  }
+  _patch(changes, opts) {
+    const options = opts || {};
+    const base = options.replace ? {} : { ...this._config || {} };
+    const next = { ...base, ...changes };
+    if (Array.isArray(options.strip)) {
+      for (const k2 of options.strip) delete next[k2];
+    }
+    this._config = this._cleanConfig(next);
+    this._emit();
+  }
+  _cleanConfig(config) {
+    const out = { ...config };
+    for (const key of Object.keys(out)) {
+      if (key === "button_containers") continue;
+      const v2 = out[key];
+      if (v2 === "" || v2 === null || v2 === void 0) {
+        delete out[key];
+        continue;
+      }
+      if (Array.isArray(v2) && v2.length === 0) {
+        delete out[key];
+        continue;
+      }
+      if (typeof v2 === "object" && !Array.isArray(v2) && Object.keys(v2).length === 0) delete out[key];
+    }
+    for (const [k2, defVal] of Object.entries(DISPLAY_DEFAULTS)) {
+      if (out[k2] === defVal) delete out[k2];
+    }
+    const ordered = {};
+    for (const k2 of KEY_ORDER) {
+      if (k2 === "button_containers") continue;
+      if (k2 in out) ordered[k2] = out[k2];
+    }
+    for (const k2 of Object.keys(out)) {
+      if (k2 === "button_containers") continue;
+      if (!(k2 in ordered)) ordered[k2] = out[k2];
+    }
+    if ("button_containers" in out) ordered.button_containers = out.button_containers;
+    if (Array.isArray(ordered.button_containers)) {
+      const cleaned = ordered.button_containers.map((c4) => this._cleanContainer(c4 || {}));
+      if (cleaned.length === 0) delete ordered.button_containers;
+      else ordered.button_containers = cleaned;
+    }
+    return ordered;
+  }
+  _emit() {
+    this.dispatchEvent(new CustomEvent("config-changed", {
+      detail: { config: { ...this._config || {} } },
+      bubbles: true,
+      composed: true
+    }));
+  }
+  _renderForm(schema) {
+    if (!schema || schema.length === 0) return "";
+    return b2`<ha-form
+                .hass=${this.hass}
+                .data=${this._formData}
+                .schema=${schema}
+                .computeLabel=${this._computeLabel}
+                @value-changed=${this._valueChanged}
+            ></ha-form>`;
+  }
+  _renderEntityField(name, opts) {
+    const o5 = opts || {};
+    const value = (this._formData || {})[name] || "";
+    const selector = { entity: o5.domain ? { domain: o5.domain } : {} };
+    return b2`<ha-selector
+                .hass=${this.hass}
+                .selector=${selector}
+                .value=${value}
+                .label=${o5.label != null ? o5.label : LABELS[name] || ""}
+                @value-changed=${(e4) => {
+      e4.stopPropagation();
+      this._updateField(name, e4.detail && e4.detail.value || "");
+    }}
+            ></ha-selector>`;
+  }
+  _renderClearableText(name) {
+    const val = (this._formData || {})[name];
+    return b2`<div class="clearable-field">
+            ${this._renderForm([{ name, selector: { text: {} } }])}
+            ${val ? b2`<button type="button" class="clear-btn" title="Clear" @click=${() => this._updateField(name, "")}><ha-icon icon="mdi:close"></ha-icon></button>` : ""}
+        </div>`;
+  }
+  _renderDisclosure(label, content) {
+    const isAdvanced = label === "Advanced options";
+    return b2`<details class="disclosure" @toggle=${this._onDisclosureToggle}>
+                <summary>
+                    <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
+                    ${isAdvanced ? b2`<ha-icon icon="mdi:cog-outline"></ha-icon>` : ""}
+                    <span>${label}</span></summary>
+                <div class="disclosure-body">${content}</div></details>`;
+  }
+  _renderSubDisclosure(label, content) {
+    return b2`<details class="sub-disclosure" @toggle=${this._onSubDisclosureToggle}>
+                <summary>
+                    <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
+                    <span>${label}</span></summary>
+                <div class="disclosure-body">${content}</div></details>`;
+  }
+  _onSubDisclosureToggle(e4) {
+    const el = e4.currentTarget;
+    if (!el.open) return;
+    const parent = el.parentElement;
+    if (!parent) return;
+    parent.querySelectorAll(":scope > details.sub-disclosure[open]").forEach((d3) => {
+      if (d3 !== el) d3.open = false;
+    });
+  }
+  _onDisclosureToggle(e4) {
+    const el = e4.currentTarget;
+    if (!el.open) return;
+    const parent = el.parentElement;
+    if (!parent) return;
+    parent.querySelectorAll(":scope > details.disclosure[open]").forEach((d3) => {
+      if (d3 !== el) d3.open = false;
+    });
+  }
+  _updateField(field, value) {
+    const isEmpty = value === null || value === void 0 || value === "";
+    if (isEmpty) {
+      this._patch({}, { strip: [field] });
+      return;
+    }
+    this._patch({ [field]: value });
+  }
+  _onPanelToggle(id, expanded) {
+    if (expanded) this._openPanel = id;
+    else if (this._openPanel === id) this._openPanel = null;
+  }
+  _applyPreset(preset) {
+    const current = this._config || {};
+    const entity = current.weather_entity || "";
+    const next = instantiatePreset(preset, entity);
+    if (entity) next.weather_entity = entity;
+    for (const key of ["type", "name", "sun_entity", "icon_path"]) {
+      if (current[key] != null && current[key] !== "") next[key] = current[key];
+    }
+    this._patch(next, { replace: true });
+    this._expandedContainer = null;
+    this._expandedButton = null;
+    this._expandedCard = null;
+  }
+  _renderLayoutsPanel() {
+    return b2`<div class="settings-group">
+            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Replaces all current settings.</span></div>
+            <div class="preset-grid">
+                ${LAYOUT_PRESETS.map((preset) => b2`
+                    <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>
+                        <ha-icon icon=${preset.icon}></ha-icon>
+                        <span class="preset-name">${preset.name}</span>
+                        <span class="preset-desc">${preset.description}</span>
+                    </button>`)}
+            </div></div>`;
+  }
+  _renderSunMoonPanel() {
+    const c4 = this._formData || {};
+    const sunEnabled = c4.sun_enabled !== false, moonEnabled = c4.moon_enabled !== false;
+    const xDynamic = c4.sun_moon_x === "dynamic";
+    const yRaw = c4.sun_moon_y;
+    const yFixed = yRaw != null && yRaw !== "";
+    return b2`<div class="settings-group">
+            <div class="toggle-group"><label class="toggle-row"><span>Show Sun</span>
+                <ha-switch .checked=${sunEnabled}
+                    @change=${(e4) => this._updateField("sun_enabled", e4.target.checked ? "" : false)}></ha-switch></label>
+                <label class="toggle-row"><span>Show Moon</span>
+                <ha-switch .checked=${moonEnabled}
+                    @change=${(e4) => this._updateField("moon_enabled", e4.target.checked ? "" : false)}></ha-switch></label></div>
+            ${sunEnabled || moonEnabled ? b2`
+                ${this._renderEntityField("sun_entity", { domain: "sun" })}
+                ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
+                <div class="compact-field">
+                    <span class="compact-field-label">${LABELS.sun_moon_x}</span>
+                    <div class="segmented segmented-compact">
+                        <button type="button" class=${xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", "dynamic")}>Dynamic</button>
+                        <button type="button" class=${!xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", 50)}>Fixed</button>
+                    </div></div>
+                ${xDynamic ? "" : this._renderSlider("sun_moon_x", "", 0, 100, 1)}
+                <div class="compact-field">
+                    <span class="compact-field-label">${LABELS.sun_moon_y}</span>
+                    <div class="segmented segmented-compact">
+                        <button type="button" class=${!yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", "")}>Dynamic</button>
+                        <button type="button" class=${yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
+                    </div></div>
+                ${yFixed ? this._renderSlider("sun_moon_y", "", 0, 100, 1) : ""}` : ""}</div>`;
+  }
+  _renderCardStyleSegmented() {
+    return b2`<div class="compact-fields">
+                    ${this._renderCardHeightControl()}
+                    ${this._renderCompactField("card_padding", "e.g. 16px")}</div>`;
+  }
+  _renderCardHeightControl() {
+    const raw = this._formData.card_height;
+    const rawStr = String(raw == null ? "" : raw).toLowerCase().trim();
+    const mode = ["content", "auto", "square"].includes(rawStr) ? rawStr : "fixed";
+    const fixedVal = mode === "fixed" ? String(raw == null ? "" : raw) : "";
+    const setMode = (m2) => this._updateField("card_height", m2 === "fixed" ? fixedVal || "220" : m2);
+    const modes = [{ v: "content", l: "Content" }, { v: "auto", l: "Fill" }, { v: "fixed", l: "Fixed" }, { v: "square", l: "Square" }];
+    return b2`<div class="compact-field">
+                <span class="compact-field-label">${LABELS.card_height}</span>
+                <div class="segmented segmented-compact">
+                    ${modes.map((o5) => b2`<button type="button" class=${mode === o5.v ? "active" : ""}
+                        @click=${() => setMode(o5.v)}>${o5.l}</button>`)}</div>
+                ${mode === "fixed" ? b2`<input class="card-height-value" type="text" placeholder="e.g. 220"
+                        .value=${fixedVal}
+                        @change=${(e4) => this._updateField("card_height", e4.target.value || "220")}
+                    >` : ""}</div>`;
+  }
+  _parseOffset(raw) {
+    if (!raw || typeof raw !== "string") return [0, 0, 0, 0];
+    const parts = raw.trim().split(/\s+/).map((p3) => parseInt(p3, 10) || 0);
+    switch (parts.length) {
+      case 0:
+        return [0, 0, 0, 0];
+      case 1:
+        return [parts[0], parts[0], parts[0], parts[0]];
+      case 2:
+        return [parts[0], parts[1], parts[0], parts[1]];
+      case 3:
+        return [parts[0], parts[1], parts[2], parts[1]];
+      default:
+        return [parts[0], parts[1], parts[2], parts[3]];
+    }
+  }
+  _serializeOffset(arr) {
+    if (arr.every((v2) => v2 === 0)) return "";
+    return arr.map((v2) => `${v2}px`).join(" ");
+  }
+  _setOffsetPart(index, rawValue) {
+    const parts = this._parseOffset(this._formData.card_offset);
+    parts[index] = parseInt(rawValue, 10) || 0;
+    this._updateField("card_offset", this._serializeOffset(parts));
+  }
+  _renderOffsetPicker() {
+    const parts = this._parseOffset(this._formData.card_offset), edges = ["Top", "Right", "Bottom", "Left"];
+    return b2`<div class="settings-group-label">${LABELS.card_offset}</div>
+                <div class="composite-grid-4">
+                    ${edges.map((label, i5) => b2`<label> <span>${label}</span> <input
+                                    type="number"
+                                    step="1"
+                                    .value=${String(parts[i5])}
+                                    @change=${(e4) => this._setOffsetPart(i5, e4.target.value)}
+                                ></label>`)}</div>`;
+  }
+  _renderContainerCustomCardsEditor(containerIdx) {
+    const container = this._getContainers()[containerIdx] || {};
+    const cards = Array.isArray(container.custom_cards) ? container.custom_cards : [];
+    return b2`${cards.map((card, idx) => this._renderContainerCardRow(card, idx, cards.length, containerIdx))}
+            <button type="button" class="add-card-btn" @click=${() => this._addContainerCard(containerIdx)}>
+                <ha-icon icon="mdi:plus"></ha-icon>
+                <span>Add card</span></button>`;
+  }
+  _renderListRow({ idx, total, expanded, title, badge, onToggle, onMoveUp, onMoveDown, onRemove, onDuplicate, body }) {
+    return b2`<div class="card-row ${expanded ? "expanded" : ""}">
+                <div class="card-row-head" @click=${onToggle}>
+                    <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
+                    ${badge ? badge : ""}
+                    <span class="card-row-title">${title}</span>
+                    <div class="card-row-actions" @click=${(e4) => e4.stopPropagation()}>
+                        <button type="button" title="Move up" ?disabled=${idx === 0} @click=${onMoveUp}><ha-icon icon="mdi:arrow-up"></ha-icon></button>
+                        <button type="button" title="Move down" ?disabled=${idx === total - 1} @click=${onMoveDown}><ha-icon icon="mdi:arrow-down"></ha-icon></button>
+                        ${onDuplicate ? b2`<button type="button" title="Duplicate" @click=${onDuplicate}><ha-icon icon="mdi:content-copy"></ha-icon></button>` : ""}
+                        <button type="button" title="Delete" @click=${onRemove}><ha-icon icon="mdi:delete-outline"></ha-icon></button></div></div>
+                ${expanded ? b2`<div class="card-row-body">${body}</div>` : ""}</div>`;
+  }
+  _renderContainerCardRow(card, idx, total, containerIdx) {
+    const expanded = this._expandedCard === idx;
+    const title = b2`<span class="row-title-main">${card && card.type ? String(card.type).replace(/^custom:/, "") : "card"}</span>`;
+    const body = b2`<div class="card-size-row">
+                <div class="offset-field">
+                    <span class="offset-field-label">Custom width</span>
+                    <input type="text"
+                        placeholder="e.g. 140px or 60%"
+                        .value=${card.custom_width || ""}
+                        @change=${(e4) => {
+      const v2 = e4.target.value.trim();
+      const nc = { ...card };
+      if (v2) nc.custom_width = v2;
+      else delete nc.custom_width;
+      this._updateContainerCardAt(containerIdx, idx, nc);
+    }}
+                    ></div>
+                <div class="offset-field">
+                    <span class="offset-field-label">Custom height</span>
+                    <input type="text"
+                        placeholder="e.g. 110px"
+                        .value=${card.custom_height || ""}
+                        @change=${(e4) => {
+      const v2 = e4.target.value.trim();
+      const nc = { ...card };
+      if (v2) nc.custom_height = v2;
+      else delete nc.custom_height;
+      this._updateContainerCardAt(containerIdx, idx, nc);
+    }}
+                    ></div></div>
+            <ha-form
+                .hass=${this.hass}
+                .data=${{ _card: card }}
+                .schema=${[{ name: "_card", selector: { object: {} } }]}
+                .computeLabel=${() => ""}
+                @value-changed=${(e4) => {
+      e4.stopPropagation();
+      this._updateContainerCardAt(containerIdx, idx, e4.detail && e4.detail.value && e4.detail.value._card || {});
+    }}
+            ></ha-form>`;
+    return this._renderListRow({
+      idx,
+      total,
+      expanded,
+      title,
+      body,
+      onToggle: () => this._toggleCardExpanded(idx),
+      onMoveUp: () => this._moveContainerCard(containerIdx, idx, -1),
+      onMoveDown: () => this._moveContainerCard(containerIdx, idx, 1),
+      onRemove: () => this._removeContainerCard(containerIdx, idx)
+    });
+  }
+  _toggleCardExpanded(idx) {
+    this._expandedCard = this._expandedCard === idx ? null : idx;
+  }
+  _moveContainerCard(containerIdx, idx, delta) {
+    const container = { ...this._getContainers()[containerIdx] || {} };
+    const cards = [...container.custom_cards || []];
+    const target = idx + delta;
+    if (target < 0 || target >= cards.length) return;
+    [cards[idx], cards[target]] = [cards[target], cards[idx]];
+    if (this._expandedCard === idx) this._expandedCard = target;
+    else if (this._expandedCard === target) this._expandedCard = idx;
+    container.custom_cards = cards;
+    this._updateContainerAt(containerIdx, container);
+  }
+  _removeContainerCard(containerIdx, idx) {
+    const container = { ...this._getContainers()[containerIdx] || {} };
+    const cards = [...container.custom_cards || []];
+    cards.splice(idx, 1);
+    if (this._expandedCard === idx) this._expandedCard = null;
+    else if (typeof this._expandedCard === "number" && this._expandedCard > idx) this._expandedCard--;
+    if (cards.length) container.custom_cards = cards;
+    else delete container.custom_cards;
+    this._updateContainerAt(containerIdx, container);
+  }
+  _updateContainerCardAt(containerIdx, idx, newCard) {
+    const container = { ...this._getContainers()[containerIdx] || {} };
+    const cards = [...container.custom_cards || []];
+    cards[idx] = newCard;
+    container.custom_cards = cards;
+    this._updateContainerAt(containerIdx, container);
+  }
+  _addContainerCard(containerIdx) {
+    const container = { ...this._getContainers()[containerIdx] || {} };
+    const cards = [...container.custom_cards || [], { type: "entity", entity: "", custom_width: "100%" }];
+    this._expandedCard = cards.length - 1;
+    container.custom_cards = cards;
+    this._updateContainerAt(containerIdx, container);
+  }
+  _buttonTitle(button) {
+    const els = button && Array.isArray(button.elements) ? button.elements : [];
+    const firstStatic = els.find((e4) => e4 && e4.type === "text" && typeof e4.text === "string" && e4.text.trim());
+    const name = (firstStatic ? firstStatic.text : "").toString().trim(), entity = (button && button.entity || "").toString().trim();
+    const attribute = (button && button.attribute || "").toString().trim();
+    const own = (button && typeof button.name === "string" ? button.name : "").trim();
+    const two = (main, meta) => own ? b2`<span class="row-title-main">${own}</span><span class="row-title-meta">${[main, meta].filter(Boolean).join(" \xB7 ")}</span>` : b2`<span class="row-title-main">${main}</span>${meta ? b2`<span class="row-title-meta">${meta}</span>` : ""}`;
+    if (!entity) return two(name || "Choose an entity", name ? "no entity" : "");
+    const st = this.hass && this.hass.states && this.hass.states[entity], friendly = st && st.attributes && st.attributes.friendly_name;
+    const label = friendly || entity;
+    if (button.forecast) {
+      const type = button.forecast === "hourly" ? "Hourly" : "Daily", offset = parseInt(button.forecast_offset, 10) || 0;
+      const offsetLabel = button.forecast === "hourly" ? offset === 0 ? "now" : `+${offset}h` : offset === 0 ? "today" : offset === 1 ? "tomorrow" : `+${offset}d`;
+      const firstFcAttr = (els.find((e4) => e4 && e4.type === "text" && !e4.entity && e4.attribute) || {}).attribute;
+      return two(name || label, `${type} \xB7 ${offsetLabel} \xB7 ${firstFcAttr || "condition"}`);
+    }
+    return two(name || label, name ? attribute ? `${label} \xB7 ${attribute}` : label : attribute);
+  }
+  _textTitle(button, txt) {
+    const t3 = txt && typeof txt === "object" ? txt : {};
+    if (t3.entity) {
+      const st = this.hass && this.hass.states && this.hass.states[t3.entity];
+      const label = st && st.attributes && st.attributes.friendly_name || t3.entity;
+      return t3.attribute ? `${label} [${t3.attribute}]` : label;
+    }
+    if (typeof t3.text === "string" && t3.text.trim()) return `\u201C${t3.text.trim()}\u201D`;
+    if (t3.attribute) return button.forecast && t3.attribute === "datetime" ? "Time label" : `[${t3.attribute}]`;
+    if (button.forecast) return "Forecast [condition]";
+    return button.attribute ? `[${button.attribute}]` : "Entity value";
+  }
+  _cleanButton(button) {
+    const out = { ...button };
+    if (!out.entity) {
+      delete out.attribute;
+      delete out.forecast;
+      delete out.forecast_offset;
+    }
+    if (!out.forecast) delete out.forecast_offset;
+    else delete out.attribute;
+    if (out.forecast_offset === 0) delete out.forecast_offset;
+    if (Array.isArray(out.elements)) {
+      const elements = out.elements.map((e4) => this._cleanElement(e4 || {})).filter((e4) => e4 && (e4.type === "text" || e4.type === "icon" || e4.type === "bar"));
+      if (elements.length === 0) delete out.elements;
+      else if (elements.length === 1 && elements[0].type === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
+      else out.elements = elements;
+    }
+    if (out.type === "ring") {
+      if (!out.ring_values && (out.gauge_entity || out.gauge_attribute)) out.ring_values = [{ entity: out.gauge_entity, attribute: out.gauge_attribute }];
+      delete out.gauge_entity;
+      delete out.gauge_attribute;
+      this._cleanGauge(out, "ring_");
+    } else for (const k2 of Object.keys(out)) if (/^(ring|gauge)_/.test(k2)) delete out[k2];
+    if (!Array.isArray(out.color_thresholds) || out.color_thresholds.length === 0) {
+      delete out.color_thresholds;
+      delete out.color_threshold_entity;
+      delete out.color_threshold_attribute;
+    }
+    for (const k2 of Object.keys(out)) {
+      const v2 = out[k2];
+      if (v2 === "" || v2 === null || v2 === void 0 || v2 === false && !["background", "icon_background", "shadow", "ring_fill"].includes(k2)) delete out[k2];
+    }
+    return nameFirst(out);
+  }
+  _cleanElement(el) {
+    const out = { ...el || {} };
+    const type = out.type === "icon" || out.type === "bar" ? out.type : "text";
+    out.type = type;
+    if (out.source === "entity" && out.entity) delete out.source;
+    if (type === "bar") this._cleanGauge(out, "bar_");
+    else delete out.bar_values;
+    for (const k2 of Object.keys(out)) {
+      if (k2 === "type") continue;
+      const v2 = out[k2];
+      if (type === "text" && k2 === "precision") {
+        if (v2 === "" || v2 === null || v2 === void 0) delete out[k2];
+        continue;
+      }
+      if (v2 === "" || v2 === null || v2 === void 0 || v2 === false && k2 !== "icon_background" && k2 !== "bar_fill") delete out[k2];
+    }
+    return out;
+  }
+  _cleanGauge(out, p3) {
+    const values = (Array.isArray(out[p3 + "values"]) ? out[p3 + "values"] : []).filter((v2) => v2 && typeof v2 === "object").map((v2) => {
+      const o5 = { ...v2 };
+      for (const k2 of Object.keys(o5)) {
+        const val = o5[k2];
+        if (val === "" || val === null || val === void 0 || val === false) delete o5[k2];
+      }
+      return o5;
+    });
+    if (values.length > 1 || Object.keys(values[0] || {}).length) out[p3 + "values"] = values;
+    else delete out[p3 + "values"];
+    if (values.length > 1 || out[p3 + "fill"] === false || out[p3 + "needle"] === true) delete out[p3 + "marker"];
+    else if (out[p3 + "marker"] !== true) {
+      delete out[p3 + "marker_size"];
+      delete out[p3 + "marker_icon_size"];
+    }
+    if (![out[p3 + "range_from"], out[p3 + "range_to"]].some((v2) => v2 !== void 0 && v2 !== null && String(v2) !== "")) delete out[p3 + "range_color"];
+  }
+  _cleanContainer(container) {
+    const out = { ...container || {} };
+    const layout = (out.layout || "wrap").toString().toLowerCase();
+    if (layout !== "grid") delete out.columns;
+    if (layout !== "horizontal-scroll" && layout !== "vertical-scroll") {
+      delete out.scroll_count;
+      delete out.scroll_fade;
+      delete out.scroll_fade_size;
+      delete out.row_height;
+    }
+    if (out.scroll_fade === true) delete out.button_blurred_background;
+    else delete out.scroll_fade_size;
+    if (layout === "wrap") delete out.layout;
+    if (Array.isArray(out.buttons)) {
+      const buttons = out.buttons.map((b3) => this._cleanButton(b3 || {}));
+      if (buttons.length === 0) delete out.buttons;
+      else out.buttons = buttons;
+    }
+    for (const k2 of Object.keys(out)) {
+      const v2 = out[k2];
+      if ((k2 === "shadow" || k2 === "button_shadow" || k2 === "button_icon_background") && v2 === false) continue;
+      if (Array.isArray(v2)) {
+        if (v2.length === 0) delete out[k2];
+        continue;
+      }
+      if (v2 === "" || v2 === null || v2 === void 0 || v2 === false) delete out[k2];
+    }
+    return nameFirst(out);
+  }
+  _updateButtonAt(containerIdx, idx, newButton) {
+    const list = this._getButtonsForContainer(containerIdx).map((c4, i5) => i5 === idx ? this._cleanButton(newButton) : c4);
+    this._commitButtonsInContainer(containerIdx, list);
+  }
+  _addButton = (containerIdx) => {
+    const list = this._getButtonsForContainer(containerIdx);
+    const weatherEntity = this._config && this._config.weather_entity || "";
+    const newButton = weatherEntity ? { entity: weatherEntity } : {};
+    const next = [...list, newButton];
+    this._expandedButton = next.length - 1;
+    this._commitButtonsInContainer(containerIdx, next);
+  };
+  _moveButton(containerIdx, idx, delta) {
+    const list = [...this._getButtonsForContainer(containerIdx)], target = idx + delta;
+    if (target < 0 || target >= list.length) return;
+    [list[idx], list[target]] = [list[target], list[idx]];
+    if (this._expandedButton === idx) this._expandedButton = target;
+    else if (this._expandedButton === target) this._expandedButton = idx;
+    this._commitButtonsInContainer(containerIdx, list);
+  }
+  _removeButton(containerIdx, idx) {
+    const list = [...this._getButtonsForContainer(containerIdx)];
+    list.splice(idx, 1);
+    this._shiftAccordionOnRemove(containerIdx, idx);
+    if (this._expandedButton === idx) this._expandedButton = null;
+    else if (typeof this._expandedButton === "number" && this._expandedButton > idx) {
+      this._expandedButton = this._expandedButton - 1;
+    }
+    this._commitButtonsInContainer(containerIdx, list);
+  }
+  _duplicateButton(containerIdx, idx) {
+    const list = [...this._getButtonsForContainer(containerIdx)];
+    list.splice(idx + 1, 0, { ...list[idx] });
+    this._expandedButton = idx + 1;
+    this._commitButtonsInContainer(containerIdx, list);
+  }
+  _toggleButtonExpanded(idx) {
+    this._expandedButton = this._expandedButton === idx ? null : idx;
+    this.requestUpdate();
+  }
+  _buttonLabel = (schema) => {
+    if (!schema || !schema.name) return "";
+    if (schema.name in BUTTON_LABELS) return BUTTON_LABELS[schema.name];
+    return schema.name;
+  };
+  _cssTextField(opts) {
+    const { value, label, placeholder, onCommit } = opts;
+    const trim = opts.trim !== false;
+    const has = value !== void 0 && value !== null && String(value) !== "";
+    const inherited = opts.inherit !== void 0 && opts.inherit !== null && String(opts.inherit) !== "" ? String(opts.inherit) : "";
+    const ph = inherited || placeholder;
+    return b2`<div class="css-field ${has && inherited ? "overridden" : ""}">
+                <span class="css-field-label">${label}${has && inherited ? b2`<button type="button" class="revert-dot"
+                    title="Back to ${inherited}" @click=${() => onCommit("")}></button>` : ""}</span>
+                <input type="text" placeholder=${ph}
+                    .value=${has ? String(value) : ""}
+                    @change=${(e4) => onCommit(trim ? e4.target.value.trim() : e4.target.value)}></div>`;
+  }
+  _accKey(containerIdx, idx) {
+    return `${containerIdx}:${idx}`;
+  }
+  _getSecOpen(containerIdx, idx) {
+    return this._secOpen && this._secOpen.get(this._accKey(containerIdx, idx)) || null;
+  }
+  _setSecOpen(containerIdx, idx, val) {
+    if (!this._secOpen) this._secOpen = /* @__PURE__ */ new Map();
+    if (val) this._secOpen.set(this._accKey(containerIdx, idx), val);
+    else this._secOpen.delete(this._accKey(containerIdx, idx));
+  }
+  _getNestedOpen(containerIdx, idx) {
+    return this._nestedOpen && this._nestedOpen.get(this._accKey(containerIdx, idx)) || null;
+  }
+  _setNestedOpen(containerIdx, idx, val) {
+    if (!this._nestedOpen) this._nestedOpen = /* @__PURE__ */ new Map();
+    if (val) this._nestedOpen.set(this._accKey(containerIdx, idx), val);
+    else this._nestedOpen.delete(this._accKey(containerIdx, idx));
+  }
+  _shiftAccordionOnRemove(containerIdx, removedIdx) {
+    for (const map of [this._secOpen, this._nestedOpen]) {
+      if (!map) continue;
+      const next = /* @__PURE__ */ new Map();
+      for (const [k2, v2] of map) {
+        const [c4, i5] = k2.split(":");
+        if (Number(c4) !== containerIdx) {
+          next.set(k2, v2);
+          continue;
+        }
+        const bi = Number(i5);
+        if (bi === removedIdx) continue;
+        if (bi > removedIdx) next.set(`${c4}:${bi - 1}`, v2);
+        else next.set(k2, v2);
+      }
+      map.clear();
+      for (const [k2, v2] of next) map.set(k2, v2);
+    }
+  }
+  _renderThresholdList(opts) {
+    const { list, swatchDefault, addLabel, addColor } = opts;
+    const commit = opts.commit;
+    const setAt = (ti, patch) => {
+      const arr = [...list];
+      arr[ti] = { ...arr[ti], ...patch };
+      commit(arr);
+    };
+    const removeAt = (ti) => {
+      const arr = [...list];
+      arr.splice(ti, 1);
+      commit(arr.length ? arr : void 0);
+    };
+    const add = () => commit([...list, { value: "", color: addColor }]);
+    const swatch = (t3, ti, key) => b2`<input type="color" class="button-color-swatch" title=${key === "color" ? "" : "Dark mode"} .value=${t3[key] || t3.color || swatchDefault}
+                    @mousedown=${(e4) => this._nudgeColorInput(e4)}
+                    @input=${(e4) => setAt(ti, { [key]: e4.target.value })}
+                    @change=${(e4) => setAt(ti, { [key]: e4.target.value })}>`;
+    return b2`
+            ${list.map((t3, ti) => b2`<div class="ring-threshold-row"><span class="threshold-label">≥</span>
+                <input type="text" placeholder="value" .value=${String(t3.value != null ? t3.value : "")}
+                    @change=${(e4) => setAt(ti, { value: e4.target.value.trim() })}>
+                ${swatch(t3, ti, "color")}${opts.dark ? swatch(t3, ti, "color_dark") : ""}
+                <button type="button" class="ring-threshold-del" title="Remove" @click=${() => removeAt(ti)}><ha-icon icon="mdi:close" style="--mdc-icon-size:14px"></ha-icon></button></div>`)}
+            <button type="button" class="ring-threshold-add" @click=${add}><ha-icon icon="mdi:plus" style="--mdc-icon-size:14px"></ha-icon> ${addLabel}</button>`;
+  }
+  _renderButtonRow(button, idx, total, containerIdx) {
+    const expanded = this._expandedButton === idx;
+    const isFc = !!button.forecast;
+    const buttonType = button.type || "";
+    if (!expanded) {
+      return this._renderListRow({
+        idx,
+        total,
+        expanded,
+        body: "",
+        title: this._buttonTitle(button),
+        onToggle: () => this._toggleButtonExpanded(idx),
+        onMoveUp: () => this._moveButton(containerIdx, idx, -1),
+        onMoveDown: () => this._moveButton(containerIdx, idx, 1),
+        onDuplicate: () => this._duplicateButton(containerIdx, idx),
+        onRemove: () => this._removeButton(containerIdx, idx)
+      });
+    }
+    const entityId = (button.entity || "").toString().trim();
+    const hasEntity = !!entityId;
+    const fcEntityMissing = isFc && entityId && !entityId.startsWith("weather.");
+    const cardWeatherEntity = this._config && this._config.weather_entity || "";
+    const update = (next) => this._updateButtonAt(containerIdx, idx, next);
+    const buttonForm = (schema) => b2`<ha-form .hass=${this.hass} .data=${button}
+                .schema=${schema} .computeLabel=${this._buttonLabel}
+                @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const n4 = { ...e4.detail && e4.detail.value || {} };
+      const st2 = !n4.forecast && n4.entity !== button.entity && this.hass.states[n4.entity], gone = (a3) => st2 && a3 && !(a3 in st2.attributes);
+      if (gone(n4.attribute)) delete n4.attribute;
+      if (Array.isArray(n4.elements)) n4.elements = n4.elements.map((el) => el && !el.entity && gone(el.attribute) ? { ...el, attribute: void 0 } : el);
+      update(n4);
+    }}></ha-form>`;
+    const container = this._getContainers()[containerIdx] || {};
+    const containerScrollable = ["horizontal-scroll", "vertical-scroll"].includes((container.layout || "").toString().toLowerCase());
+    const BTN_INHERIT = { text_size: "button_text_size", padding: "button_padding", inner_gap: "button_gap" };
+    const cssField = (key, label, placeholder) => this._cssTextField({
+      value: button[key],
+      label,
+      placeholder,
+      trim: true,
+      inherit: BTN_INHERIT[key] ? container[BTN_INHERIT[key]] : void 0,
+      onCommit: (v2) => {
+        const next = { ...button };
+        if (v2) next[key] = v2;
+        else delete next[key];
+        update(next);
+      }
+    });
+    const _r = (buttonKey, containerKey) => button[buttonKey] !== void 0 ? button[buttonKey] : container[containerKey] !== void 0 ? container[containerKey] : void 0;
+    const fmt = buttonStyle(_r("style", "button_style"));
+    const fcOff = parseInt(button.forecast_offset, 10) || 0;
+    const st = this.hass && this.hass.states && this.hass.states[entityId];
+    const stAttr = st && st.attributes;
+    const elements = Array.isArray(button.elements) && button.elements.length ? button.elements.map((e4) => e4 && typeof e4 === "object" ? e4 : {}) : [{ type: "text" }];
+    const commitElements = (arr) => {
+      const n4 = { ...button };
+      if (!arr.length) delete n4.elements;
+      else n4.elements = arr;
+      update(n4);
+    };
+    const updateEl = (ei, nextEl) => commitElements(elements.map((e4, i5) => i5 === ei ? nextEl : e4));
+    const containerFmtNow = buttonStyle(container.button_style);
+    const formatPicker = this._renderLayoutPicker(fmt, (f3) => {
+      const n4 = { ...button };
+      if (f3 === containerFmtNow) delete n4.style;
+      else n4.style = f3;
+      update(n4);
+    });
+    const nestedOpen = this._getNestedOpen(containerIdx, idx);
+    const setNested = (v2) => {
+      this._setNestedOpen(containerIdx, idx, v2);
+      this.requestUpdate();
+    };
+    const moveEl = (ei, dir) => {
+      const arr = [...elements];
+      const ni = ei + dir;
+      if (ni < 0 || ni >= arr.length) return;
+      [arr[ei], arr[ni]] = [arr[ni], arr[ei]];
+      if (nestedOpen === `el-${ei}`) setNested(`el-${ni}`);
+      else if (nestedOpen === `el-${ni}`) setNested(`el-${ei}`);
+      commitElements(arr);
+    };
+    const removeEl = (ei) => {
+      const arr = [...elements];
+      arr.splice(ei, 1);
+      if (nestedOpen === `el-${ei}`) setNested(null);
+      commitElements(arr);
+    };
+    const addEl = (type) => {
+      const seed = type === "bar" ? { type: "bar" } : type === "icon" ? { type: "icon" } : { type: "text" };
+      setNested(`el-${elements.length}`);
+      commitElements([...elements, seed]);
+    };
+    const elReorder = (ei) => b2`<span class="vcb-reorder" @click=${(e4) => e4.stopPropagation()}>
+            <button type="button" ?disabled=${ei === 0} @click=${() => moveEl(ei, -1)} title="Move up"><ha-icon icon="mdi:chevron-up"></ha-icon></button>
+            <button type="button" ?disabled=${ei === elements.length - 1} @click=${() => moveEl(ei, 1)} title="Move down"><ha-icon icon="mdi:chevron-down"></ha-icon></button>
+            <button type="button" @click=${() => removeEl(ei)} title="Remove"><ha-icon icon="mdi:close"></ha-icon></button></span>`;
+    const iconElContent = (el, ei, spacing) => {
+      const isWeatherIcon = (el.icon || "").toString().trim().toLowerCase() === "weather";
+      const iconSourceEntity = (el.entity || "").toString().trim() || entityId;
+      const patchEl = (patch, strip) => {
+        const n4 = { ...el, ...patch };
+        if (strip) for (const k2 of strip) delete n4[k2];
+        updateEl(ei, n4);
+      };
+      const EL_INHERIT = { icon_size: ["icon_size", "button_icon_size"], icon_padding: ["icon_padding", "button_icon_padding"] };
+      const elCss = (key, label, placeholder) => {
+        const ch = EL_INHERIT[key];
+        const inherit = ch ? button[ch[0]] !== void 0 && button[ch[0]] !== "" ? button[ch[0]] : container[ch[1]] : void 0;
+        return this._cssTextField({
+          value: el[key],
+          label,
+          placeholder,
+          trim: true,
+          inherit,
+          onCommit: (v2) => {
+            const n4 = { ...el };
+            if (v2) n4[key] = v2;
+            else delete n4[key];
+            updateEl(ei, n4);
+          }
+        });
+      };
+      return b2`${isWeatherIcon ? b2`<div class="weather-icon-active">
+                    <ha-icon icon="mdi:weather-partly-cloudy" style="--mdc-icon-size:20px;color:var(--primary-color)"></ha-icon>
+                    <div class="weather-icon-active-text"><span>Weather icon</span><span class="weather-icon-active-sub">${isFc ? "Matches forecast" : "Matches weather"}</span></div>
+                    <button type="button" class="icon-weather-btn" @click=${() => patchEl({}, ["icon"])}>Remove</button></div>` : b2`<div class="icon-combo">
+                    <ha-form style="flex:1;min-width:0" .hass=${this.hass} .data=${{ icon: el.icon || "" }}
+                        .schema=${[{ name: "icon", selector: { icon: {} } }]} .computeLabel=${() => ""}
+                        @value-changed=${(e4) => {
+        e4.stopPropagation();
+        const v2 = e4.detail && e4.detail.value && e4.detail.value.icon || "";
+        const n4 = { ...el };
+        if (v2) n4.icon = v2;
+        else delete n4.icon;
+        updateEl(ei, n4);
+      }}></ha-form>
+                    <button type="button" class="icon-weather-btn" title="Weather icon" @click=${() => patchEl({ icon: "weather" }, ["entity", "attribute"])}><ha-icon icon="mdi:weather-partly-cloudy" style="--mdc-icon-size:18px"></ha-icon></button></div>`}
+                ${!isWeatherIcon ? b2`${txtForm(el, ei, "entity", [{ name: "entity", selector: { entity: {} } }], "Entity")}
+                    ${iconSourceEntity ? txtForm(el, ei, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: iconSourceEntity } } }], "Attribute") : ""}` : ""}
+                <div class="clearable-field">
+                    <ha-form .hass=${this.hass} .data=${{ icon_path: el.icon_path || "" }} .schema=${[{ name: "icon_path", selector: { text: {} } }]} .computeLabel=${() => LABELS.icon_path || "Icon folder"}
+                        @value-changed=${(e4) => {
+        e4.stopPropagation();
+        const v2 = e4.detail && e4.detail.value && e4.detail.value.icon_path || "";
+        const n4 = { ...el };
+        if (v2) n4.icon_path = v2;
+        else delete n4.icon_path;
+        updateEl(ei, n4);
+      }}></ha-form>
+                    ${el.icon_path ? b2`<button type="button" class="clear-btn" title="Clear" @click=${() => patchEl({}, ["icon_path"])}><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</div>
+                <div class="vcb-grid">${elCss("icon_size", "Size", "auto")}${elCss("icon_padding", "Padding", "auto")}</div>
+                ${spacing || ""}
+                <div class="toggle-group"><label class="toggle-row"><span>Background</span>
+                    <ha-switch .checked=${el.icon_background === true}
+                        @change=${(e4) => {
+        const n4 = { ...el };
+        if (e4.target.checked) n4.icon_background = true;
+        else {
+          if (el.icon_background !== void 0) n4.icon_background = false;
+          else delete n4.icon_background;
+        }
+        updateEl(ei, n4);
+      }}></ha-switch></label></div>
+                ${el.icon_background === true ? this._renderColorPicker("Color", el.icon_background_color || "", (h3, o5) => {
+        const n4 = { ...el };
+        if (!h3) delete n4.icon_background_color;
+        else n4.icon_background_color = this._serializeColor(h3, o5);
+        updateEl(ei, n4);
+      }) : ""}
+                ${this._renderColorPicker("Icon color", el.color || "", (h3, o5) => patchEl({ color: h3 && this._serializeColor(h3, o5) }))}
+                <div class="toggle-group"><label class="toggle-row"><span>Color thresholds</span>
+                    <ha-switch .checked=${!!el.color_thresholds} @change=${(e4) => patchEl({ color_thresholds: e4.target.checked && [{ value: "", color: "#ff9800" }] })}></ha-switch></label></div>
+                ${el.color_thresholds ? b2`<div class="field-group">
+                    ${this._renderThresholdList({ list: el.color_thresholds, swatchDefault: "#ff9800", addColor: "#ff9800", addLabel: "Add threshold", commit: (arr) => patchEl({ color_thresholds: arr }) })}
+                    <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Compares the icon's entity or attribute, else the button value.</span></div></div>` : ""}`;
+    };
+    const entitySection = isFc ? "" : buttonForm([{ name: "entity", selector: { entity: {} } }]);
+    const emptyNudge = !hasEntity && !isFc ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Pick an entity.</div>` : "";
+    const secOpen = this._getSecOpen(containerIdx, idx);
+    const setSec = (v2) => {
+      this._setSecOpen(containerIdx, idx, v2);
+      this.requestUpdate();
+    };
+    const txtField = (txt, ei, key, label, placeholder, keepSpaces) => this._cssTextField({
+      value: txt[key],
+      label,
+      placeholder,
+      trim: !keepSpaces,
+      inherit: key === "size" ? button.text_size !== void 0 && button.text_size !== "" ? button.text_size : container.button_text_size : void 0,
+      onCommit: (v2) => {
+        const n4 = { ...txt };
+        if (v2) n4[key] = v2;
+        else delete n4[key];
+        updateEl(ei, n4);
+      }
+    });
+    const txtForm = (txt, ei, key, schema, label) => b2`<ha-form .hass=${this.hass} .data=${{ [key]: txt[key] || "" }}
+            .schema=${schema} .computeLabel=${() => label}
+            @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value[key];
+      const n4 = { ...txt };
+      if (v2) n4[key] = v2;
+      else delete n4[key];
+      updateEl(ei, n4);
+    }}></ha-form>`;
+    const _isNumericEntity = (eid) => {
+      const s4 = this.hass && this.hass.states && this.hass.states[eid];
+      if (!s4) return false;
+      if (s4.attributes && s4.attributes.state_class) return true;
+      if (s4.attributes && s4.attributes.device_class === "temperature") return true;
+      const v2 = parseFloat(s4.state);
+      return isFinite(v2);
+    };
+    const _isNumericAttr = (eid, attr) => {
+      const s4 = this.hass && this.hass.states && this.hass.states[eid];
+      if (!s4 || !attr) return false;
+      const v2 = s4.attributes && s4.attributes[attr];
+      return v2 != null && isFinite(parseFloat(v2));
+    };
+    const textElContent = (txt, ei, spacing) => {
+      const txtEntityId = (txt.entity || "").toString().trim();
+      const fcNumeric = isFc && !txtEntityId && txt.attribute && txt.attribute !== "condition" && txt.attribute !== "datetime";
+      let showPrecision = fcNumeric;
+      if (!showPrecision && txtEntityId) {
+        showPrecision = txt.attribute ? _isNumericAttr(txtEntityId, txt.attribute) : _isNumericEntity(txtEntityId);
+      } else if (!showPrecision && !txtEntityId && !isFc && hasEntity) {
+        showPrecision = txt.attribute ? _isNumericAttr(entityId, txt.attribute) : _isNumericEntity(entityId);
+      }
+      const wantsEntity = txtEntityId || txt.source === "entity";
+      return b2`${txtField(txt, ei, "text", "Text", "Static text")}
+                ${isFc ? b2`<div class="segmented segmented-compact">
+                    <button type="button" class=${!wantsEntity ? "active" : ""}
+                        @click=${() => {
+        const n4 = { ...txt };
+        delete n4.entity;
+        delete n4.attribute;
+        delete n4.source;
+        updateEl(ei, n4);
+      }}>Forecast</button>
+                    <button type="button" class=${wantsEntity ? "active" : ""}
+                        @click=${() => {
+        const n4 = { ...txt };
+        n4.source = "entity";
+        delete n4.attribute;
+        updateEl(ei, n4);
+      }}>Entity</button></div>` : ""}
+                ${!isFc || wantsEntity ? txtForm(txt, ei, "entity", [{ name: "entity", selector: { entity: {} } }], "Entity") : ""}
+                ${txtEntityId ? txtForm(txt, ei, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: txtEntityId } } }], "Attribute") : isFc && !wantsEntity ? txtForm(txt, ei, "attribute", [{ name: "attribute", selector: { select: { mode: "dropdown", options: FC_TEXT_ATTRIBUTES } } }], "Show") : !isFc && hasEntity ? txtForm(txt, ei, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: entityId } } }], "Attribute") : ""}
+                ${showPrecision ? (() => {
+        const prec = txt.precision !== void 0 ? txt.precision : 0;
+        const setPrec = (v2) => {
+          const n4 = { ...txt };
+          if (v2 >= 0) n4.precision = v2;
+          else delete n4.precision;
+          updateEl(ei, n4);
+        };
+        return this._slider({ value: prec, fallback: 0, min: 0, max: 2, step: 1, int: true, label: "Decimals", onCommit: setPrec });
+      })() : ""}
+                <div class="vcb-grid">${txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
+                <div class="segmented segmented-compact">
+                    ${[{ v: "", l: "Normal" }, { v: "500", l: "Medium" }, { v: "600", l: "Semibold" }, { v: "700", l: "Bold" }].map((o5) => b2`<button type="button" class=${(txt.weight || "") === o5.v ? "active" : ""}
+                        @click=${() => {
+        const n4 = { ...txt };
+        if (o5.v) n4.weight = o5.v;
+        else delete n4.weight;
+        updateEl(ei, n4);
+      }}>${o5.l}</button>`)}</div>
+                ${this._renderColorPicker("Text color", txt.color || "", (h3, o5) => {
+        const n4 = { ...txt };
+        if (h3) n4.color = this._serializeColor(h3, o5);
+        else delete n4.color;
+        updateEl(ei, n4);
+      })}
+                ${txtForm(txt, ei, "overflow", [{ name: "overflow", selector: { select: { mode: "dropdown", options: OPT.button_overflow } } }], "Overflow")}
+                ${spacing || ""}
+                <div class="toggle-group"><label class="toggle-row"><span>Fancy unit</span>
+                    <ha-switch .checked=${txt.fancy_unit === true} @change=${(e4) => {
+        const n4 = { ...txt };
+        if (e4.target.checked) n4.fancy_unit = true;
+        else delete n4.fancy_unit;
+        updateEl(ei, n4);
+      }}></ha-switch></label></div>`;
+    };
+    const section = (key, icon, title, content, hidden) => {
+      const isOpen = secOpen === key;
+      return b2`<div class="vcb-section ${hidden ? "dimmed" : ""}">
+                <div class="vcb-section-head ${isOpen ? "open" : ""}" @click=${() => setSec(isOpen ? null : key)}>
+                    <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
+                    <ha-icon icon=${icon}></ha-icon>
+                    <span class="vcb-section-title">${title}</span></div>
+                ${isOpen ? b2`<div class="vcb-section-body">${content}</div>` : ""}</div>`;
+    };
+    const elTypeIcon = (k2) => k2 === "icon" ? "mdi:image-outline" : k2 === "bar" ? "mdi:chart-bar" : "mdi:text-short";
+    const elTitle = (el) => {
+      if (el.type === "icon") return (el.icon || "").toString().trim().toLowerCase() === "weather" ? "Weather icon" : el.attribute || el.icon || "Icon";
+      if (el.type === "bar") {
+        const n4 = Array.isArray(el.bar_values) ? el.bar_values.length : 0;
+        return n4 > 1 ? `Bar (${n4} values)` : "Bar";
+      }
+      return this._textTitle(button, el);
+    };
+    const typePicker = b2`<div class="button-type-picker">
+            <button type="button" class="button-type-btn ${!isFc ? "active" : ""}"
+                @click=${() => {
+      const n4 = { ...button };
+      delete n4.forecast;
+      delete n4.forecast_offset;
+      update(n4);
+    }}
+            ><ha-icon class="button-type-icon ${!isFc ? "active-icon" : ""}" icon="mdi:gauge"></ha-icon>
+                <div class="button-type-text"><span class="button-type-name">Sensor</span><span class="button-type-desc">Live entity</span></div></button>
+            <button type="button" class="button-type-btn ${isFc ? "active" : ""}"
+                @click=${() => {
+      const cur = entityId;
+      const ent = cur && cur.startsWith("weather.") ? cur : cardWeatherEntity || cur;
+      const n4 = { ...button, forecast: "daily", forecast_offset: 0 };
+      delete n4.attribute;
+      if (!Array.isArray(n4.elements) || !n4.elements.some((e4) => e4 && e4.type === "text" && Object.keys(e4).length > 1)) {
+        n4.elements = [{ type: "icon", icon: "weather" }, { type: "text", attribute: "temperature" }];
+      }
+      if (ent) n4.entity = ent;
+      update(n4);
+    }}
+            ><ha-icon class="button-type-icon ${isFc ? "active-icon" : ""}" icon="mdi:calendar-clock"></ha-icon>
+                <div class="button-type-text"><span class="button-type-name">Forecast</span><span class="button-type-desc">Weather</span></div></button></div>`;
+    const fcSettings = isFc && !fcEntityMissing ? b2`<div class="segmented">
+                    ${[{ v: "daily", l: "Daily" }, { v: "hourly", l: "Hourly" }].map((o5) => b2`<button type="button" class=${button.forecast === o5.v ? "active" : ""}
+                        @click=${() => update({ ...button, forecast: o5.v, forecast_offset: 0 })}>${o5.l}</button>`)}</div>
+                ${(() => {
+      const mx = button.forecast === "hourly" ? 23 : 6, lb = button.forecast === "hourly" ? "Hours ahead" : "Days ahead", hp = button.forecast === "hourly" ? fcOff === 0 ? "Now" : `+${fcOff}h` : fcOff === 0 ? "Today" : fcOff === 1 ? "Tomorrow" : `+${fcOff} days`;
+      return this._slider({
+        value: fcOff,
+        fallback: 0,
+        min: 0,
+        max: mx,
+        step: 1,
+        int: true,
+        label: lb,
+        helper: hp,
+        onCommit: (v2) => update({ ...button, forecast_offset: v2 })
+      });
+    })()}` : null;
+    const fcMissingHint = isFc && fcEntityMissing ? b2`<div class="button-nudge warning" style="margin-top:var(--origami-e-s2)"><ha-icon icon="mdi:alert-circle-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Forecast needs a weather entity.</div>` : null;
+    let forecastContent = null;
+    if (isFc) {
+      const fcEntity = buttonForm([{ name: "entity", selector: { entity: { domain: "weather" } } }]);
+      forecastContent = b2`${fcEntity}${fcMissingHint}${fcSettings}`;
+    }
+    const hasMarqueeText = elements.some((t3) => t3 && t3.type === "text" && (t3.overflow || "").toString().toLowerCase() === "marquee");
+    const marqueeContent = hasMarqueeText ? b2`<div class="toggle-group"><label class="toggle-row"><span>Right-to-left</span>
+                <ha-switch .checked=${button.marquee_rtl === true} @change=${(e4) => {
+      const n4 = { ...button };
+      if (e4.target.checked) n4.marquee_rtl = true;
+      else delete n4.marquee_rtl;
+      update(n4);
+    }}></ha-switch></label></div>
+            ${(() => {
+      const spd = parseFloat(button.marquee_speed) || 30;
+      return this._slider({
+        value: spd,
+        fallback: 30,
+        min: 5,
+        max: 100,
+        step: 5,
+        int: true,
+        label: "Speed",
+        onCommit: (v2) => update({ ...button, marquee_speed: v2 })
+      });
+    })()}` : null;
+    const containerAlign = (container.align || "start").toString().toLowerCase();
+    const appearContent = b2`${formatPicker}
+            <div class="segmented">
+                ${[{ v: "start", l: "Left" }, { v: "center", l: "Center" }, { v: "end", l: "Right" }, { v: "spread", l: "Spread" }].map((o5) => b2`<button type="button" class=${(button.align || containerAlign) === o5.v ? "active" : ""}
+                    @click=${() => {
+      const n4 = { ...button };
+      if (o5.v === containerAlign) delete n4.align;
+      else n4.align = o5.v;
+      update(n4);
+    }}>${o5.l}</button>`)}</div>
+            <div class="toggle-group">
+                <label class="toggle-row"><span>Background</span><ha-switch .checked=${button.background !== false}
+                    @change=${(e4) => {
+      const n4 = { ...button };
+      if (!e4.target.checked) n4.background = false;
+      else delete n4.background;
+      update(n4);
+    }}></ha-switch></label>
+                <label class="toggle-row"><span>Background image</span><ha-switch .checked=${button.background_image === true}
+                    @change=${(e4) => {
+      const n4 = { ...button };
+      if (e4.target.checked) n4.background_image = true;
+      else {
+        delete n4.background_image;
+        delete n4.background_image_path;
+      }
+      update(n4);
+    }}></ha-switch></label>
+                ${button.background !== false ? b2`<label class="toggle-row"><span>Blurred</span><ha-switch .checked=${button.blurred_background === true}
+                    @change=${(e4) => {
+      const n4 = { ...button };
+      if (e4.target.checked) n4.blurred_background = true;
+      else delete n4.blurred_background;
+      update(n4);
+    }}></ha-switch></label>` : ""}
+                <label class="toggle-row"><span>Round shape</span><ha-switch .checked=${button.button_round === true}
+                    @change=${(e4) => {
+      const n4 = { ...button };
+      if (e4.target.checked) n4.button_round = true;
+      else delete n4.button_round;
+      update(n4);
+    }}></ha-switch></label>
+                ${containerScrollable ? "" : b2`<label class="toggle-row"><span>Shadow</span><ha-switch .checked=${button.shadow !== false}
+                    @change=${(e4) => {
+      const n4 = { ...button };
+      if (!e4.target.checked) n4.shadow = false;
+      else delete n4.shadow;
+      update(n4);
+    }}></ha-switch></label>`}
+                <label class="toggle-row"><span>Text shadow</span><ha-switch .checked=${button.text_shadow === true}
+                    @change=${(e4) => {
+      const n4 = { ...button };
+      if (e4.target.checked) n4.text_shadow = true;
+      else delete n4.text_shadow;
+      update(n4);
+    }}></ha-switch></label></div>
+            ${button.background !== false ? this._renderColorPicker("Button color", button.background_color || "", (h3, o5) => {
+      const next = { ...button };
+      if (!h3) delete next.background_color;
+      else next.background_color = this._serializeColor(h3, o5);
+      update(next);
+    }) : ""}
+            ${button.background_image === true ? this._cssTextField({
+      value: button.background_image_path,
+      label: "Image path",
+      placeholder: "/local/my-image.jpg",
+      trim: true,
+      onCommit: (v2) => {
+        const n4 = { ...button };
+        if (v2) n4.background_image_path = v2;
+        else delete n4.background_image_path;
+        update(n4);
+      }
+    }) : ""}
+            <div class="vcb-grid">
+                ${cssField("width", "Width", "auto")}${cssField("height", "Height", "auto")}
+                ${cssField("text_size", "Text size", "auto")}${cssField("padding", "Padding", "auto")}
+                ${cssField("inner_gap", "Element gap", "auto")}</div>
+            <div class="toggle-group"><label class="toggle-row"><span>Color thresholds</span>
+                <ha-switch .checked=${Array.isArray(button.color_thresholds) && button.color_thresholds.length > 0}
+                    @change=${(e4) => {
+      const n4 = { ...button };
+      if (e4.target.checked) n4.color_thresholds = [{ value: "", color: "#ff9800" }];
+      else {
+        delete n4.color_thresholds;
+        delete n4.color_threshold_entity;
+        delete n4.color_threshold_attribute;
+      }
+      update(n4);
+    }}></ha-switch></label></div>
+            ${Array.isArray(button.color_thresholds) && button.color_thresholds.length > 0 ? b2`<div class="field-group">
+                <details class="disclosure" @toggle=${this._onDisclosureToggle}><summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon><ha-icon icon="mdi:cog-outline"></ha-icon><span>Threshold entity</span></summary>
+                    <div class="disclosure-body">
+                        <ha-form .hass=${this.hass} .data=${{ color_threshold_entity: button.color_threshold_entity || "" }} .schema=${[{ name: "color_threshold_entity", selector: { entity: {} } }]} .computeLabel=${() => "Entity"}
+                            @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value.color_threshold_entity;
+      const n4 = { ...button };
+      if (v2) n4.color_threshold_entity = v2;
+      else delete n4.color_threshold_entity;
+      update(n4);
+    }}></ha-form>
+                        ${(button.color_threshold_entity || "").trim() ? b2`<ha-form .hass=${this.hass} .data=${{ color_threshold_attribute: button.color_threshold_attribute || "" }} .schema=${[{ name: "color_threshold_attribute", selector: { attribute: { entity_id: button.color_threshold_entity } } }]} .computeLabel=${() => "Attribute"}
+                            @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value.color_threshold_attribute;
+      const n4 = { ...button };
+      if (v2) n4.color_threshold_attribute = v2;
+      else delete n4.color_threshold_attribute;
+      update(n4);
+    }}></ha-form>` : ""}</div></details>
+                ${this._renderThresholdList({
+      list: button.color_thresholds,
+      swatchDefault: "#ff9800",
+      addColor: "#ff9800",
+      addLabel: "Add threshold",
+      commit: (arr) => update({ ...button, color_thresholds: arr })
+    })}</div>` : ""}`;
+    const gaugeFields = (prefix, obj, commit, extra) => {
+      const p3 = prefix + "_", label = prefix === "ring" ? "Ring" : "Bar";
+      const thresholds = Array.isArray(obj[p3 + "thresholds"]) ? obj[p3 + "thresholds"] : [];
+      const write = (key, value) => {
+        const n4 = { ...obj };
+        const empty = value === null || value === void 0 || value === "" || Array.isArray(value) && !value.length;
+        if (empty) delete n4[key];
+        else n4[key] = value;
+        commit(n4);
+      };
+      const cssFor = (key, text, placeholder) => this._cssTextField({ value: obj[key], label: text, placeholder, trim: true, onCommit: (v2) => write(key, v2) });
+      const hasRange = [obj[p3 + "range_from"], obj[p3 + "range_to"]].some((v2) => v2 !== void 0 && v2 !== null && String(v2) !== "");
+      return b2`<div class="vcb-grid">${cssFor(p3 + "min", "Min", "0")}${cssFor(p3 + "max", "Max", "100")}</div>
+                <div class="vcb-grid">${prefix === "ring" ? b2`${cssFor("ring_width", "Thickness", "4")}${cssFor("ring_gap", "Gap", "3")}${cssFor("ring_start", "Start angle", "0")}${cssFor("ring_arc", "Arc", "360")}` : b2`${cssFor("bar_height", "Thickness", "4")}${cssFor("bar_width", "Length", "Full width")}`}</div>
+                ${extra || ""}
+                ${this._renderColorPicker(`${label} color`, obj[p3 + "color"] || "", (h3, o5) => {
+        write(p3 + "color", h3 ? this._serializeColor(h3, o5) : "");
+      })}
+                <div class="field-group">
+                    <div class="field-group-label">Range</div>
+                    <div class="vcb-grid">${cssFor(p3 + "range_from", "From", "start")}${cssFor(p3 + "range_to", "To", "end")}</div>
+                    ${hasRange ? this._renderColorPicker("Range color", obj[p3 + "range_color"] || "", (h3, o5) => write(p3 + "range_color", h3 ? this._serializeColor(h3, o5) : "")) : ""}</div>
+                ${gaugeValues(p3, obj, write, cssFor)}
+                <details class="disclosure" @toggle=${this._onDisclosureToggle}><summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon><ha-icon icon="mdi:cog-outline"></ha-icon><span>Thresholds</span></summary>
+                    <div class="disclosure-body">
+                        <div class="segmented">${[{ v: "solid", l: "Solid" }, { v: "segments", l: "Segments" }, { v: "gradient", l: "Gradient" }].map((o5) => b2`<button type="button" class=${(obj[p3 + "threshold_mode"] || "solid") === o5.v ? "active" : ""}
+                            @click=${() => {
+        write(p3 + "threshold_mode", o5.v === "solid" ? "" : o5.v);
+      }}>${o5.l}</button>`)}</div>
+                        ${this._renderThresholdList({
+        list: thresholds,
+        swatchDefault: "#ff0000",
+        addColor: "#ff9800",
+        addLabel: "Add",
+        commit: (arr) => write(p3 + "thresholds", arr)
+      })}</div></details>`;
+    };
+    const gaugeValues = (p3, obj, write, cssFor) => {
+      const values = Array.isArray(obj[p3 + "values"]) && obj[p3 + "values"].length ? obj[p3 + "values"].map((v2) => v2 && typeof v2 === "object" ? v2 : {}) : [{}];
+      const fill = obj[p3 + "fill"] !== false, needle = obj[p3 + "needle"] === true, markersOn = needle || values.length > 1 || obj[p3 + "marker"] === true || !fill;
+      const commitValues = (arr) => write(p3 + "values", arr);
+      const setValue = (vi, patch) => commitValues(values.map((v2, i5) => i5 === vi ? { ...v2, ...patch } : v2));
+      const addValue = () => commitValues([...values, {}]);
+      const removeValue = (vi) => {
+        const arr = [...values];
+        arr.splice(vi, 1);
+        commitValues(arr);
+      };
+      const moveValue = (vi, dir) => {
+        const arr = [...values];
+        const ni = vi + dir;
+        if (ni < 0 || ni >= arr.length) return;
+        [arr[vi], arr[ni]] = [arr[ni], arr[vi]];
+        commitValues(arr);
+      };
+      const valueTitle = (v2, vi) => {
+        if ((v2.value ?? "") !== "") return `Fixed ${v2.value}`;
+        const vid = (v2.entity || "").toString().trim();
+        if (vid) {
+          const st2 = this.hass && this.hass.states && this.hass.states[vid];
+          const name = st2 && st2.attributes && st2.attributes.friendly_name || vid;
+          return v2.attribute ? `${name} [${v2.attribute}]` : name;
+        }
+        if (v2.attribute) return `[${v2.attribute}]`;
+        return vi === 0 ? isFc ? "Forecast value" : "Button value" : "New value";
+      };
+      const valueForm = (v2, vi, key, schema, label) => b2`<ha-form .hass=${this.hass} .data=${{ [key]: v2[key] || "" }}
+                .schema=${schema} .computeLabel=${() => label}
+                @value-changed=${(e4) => {
+        e4.stopPropagation();
+        const nv = e4.detail && e4.detail.value && e4.detail.value[key];
+        setValue(vi, { [key]: nv || "" });
+      }}></ha-form>`;
+      const valueAttr = (v2, vi) => {
+        const vid = (v2.entity || "").toString().trim();
+        if (vid) return valueForm(v2, vi, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: vid } } }], "Attribute");
+        if (isFc) return valueForm(v2, vi, "attribute", [{ name: "attribute", selector: { select: { mode: "dropdown", options: FC_ATTRIBUTES } } }], "Forecast attribute");
+        if (hasEntity) return valueForm(v2, vi, "attribute", [{ name: "attribute", selector: { attribute: { entity_id: entityId } } }], "Attribute");
+        return "";
+      };
+      return b2`<div class="field-group">
+                <div class="field-group-label">Values</div>
+                ${values.map((v2, vi) => b2`<details class="disclosure" @toggle=${this._onDisclosureToggle}>
+                    <summary><ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
+                        <ha-icon icon=${v2.marker_icon || "mdi:map-marker-outline"}></ha-icon>
+                        <span>${valueTitle(v2, vi)}</span>
+                        ${values.length > 1 ? b2`<span class="vcb-reorder" @click=${(e4) => {
+        e4.preventDefault();
+        e4.stopPropagation();
+      }}>
+                            <button type="button" ?disabled=${vi === 0} @click=${() => moveValue(vi, -1)} title="Move up"><ha-icon icon="mdi:chevron-up"></ha-icon></button>
+                            <button type="button" ?disabled=${vi === values.length - 1} @click=${() => moveValue(vi, 1)} title="Move down"><ha-icon icon="mdi:chevron-down"></ha-icon></button>
+                            <button type="button" @click=${() => removeValue(vi)} title="Remove"><ha-icon icon="mdi:close"></ha-icon></button></span>` : ""}</summary>
+                    <div class="disclosure-body">
+                        ${valueForm(v2, vi, "entity", [{ name: "entity", selector: { entity: {} } }], "Value entity")}
+                        ${valueAttr(v2, vi)}
+                        ${this._cssTextField({ value: v2.value, label: "Fixed value", placeholder: "e.g. 0", trim: true, onCommit: (s4) => setValue(vi, { value: s4 }) })}
+                        ${markersOn ? b2`${this._renderColorPicker("Marker color", v2.marker_color || "", (h3, o5) => setValue(vi, { marker_color: h3 ? this._serializeColor(h3, o5) : "" }))}
+                            ${this._cssTextField({ value: v2.marker_size, label: "Marker size", placeholder: obj[p3 + "marker_size"] || "thickness", trim: true, onCommit: (s4) => setValue(vi, { marker_size: s4 }) })}
+                            ${valueForm(v2, vi, "marker_icon", [{ name: "marker_icon", selector: { icon: {} } }], "Marker icon")}
+                            ${v2.marker_icon ? this._renderColorPicker("Icon color", v2.marker_icon_color || "", (h3, o5) => setValue(vi, { marker_icon_color: h3 ? this._serializeColor(h3, o5) : "" })) : ""}` : ""}</div></details>`)}
+                <button type="button" class="ring-threshold-add" @click=${addValue}><ha-icon icon="mdi:plus" style="--mdc-icon-size:14px"></ha-icon> Add value</button>
+                <div class="toggle-group"><label class="toggle-row"><span>Fill</span>
+                    <ha-switch .checked=${fill} @change=${(e4) => write(p3 + "fill", e4.target.checked ? "" : false)}></ha-switch></label>
+                    ${fill && values.length < 2 && !needle ? b2`<label class="toggle-row"><span>Marker</span>
+                    <ha-switch .checked=${obj[p3 + "marker"] === true} @change=${(e4) => write(p3 + "marker", e4.target.checked || "")}></ha-switch></label>` : ""}
+                    ${p3 === "ring_" ? b2`<label class="toggle-row"><span>Needle</span>
+                    <ha-switch .checked=${needle} @change=${(e4) => write(p3 + "needle", e4.target.checked || "")}></ha-switch></label>` : ""}</div>
+                ${fill && values.length > 1 ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Fill uses the first value; each value gets a marker.</span></div>` : ""}
+                ${markersOn ? b2`<div class="vcb-grid">
+                    ${cssFor(p3 + "marker_size", "Marker size", "thickness")}
+                    ${cssFor(p3 + "marker_icon_size", "Icon size", "auto")}</div>` : ""}</div>`;
+    };
+    const barElContent = (el, ei, spacing) => gaugeFields("bar", el, (n4) => updateEl(ei, n4), spacing);
+    const isRingType = buttonType === "ring";
+    const ringContent = b2`<div class="toggle-group"><label class="toggle-row"><span>Enable</span>
+            <ha-switch .checked=${isRingType} @change=${(e4) => {
+      const n4 = { ...button };
+      if (e4.target.checked) {
+        n4.type = "ring";
+      } else {
+        delete n4.type;
+      }
+      update(n4);
+    }}></ha-switch></label></div>
+            ${isRingType ? gaugeFields("ring", button, update) : ""}`;
+    const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
+    const BUTTON_STYLE_KEYS = ["style", "align", "background", "blurred_background", "icon_background", "background_color", "icon_background_color", "padding", "text_size", "inner_gap", "icon_size", "icon_padding", "width", "height", "button_round", "color_thresholds", "color_threshold_entity", "color_threshold_attribute", "text_shadow", "shadow"];
+    const hasStyleOverrides = BUTTON_STYLE_KEYS.some((k2) => button[k2] !== void 0 && button[k2] !== "");
+    const elSpacing = (el, ei) => {
+      const box = (key, label) => this._cssTextField({
+        value: el[key],
+        label,
+        placeholder: "0",
+        trim: true,
+        onCommit: (v2) => {
+          const n4 = { ...el };
+          if (v2) n4[key] = v2;
+          else delete n4[key];
+          updateEl(ei, n4);
+        }
+      });
+      return b2`<div class="vcb-grid">${box("margin", "Margin")}${box("padding", "Padding")}</div>`;
+    };
+    const elementSection = (el, ei) => {
+      const key = `el-${ei}`;
+      const isOpen = nestedOpen === key;
+      const spacing = elSpacing(el, ei);
+      const body2 = el.type === "icon" ? iconElContent(el, ei, spacing) : el.type === "bar" ? barElContent(el, ei, spacing) : textElContent(el, ei, spacing);
+      return b2`<div class="vcb-section">
+                <div class="vcb-section-head ${isOpen ? "open" : ""}" @click=${() => setNested(isOpen ? null : key)}>
+                    <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
+                    <ha-icon icon=${elTypeIcon(el.type)}></ha-icon>
+                    <span class="vcb-section-title">${elTitle(el)}</span>
+                    ${elReorder(ei)}</div>
+                ${isOpen ? b2`<div class="vcb-section-body">${body2}</div>` : ""}</div>`;
+    };
+    const addElBar = b2`<div class="vcb-add-el">
+            <button type="button" class="add-card-btn" @click=${() => addEl("text")}><ha-icon icon="mdi:text-short"></ha-icon><span>Text</span></button>
+            <button type="button" class="add-card-btn" @click=${() => addEl("icon")}><ha-icon icon="mdi:image-outline"></ha-icon><span>Icon</span></button>
+            <button type="button" class="add-card-btn" @click=${() => addEl("bar")}><ha-icon icon="mdi:chart-bar"></ha-icon><span>Bar</span></button></div>`;
+    const elementsContent = b2`
+            <div class="vcb-nested-group">${elements.map((el, ei) => elementSection(el, ei))}</div>
+            ${addElBar}`;
+    const body = b2`<div class="vcb">
+            ${this._cssTextField({
+      value: button.name,
+      label: "Name",
+      placeholder: "Optional, shown in this list",
+      trim: true,
+      onCommit: (v2) => {
+        const n4 = { ...button };
+        if (v2) n4.name = v2;
+        else delete n4.name;
+        update(n4);
+      }
+    })}
+            ${typePicker}
+            ${entitySection}
+            ${emptyNudge}
+            ${isFc && forecastContent ? section("forecast", "mdi:calendar-clock", "Forecast", forecastContent) : ""}
+            ${section("elements", "mdi:view-agenda-outline", "Elements", elementsContent)}
+            ${section("ring", "mdi:circle-outline", "Ring", ringContent, !isRingType)}
+            ${this._renderDisclosure("Settings", b2`<div class="vcb">
+                ${section("appear", "mdi:palette-outline", "Appearance", appearContent)}
+                ${marqueeContent ? section("marquee", "mdi:motion-play-outline", "Scrolling", marqueeContent) : ""}
+                ${section("pos", "mdi:arrow-all", "Position", this._renderPosition(button, update))}
+                ${section("tap", "mdi:gesture-tap", "Tap Action", tapContent)}
+                ${section("vis", "mdi:eye-outline", "Visibility", this._renderButtonVisibility(button, containerIdx, idx, update))}
+                ${hasStyleOverrides ? b2`<button type="button" class="add-card-btn" style="border-style:solid;border-color:rgba(var(--rgb-error-color,211,47,47),0.35);color:var(--error-color);margin-top:var(--origami-e-s3)"
+                    @click=${() => {
+      const n4 = { ...button };
+      for (const k2 of BUTTON_STYLE_KEYS) delete n4[k2];
+      update(n4);
+    }}><ha-icon icon="mdi:restore"></ha-icon><span>Reset styles</span></button>` : ""}
+            </div>`)}
+        </div>`;
+    return this._renderListRow({
+      idx,
+      total,
+      expanded,
+      body,
+      title: this._buttonTitle(button),
+      onToggle: () => this._toggleButtonExpanded(idx),
+      onMoveUp: () => this._moveButton(containerIdx, idx, -1),
+      onMoveDown: () => this._moveButton(containerIdx, idx, 1),
+      onDuplicate: () => this._duplicateButton(containerIdx, idx),
+      onRemove: () => this._removeButton(containerIdx, idx)
+    });
+  }
+  _parseColor(raw) {
+    const s4 = (raw || "").toString().trim();
+    const m2 = s4.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/i);
+    if (m2) {
+      const hex = `#${parseInt(m2[1]).toString(16).padStart(2, "0")}${parseInt(m2[2]).toString(16).padStart(2, "0")}${parseInt(m2[3]).toString(16).padStart(2, "0")}`;
+      return { hex, opacity: m2[4] !== void 0 ? parseFloat(m2[4]) : 1, hasColor: true };
+    }
+    if (/^#[0-9a-f]{3,8}$/i.test(s4)) return { hex: s4.slice(0, 7), opacity: 1, hasColor: true };
+    return { hex: "#ffffff", opacity: 0, hasColor: false };
+  }
+  _serializeColor(hex, opacity) {
+    if (opacity >= 1) return hex;
+    const r4 = parseInt(hex.slice(1, 3), 16), g2 = parseInt(hex.slice(3, 5), 16), b3 = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r4},${g2},${b3},${parseFloat(opacity.toFixed(2))})`;
+  }
+  _nudgeColorInput(e4) {
+    const el = e4.currentTarget || e4.target;
+    const v2 = (el.value || "#ffffff").toLowerCase();
+    const b3 = parseInt(v2.slice(5, 7), 16);
+    el.value = v2.slice(0, 5) + ((b3 ^ 1) >>> 0).toString(16).padStart(2, "0");
+  }
+  _renderColorPicker(label, raw, onWrite) {
+    const { hex, opacity, hasColor } = this._parseColor(raw);
+    return b2`<div class="button-color-box">
+                <div class="button-color-row">
+                    <ha-icon icon="mdi:palette-outline" style="--mdc-icon-size:15px;color:var(--secondary-text-color);flex-shrink:0"></ha-icon>
+                    <span class="button-color-label">${label}</span>
+                    <input type="color" class="button-color-swatch" .value=${hex}
+                        @mousedown=${(e4) => this._nudgeColorInput(e4)}
+                        @input=${(e4) => onWrite(e4.target.value, opacity || 1)}
+                        @change=${(e4) => onWrite(e4.target.value, opacity || 1)}
+                    >
+                    ${hasColor ? b2`<button type="button" class="button-color-clear" title="Clear color" @click=${() => onWrite("", 1)}
+                    ><ha-icon icon="mdi:close" style="--mdc-icon-size:14px"></ha-icon></button>` : ""}</div>
+                ${hasColor ? b2`<div class="button-color-opacity-row"> <span class="button-color-opacity-label">Opacity</span> <input type="range" min="0" max="1" step="0.05" class="button-color-opacity"
+                            .value=${String(opacity)}
+                            @input=${(e4) => onWrite(hex, parseFloat(e4.target.value))}
+                        >
+                        <span class="button-color-opacity-val">${Math.round(opacity * 100)}%</span></div>
+                ` : ""}</div>`;
+  }
+  _slider(opts) {
+    const { min, max, step = 1, label, helper, statusFn, onCommit } = opts;
+    const int = opts.int === true;
+    const parse = int ? (v2) => parseInt(v2, 10) : (v2) => parseFloat(v2);
+    const fallbackNum = parse(opts.fallback != null ? opts.fallback : min);
+    const fb = isFinite(fallbackNum) ? fallbackNum : min;
+    const clamp = (v2) => Math.min(max, Math.max(min, isFinite(v2) ? v2 : fb));
+    const raw = opts.value != null && opts.value !== "" ? parse(opts.value) : fb;
+    const val = clamp(isFinite(raw) ? raw : fb);
+    const toPct = (v2) => Math.round((v2 - min) / (max - min) * 100);
+    const wrapOf = (e4) => e4.target.closest(".wbk-slider");
+    const mirror = (wrap, sel, v2) => {
+      const el = wrap && wrap.querySelector(sel);
+      if (el) el.value = v2;
+    };
+    const onDrag = (e4) => {
+      const v2 = parse(e4.target.value), wrap = wrapOf(e4);
+      e4.target.style.setProperty("--origami-slider-pct", toPct(v2) + "%");
+      mirror(wrap, ".wbk-slider-num", v2);
+      if (statusFn) {
+        const s4 = wrap && wrap.querySelector(".wbk-slider-status");
+        if (s4) s4.textContent = statusFn(v2);
+      }
+    };
+    const onRangeCommit = (e4) => onCommit(clamp(parse(e4.target.value)));
+    const onNumCommit = (e4) => {
+      const v2 = clamp(parse(e4.target.value));
+      const wrap = wrapOf(e4), range = wrap && wrap.querySelector(".wbk-slider-range");
+      if (range) {
+        range.value = v2;
+        range.style.setProperty("--origami-slider-pct", toPct(v2) + "%");
+      }
+      onCommit(v2);
+    };
+    const statusText = statusFn ? statusFn(val) : null;
+    return b2`<div class="wbk-slider">
+                <div class="wbk-slider-head">
+                    <span class="wbk-slider-label">${label}</span>
+                    <input type="number" class="wbk-slider-num" min=${min} max=${max} step=${step}
+                        .value=${String(val)} @change=${onNumCommit}></div>
+                <input type="range" class="wbk-slider-range" min=${min} max=${max} step=${step}
+                    .value=${String(val)} style="--origami-slider-pct:${toPct(val)}%"
+                    @input=${onDrag} @change=${onRangeCommit} @click=${onRangeCommit}>
+                ${statusText != null ? b2`<div class="wbk-slider-status">${statusText}</div>` : ""}
+                ${helper ? b2`<div class="wbk-slider-helper">${helper}</div>` : ""}</div>`;
+  }
+  _renderSlider(field, label, min, max, step, helper, statusFn) {
+    return this._slider({
+      value: this._formData[field],
+      fallback: DISPLAY_DEFAULTS[field] != null ? DISPLAY_DEFAULTS[field] : min,
+      min,
+      max,
+      step,
+      label,
+      helper,
+      statusFn,
+      onCommit: (v2) => this._updateField(field, v2)
+    });
+  }
+  _renderLayoutPicker(fmt, onPick) {
+    return b2`<div class="layout-picker">
+            ${["inline", "vertical", "split"].map((f3) => b2`<button type="button"
+                    class="layout-card ${fmt === f3 ? "active" : ""}" @click=${() => onPick(f3)}>
+                    <div class="lp-fig ${f3}">
+                        <div class="lp-sq"></div>
+                        <div class="lp-txt"><div class="lp-bar lg"></div><div class="lp-bar sm"></div></div>
+                    </div></button>`)}</div>`;
+  }
+  _renderCompactField(field, placeholder) {
+    const current = String(this._formData[field] || ""), label = LABELS[field] || field;
+    return b2`<div class="compact-field">
+                <span class="compact-field-label">${label}</span>
+                <input
+                    type="text"
+                    placeholder=${placeholder}
+                    .value=${current}
+                    @change=${(e4) => this._updateField(field, e4.target.value || "")}
+                ></div>`;
+  }
+  _renderContainerButtonSettings(container, containerIdx) {
+    const uf = (key, value) => this._updateContainerField(containerIdx, key, value);
+    const sf = (key, label, placeholder) => this._cssTextField({
+      value: container[key],
+      label,
+      placeholder,
+      trim: false,
+      onCommit: (v2) => uf(key, v2 || "")
+    });
+    const bgActive = !!container.background;
+    return b2`<div class="vcb">
+            <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Defaults for all buttons; each button can override.</span></div>
+            ${this._renderSubDisclosure("Background", b2`<div class="vcb">
+                <div class="toggle-group">
+                    <label class="toggle-row"><span>Background</span>
+                        <ha-switch .checked=${bgActive}
+                            @change=${(e4) => uf("background", e4.target.checked || "")}
+                        ></ha-switch></label>
+                    ${bgActive ? b2`<label class="toggle-row"><span>Blurred</span>
+                        <ha-switch .checked=${container.button_blurred_background === true}
+                            @change=${(e4) => {
+      const n4 = { ...container };
+      if (e4.target.checked) {
+        n4.button_blurred_background = true;
+        delete n4.scroll_fade;
+        delete n4.scroll_fade_size;
+      } else delete n4.button_blurred_background;
+      this._updateContainerAt(containerIdx, n4);
+    }}
+                        ></ha-switch></label>` : ""}
+                    <label class="toggle-row"><span>Shadow</span>
+                        <ha-switch .checked=${container.button_shadow !== false}
+                            @change=${(e4) => uf("button_shadow", e4.target.checked ? "" : false)}
+                        ></ha-switch></label>
+                    <label class="toggle-row"><span>Icon background</span>
+                        <ha-switch .checked=${container.button_icon_background === true}
+                            @change=${(e4) => uf("button_icon_background", e4.target.checked ? true : "")}
+                        ></ha-switch></label>
+                    </div>
+                ${bgActive ? this._renderContainerColorPicker(containerIdx, "button_background_color", "Button color") : ""}
+                ${container.button_icon_background === true ? this._renderContainerColorPicker(containerIdx, "button_icon_background_color", "Icon color") : ""}</div>`)}
+            ${this._renderSubDisclosure("Size & spacing", b2`<div class="vcb">
+                <div class="vcb-grid">
+                    ${sf("button_text_size", "Text size", "auto")}
+                    ${sf("button_icon_size", "Icon size", "auto")}
+                    ${sf("button_padding", "Button padding", "auto")}
+                    ${sf("button_icon_padding", "Icon padding", "auto")}
+                    ${sf("button_gap", "Element gap", "auto")}</div></div>`)}</div>`;
+  }
+  _renderContentLayoutDisclosure() {
+    const isRow = ((this._formData || {}).content_direction || "column") === "row";
+    const alignOpts = isRow ? [
+      { value: "", label: "Left (default)" },
+      { value: "end", label: "Right" },
+      { value: "center", label: "Center" },
+      { value: "between", label: "Space between" },
+      { value: "around", label: "Space around" },
+      { value: "evenly", label: "Space evenly" }
+    ] : OPT.content_align;
+    const crossOpts = isRow ? [
+      { value: "", label: "Top (default)" },
+      { value: "center", label: "Center" },
+      { value: "end", label: "Bottom" },
+      { value: "stretch", label: "Stretch" },
+      { value: "baseline", label: "Baseline" }
+    ] : [
+      { value: "", label: "Stretch (default)" },
+      { value: "start", label: "Left" },
+      { value: "center", label: "Center" },
+      { value: "end", label: "Right" }
+    ];
+    return this._renderDisclosure("Content layout", b2`<div class="settings-group">
+            <ha-form .hass=${this.hass}
+                .data=${{ content_direction: (this._formData || {}).content_direction || "column" }}
+                .schema=${[{ name: "content_direction", selector: { select: { mode: "dropdown", options: OPT.content_direction } } }]}
+                .computeLabel=${this._computeLabel}
+                @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value.content_direction;
+      this._updateField("content_direction", v2 === "row" ? "row" : "");
+    }}
+            ></ha-form>
+            <ha-form .hass=${this.hass}
+                .data=${{ content_align: (this._formData || {}).content_align || "" }}
+                .schema=${[{ name: "content_align", selector: { select: { mode: "dropdown", options: alignOpts } } }]}
+                .computeLabel=${() => isRow ? "Horizontal alignment" : "Vertical alignment"}
+                @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value.content_align;
+      this._updateField("content_align", v2 || "");
+    }}
+            ></ha-form>
+            <ha-form .hass=${this.hass}
+                .data=${{ content_align_items: (this._formData || {}).content_align_items || "" }}
+                .schema=${[{ name: "content_align_items", selector: { select: { mode: "dropdown", options: crossOpts } } }]}
+                .computeLabel=${() => isRow ? "Vertical alignment" : "Horizontal alignment"}
+                @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value.content_align_items;
+      this._updateField("content_align_items", v2 || "");
+    }}
+            ></ha-form></div>`);
+  }
+  _renderButtonContainersEditor() {
+    const areas = this._getContainers();
+    return b2`
+            <div class="sensor-list">
+                ${areas.map((container, ai) => {
+      const expanded = this._expandedContainer === ai;
+      const isCard = !!container.custom_cards;
+      const title = this._containerTitle(container, ai);
+      const label = (container.name || "").toString().trim() || (isCard ? "Card" : "Buttons");
+      const body = expanded ? isCard ? this._renderCardContainerBody(container, ai) : this._renderButtonContainerBody(container, ai) : "";
+      return this._renderListRow({
+        idx: ai,
+        total: areas.length,
+        expanded,
+        body,
+        title: b2`<span class="row-title-main">${label}</span><span class="row-title-meta">${title}</span>`,
+        onToggle: () => {
+          this._expandedContainer = this._expandedContainer === ai ? null : ai;
+          this._expandedButton = null;
+          this._expandedCard = null;
+        },
+        onMoveUp: () => this._moveContainer(ai, -1),
+        onMoveDown: () => this._moveContainer(ai, 1),
+        onDuplicate: () => this._duplicateContainer(ai),
+        onRemove: () => this._removeContainer(ai)
+      });
+    })}
+            </div>
+            <div style="display:flex;gap:var(--origami-e-s2)">
+                <button type="button" class="add-button-btn" style="flex:1" @click=${() => this._addContainer()}>
+                    <ha-icon icon="mdi:plus"></ha-icon>
+                    <span>Add buttons</span></button>
+                <button type="button" class="add-card-btn" style="flex:1" @click=${() => this._addCardContainer()}>
+                    <ha-icon icon="mdi:plus"></ha-icon>
+                    <span>Add card</span></button></div>
+            ${this._renderContentLayoutDisclosure()}`;
+  }
+  _addContainer() {
+    const areas = [...this._getContainers(), {}];
+    this._expandedContainer = areas.length - 1;
+    this._expandedButton = null;
+    this._commitContainers(areas);
+  }
+  _addCardContainer() {
+    const areas = [...this._getContainers(), { custom_cards: [{ type: "entity", entity: "", custom_width: "100%" }] }];
+    this._expandedContainer = areas.length - 1;
+    this._expandedButton = null;
+    this._expandedCard = 0;
+    this._commitContainers(areas);
+  }
+  _renderCardContainerBody(container, containerIdx) {
+    return b2`
+            ${this._renderContainerCustomCardsEditor(containerIdx)}
+            ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
+  }
+  _moveContainer(idx, delta) {
+    const areas = [...this._getContainers()], target = idx + delta;
+    if (target < 0 || target >= areas.length) return;
+    [areas[idx], areas[target]] = [areas[target], areas[idx]];
+    if (this._expandedContainer === idx) this._expandedContainer = target;
+    else if (this._expandedContainer === target) this._expandedContainer = idx;
+    this._commitContainers(areas);
+  }
+  _removeContainer(idx) {
+    const areas = [...this._getContainers()];
+    areas.splice(idx, 1);
+    if (this._expandedContainer === idx) this._expandedContainer = null;
+    else if (typeof this._expandedContainer === "number" && this._expandedContainer > idx) this._expandedContainer--;
+    this._expandedButton = null;
+    this._commitContainers(areas);
+  }
+  _duplicateContainer(idx) {
+    const areas = [...this._getContainers()];
+    const clone = JSON.parse(JSON.stringify(areas[idx]));
+    areas.splice(idx + 1, 0, clone);
+    this._expandedContainer = idx + 1;
+    this._expandedButton = null;
+    this._commitContainers(areas);
+  }
+  _renderContainerColorPicker(containerIdx, key, label) {
+    const container = this._getContainers()[containerIdx] || {};
+    const raw = (container[key] || "").toString().trim();
+    return this._renderColorPicker(label, raw, (h3, o5) => {
+      this._updateContainerField(containerIdx, key, h3 ? this._serializeColor(h3, o5) : "");
+    });
+  }
+  _renderButtonContainerBody(container, containerIdx) {
+    const list = this._getButtonsForContainer(containerIdx);
+    const uf = (key, value) => this._updateContainerField(containerIdx, key, value);
+    const layout = (container.layout || "wrap").toString().toLowerCase();
+    const isGrid = layout === "grid";
+    const isScroll = layout === "horizontal-scroll" || layout === "vertical-scroll";
+    const bgActive = !!container.background;
+    const sf = (key, label, placeholder) => this._cssTextField({
+      value: container[key],
+      label,
+      placeholder,
+      trim: false,
+      onCommit: (v2) => uf(key, v2 || "")
+    });
+    const containerSlider = (key, label, min, max, step, helper) => this._slider({
+      value: container[key],
+      fallback: min,
+      min,
+      max,
+      step,
+      label,
+      helper,
+      onCommit: (v2) => uf(key, v2)
+    });
+    const isVScroll = layout === "vertical-scroll";
+    const slots = parseInt(container.scroll_count, 10);
+    const fixedSlots = Number.isFinite(slots) && slots > 0 ? slots : 0;
+    const scrollFade = container.scroll_fade === true;
+    const setScrollFade = (on) => {
+      const n4 = { ...container };
+      if (on) {
+        n4.scroll_fade = true;
+        delete n4.button_blurred_background;
+      } else {
+        delete n4.scroll_fade;
+        delete n4.scroll_fade_size;
+      }
+      this._updateContainerAt(containerIdx, n4);
+    };
+    const cFmt = buttonStyle(container.button_style);
+    const align = (container.align || "start").toString().toLowerCase();
+    const alignDropdown = (key, label, options) => b2`<ha-form .hass=${this.hass}
+                .data=${{ [key]: container[key] || "" }}
+                .schema=${[{ name: key, selector: { select: { mode: "dropdown", options } } }]}
+                .computeLabel=${() => label}
+                @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value[key];
+      uf(key, v2 || "");
+    }}
+            ></ha-form>`;
+    const containerContent = b2`<div class="vcb">
+            ${this._cssTextField({ value: container.name, label: "Name", placeholder: "Optional, shown in this list", trim: true, onCommit: (v2) => uf("name", v2 || "") })}
+            ${this._renderSubDisclosure("Arrangement", b2`<div class="vcb">
+                <div class="segmented">
+                    ${OPT.button_container_layout.map((o5) => b2`<button type="button" class=${layout === o5.value ? "active" : ""}
+                            @click=${() => uf("layout", o5.value)}
+                        >${o5.label}</button>`)}</div>
+                ${isGrid ? containerSlider("columns", LABELS.button_container_columns, 1, 12, 1) : ""}
+                ${isScroll ? b2`<div class="segmented segmented-compact">
+                    ${OPT.button_container_flow.map((o5) => b2`<button type="button" class=${(fixedSlots ? "fixed" : "flow") === o5.value ? "active" : ""}
+                            @click=${() => uf("scroll_count", o5.value === "fixed" ? fixedSlots || 3 : "")}
+                        >${o5.label}</button>`)}</div>
+                ${fixedSlots ? containerSlider("scroll_count", isVScroll ? "Rows visible" : "Columns visible", 1, 10, 1) : ""}
+                ${isVScroll && fixedSlots ? "" : b2`<div class="compact-fields">
+                    <div class="compact-field"><span class="compact-field-label">Height</span>
+                        <input type="text" placeholder=${isVScroll ? "200px" : "auto"} .value=${container.row_height || ""}
+                            @change=${(e4) => uf("row_height", e4.target.value.trim() || "")}></div></div>`}
+                <div class="toggle-group"><label class="toggle-row"><span>Fade edges</span>
+                    <ha-switch .checked=${scrollFade}
+                        @change=${(e4) => setScrollFade(e4.target.checked)}></ha-switch></label></div>
+                ${scrollFade ? b2`<div class="compact-fields">
+                    <div class="compact-field"><span class="compact-field-label">Fade size</span>
+                        <input type="text" placeholder="24px" .value=${container.scroll_fade_size || ""}
+                            @change=${(e4) => uf("scroll_fade_size", e4.target.value.trim() || "")}></div></div>
+                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Blur and fade can't be combined.</span></div>` : ""}` : ""}
+
+                <div class="settings-group-label">Button style</div>
+                ${this._renderLayoutPicker(cFmt, (f3) => uf("button_style", f3 === "inline" ? "" : f3))}</div>`)}
+            ${this._renderSubDisclosure("Alignment", b2`<div class="vcb">
+                ${alignDropdown("justify_content", isVScroll ? "Buttons vertical" : "Buttons horizontal", isVScroll ? OPT.justify_content_column : OPT.justify_content)}
+                ${alignDropdown("align_items", isVScroll ? "Buttons horizontal" : "Buttons vertical", isVScroll ? OPT.align_items_row : OPT.align_items)}
+                <div class="settings-group-label">Content</div>
+                <div class="segmented" style="flex-wrap:nowrap">
+                    ${OPT.button_container_align.map((o5) => b2`<button type="button" class=${align === o5.value ? "active" : ""}
+                            @click=${() => uf("align", o5.value)}
+                        >${o5.label}</button>`)}</div></div>`)}
+            ${this._renderSubDisclosure("Grouping", b2`<div class="vcb">
+                <div class="toggle-group">
+                    <label class="toggle-row"> <span>${LABELS.button_container_grouped}</span> <ha-switch .checked=${container.grouped === true}
+                            @change=${(e4) => {
+      const on = e4.target.checked;
+      uf("grouped", on || "");
+      if (on && !bgActive) {
+        uf("background", true);
+      }
+    }}
+                        ></ha-switch></label>
+                    ${container.grouped === true ? b2`<label class="toggle-row"><span>Blurred</span>
+                        <ha-switch .checked=${container.blurred_background === true}
+                            @change=${(e4) => uf("blurred_background", e4.target.checked || "")}></ha-switch></label>
+                    <label class="toggle-row"><span>Shadow</span>
+                        <ha-switch .checked=${container.shadow !== false}
+                            @change=${(e4) => uf("shadow", e4.target.checked ? "" : false)}></ha-switch></label>` : ""}
+                    <label class="toggle-row"> <span>${LABELS.button_container_separator}</span> <ha-switch .checked=${container.separator === true}
+                            @change=${(e4) => uf("separator", e4.target.checked || "")}></ha-switch></label></div>
+                ${container.grouped === true ? this._renderContainerColorPicker(containerIdx, "background_color", "Group color") : ""}</div>`)}
+            ${this._renderSubDisclosure("Background image", b2`<div class="vcb">
+                ${sf("image", "Image path", "/local/floorplan.png, home or old-home")}
+                ${sf("image_dark", "Dark mode image", "/local/home-dark.png")}
+                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Sized by the container width. Free-positioned buttons sit on top.</span></div></div>`)}
+            ${this._renderSubDisclosure("Position", this._renderPosition(container, (n4) => this._updateContainerAt(containerIdx, n4)))}
+            ${this._renderSubDisclosure("Spacing", b2`<div class="vcb">
+                <div class="vcb-grid">
+                    ${sf("gap", LABELS.button_container_gap, "auto")}
+                    ${sf("padding", LABELS.button_container_padding, "auto")}
+                    ${sf("margin", LABELS.button_container_margin, "auto")}
+                    ${sf("custom_width", LABELS.button_container_width, "auto")}</div></div>`)}</div>`;
+    return b2`
+            <div class="sensor-list">
+                ${list.map((button, idx) => this._renderButtonRow(button, idx, list.length, containerIdx))}</div>
+            <button type="button" class="add-button-btn" @click=${() => this._addButton(containerIdx)}>
+                <ha-icon icon="mdi:plus"></ha-icon>
+                <span>Add button</span></button>
+            ${this._renderDisclosure("Container", containerContent)}
+            ${this._renderDisclosure("Button styles", this._renderContainerButtonSettings(container, containerIdx))}
+            ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
+  }
+  _renderPosition(o5, commit) {
+    const isFree = (o5.position || "").toString().toLowerCase() === "custom", anchor = o5.position_anchor || "top-left";
+    const set = (patch) => {
+      const n4 = { ...o5, ...patch };
+      for (const k2 of Object.keys(patch)) if (!patch[k2]) delete n4[k2];
+      commit(n4);
+    };
+    return b2`<div class="vcb">
+            <div class="toggle-group"><label class="toggle-row"><span>Free position</span>
+                <ha-switch .checked=${isFree} @change=${(e4) => set(e4.target.checked ? { position: "custom", position_anchor: anchor } : { position: "", position_anchor: "", position_x: "", position_y: "" })}></ha-switch></label></div>
+            ${isFree ? b2`<div class="free-pos-layout">
+                <div><div class="settings-group-label">Anchor</div>
+                    <div class="anchor-grid">${["top-left", "top-center", "top-right", "left", "center", "right", "bottom-left", "bottom-center", "bottom-right"].map((v2) => b2`<button type="button" class="anchor-cell ${anchor === v2 ? "active" : ""}" title=${v2}
+                        @click=${() => set({ position_anchor: v2 })}></button>`)}</div></div>
+                <div><div class="settings-group-label">Offset</div><div class="offset-fields">
+                    ${["x", "y"].map((a3) => b2`<div class="offset-field"><span class="offset-field-label">${a3.toUpperCase()}</span><input type="text" placeholder="0" .value=${String(o5["position_" + a3] || "")}
+                        @change=${(e4) => set({ ["position_" + a3]: e4.target.value.trim() })}></div>`)}</div></div></div>` : ""}</div>`;
+  }
+  _renderVisibilityConditions(conditions, commitList) {
+    const CONDITION_TYPES = [
+      { value: "state", label: "State" },
+      { value: "numeric_state", label: "Numeric state" },
+      { value: "screen", label: "Screen size" },
+      { value: "user", label: "User" }
+    ];
+    const removeCondition = (ci) => {
+      const arr = [...conditions];
+      arr.splice(ci, 1);
+      commitList(arr);
+    };
+    const updateCondition = (ci, patch) => {
+      const arr = [...conditions];
+      arr[ci] = { ...arr[ci], ...patch };
+      commitList(arr);
+    };
+    const boundIsRef = (v2) => !!v2 && typeof v2 === "object";
+    const setBound = (ci, key, value) => {
+      const arr = [...conditions];
+      const n4 = { ...arr[ci] };
+      if (value === void 0) delete n4[key];
+      else n4[key] = value;
+      arr[ci] = n4;
+      commitList(arr);
+    };
+    const boundField = (c4, ci, key, label) => {
+      const v2 = c4[key], isRef = boundIsRef(v2);
+      const patchRef = (patch) => setBound(ci, key, { ...v2, ...patch });
+      return b2`<div class="css-field">
+                <span class="css-field-label">${label}
+                    <button type="button" class="bound-mode ${isRef ? "active" : ""}"
+                        title=${isRef ? "Compare to a number" : "Compare to a forecast value"}
+                        @click=${() => setBound(ci, key, isRef ? void 0 : { forecast: "daily", attribute: "templow" })}>
+                        <ha-icon icon="mdi:link-variant" style="--mdc-icon-size:12px"></ha-icon></button></span>
+                ${isRef ? b2`<div class="bound-ref">
+                    <select @change=${(e4) => patchRef({ forecast: e4.target.value })}>
+                        ${["daily", "hourly"].map((o5) => b2`<option value=${o5} ?selected=${(v2.forecast || "daily") === o5}>${o5}</option>`)}</select>
+                    <select @change=${(e4) => patchRef({ attribute: e4.target.value })}>
+                        ${FC_ATTRIBUTES.map((o5) => b2`<option value=${o5.value} ?selected=${v2.attribute === o5.value}>${o5.label}</option>`)}</select></div>` : b2`<input type="text" placeholder="" .value=${v2 != null ? String(v2) : ""}
+                    @change=${(e4) => {
+        const raw = e4.target.value.trim();
+        setBound(ci, key, raw === "" ? void 0 : parseFloat(raw));
+      }}>`}</div>`;
+    };
+    const addCondition = () => {
+      commitList([...conditions, { condition: "state", entity: "", state: "" }]);
+    };
+    return b2`${conditions.map((c4, ci) => {
+      const cType = c4.condition || "state";
+      const onTypeChange = (newType) => {
+        const base = { condition: newType };
+        if (newType === "state") {
+          base.entity = c4.entity || "";
+          base.state = "";
+        } else if (newType === "numeric_state") {
+          base.entity = c4.entity || "";
+        } else if (newType === "screen") {
+          base.media_query = c4.media_query || "(min-width: 768px)";
+        } else if (newType === "user") {
+          base.users = c4.users || [];
+        }
+        const arr = [...conditions];
+        arr[ci] = base;
+        commitList(arr);
+      };
+      return b2`<div class="field-group" style="position:relative">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--origami-e-s2)">
+                        <span class="field-group-label" style="margin:0">Condition ${ci + 1}</span>
+                        <button type="button" class="ring-threshold-del" title="Remove" @click=${() => removeCondition(ci)}>
+                            <ha-icon icon="mdi:close" style="--mdc-icon-size:14px"></ha-icon></button></div>
+                    <div class="segmented segmented-compact">
+                        ${CONDITION_TYPES.map((o5) => b2`<button type="button"
+                            class=${cType === o5.value ? "active" : ""}
+                            @click=${() => onTypeChange(o5.value)}
+                        >${o5.label}</button>`)}</div>
+                    ${cType === "state" ? b2`<ha-form .hass=${this.hass}
+                            .data=${{ entity: c4.entity || "" }}
+                            .schema=${[{ name: "entity", selector: { entity: {} } }]}
+                            .computeLabel=${() => "Entity"}
+                            @value-changed=${(e4) => {
+        e4.stopPropagation();
+        updateCondition(ci, { entity: e4.detail && e4.detail.value && e4.detail.value.entity || "" });
+      }}
+                        ></ha-form>
+                        <div class="css-field-row cols-2">
+                            <div class="css-field">
+                                <span class="css-field-label">State</span>
+                                <input type="text" placeholder="on"
+                                    .value=${c4.state != null ? String(c4.state) : ""}
+                                    @change=${(e4) => {
+        const v2 = e4.target.value;
+        const arr = [...conditions];
+        const entry = { ...arr[ci] };
+        if (v2 !== "") {
+          entry.state = v2;
+          delete entry.state_not;
+        } else {
+          delete entry.state;
+        }
+        arr[ci] = entry;
+        commitList(arr);
+      }}
+                                ></div>
+                            <div class="css-field">
+                                <span class="css-field-label">State not</span>
+                                <input type="text" placeholder=""
+                                    .value=${c4.state_not != null ? String(c4.state_not) : ""}
+                                    @change=${(e4) => {
+        const v2 = e4.target.value;
+        const arr = [...conditions];
+        const entry = { ...arr[ci] };
+        if (v2 !== "") {
+          entry.state_not = v2;
+          delete entry.state;
+        } else {
+          delete entry.state_not;
+        }
+        arr[ci] = entry;
+        commitList(arr);
+      }}
+                                ></div></div>` : ""}
+                    ${cType === "numeric_state" ? b2`<ha-form .hass=${this.hass}
+                            .data=${{ entity: c4.entity || "" }}
+                            .schema=${[{ name: "entity", selector: { entity: {} } }]}
+                            .computeLabel=${() => "Entity"}
+                            @value-changed=${(e4) => {
+        e4.stopPropagation();
+        updateCondition(ci, { entity: e4.detail && e4.detail.value && e4.detail.value.entity || "" });
+      }}
+                        ></ha-form>
+                        <div class="css-field-row cols-2">
+                            ${boundField(c4, ci, "above", "Above")}
+                            ${boundField(c4, ci, "below", "Below")}</div>` : ""}
+                    ${cType === "screen" ? b2`<div class="css-field">
+                            <span class="css-field-label">Media query</span>
+                            <input type="text" placeholder="(min-width: 768px)"
+                                .value=${c4.media_query || ""}
+                                @change=${(e4) => updateCondition(ci, { media_query: e4.target.value.trim() })}
+                            ></div>` : ""}
+                    ${cType === "user" ? b2`<div class="css-field">
+                            <span class="css-field-label">User IDs (comma-separated)</span>
+                            <input type="text" placeholder="abc123, def456"
+                                .value=${Array.isArray(c4.users) ? c4.users.join(", ") : ""}
+                                @change=${(e4) => updateCondition(ci, { users: e4.target.value.split(",").map((s4) => s4.trim()).filter(Boolean) })}
+                            ></div>` : ""}
+                </div>`;
+    })}
+            <button type="button" class="ring-threshold-add" @click=${addCondition}>
+                <ha-icon icon="mdi:plus" style="--mdc-icon-size:14px"></ha-icon> Add condition</button>
+            ${conditions.length > 0 ? b2`<div style="font-size:var(--origami-e-f-meta);color:var(--secondary-text-color);line-height:1.4;margin-top:var(--origami-e-s2)">
+                All conditions must be met to be visible.</div>` : ""}`;
+  }
+  _renderContainerVisibility(container, containerIdx) {
+    const conditions = Array.isArray(container.visibility) ? container.visibility : [];
+    return this._renderVisibilityConditions(conditions, (arr) => {
+      const n4 = { ...container };
+      if (arr.length) n4.visibility = arr;
+      else delete n4.visibility;
+      this._updateContainerAt(containerIdx, n4);
+    });
+  }
+  _renderButtonVisibility(button, containerIdx, idx, update) {
+    const conditions = Array.isArray(button.visibility) ? button.visibility : [];
+    return this._renderVisibilityConditions(conditions, (arr) => {
+      const n4 = { ...button };
+      if (arr.length) n4.visibility = arr;
+      else delete n4.visibility;
+      update(n4);
+    });
+  }
+  _renderImagesPanel() {
+    const c4 = this._formData;
+    const mode = c4.background_mode;
+    const showBgFilters = mode === "images" || mode === "default";
+    const cardThresholds = Array.isArray(c4.background_thresholds) ? c4.background_thresholds : [];
+    const brightnessStatus = (v2) => {
+      const pct = Math.round(v2 * 100);
+      if (v2 < 0.5) return `${pct}% \u2014 Very dark`;
+      if (v2 < 0.8) return `${pct}% \u2014 Dimmed`;
+      if (v2 < 0.95) return `${pct}% \u2014 Slightly dimmed`;
+      if (v2 >= 0.95 && v2 <= 1.05) return "Default brightness";
+      if (v2 < 1.2) return `${pct}% \u2014 Slightly brighter`;
+      if (v2 < 1.5) return `${pct}% \u2014 Bright`;
+      return `${pct}% \u2014 Very bright`;
+    };
+    const saturationStatus = (v2) => {
+      const pct = Math.round(v2 * 100);
+      if (v2 === 0) return "Grayscale";
+      if (v2 < 0.4) return `${pct}% \u2014 Desaturated`;
+      if (v2 < 0.8) return `${pct}% \u2014 Muted colors`;
+      if (v2 >= 0.95 && v2 <= 1.05) return "Default intensity";
+      if (v2 < 1.4) return `${pct}% \u2014 Vivid colors`;
+      if (v2 < 1.8) return `${pct}% \u2014 Very vivid`;
+      return `${pct}% \u2014 Maximum saturation`;
+    };
+    const blurStatus = (v2) => {
+      if (v2 === 0) return "No blur";
+      if (v2 <= 2) return `${v2}px \u2014 Subtle`;
+      if (v2 <= 6) return `${v2}px \u2014 Soft`;
+      if (v2 <= 12) return `${v2}px \u2014 Strong`;
+      return `${v2}px \u2014 Heavy`;
+    };
+    const fx = (key, label, sub, def = true) => {
+      const on = def ? c4[key] !== false : c4[key] === true;
+      return b2`<label class="toggle-row"><span>${label}</span><ha-switch .checked=${on}
+                @change=${(e4) => this._updateField(key, e4.target.checked === def ? "" : e4.target.checked)}></ha-switch></label>${on && sub ? b2`<div class="toggle-sub">${sub}</div>` : ""}`;
+    };
+    return b2`
+            <div class="fc-box" style="margin-top:0">
+                <ha-form
+                    .hass=${this.hass}
+                    .data=${{ background_mode: mode }}
+                    .schema=${[{ name: "background_mode", selector: { select: { mode: "dropdown", options: OPT.visual_mode } } }]}
+                    .computeLabel=${this._computeLabel}
+                    @value-changed=${(e4) => {
+      e4.stopPropagation();
+      const v2 = e4.detail && e4.detail.value && e4.detail.value.background_mode;
+      if (v2 && v2 !== mode) this._setVisualMode(v2);
+    }}
+                ></ha-form>
+            </div>
+            ${mode === "color" || mode === "images" ? b2`<div class="fc-box">
+                ${this._renderColorPicker("Card color", c4.background_color || "", (h3, o5) => this._updateField("background_color", h3 ? this._serializeColor(h3, o5) : ""))}
+                ${this._renderColorPicker(c4.color_mode === "dark" || c4.color_mode === "light" ? "Night color" : "Dark mode color", c4.background_color_dark || "", (h3, o5) => this._updateField("background_color_dark", h3 ? this._serializeColor(h3, o5) : ""))}
+                <div class="toggle-group"><label class="toggle-row"><span>Color thresholds</span>
+                    <ha-switch .checked=${cardThresholds.length > 0}
+                        @change=${(e4) => {
+      if (e4.target.checked) this._patch({ background_thresholds: [{ value: "", color: "#ff9800" }] });
+      else this._patch({}, { strip: CARD_THRESHOLD_KEYS });
+    }}></ha-switch></label></div>
+                ${cardThresholds.length ? b2`
+                    <ha-form .hass=${this.hass} .data=${{ background_threshold_entity: c4.background_threshold_entity || "" }}
+                        .schema=${[{ name: "background_threshold_entity", selector: { entity: {} } }]} .computeLabel=${() => "Entity"} .computeHelper=${() => "Leave empty to follow the card's weather"}
+                        @value-changed=${(e4) => {
+      e4.stopPropagation();
+      this._updateField("background_threshold_entity", e4.detail && e4.detail.value && e4.detail.value.background_threshold_entity || "");
+    }}></ha-form>
+                    ${(c4.background_threshold_entity || "").trim() ? b2`<ha-form .hass=${this.hass} .data=${{ background_threshold_attribute: c4.background_threshold_attribute || "" }}
+                        .schema=${[{ name: "background_threshold_attribute", selector: { attribute: { entity_id: c4.background_threshold_entity } } }]} .computeLabel=${() => "Attribute"}
+                        @value-changed=${(e4) => {
+      e4.stopPropagation();
+      this._updateField("background_threshold_attribute", e4.detail && e4.detail.value && e4.detail.value.background_threshold_attribute || "");
+    }}></ha-form>` : ""}
+                    ${this._renderThresholdList({
+      list: cardThresholds,
+      swatchDefault: "#ff9800",
+      addColor: "#ff9800",
+      addLabel: "Add threshold",
+      dark: true,
+      commit: (arr) => {
+        if (arr && arr.length) this._patch({ background_thresholds: arr });
+        else this._patch({}, { strip: ["background_thresholds"] });
+      }
+    })}` : ""}</div>` : ""}
+            ${mode === "images" ? this._renderDisclosure("Weather images", b2`
+                <div class="settings-group">
+                    ${this._renderClearableText("weather_image_path")}
+                    ${this._renderClearableText("weather_image_path_dark")}
+                    ${this._renderForm([{ name: "weather_image_type", selector: { select: { mode: "dropdown", options: OPT.weather_image_type } } }])}
+                    <div class="toggle-group">${fx("weather_image_front", "In front of sun, moon and stars", null, false)}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:var(--origami-e-s2);margin-top:var(--origami-e-s3)">
+                    ${this._renderSlider("bg_blur", LABELS.bg_blur, 0, 20, 1, null, blurStatus)}
+                </div>`) : ""}
+            ${this._renderDisclosure("Gradient layer", b2`<div class="settings-group">
+                <div class="toggle-group"><label class="toggle-row"><span>Show gradient</span>
+                    <ha-switch .checked=${c4.gradient === true}
+                        @change=${(e4) => e4.target.checked ? this._patch({ gradient: true, gradient_color_2: c4.gradient_color_2 || "rgba(0,0,0,0.6)" }) : this._updateField("gradient", "")}></ha-switch></label></div>
+                ${c4.gradient === true ? b2`<div class="compact-field">
+                    <span class="compact-field-label">Type</span>
+                    <div class="segmented segmented-compact">
+                        <button type="button" class=${c4.gradient_type !== "radial" ? "active" : ""} @click=${() => this._updateField("gradient_type", "")}>Linear</button>
+                        <button type="button" class=${c4.gradient_type === "radial" ? "active" : ""} @click=${() => this._updateField("gradient_type", "radial")}>Radial</button>
+                    </div></div>
+                ${c4.gradient_type === "radial" ? b2`${this._renderSlider("gradient_x", "Center X", 0, 100, 1)}${this._renderSlider("gradient_y", "Center Y", 0, 100, 1)}` : this._renderSlider("gradient_angle", "Angle", 0, 360, 1)}
+                ${this._renderColorPicker("Start color", c4.gradient_color_1 || "", (h3, o5) => this._updateField("gradient_color_1", h3 ? this._serializeColor(h3, o5) : ""))}
+                ${this._renderSlider("gradient_stop_1", "Start position", 0, 100, 1)}
+                ${this._renderColorPicker("End color", c4.gradient_color_2 || "", (h3, o5) => this._updateField("gradient_color_2", h3 ? this._serializeColor(h3, o5) : ""))}
+                ${this._renderSlider("gradient_stop_2", "End position", 0, 100, 1)}` : ""}</div>`)}
+            ${this._renderDisclosure("Color settings", b2`
+                <div class="fc-box" style="margin-top:0">
+                    ${this._renderForm([{ name: "color_mode", selector: { select: { mode: "dropdown", options: OPT.color_mode } } }])}
+                    ${showBgFilters && c4.color_mode !== "theme" && c4.color_mode !== "dark" ? b2`<div class="toggle-group"><label class="toggle-row"><span>Adapt to dark theme</span>
+                        <ha-switch .checked=${c4.dark_theme_adaptation !== false}
+                            @change=${(e4) => this._updateField("dark_theme_adaptation", e4.target.checked ? "" : false)}></ha-switch></label></div>` : ""}
+                </div>
+                ${showBgFilters ? b2`<div style="display:flex;flex-direction:column;gap:var(--origami-e-s2)">
+                ${this._renderSlider("bg_brightness", LABELS.bg_brightness, 0.3, 1.7, 0.05, null, brightnessStatus)}
+                ${this._renderSlider("bg_saturation", LABELS.bg_saturation, 0, 2, 0.05, null, saturationStatus)}
+                ${this._renderSlider("bg_blend", LABELS.bg_blend, 0, 100, 1)}</div>` : ""}`)}
+            ${this._renderDisclosure("Animation effects", b2`<div class="settings-group">
+                <div class="toggle-group">
+                ${fx("background_haze", "Background haze", null, mode === "default")}
+                ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
+                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c4.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v2) => this._updateField("cloud_image_path", v2) }))}
+                ${fx("night_sky_effects", "Stars")}
+                ${fx("bird_effects", "Birds")}
+                ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}
+                ${fx("plane_effects", "Planes", this._renderSlider("plane_density", "Frequency", 0.25, 4, 0.25))}</div></div>`)}
+            `;
+  }
+  _renderCardFrameToggle() {
+    const c4 = this._formData || {};
+    const frame = c4.card_frame !== false;
+    const fw = c4.full_width === true;
+    const ef = c4.edge_fade === true;
+    return b2`<div class="field-group">
+            <div class="toggle-group"><label class="toggle-row"><span>Card frame</span>
+                <ha-switch .checked=${frame}
+                    @change=${(e4) => this._updateField("card_frame", e4.target.checked ? "" : false)}></ha-switch></label></div>
+            <div class="toggle-group"><label class="toggle-row"><span>Full width</span>
+                <ha-switch .checked=${fw}
+                    @change=${(e4) => this._updateField("full_width", e4.target.checked ? true : "")}></ha-switch></label></div>
+            ${fw ? b2`<div class="compact-fields" style="margin-top:var(--origami-e-s1)">
+                <div class="compact-field">
+                    <span class="compact-field-label">Side gap</span>
+                    <input type="text" placeholder="auto"
+                        .value=${c4.full_width_margin || ""}
+                        @change=${(e4) => this._updateField("full_width_margin", e4.target.value.trim() || "")}></div></div>` : ""}
+            <div class="toggle-group"><label class="toggle-row"><span>Fade edges</span>
+                <ha-switch .checked=${ef}
+                    @change=${(e4) => this._updateField("edge_fade", e4.target.checked ? true : "")}></ha-switch></label></div>
+            ${ef ? b2`<div class="compact-fields" style="margin-top:var(--origami-e-s1)">
+                <div class="compact-field">
+                    <span class="compact-field-label">Fade size</span>
+                    <input type="text" placeholder="10%"
+                        .value=${c4.edge_fade_size || ""}
+                        @change=${(e4) => this._updateField("edge_fade_size", e4.target.value.trim() || "")}></div></div>` : ""}
+            </div>`;
+  }
+  render() {
+    if (!this.hass || !this._config) return b2``;
+    return b2`${this._renderEntityField("weather_entity", { domain: "weather", label: "Weather entity" })}
+            <ha-expansion-panel
+                outlined
+                .expanded=${this._openPanel === "layouts"}
+                @expanded-changed=${(e4) => this._onPanelToggle("layouts", e4.detail.expanded)}
+            >
+                <div slot="header" class="panel-header">
+                    <ha-icon icon="mdi:view-dashboard-outline"></ha-icon>
+                    <span>Layouts</span></div>
+                ${this._renderLayoutsPanel()}</ha-expansion-panel>
+            <ha-expansion-panel
+                outlined
+                .expanded=${this._openPanel === "card_settings"}
+                @expanded-changed=${(e4) => this._onPanelToggle("card_settings", e4.detail.expanded)}
+            >
+                <div slot="header" class="panel-header">
+                    <ha-icon icon="mdi:cog-outline"></ha-icon>
+                    <span>General</span></div>
+                ${this._renderDisclosure("Layout", b2`<div class="settings-group">
+                    ${this._renderCardStyleSegmented()}
+                    ${this._renderOffsetPicker()}
+                    ${this._renderCardFrameToggle()}</div>`)}
+                ${this._renderDisclosure("Sun & Moon", this._renderSunMoonPanel())}
+                ${this._renderDisclosure("Custom icons", b2`<div class="settings-group">
+                    ${this._renderClearableText("icon_path")}</div>`)}
+                ${this._renderDisclosure("Tap action", b2`<div class="settings-group">
+                    ${this._renderForm([{ name: "card_tap_action", selector: { ui_action: {} } }])}</div>`)}
+                ${this._renderDisclosure("CSS", b2`<div class="settings-group">
+                    ${this._renderForm([{ name: "css", selector: { text: { multiline: true } } }])}</div>`)}</ha-expansion-panel>
+            <ha-expansion-panel
+                outlined
+                .expanded=${this._openPanel === "images"}
+                @expanded-changed=${(e4) => this._onPanelToggle("images", e4.detail.expanded)}
+            >
+                <div slot="header" class="panel-header">
+                    <ha-icon icon="mdi:image-outline"></ha-icon>
+                    <span>Background</span></div>
+                ${this._renderImagesPanel()}</ha-expansion-panel>
+            <ha-expansion-panel
+                outlined
+                .expanded=${this._openPanel === "buttons"}
+                @expanded-changed=${(e4) => this._onPanelToggle("buttons", e4.detail.expanded)}
+            >
+                <div slot="header" class="panel-header">
+                    <ha-icon icon="mdi:checkbox-multiple-blank-outline"></ha-icon>
+                    <span>Content</span></div>
+                ${this._renderButtonContainersEditor()}</ha-expansion-panel>`;
+  }
+};
+if (!customElements.get("origami-weather-editor")) {
+  customElements.define("origami-weather-editor", WeatherCardEditor);
+}

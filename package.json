@@ -2,7 +2,8 @@
   "name": "origami-weather",
   "private": true,
   "scripts": {
-    "build": "esbuild src/origami-weather.js --bundle --format=esm --legal-comments=inline --outfile=dist/origami-weather.js"
+    "prebuild": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "esbuild src/origami-weather.js --bundle --splitting --format=esm --chunk-names=[name]-[hash] --legal-comments=inline --outdir=dist"
   },
   "dependencies": {
     "lit": "3.2.1"

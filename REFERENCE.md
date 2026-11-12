@@ -144,7 +144,7 @@ buttons:
 
 ### Forecasts
 
-Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. A text element with `attribute: datetime` prints the matching label (day name or time). With `icon: weather` on an icon element, the icon matches the forecasted condition.
+Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. A text element with `attribute: datetime` prints the matching label (day name or time), and [date codes](#dates) in its `format` change what that label says. With `icon: weather` on an icon element, the icon matches the forecasted condition.
 
 A button whose `forecast_offset` lies past the last entry the weather service sends is hidden, and so is a forecast button on a weather entity without that kind of forecast. A row can therefore hold ten days and show as many as there are, like the Classic layout does.
 
@@ -160,6 +160,31 @@ buttons:
         attribute: temperature
         format: "°"
 ```
+
+### Dates
+
+A forecast's `datetime` and timestamps like the sun's `next_rising` print a short label, a day name or a time. Put date codes into `format` to print the date in that pattern instead.
+
+```yaml
+elements:
+  - type: text
+    attribute: datetime
+    format: "%a, %d"
+```
+
+This prints `Thu, 12`. The codes are the ones Home Assistant templates use.
+
+| Code | Prints |
+| :--- | :--- |
+| `%a` `%A` | Day name, short and long. |
+| `%b` `%B` | Month name, short and long. |
+| `%d` `%m` | Day of the month and month as numbers, like `05` and `11`. |
+| `%y` `%Y` | Year, like `26` and `2026`. |
+| `%H` `%I` | Hour on the 24-hour and on the 12-hour clock. |
+| `%M` `%S` | Minute and second. |
+| `%p` | `AM` or `PM`. |
+
+Day and month names are in the Home Assistant language. A `-` after the percent sign drops the leading zero, so `%-d` prints `5`. A `format` without a code is still glued to the end of the label.
 
 ### Gauges
 
@@ -381,7 +406,7 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `entity` | `string` | — | Read from a different entity than the button. |
 | `attribute` | `string` | — | Read a specific attribute. |
 | `text` | `string` | — | A fixed string instead of a value. |
-| `format` | `string` | — | Glued to the end of the value, usually a unit. |
+| `format` | `string` | — | Glued to the end of the value, usually a unit. On a date it can be a pattern with [date codes](#dates). |
 | `precision` | `number` | — | Decimal places. |
 | `size` | `string` | — | Font size. |
 | `weight` | `string` | — | Font weight. This also drives opacity: light weights are drawn faded, heavy ones fully opaque. Not when `color` is set. |
@@ -494,7 +519,7 @@ These run on top of every background, including `images` and `none`.
 | `precipitation_effects` | `boolean` | `true` | Rain, downpour, thunderstorms, snow, sleet and hail particles. |
 | `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
 | `cloud_effects` | `boolean` | `true` | The drifting cloud layer. Even clear skies get a few soft ones, and fog is drawn with them as well. |
-| `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the cloud layer is drawn with instead of the built-in clouds. A PNG or WebP with a transparent background works best. |
+| `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the cloud layer is drawn with instead of the built-in clouds. A PNG or WebP with a transparent background works best. `mist` is the faint mist of the Classic layout, which draws it in white with `css`. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |

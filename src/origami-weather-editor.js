@@ -1191,7 +1191,7 @@ class WeatherCardEditor extends LitElement {
                     const setPrec = (v) => { const n = { ...txt }; if (v >= 0) n.precision = v; else delete n.precision; updateEl(ei, n); };
                     return this._slider({ value: prec, fallback: 0, min: 0, max: 2, step: 1, int: true, label: "Decimals", onCommit: setPrec });
                 })() : ""}
-                <div class="vcb-grid">${txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
+                <div class="vcb-grid">${isFc && !wantsEntity && txt.attribute === "datetime" ? txtField(txt, ei, "format", "Date format", "%a, %d", true) : txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
                 <div class="segmented segmented-compact">
                     ${[{v:"",l:"Normal"},{v:"500",l:"Medium"},{v:"600",l:"Semibold"},{v:"700",l:"Bold"}].map(o => html`<button type="button" class=${(txt.weight||"")===o.v?"active":""}
                         @click=${()=>{const n={...txt};if(o.v)n.weight=o.v;else delete n.weight;updateEl(ei,n);}}>${o.l}</button>`)}</div>
@@ -2012,7 +2012,7 @@ class WeatherCardEditor extends LitElement {
                 <div class="toggle-group">
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
-                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
+                ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png or mist", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

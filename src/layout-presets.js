@@ -48,7 +48,7 @@ const DIORAMA_CONFIG = Object.freeze({
     color_mode: 'theme',
     card_height: '176px',
     card_padding: 'var(--ha-space-4, 16px)',
-    content_align: 'between',
+    content_direction: 'row',
     sun_moon_size: 40,
     sun_moon_x: 'dynamic',
     cloud_effects: false,
@@ -69,29 +69,11 @@ const DIORAMA_CONFIG = Object.freeze({
   --origami-separator-color: color-mix(in srgb, currentColor 18%, transparent);
 }
 #weather-bg > img { object-position: left bottom; }
-#weather-effects { filter: saturate(0.6); }`,
+.row-horizontal-scroll > .button { max-width: none; }`,
     button_containers: [
         {
-            name: 'Temperature',
-            justify_content: 'end',
-            buttons: [
-                {
-                    name: 'Temperature and condition',
-                    entity: PRESET_ENTITY_TOKEN,
-                    attribute: 'temperature',
-                    style: 'vertical',
-                    align: 'end',
-                    inner_gap: '6px',
-                    background: false,
-                    elements: [
-                        text({ size: '40px', weight: '700', precision: 0, format: '\u00b0' }),
-                        text({ entity: PRESET_ENTITY_TOKEN, size: '11px', weight: '500' })
-                    ]
-                }
-            ]
-        },
-        {
             name: 'Info bar',
+            custom_width: '50%',
             grouped: true,
             background: true,
             blurred_background: true,
@@ -116,6 +98,25 @@ const DIORAMA_CONFIG = Object.freeze({
                 dioramaSun(true),
                 dioramaItem('mdi:water-percent', 'Humidity', [text({ attribute: 'humidity', weight: '700' })]),
                 dioramaItem('mdi:sun-wireless-outline', 'UV', [text({ attribute: 'uv_index', weight: '700' })], { forecast: 'daily' })
+            ]
+        },
+        {
+            name: 'Temperature',
+            justify_content: 'end',
+            buttons: [
+                {
+                    name: 'Temperature and condition',
+                    entity: PRESET_ENTITY_TOKEN,
+                    attribute: 'temperature',
+                    style: 'vertical',
+                    align: 'end',
+                    inner_gap: '6px',
+                    background: false,
+                    elements: [
+                        text({ size: '40px', weight: '700', precision: 0, format: '\u00b0' }),
+                        text({ entity: PRESET_ENTITY_TOKEN, size: '12px', weight: '500', overflow: 'wrap' })
+                    ]
+                }
             ]
         }
     ],
@@ -156,10 +157,10 @@ const classicDay = (offset) => ({
     background: false,
     elements: [
         text({ attribute: 'datetime', size: '12px', weight: '500', color: WHITE_72 }),
-        icon('weather', { icon_size: '26px', color: WHITE }),
+        icon('weather', { icon_size: '26px', color: WHITE, margin: '2px 0' }),
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: WHITE }),
         text({ attribute: 'templow', format: '\u00b0', size: '14px', weight: '500', color: WHITE_60 }),
-        { type: 'bar', bar_height: '4px', bar_width: '26px', bar_color: '#9fd2ff', bar_values: [{ attribute: 'precipitation_probability' }] }
+        { type: 'bar', bar_height: '4px', bar_width: '26px', bar_color: '#9fd2ff', margin: '3px 0 0', bar_values: [{ attribute: 'precipitation_probability' }] }
     ]
 });
 
@@ -182,7 +183,7 @@ const CLASSIC_CONFIG = Object.freeze({
     color_mode: 'dark',
     sun_enabled: false,
     moon_enabled: false,
-    cloud_effects: false,
+    cloud_image_path: 'mist',
     bird_effects: false,
     balloon_effects: false,
     plane_effects: false,
@@ -198,6 +199,7 @@ const CLASSIC_CONFIG = Object.freeze({
     gradient_stop_2: 70,
     card_height: 'content',
     card_padding: '22px',
+    css: '#weather-effects { filter: brightness(0) invert(1); }',
     button_containers: [
         {
             name: 'Now',
@@ -225,9 +227,10 @@ const CLASSIC_CONFIG = Object.freeze({
         {
             name: 'Forecast',
             layout: 'horizontal-scroll',
-            scroll_count: 5,
+            scroll_count: 6,
+            justify_content: 'center',
             margin: '20px 0 0',
-            padding: '14px 4px',
+            padding: '0 4px',
             gap: '0',
             background: true,
             grouped: true,
@@ -235,8 +238,8 @@ const CLASSIC_CONFIG = Object.freeze({
             shadow: false,
             background_color: 'rgba(255, 255, 255, 0.12)',
             button_style: 'vertical',
-            button_gap: '6px',
-            button_padding: '0',
+            button_gap: '5px',
+            button_padding: '14px 0',
             align: 'center',
             buttons: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(classicDay)
         }
@@ -376,8 +379,8 @@ const windCompass = () => ({
     background: false,
     width: '54px',
     padding: '0',
-    inner_gap: '1px',
-    elements: [homeText({ attribute: 'wind_speed', precision: 0, format: ' ' }, '15px', '700'), homeLabel({ attribute: 'wind_speed_unit' }, '9px')]
+    inner_gap: '4px',
+    elements: [homeText({ attribute: 'wind_speed', precision: 0, format: ' ' }, '15px', '700'), homeLabel({ attribute: 'wind_speed_unit' }, '8px')]
 });
 
 const HOME_CONFIG = Object.freeze({
@@ -421,8 +424,7 @@ const HOME_CONFIG = Object.freeze({
                     entity: PRESET_ENTITY_TOKEN,
                     attribute: 'temperature',
                     style: 'split',
-                    inner_gap: '8px',
-                    elements: [homeTemp('clamp(40px, 17cqw, 56px)', '700'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
+                    elements: [homeTemp('clamp(40px, 17cqw, 52px)', '700'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
                 },
                 room('Living'),
                 room('Office'),

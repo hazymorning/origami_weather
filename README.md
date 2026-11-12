@@ -54,7 +54,7 @@ Without HACS, copy every file in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather: a partly cloudy midday with the sun above the hills, and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills, and a frosted bar at the bottom shows today's high and low, the wind, the next sunset or sunrise, the humidity and the UV index.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills, and a frosted bar in the top left corner slides through today's high and low, the wind, the next sunset or sunrise, the humidity and the UV index.
 
 <details>
 <summary><b>Load the pictures from Home Assistant</b></summary>
@@ -72,7 +72,7 @@ The diorama loads its pictures from Origami's repository through jsDelivr. To lo
 
 <img width="800" alt="The Classic layout: the temperature and the weather on a color that changes with it, today's high and low, and a forecast for the coming days with the chance of rain, on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day.
+The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. When it's cloudy, a faint mist drifts across the card.
 
 ### Centered
 

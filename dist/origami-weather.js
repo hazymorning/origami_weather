@@ -256,6 +256,7 @@ var WeatherEffects = (() => {
   }
   const _getCloudImg = _imgLoader(() => import("./image-assets-clouds-LW3PRVS6.js").then((m) => m.CLOUD_SPRITE));
   const _getSoftImg = _imgLoader(() => import("./image-assets-clouds-LW3PRVS6.js").then((m) => m.CLOUD_SOFT));
+  const _getMistImg = _imgLoader(() => import("./image-assets-mist-3XQ2PNA5.js").then((m) => m.CLOUD_MIST));
   const _getBirdImg = _imgLoader(() => import("./image-assets-birds-Z4ZU72J5.js").then((m) => m.BIRD_SHEET));
   const _getBalloonImg = _imgLoader(BALLOON_SHEET);
   const _getPlaneImg = _imgLoader(() => import("./image-assets-planes-H3FJKFTA.js").then((m) => m.PLANE_SHEET));
@@ -1276,7 +1277,7 @@ var WeatherEffects = (() => {
     const area = Math.max(1, w * h);
     const grow = inst.area > 0 ? Math.abs(area - inst.area) / inst.area : 1;
     const sizeChanged = grow >= 0.22;
-    const custom = cloudImage && _imgLoader(cloudImage);
+    const custom = cloudImage === "mist" ? _getMistImg : cloudImage && _imgLoader(cloudImage);
     inst.speed = speed || 1;
     inst.clouds = custom ? [custom, custom] : [_getCloudImg, _getSoftImg];
     const tuning = _hasClouds(weatherState) ? _weatherTuning(weatherState) : null;
@@ -1700,14 +1701,23 @@ function numberFormat(locale, precision) {
   const nf = locale.number_format;
   return new Intl.NumberFormat(nf === "system" ? void 0 : NUMBER_LOCALES[nf] || locale.language, { maximumFractionDigits: precision, minimumFractionDigits: 0, useGrouping: nf !== "none" });
 }
-function dateFormat(hass, options) {
+function dateFormat(hass, options, language = hass.locale.language) {
   const l = hass.locale, tf = l.time_format;
-  if (options.hour) options.hourCycle = (tf === "12" || tf === "24" ? tf === "12" : (/* @__PURE__ */ new Date("January 1, 2023 22:00:00")).toLocaleString(tf === "language" ? l.language : void 0).includes("10")) ? "h12" : "h23";
+  if (options.hour && !options.hourCycle) options.hourCycle = (tf === "12" || tf === "24" ? tf === "12" : (/* @__PURE__ */ new Date("January 1, 2023 22:00:00")).toLocaleString(tf === "language" ? l.language : void 0).includes("10")) ? "h12" : "h23";
   if (l.time_zone === "server") options.timeZone = hass.config.time_zone;
-  return new Intl.DateTimeFormat(l.language, options);
+  return new Intl.DateTimeFormat(language, options);
 }
 function forecastLabel(dt, daily, hass) {
   return dateFormat(hass, daily ? { weekday: "short" } : { hour: "numeric", minute: "2-digit" }).format(new Date(dt));
+}
+var DATE_CODE = /%(-?)([aAbBdmyYHIMSp])/g;
+var DATE_NAMES = { a: { weekday: "short" }, A: { weekday: "long" }, b: { month: "short" }, B: { month: "long" } };
+var isDatePattern = (v) => typeof v === "string" && v.search(DATE_CODE) >= 0;
+function strftime(hass, dt, format) {
+  if (!dt || !isDatePattern(format)) return "";
+  const date = new Date(dt), n = Object.fromEntries(dateFormat(hass, { hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }, "en").formatToParts(date).map((p) => [p.type, p.value]));
+  const numbers = { d: n.day, m: n.month, y: n.year.slice(-2), Y: n.year, H: n.hour, I: String(n.hour % 12 || 12).padStart(2, "0"), M: n.minute, S: n.second, p: n.hour < 12 ? "AM" : "PM" };
+  return format.replace(DATE_CODE, (_, flag, c) => DATE_NAMES[c] ? dateFormat(hass, { calendar: "gregory", ...DATE_NAMES[c] }).format(date) : flag ? numbers[c].replace(/^0/, "") : numbers[c]);
 }
 var _sharedStyles = null;
 var WeatherCard = class _WeatherCard extends HTMLElement {
@@ -1986,12 +1996,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-2LJ3TXRU.js");
+      await import("./origami-weather-editor-NEMZRI5X.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-Z67PCT7B.js");
+    const { buildStubConfig } = await import("./layout-presets-GG5XZFF7.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2200,7 +2210,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     console.warn('Origami Weather: color_mode "sun" requires a sun entity. Tried sun.sun but it was not found; falling back to light. Set sun_entity if your sun entity has a custom ID.');
   }
   _resolveSensorValue(hass, entityId, attribute) {
-    let formatted = "N/A", haFormatted = false, rawNumeric = null;
+    let formatted = "N/A", haFormatted = false, rawNumeric = null, date;
     const sensor = hass.states[entityId];
     if (sensor && attribute && sensor.attributes[attribute] == null && !entityId.startsWith("weather.")) attribute = void 0;
     if (sensor && attribute) {
@@ -2218,6 +2228,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     if (typeof rawNumeric === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(rawNumeric)) {
       const d = new Date(rawNumeric);
       if (!isNaN(d)) {
+        date = d;
         const now = /* @__PURE__ */ new Date(), day = 864e5;
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const targetStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -2233,7 +2244,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       }
     }
     const missing = !!(sensor && attribute && sensor.attributes[attribute] == null);
-    return { formatted, sensor, haFormatted, rawNumeric, missing };
+    return { formatted, sensor, haFormatted, rawNumeric, missing, date };
   }
   _syncForecasts() {
     if (!(this._hass && this._hass.connection)) return;
@@ -2316,7 +2327,11 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     return { formatted: label, condition: entry.condition, datetime: entry.datetime, entry };
   }
   _reshapeValue(hass, r, txt, hasFormat, unitEntity, unitAttr) {
+    const custom = strftime(hass, r.date, txt.format);
+    if (custom) return { value: custom, unit: "" };
     let value = r.formatted, unit = hasFormat ? txt.format : "";
+    if (r.date) return { value, unit };
+    if (isDatePattern(txt.format) && (r.rawNumeric === "unknown" || r.rawNumeric === "unavailable")) return { value, unit: "" };
     const numeric = r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric));
     if (txt.precision !== void 0 && numeric) {
       value = this._formatNumber(r.rawNumeric, this._getForecastFormat(hass.locale, txt.precision));
@@ -2346,6 +2361,8 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       if (ctx.isForecast) {
         if (!ctx.forecastEntry) return { value: "", unit: "", tight: true, sig: "forecast:loading" };
         if (txt.attribute === "datetime") {
+          const custom = strftime(hass, ctx.forecastDatetime, txt.format);
+          if (custom) return { value: custom, unit: "", tight: true, sig: `forecast:datetime|${custom}` };
           const value4 = ctx.forecastDatetime ? forecastLabel(ctx.forecastDatetime, button.forecast !== "hourly", hass) : "";
           return { value: value4, unit: hasFormat ? txt.format : "", tight: true, sig: `forecast:datetime|${value4}` };
         }

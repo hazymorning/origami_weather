@@ -98,31 +98,57 @@ The card draws the house itself. Its shadow follows the real position of the sun
 
 <br>
 
-An AI can draw a real home in the style of the demo house and build the layout around it. Use the most capable model available, since it has to understand photos, draw clean SVGs and work through the whole README and reference.
+An AI can draw any home and build the card around it: the real one from photos, in whatever style fits, with as much of its surroundings as wanted, from a bit of lawn to the whole garden or the hills behind it. It's a big job, so use the most capable model available, with image input and its most thorough reasoning setting. The files below add up to about 300 KB of text, and the model has to hold all of them at once. One that can also run code does much better, because it can look at its own pictures before handing them over.
 
-1. Download [`README.md`](README.md), [`REFERENCE.md`](REFERENCE.md) and [`src/image-assets.js`](src/image-assets.js) from this repository. The last entry in `image-assets.js`, `DEMO_HOME`, is the demo house.
-2. Take a few photos of the home, ideally one from the front and one from a corner.
-3. Copy the YAML of a card with the Home layout from the code editor.
-4. Give it all to the AI with this text, and fill in the brackets. The lights are optional, for rooms that light up.
+**How it works.** A drawn home is a picture file, and the card can't change anything inside it. So whatever should change becomes a picture of its own, stacked exactly on top: a night version, the lit windows of a room while its light is on, sunlight that follows the sun, snow while it snows. A day and a night picture are enough to start with, and the rest can follow later.
+
+**Prepare.**
+
+1. Download [`README.md`](README.md), [`REFERENCE.md`](REFERENCE.md) and [`src/origami-weather.js`](src/origami-weather.js), the card itself, from this repository.
+2. Take photos of the home from the front, the back and two corners, and of the garden or anything else that should be in the picture. For a particular style, an example picture helps too.
+3. Find out which way the front faces. A map shows it.
+4. Look up the entity IDs of the room sensors and of the lights that should light up windows, under **Settings → Devices & services → Entities**.
+5. Add a card with the Home layout, open its code editor and copy the YAML.
+6. Attach it all in a chat with the AI, paste this text and fill in the brackets.
 
 ```text
-I'm using the Origami Weather card for Home Assistant and want to turn its Home layout into my own home. Attached are the card's README and REFERENCE (every option), my card YAML with the Home layout, image-assets.js (DEMO_HOME at the end is the demo house) and photos of my home.
+I'm using the Origami Weather card for Home Assistant and want my own home in its Home layout. Attached are the card's README and REFERENCE, the card's source (origami-weather.js), my card YAML and photos of my home.
 
-1. Draw my home as an SVG in the style of DEMO_HOME: isometric, flat matte colors, no outlines, soft ground shadow, transparent background, square viewBox with the house centered. Recognizable, but simplified.
-2. Make two versions, one for light mode and one for dark mode, for `image` and `image_dark` on the container. Both are loaded as normal image files, so they can't read the card's CSS variables or classes the way DEMO_HOME does.
-3. Rebuild the card YAML around it. Put each room's temperature on that room as free-positioned buttons inside the image container, with offsets in %, so they stay in place when the card resizes. Use my sensors instead of the weather entity:
-   [sensor.living_room_temperature: living room]
-   [...]
-4. Optional: make a room light up when its light is on, for example with a lit window overlay as an icon element (`icon_path`) that only shows through `visibility`. Keep the windows dark in both base images then.
-   [light.living_room: living room]
-   [...]
+My home:
+- Style: [watercolor / paper cut / flat illustration / low poly / pixel art / like the attached picture]
+- Surroundings: [just a bit of lawn / our garden with the apple tree and the hedge / the hillside and the forest behind it]
+- Place in the card: [where the layout's picture is / across the whole card, with the temperatures on top]
+- Sky: [the card's plain color / the card's own sky behind my home, with the sun, the moon, clouds and stars]
+- The front faces [south-west].
+- Rooms, their sensors and their windows: [living room, sensor.living_room_temperature: the two big windows on the garden side], [...]
+- Lights that light up windows: [light.living_room: living room], [...]
+- What should change: [night / lights / sun and shadows / rain / snow / the trees with the seasons, from sensor.season]
 
-Read the whole README and REFERENCE before you start and really use what's in them: containers, free positioning, all element types, visibility, thresholds, the gradient layer and the `css` option. For `css`, the card sets --origami-sun-x, --origami-sun-y, --origami-sun-shadow and --origami-sun-light, and #card-root has scheme-light/scheme-dark and weather-<condition> classes.
+Draw my home as it really is, in the style I chose. It replaces the picture in my YAML. Read everything first. Work out from origami-weather.js how containers show `image` and `image_dark`, how free-positioned containers stack, and how `visibility` and the `css` option work. For the `css` option, the card sets the classes scheme-light or scheme-dark and weather-<condition> on #card-root, and these values: --origami-sun-x and --origami-sun-y, the direction of the sun (x is 1 in the east and -1 in the west, y is 1 in the north and -1 in the south), --origami-sun-light, how strong the direct sunlight is, from 0 at night or under thick clouds to 1 in full sun, and --origami-sun-shadow, how long a shadow is compared to the height of what casts it. My pictures are image files, so the card can't change anything inside them, and each change has to be a picture of its own, in a container with exactly the same position and width, stacked in the right order. Show me your plan and my home in daylight, and wait for my OK before making the rest.
 
-Give me the SVG files, where they go (/config/www/, used as /local/...) and the complete card YAML.
+1. Keep what makes my home recognizable, like the shape of the roofs, the floors, the windows and doors and the colors, and simplify the rest. It has to read at the size it gets in the card. Leave the background transparent wherever the card should show through.
+2. Draw every picture on the same canvas, so they line up exactly. SVG is easiest for that. If the style needs painted pictures, use PNG or WebP with transparency and keep the framing exactly the same. An overlay holds only what it changes, and only the parts of it that can be seen.
+3. Make a picture for each change on my list:
+   - night: a version for `image_dark`, with the windows dark
+   - lights: the lit windows of each room and the glow they throw outside, shown with `visibility` while the light is on
+   - sun and shadows: faded and moved with the sun through the `css` option, with fallbacks for when the values are missing, and following the way my home really faces. Select each picture by its file name, like img.group-image[src*="sun-east"].
+   - snow: shown while the weather is snowy or snowy-rainy
+   - anything else the same way, with `visibility` or the `css` option
+4. Use my sensors for the rooms. If the temperatures sit on the picture, place them as free-positioned buttons with offsets in %, so they stay in place when the card resizes.
+5. If you can run code, render the pictures and check them in light and dark mode, in the morning, at noon and in the evening, and with each light on and off.
+
+Give me the files, where they go (/config/www/home/, used as /local/home/...) and the complete card YAML, ready to paste.
 ```
 
-Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the birds, the balloons and the planes, and only rain and snow still fall. Turning some of them back on or trying another background can change the whole feel, and almost anything in the README and the reference can go into it, so let the AI try things.
+**Put it in Home Assistant.**
+
+1. Copy the pictures to `/config/www/home`, for example with the File editor or a Samba share. If the `www` folder is new, restart Home Assistant once so it serves it.
+2. Paste the YAML into the card's code editor and save.
+3. Reload the page with a hard refresh. Browsers hold on to pictures for a while, so a changed picture needs one too.
+
+**Make it better.** It rarely comes out right on the first try. Send the AI screenshots of the card in light and dark mode and ask for specific changes, like a roof that's too flat, a window in the wrong place or a tree that should be taller. One or two at a time works best. If the card shows an error, send the AI the message as it is.
+
+Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the birds, the balloons and the planes, and only rain and snow still fall. Turning some of them back on can change the whole feel, especially with a sky around the home, and almost anything in the README and the reference can go into it, so let the AI try things.
 
 </details>
 

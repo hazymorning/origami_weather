@@ -920,20 +920,28 @@ var WeatherEffects = (() => {
   let _clearing = null;
   function _clearingSprite() {
     if (_clearing) return _clearing;
-    const c = document.createElement("canvas");
-    c.width = c.height = 256;
-    const x = c.getContext("2d"), rnd = _mulberry32(7);
+    const rnd = _mulberry32(7), blobs = [];
     for (let n = 0; n < 5; n++) {
-      const a = rnd() * Math.PI * 2, d = n ? 20 + rnd() * 50 : 0, cx = 128 + Math.cos(a) * d, cy = 128 + Math.sin(a) * d * 0.8, r = n ? 38 + rnd() * 34 : 70;
+      const a = rnd() * Math.PI * 2, d = n ? 20 + rnd() * 50 : 0, r = n ? 38 + rnd() * 34 : 70;
+      blobs.push([128 + Math.cos(a) * d, 128 + Math.sin(a) * d * 0.8, r]);
+    }
+    const lo = (i) => Math.max(0, Math.floor(Math.min(...blobs.map((b) => b[i] - b[2])) - 2));
+    const hi = (i) => Math.min(256, Math.ceil(Math.max(...blobs.map((b) => b[i] + b[2])) + 2));
+    const x0 = lo(0), y0 = lo(1), c = document.createElement("canvas");
+    c.width = hi(0) - x0;
+    c.height = hi(1) - y0;
+    const x = c.getContext("2d");
+    x.translate(-x0, -y0);
+    for (const [cx, cy, r] of blobs) {
       const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
       for (let k = 0; k <= 12; k++) {
         const u = k / 12, v = 1 - u * u * (3 - 2 * u);
         g.addColorStop(u, `rgba(0,0,0,${Math.pow(v, 1.2).toFixed(4)})`);
       }
       x.fillStyle = g;
-      x.fillRect(0, 0, 256, 256);
+      x.fillRect(x0, y0, c.width, c.height);
     }
-    return _clearing = c;
+    return _clearing = { img: c, x: x0 / 256, y: y0 / 256, w: c.width / 256, h: c.height / 256 };
   }
   function _buildMistField(tuning, seed) {
     const look = MIST[tuning.mist], rnd = _mulberry32(seed || 1), puffs = [], clearings = [];
@@ -1001,7 +1009,7 @@ var WeatherEffects = (() => {
         c.rot = Math.random() * Math.PI * 2;
       }
       place(c, cs, c.alpha);
-      m.drawImage(hole, -cs / 2, -cs * 0.375, cs, cs * 0.75);
+      m.drawImage(hole.img, (hole.x - 0.5) * cs, (hole.y - 0.5) * cs * 0.75, hole.w * cs, hole.h * cs * 0.75);
     }
     m.globalCompositeOperation = "source-over";
     m.globalAlpha = 1;

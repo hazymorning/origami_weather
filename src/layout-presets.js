@@ -1,223 +1,242 @@
 export const PRESET_ENTITY_TOKEN = '__WEATHER__';
 
-const sunButton = (rising) => ({
+const text = (extra) => ({ type: 'text', ...extra });
+const icon = (name, extra) => ({ type: 'icon', icon: name, ...extra });
+const thresholds = (rows) => rows.map(([value, color, color_dark]) => ({ value, color, color_dark }));
+
+const DIORAMA_PAPER = [
+    ['sunny', '#eee5d7', '#261d13'],
+    ['partlycloudy', '#dee9ef', '#182227'],
+    ['cloudy', '#e2e5e7', '#1b1e20'],
+    ['fog', '#e8e7e5', '#222120'],
+    ['rainy', '#d9e1ea', '#171e26'],
+    ['pouring', '#d7dde4', '#151b21'],
+    ['lightning', '#e5dfe8', '#221d25'],
+    ['lightning-rainy', '#dfdbe2', '#1d1920'],
+    ['hail', '#d3dfdf', '#121c1c'],
+    ['snowy', '#e5eaec', '#1c2426'],
+    ['snowy-rainy', '#dde2e5', '#1e2124'],
+    ['windy', '#dce6e3', '#182220'],
+    ['windy-variant', '#dae1de', '#171d1b'],
+    ['clear-night', '#e0e3ed', '#161924'],
+    ['exceptional', '#eadad3', '#271a15']
+];
+
+const ICON_SPACE = {
+    weather: '0 1px 0 -0.2px',
+    'mdi:weather-windy': '0 0.3px 0 -1.3px',
+    'mdi:weather-sunset-down': '0 -0.3px 0 0',
+    'mdi:weather-sunset-up': '0 -0.3px 0 0',
+    'mdi:water-percent': '0 -3px 0 -2.8px',
+    'mdi:sun-wireless-outline': '0 0.3px 0 -1.3px'
+};
+const dioramaItem = (iconName, label, values, extra) => ({
+    name: label,
+    entity: PRESET_ENTITY_TOKEN,
+    ...extra,
+    elements: [icon(iconName, { margin: ICON_SPACE[iconName] }), ...(label ? [text({ text: label, weight: '500' })] : []), ...values]
+});
+
+const dioramaSun = (rising) => dioramaItem(rising ? 'mdi:weather-sunset-up' : 'mdi:weather-sunset-down', rising ? 'Sunrise' : 'Sunset', [text({ weight: '700' })], {
+    name: rising ? 'Sunrise (at night)' : 'Sunset (by day)',
     entity: 'sun.sun',
-    elements: [
-        { type: 'icon', icon: rising ? 'mdi:weather-sunset-up' : 'mdi:weather-sunset-down' },
-        { type: 'text', attribute: rising ? 'next_rising' : 'next_setting', weight: '700' }
-    ],
+    attribute: rising ? 'next_rising' : 'next_setting',
     visibility: [{ condition: 'state', entity: 'sun.sun', state: rising ? 'below_horizon' : 'above_horizon' }]
 });
 
-const SLIM_CONFIG = Object.freeze({
+const DIORAMA_CONFIG = Object.freeze({
+    card_height: '176px',
+    card_padding: 'var(--ha-space-4, 16px)',
+    content_direction: 'row',
+    sun_moon_size: 40,
     sun_moon_x: 'dynamic',
-    card_height: 'content',
-    card_padding: '16px',
-    content_align: 'between',
-    content_align_items: 'start',
+    cloud_effects: false,
+    background_mode: 'images',
+    weather_image_path: 'https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/',
+    weather_image_path_dark: 'https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/',
+    weather_image_type: 'webp',
+    weather_image_front: true,
+    background_thresholds: thresholds(DIORAMA_PAPER),
+    shadow_color: 'inset 0 1px 3px rgba(0, 0, 0, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.14)',
+    card_tap_action: { action: 'more-info' },
+    css: `:host {
+  --origami-separator-width: 1px;
+  --origami-separator-color: color-mix(in srgb, currentColor 18%, transparent);
+}
+#weather-bg > img { object-position: left bottom; }
+.row-horizontal-scroll > .button { max-width: none; }`,
     button_containers: [
         {
+            name: 'Info bar',
+            custom_width: '50%',
+            grouped: true,
+            background: true,
+            blurred_background: true,
+            separator: true,
+            background_color: 'color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) 40%, transparent)',
+            layout: 'horizontal-scroll',
+            scroll_fade: true,
+            gap: '0px',
+            padding: '8px 4px',
+            button_padding: '2px 12px',
+            button_text_size: '12px',
+            button_icon_size: '14px',
+            button_gap: '4px',
             buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    elements: [
-                        { type: 'icon', icon: 'weather', icon_background: false, margin: '0 2px 0 0' },
-                        { type: 'text', precision: 0, entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', weight: '700', fancy_unit: true }
-                    ],
-                    style: 'inline'
-                }
-            ],
-            padding: '4px',
-            button_text_size: '26px',
-            margin: '0 0 32px 0',
-            button_gap: '6px',
-            button_style: 'vertical'
+                dioramaItem('weather', '', [
+                    text({ attribute: 'temperature', format: '\u00b0', weight: '700' }),
+                    text({ text: '/', weight: '500' }),
+                    text({ attribute: 'templow', format: '\u00b0', weight: '700' })
+                ], { name: 'Today', forecast: 'daily' }),
+                dioramaItem('mdi:weather-windy', 'Wind', [text({ attribute: 'wind_speed', precision: 0, weight: '700' })]),
+                dioramaSun(false),
+                dioramaSun(true),
+                dioramaItem('mdi:water-percent', 'Humidity', [text({ attribute: 'humidity', weight: '700' })]),
+                dioramaItem('mdi:sun-wireless-outline', 'UV', [text({ attribute: 'uv_index', weight: '700' })], { forecast: 'daily' })
+            ]
         },
         {
-            background: true,
-            gap: '8px',
-            button_gap: '6px',
-            button_icon_size: '14px',
-            button_padding: '8px 12px 8px 10px',
-            align: 'center',
-            button_text_size: '12px',
-            background_color: 'rgba(255,255,255,0.1)',
-            blurred_background: true,
+            name: 'Temperature',
+            justify_content: 'end',
             buttons: [
                 {
+                    name: 'Temperature and condition',
                     entity: PRESET_ENTITY_TOKEN,
+                    attribute: 'temperature',
+                    style: 'vertical',
+                    align: 'end',
+                    inner_gap: '6px',
+                    background: false,
                     elements: [
-                        { type: 'text', text: 'Today', weight: '500' },
-                        { type: 'icon', icon: 'weather' },
-                        { type: 'text', format: '\u00b0', weight: '700', attribute: 'temperature' }
-                    ],
-                    style: 'inline',
-                    forecast: 'daily'
-                },
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    elements: [
-                        { type: 'icon', icon: 'mdi:weather-windy' },
-                        { type: 'text', attribute: 'wind_speed', format: ' km/h', weight: '700' }
-                    ],
-                    style: 'inline'
-                },
-                sunButton(true),
-                sunButton(false),
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    elements: [
-                        { type: 'icon', icon: 'mdi:water-percent' },
-                        { type: 'text', weight: '700', attribute: 'humidity', format: ' %' }
-                    ],
-                    style: 'inline'
-                },
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    elements: [
-                        { type: 'icon', icon: 'mdi:sun-wireless-outline' },
-                        { type: 'text', text: 'UV-Index', weight: '500' },
-                        { type: 'text', attribute: 'uv_index', weight: '700' }
-                    ],
-                    forecast: 'daily'
+                        text({ size: '40px', weight: '700', precision: 0, format: '\u00b0' }),
+                        text({ entity: PRESET_ENTITY_TOKEN, size: '12px', weight: '500', overflow: 'wrap' })
+                    ]
                 }
-            ],
-            button_background_color: 'rgba(189,189,189,0.2)',
-            layout: 'horizontal-scroll',
-            scroll_fade: true
+            ]
         }
     ],
     grid_options: {
         rows: 'auto',
-        columns: 12
+        columns: 'full'
     }
 });
 
-const RING_THRESHOLDS = Object.freeze([
-    { value: '-20', color: 'rgba(124, 142, 184, 0.8)' },
-    { value: '-16', color: 'rgba(132, 156, 196, 0.8)' },
-    { value: '-12', color: 'rgba(140, 172, 206, 0.8)' },
-    { value: '-8', color: 'rgba(150, 188, 214, 0.8)' },
-    { value: '-4', color: 'rgba(165, 202, 218, 0.8)' },
-    { value: '0', color: 'rgba(183, 213, 216, 0.8)' },
-    { value: '4', color: 'rgba(198, 218, 205, 0.8)' },
-    { value: '8', color: 'rgba(206, 218, 188, 0.8)' },
-    { value: '12', color: 'rgba(214, 214, 168, 0.8)' },
-    { value: '16', color: 'rgba(224, 207, 152, 0.8)' },
-    { value: '20', color: 'rgba(232, 195, 140, 0.8)' },
-    { value: '24', color: 'rgba(232, 178, 130, 0.8)' },
-    { value: '28', color: 'rgba(228, 158, 124, 0.8)' },
-    { value: '32', color: 'rgba(220, 138, 120, 0.8)' },
-    { value: '36', color: 'rgba(208, 120, 118, 0.8)' },
-    { value: '40', color: 'rgba(194, 104, 114, 0.8)' }
-]);
+const CLASSIC_COLORS = [
+    ['sunny', '#4a8bcb', '#1c2b49'],
+    ['clear-night', '#1c2b49', '#1c2b49'],
+    ['partlycloudy', '#5687b8', '#273449'],
+    ['cloudy', '#6e8196', '#303740'],
+    ['fog', '#80898f', '#3b4044'],
+    ['windy', '#4d8a90', '#233b3e'],
+    ['windy-variant', '#56869c', '#273a44'],
+    ['rainy', '#566a80', '#272f3a'],
+    ['pouring', '#465669', '#1e252f'],
+    ['lightning', '#575370', '#282636'],
+    ['lightning-rainy', '#4c4965', '#211f2d'],
+    ['hail', '#5a7888', '#29363d'],
+    ['snowy', '#7890a6', '#384551'],
+    ['snowy-rainy', '#677d91', '#313b44'],
+    ['exceptional', '#ad633b', '#472d1f']
+];
 
-const forecastButton = (offset) => ({
+const WHITE = '#ffffff';
+const WHITE_82 = 'rgba(255, 255, 255, 0.82)';
+const WHITE_72 = 'rgba(255, 255, 255, 0.72)';
+const WHITE_60 = 'rgba(255, 255, 255, 0.6)';
+
+const classicDay = (offset) => ({
+    name: offset === 1 ? 'Tomorrow' : `In ${offset} days`,
     entity: PRESET_ENTITY_TOKEN,
     forecast: 'daily',
-    ...(offset ? { forecast_offset: offset } : {}),
+    forecast_offset: offset,
+    background: false,
     elements: [
-        { type: 'icon', icon: 'weather' },
-        { type: 'text', size: '12px', weight: '500', attribute: 'datetime' },
-        { type: 'text', weight: '700', attribute: 'temperature' },
-        { type: 'text', weight: '500', attribute: 'templow' }
+        text({ attribute: 'datetime', size: '12px', weight: '500', color: WHITE_72 }),
+        icon('weather', { icon_size: '26px', color: WHITE, margin: '2px 0' }),
+        text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: WHITE }),
+        text({ attribute: 'templow', format: '\u00b0', size: '14px', weight: '500', color: WHITE_60 }),
+        { type: 'bar', bar_height: '4px', bar_width: '26px', bar_color: '#9fd2ff', margin: '3px 0 0', bar_values: [{ attribute: 'precipitation_probability' }] }
+    ]
+});
+
+const TODAY_SIZE = 'clamp(12.5px, 5.1cqw, 14px)';
+
+const classicToday = (name, iconName, attribute) => ({
+    name,
+    entity: PRESET_ENTITY_TOKEN,
+    forecast: 'daily',
+    align: 'start',
+    background: false,
+    inner_gap: '5px',
+    elements: [
+        icon(iconName, { icon_size: '14px', color: WHITE_82, margin: '0 -2.1px 0 -2px' }),
+        text({ attribute, format: '\u00b0', size: TODAY_SIZE, weight: '500', color: WHITE_82 })
     ]
 });
 
 const CLASSIC_CONFIG = Object.freeze({
-    sun_moon_x: 'dynamic',
-    card_height: 'content',
-    card_padding: '16px',
+    color_mode: 'dark',
+    sun_enabled: false,
+    moon_enabled: false,
+    cloud_effects: false,
+    mist_effects: true,
+    bird_effects: false,
+    balloon_effects: false,
+    plane_effects: false,
+    background_mode: 'color',
+    background_color: '#5687b8',
+    background_color_dark: '#273449',
+    background_thresholds: thresholds(CLASSIC_COLORS),
+    background_haze: true,
     gradient: true,
-    gradient_color_2: 'var(--ha-card-background)',
+    gradient_type: 'linear',
+    gradient_color_1: 'rgba(255, 255, 255, 0.08)',
+    gradient_color_2: 'rgba(255, 255, 255, 0)',
     gradient_stop_2: 70,
+    card_height: 'content',
+    card_padding: 'var(--ha-space-4, 16px)',
     button_containers: [
         {
-            position: 'custom',
-            position_anchor: 'top-left',
-            padding: '4px 8px',
+            name: 'Now',
+            justify_content: 'between',
+            align_items: 'center',
+            padding: '0 4px',
             buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    attribute: 'temperature',
-                    text_size: '42px',
-                    align: 'start',
-                    padding: '4px 0 0 0',
-                    background: false,
-                    elements: [
-                        { type: 'text', weight: '700', fancy_unit: true, attribute: 'temperature', precision: 0 }
-                    ]
-                }
+                { name: 'Temperature', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', background: false, elements: [text({ size: '52px', weight: '700', precision: 0, format: '\u00b0', color: WHITE })] },
+                { name: 'Weather icon', entity: PRESET_ENTITY_TOKEN, background: false, elements: [icon('weather', { icon_size: '48px', color: WHITE, margin: '0 -2.4px 0 0' })] }
             ]
         },
         {
-            background: true,
-            button_icon_size: '34px',
-            button_padding: '16px',
-            align: 'center',
-            button_background_color: 'rgba(255,255,255,0.1)',
-            button_blurred_background: true,
-            justify_content: 'end',
-            align_items: 'start',
-            padding: '8px',
+            name: 'Today',
+            align: 'spread',
+            align_items: 'center',
+            gap: 'clamp(10px, 4.2cqw, 14px)',
+            margin: '4px 0 0',
+            padding: '0 4px',
             buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    attribute: 'temperature',
-                    type: 'ring',
-                    ring_gap: '6px',
-                    ring_width: '4px',
-                    ring_min: '-20',
-                    ring_max: '40',
-                    ring_threshold_mode: 'gradient',
-                    ring_thresholds: RING_THRESHOLDS.map((t) => ({ ...t })),
-                    blurred_background: true,
-                    padding: '16px',
-                    elements: [
-                        { type: 'icon', icon: 'weather', icon_background: false, icon_background_color: 'rgba(0,0,0,0)', icon_size: '36px' }
-                    ]
-                }
+                classicToday('High', 'mdi:arrow-up', 'temperature'),
+                classicToday('Low', 'mdi:arrow-down', 'templow'),
+                { name: 'Condition', entity: PRESET_ENTITY_TOKEN, background: false, elements: [text({ size: TODAY_SIZE, weight: '500', color: WHITE })] }
             ]
         },
         {
-            gap: '16px',
-            button_gap: '6px',
-            button_padding: '0',
-            align: 'start',
-            button_text_size: '14px',
-            padding: '0 0 16px 8px',
-            margin: '-14px 0 0 0',
-            buttons: [
-                sunButton(true),
-                sunButton(false),
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    forecast: 'daily',
-                    elements: [
-                        { type: 'icon', icon: 'mdi:umbrella-outline' },
-                        { type: 'text', attribute: 'precipitation_probability', weight: '700' }
-                    ]
-                }
-            ]
-        },
-        {
+            name: 'Forecast',
             layout: 'horizontal-scroll',
-            scroll_count: 5,
-            gap: '2px',
-            button_icon_background_color: 'rgba(255,255,255,0.05)',
-            button_style: 'vertical',
-            button_gap: '6px',
-            button_icon_size: '28px',
-            button_padding: '16px 0',
-            align: 'center',
-            button_text_size: '14px',
-            background_color: 'rgba(255,255,255,0.05)',
+            scroll_count: 6,
+            justify_content: 'center',
+            margin: '20px 0 0',
+            padding: '0 4px',
+            gap: '0',
+            background: true,
+            grouped: true,
             blurred_background: true,
-            button_background_color: 'rgba(255,255,255,0.1)',
-            button_icon_padding: '0 0 6px 0',
-            separator: true,
             shadow: false,
-            buttons: [0, 1, 2, 3, 4, 5, 6].map(forecastButton)
+            background_color: 'rgba(255, 255, 255, 0.12)',
+            button_style: 'vertical',
+            button_gap: '5px',
+            button_padding: '14px 0',
+            align: 'center',
+            buttons: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(classicDay)
         }
     ],
     grid_options: {
@@ -226,47 +245,55 @@ const CLASSIC_CONFIG = Object.freeze({
     }
 });
 
-const metaItem = (icon, attribute, weight, forecast) => ({
+const CENTERED_ICON_SPACE = {
+    'mdi:arrow-up': '0 -2px 0 -1.8px',
+    'mdi:arrow-down': '0 -2px 0 -1.8px',
+    'mdi:weather-windy': '0 1px 0 -1.5px'
+};
+const centeredItem = (name, iconName, value, extra) => ({
+    name,
     entity: PRESET_ENTITY_TOKEN,
-    ...(forecast ? { forecast: 'daily' } : {}),
     background: false,
     style: 'inline',
     align: 'center',
     padding: '0',
-    elements: [
-        { type: 'icon', icon, icon_background: false },
-        { type: 'text', weight, attribute, ...(forecast ? { format: '\u00b0' } : {}) }
-    ]
+    ...extra,
+    elements: [icon(iconName, { icon_background: false, margin: CENTERED_ICON_SPACE[iconName] }), text(value)]
 });
 
 const CENTERED_CONFIG = Object.freeze({
     sun_moon_x: 'dynamic',
     card_height: 'content',
-    card_padding: '24px 20px',
+    card_padding: '34px 20px',
     content_align: 'between',
     content_align_items: 'center',
     button_containers: [
         {
+            name: 'Temperature',
             padding: '0',
             margin: '0 0 24px 0',
             align: 'center',
             buttons: [
                 {
+                    name: 'Temperature and condition',
                     entity: PRESET_ENTITY_TOKEN,
                     background: false,
                     style: 'vertical',
                     align: 'center',
                     text_size: '58px',
+                    inner_gap: '0px',
                     padding: '0',
                     elements: [
-                        { type: 'text', weight: '700', attribute: 'temperature', precision: 0, fancy_unit: true },
-                        { type: 'text', size: '15px', weight: '500', entity: PRESET_ENTITY_TOKEN }
+                        text({ weight: '700', attribute: 'temperature', precision: 0, fancy_unit: true }),
+                        text({ size: '15px', weight: '500', entity: PRESET_ENTITY_TOKEN, margin: '-3.5px 0 -1.5px' })
                     ]
                 }
             ]
         },
         {
-            gap: '18px',
+            name: 'Details',
+            gap: 'clamp(11px, 5.5cqw, 18px)',
+            margin: '0 0 7px',
             padding: '0',
             button_padding: '0',
             button_gap: '5px',
@@ -275,253 +302,15 @@ const CENTERED_CONFIG = Object.freeze({
             align: 'center',
             justify_content: 'center',
             buttons: [
-                metaItem('mdi:arrow-up', 'temperature', '700', true),
-                metaItem('mdi:arrow-down', 'templow', '500', true),
-                metaItem('mdi:weather-windy', 'wind_speed', '700', false),
-                { ...metaItem('mdi:water-percent', 'humidity', '700', false), elements: [
-                    { type: 'icon', icon: 'mdi:water-percent', icon_background: false },
-                    { type: 'text', weight: '700', attribute: 'humidity', format: ' %' }
-                ] }
+                centeredItem('High', 'mdi:arrow-up', { weight: '500', attribute: 'temperature', format: '\u00b0' }, { forecast: 'daily' }),
+                centeredItem('Low', 'mdi:arrow-down', { weight: '500', attribute: 'templow', format: '\u00b0' }, { forecast: 'daily' }),
+                centeredItem('Wind', 'mdi:weather-windy', { weight: '700', attribute: 'wind_speed', precision: 0 })
             ]
         }
     ],
     grid_options: {
         rows: 'auto',
         columns: 12
-    }
-});
-
-const WEATHER_RGB = Object.freeze([
-    ['sunny', 80, '245,185,70'],
-    ['clear-night', 80, '80,90,180'],
-    ['partlycloudy', 82, '120,175,225'],
-    ['cloudy', 84, '145,155,175'],
-    ['fog', 84, '185,185,200'],
-    ['windy', 84, '90,190,175'],
-    ['windy-variant', 84, '110,170,200'],
-    ['rainy', 80, '70,130,200'],
-    ['pouring', 76, '45,95,190'],
-    ['lightning', 80, '150,105,220'],
-    ['lightning-rainy', 76, '115,85,205'],
-    ['hail', 80, '100,185,210'],
-    ['snowy', 80, '180,215,245'],
-    ['snowy-rainy', 80, '135,175,215'],
-    ['exceptional', 76, '230,95,65']
-]);
-
-const forecastTile = (offset) => ({
-    entity: PRESET_ENTITY_TOKEN,
-    forecast: 'daily',
-    ...(offset ? { forecast_offset: offset } : {}),
-    align: 'center',
-    background_color: `rgba(150,150,150,${(14 - 2 * offset) / 100})`,
-    elements: [
-        { type: 'icon', icon: 'weather' },
-        { type: 'text', size: '12px', weight: '500', attribute: 'datetime' },
-        { type: 'text', weight: '700', attribute: 'temperature', format: '\u00b0' }
-    ]
-});
-
-const COMPARISON_CONFIG = Object.freeze({
-    sun_enabled: false,
-    moon_enabled: false,
-    sun_moon_x: 'dynamic',
-    card_height: 'content',
-    card_padding: '20px',
-    card_offset: '8px 0px 0px 0px',
-    color_mode: 'theme',
-    background_mode: 'color',
-    background_threshold_entity: PRESET_ENTITY_TOKEN,
-    background_thresholds: WEATHER_RGB.map(([value, base, rgb]) => ({ value, color: `color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) ${base}%, rgb(${rgb}))` })),
-    background_haze: false,
-    precipitation_effects: false,
-    cloud_effects: false,
-    night_sky_effects: false,
-    button_containers: [
-        {
-            buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    background: false,
-                    padding: '0',
-                    style: 'vertical',
-                    align: 'start',
-                    inner_gap: '6px',
-                    elements: [
-                        { type: 'text', text: 'Outside', size: '14px', weight: '500' },
-                        { type: 'text', attribute: 'temperature', precision: 0, format: '\u00b0', size: '42px', weight: '800' }
-                    ]
-                }
-            ]
-        },
-        {
-            position: 'custom',
-            position_anchor: 'top-right',
-            layout: 'horizontal-scroll',
-            custom_width: '60%',
-            scroll_count: 3,
-            gap: '8px',
-            background: true,
-            button_style: 'vertical',
-            button_padding: '16px',
-            button_icon_size: '26px',
-            button_icon_padding: '0 0 8px 0',
-            button_shadow: false,
-            button_blurred_background: true,
-            buttons: [0, 1, 2, 3].map(forecastTile)
-        },
-        {
-            padding: '0',
-            margin: '66px 0 8px 0',
-            buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    forecast: 'daily',
-                    background: false,
-                    padding: '0',
-                    width: '100%',
-                    elements: [
-                        {
-                            type: 'bar',
-                            bar_min: '-10',
-                            bar_max: '35',
-                            bar_height: '2px',
-                            bar_color: 'rgba(150,150,150,0.6)',
-                            bar_marker_size: '10px',
-                            bar_values: [
-                                { entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', marker_color: '#ffffff' },
-                                { attribute: 'temperature' }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            padding: '0 4px',
-            margin: '12px 0 0 0',
-            align: 'start',
-            button_text_size: '16px',
-            buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    background: false,
-                    padding: '0',
-                    align: 'spread',
-                    elements: [
-                        { type: 'icon', icon: 'weather', padding: '0 4px 0 0' },
-                        { type: 'text', weight: '700', margin: '0 auto 0 0' }
-                    ]
-                },
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    forecast: 'daily',
-                    background: false,
-                    padding: '0',
-                    align: 'spread',
-                    elements: [
-                        { type: 'icon', icon: 'mdi:umbrella-outline', margin: '0 0 0 auto' },
-                        { type: 'text', attribute: 'precipitation_probability', format: ' %', weight: '400' }
-                    ]
-                }
-            ]
-        }
-    ],
-    grid_options: {
-        rows: 'auto',
-        columns: 12
-    }
-});
-
-const arcText = (value, extra) => ({ type: 'text', ...extra, size: value ? 'clamp(24px, 8cqmin, 36px)' : 'clamp(13px, 3.5cqmin, 16px)', weight: value ? '700' : '500' });
-
-const arcSunButton = (rising) => ({
-    ...sunButton(rising),
-    background: false,
-    elements: [
-        arcText(true, { attribute: rising ? 'next_rising' : 'next_setting' }),
-        arcText(false, { text: rising ? 'Sunrise' : 'Sunset' })
-    ]
-});
-
-const arcEnd = (rising) => ({ entity: rising ? 'sensor.sun_next_rising' : 'sensor.sun_next_setting', marker_size: '26', marker_color: 'rgba(0,0,0,0.8)', marker_icon: rising ? 'mdi:weather-sunset-up' : 'mdi:weather-sunset-down', marker_icon_color: '#ffffff' });
-
-const arcRing = (rising) => {
-    const from = arcEnd(!rising), to = arcEnd(rising);
-    return {
-        ...sunButton(rising),
-        type: 'ring',
-        width: '68cqmin',
-        background: false,
-        ring_min: from.entity,
-        ring_max: to.entity,
-        ring_start: 240,
-        ring_arc: 240,
-        ring_width: '4',
-        ring_color: 'color-mix(in srgb, currentColor 40%, transparent)',
-        ring_values: [
-            { entity: 'sensor.time', marker_size: 0 },
-            from,
-            to,
-            { entity: 'sensor.time', marker_size: '40', marker_color: '#ffffff', marker_icon: rising ? 'mdi:weather-night' : 'mdi:white-balance-sunny', marker_icon_color: '#2c2c2e' }
-        ],
-        elements: [
-            { type: 'text', text: ' ' }
-        ]
-    };
-};
-
-const ARC_CONFIG = Object.freeze({
-    sun_moon_size: 100,
-    sun_moon_y: 44,
-    card_height: 'auto',
-    card_padding: '0',
-    bird_effects: false,
-    balloon_effects: false,
-    plane_effects: false,
-    button_containers: [
-        {
-            position: 'custom',
-            position_anchor: 'top',
-            position_y: '10cqh',
-            buttons: [arcRing(false), arcRing(true)]
-        },
-        {
-            position: 'custom',
-            position_anchor: 'bottom-left',
-            position_x: '7cqw',
-            position_y: '7cqh',
-            padding: '0',
-            button_style: 'vertical',
-            button_padding: '0',
-            button_gap: '8px',
-            buttons: [
-                {
-                    entity: PRESET_ENTITY_TOKEN,
-                    background: false,
-                    elements: [
-                        arcText(true, { attribute: 'temperature', precision: 0, format: '\u00b0' }),
-                        arcText(false)
-                    ]
-                }
-            ]
-        },
-        {
-            position: 'custom',
-            position_anchor: 'bottom-right',
-            position_x: '7cqw',
-            position_y: '7cqh',
-            align: 'end',
-            padding: '0',
-            button_style: 'vertical',
-            button_padding: '0',
-            button_gap: '8px',
-            buttons: [arcSunButton(false), arcSunButton(true)]
-        }
-    ],
-    grid_options: {
-        columns: 12,
-        rows: 6
     }
 });
 
@@ -543,23 +332,50 @@ const HOME_SKY = [
     ['exceptional', '#ded8d2', '#27221f']
 ];
 
-const homeText = (extra, size = '12px', weight = '500') => ({ type: 'text', size, weight, color: 'var(--primary-text-color)', ...extra });
+const homeText = (extra, size = '12px', weight = '500') => text({ size, weight, color: 'var(--primary-text-color)', ...extra });
 
-const homeLabel = (text) => homeText({ text, color: 'var(--secondary-text-color)' });
+const homeLabel = (extra, size = '12px') => homeText({ ...extra, color: 'var(--secondary-text-color)' }, size);
 
-const homeTemp = (size, weight) => homeText({ attribute: 'temperature', precision: 0, format: '\u00b0' }, size, weight);
+const homeTemp = (size, weight) => homeText({ precision: 0, format: '\u00b0' }, size, weight);
 
-const sunTime = (state, text, attribute) => ({
+const sunTime = (state, label, attribute) => ({
+    name: state === 'above_horizon' ? `${label} (by day)` : `${label} (at night)`,
     entity: 'sun.sun',
+    attribute,
+    inner_gap: '6px',
     visibility: [{ condition: 'state', entity: 'sun.sun', state }],
-    elements: [homeLabel(text), homeText({ entity: 'sun.sun', attribute })]
+    elements: [homeLabel({ text: label }), homeText({}, '12px', '700')]
 });
 
-const room = (text) => ({
+const room = (label) => ({
+    name: `Room: ${label}`,
     entity: PRESET_ENTITY_TOKEN,
+    attribute: 'temperature',
     style: 'vertical',
     align: 'start',
-    elements: [homeLabel(text), homeTemp('16px', '300')]
+    elements: [homeLabel({ text: label }), homeTemp('16px', '700')]
+});
+
+const windCompass = () => ({
+    name: 'Wind compass',
+    entity: PRESET_ENTITY_TOKEN,
+    type: 'ring',
+    style: 'vertical',
+    ring_min: 0,
+    ring_max: 360,
+    ring_fill: false,
+    ring_width: 1,
+    ring_color: 'var(--secondary-text-color)',
+    ring_marker_icon_size: 11,
+    ring_values: [
+        { value: 0, marker_size: 12, marker_color: 'var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color)))', marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--secondary-text-color)' },
+        { attribute: 'wind_bearing', marker_size: 7, marker_color: 'var(--primary-text-color)' }
+    ],
+    background: false,
+    width: '54px',
+    padding: '0',
+    inner_gap: '4px',
+    elements: [homeText({ attribute: 'wind_speed', precision: 0, format: ' ' }, '15px', '700'), homeLabel({ attribute: 'wind_speed_unit' }, '8px')]
 });
 
 const HOME_CONFIG = Object.freeze({
@@ -571,56 +387,43 @@ const HOME_CONFIG = Object.freeze({
     balloon_effects: false,
     plane_effects: false,
     background_mode: 'color',
-    background_threshold_entity: PRESET_ENTITY_TOKEN,
-    background_thresholds: HOME_SKY.map(([value, color, color_dark]) => ({ value, color, color_dark })),
-    card_height: '260px',
+    background_thresholds: thresholds(HOME_SKY),
+    card_height: '256px',
     card_padding: '20px',
+    content_align: 'between',
     button_containers: [
         {
-            position: 'custom',
-            position_anchor: 'right',
-            image: 'demo-home-image',
-            custom_width: 'min(208px, 52%)'
-        },
-        {
-            position: 'custom',
-            position_anchor: 'top-left',
-            button_gap: '6px',
-            buttons: [sunTime('above_horizon', 'Sunset', 'next_setting'), sunTime('below_horizon', 'Sunrise', 'next_rising')]
-        },
-        {
-            position: 'custom',
-            position_anchor: 'bottom-left',
-            gap: '5px',
-            buttons: [
-                { entity: PRESET_ENTITY_TOKEN, width: '100%', elements: [homeTemp('68px', '200')] },
-                { entity: PRESET_ENTITY_TOKEN, elements: [homeText()] }
-            ]
-        },
-        {
-            position: 'custom',
-            position_anchor: 'bottom-right',
-            gap: '22px',
-            button_gap: '4px',
-            buttons: [room('Living'), room('Bedroom'), room('Bath')]
-        },
-        {
+            name: 'House',
             position: 'custom',
             position_anchor: 'top-right',
+            position_x: '34px',
+            position_y: '18px',
+            image: 'home',
+            custom_width: 'min(178px, 75% - 49px)'
+        },
+        {
+            name: 'Sun and wind',
+            justify_content: 'between',
+            align_items: 'start',
+            buttons: [sunTime('above_horizon', 'Sunset', 'next_setting'), sunTime('below_horizon', 'Sunrise', 'next_rising'), windCompass()]
+        },
+        {
+            name: 'Temperature and rooms',
+            align: 'spread',
+            align_items: 'end',
+            gap: 'clamp(14px, 6cqw, 22px)',
+            button_gap: '4px',
             buttons: [
                 {
-                    entity: 'sun.sun',
-                    type: 'ring',
-                    ring_start: 25,
-                    ring_needle: true,
-                    ring_width: 1,
-                    ring_color: 'var(--secondary-text-color)',
-                    ring_marker_size: 12,
-                    ring_marker_icon_size: 16,
-                    ring_values: [{ value: 0, marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--primary-text-color)' }],
-                    padding: '9px',
-                    elements: [{ type: 'icon', icon: 'mdi:circle-small', icon_size: '12px', color: 'var(--secondary-text-color)' }]
-                }
+                    name: 'Outside',
+                    entity: PRESET_ENTITY_TOKEN,
+                    attribute: 'temperature',
+                    style: 'split',
+                    elements: [homeTemp('clamp(40px, 17cqw, 52px)', '700'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
+                },
+                room('Living'),
+                room('Office'),
+                room('Bath')
             ]
         }
     ],
@@ -632,46 +435,32 @@ const HOME_CONFIG = Object.freeze({
 
 export const LAYOUT_PRESETS = Object.freeze([
     {
-        id: 'slim',
-        name: 'Slim',
-        description: 'Small buttons',
-        icon: 'mdi:view-compact-outline',
-        config: SLIM_CONFIG
+        id: 'diorama',
+        name: 'Diorama',
+        description: 'Illustrated landscape',
+        icon: 'mdi:image-filter-hdr',
+        config: DIORAMA_CONFIG
     },
     {
         id: 'classic',
         name: 'Classic',
-        description: 'Daily forecast',
+        description: 'Weather colors, daily forecast',
         icon: 'mdi:view-dashboard-variant-outline',
         config: CLASSIC_CONFIG
     },
     {
-        id: 'home',
-        name: 'Home',
-        description: 'Inside & outside',
-        icon: 'mdi:home-outline',
-        config: HOME_CONFIG
-    },
-    {
         id: 'centered',
         name: 'Centered',
-        description: 'Simple and clean',
+        description: 'Animated sky, simple and clean',
         icon: 'mdi:format-align-center',
         config: CENTERED_CONFIG
     },
     {
-        id: 'comparison',
-        name: 'Comparison',
-        description: 'Lots of info',
-        icon: 'mdi:compare-horizontal',
-        config: COMPARISON_CONFIG
-    },
-    {
-        id: 'arc',
-        name: 'Arc',
-        description: 'Sunrise to sunset',
-        icon: 'mdi:weather-sunset',
-        config: ARC_CONFIG
+        id: 'home',
+        name: 'Home',
+        description: 'Inside & outside, wind',
+        icon: 'mdi:home-outline',
+        config: HOME_CONFIG
     }
 ]);
 
@@ -700,5 +489,6 @@ export const instantiatePreset = (preset, entity) => rebindPresetEntities(deepCl
 
 export const buildStubConfig = (hass) => {
     const entity = hass ? Object.keys(hass.states).find((e) => e.startsWith('weather.')) || 'weather.home' : 'weather.home';
-    return { weather_entity: entity, ...instantiatePreset(LAYOUT_PRESETS[0], entity) };
+    const preset = LAYOUT_PRESETS.find((p) => p.id === 'centered') || LAYOUT_PRESETS[0];
+    return { weather_entity: entity, ...instantiatePreset(preset, entity) };
 };

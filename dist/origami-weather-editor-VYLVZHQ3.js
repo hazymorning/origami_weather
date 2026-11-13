@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-HDWXPAJN.js";
+} from "./chunk-QXMBULZF.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -674,6 +674,7 @@ var KEY_ORDER = Object.freeze([
   "cloud_effects",
   "cloud_image_path",
   "mist_effects",
+  "mist_density",
   "night_sky_effects",
   "bird_effects",
   "bird_density",
@@ -709,10 +710,17 @@ var DISPLAY_DEFAULTS = Object.freeze({
   gradient_stop_1: 0,
   gradient_stop_2: 100,
   precipitation_speed: 1,
+  mist_density: 1,
   balloon_density: 1,
   plane_density: 1,
   weather_image_type: ""
 });
+var LAYER_STOPS = Object.freeze([
+  { value: "sky", label: "In the sky. The sun, the moon, the stars and the weather are in front of it." },
+  { value: "back", label: "Behind the weather. Clouds, mist, rain, snow, birds and planes pass in front of it." },
+  { value: "middle", label: "In the weather. Planes, mist and clouds pass behind it, birds, rain and snow in front of it." },
+  { value: "front", label: "In front of everything, like the text." }
+]);
 var OPT = Object.freeze({
   visual_mode: [
     { value: "images", label: "Custom images" },
@@ -2518,7 +2526,9 @@ var WeatherCardEditor = class extends i4 {
                         ${markersOn ? b2`${this._renderColorPicker("Marker color", v2.marker_color || "", (h3, o5) => setValue(vi, { marker_color: h3 ? this._serializeColor(h3, o5) : "" }))}
                             ${this._cssTextField({ value: v2.marker_size, label: "Marker size", placeholder: obj[p3 + "marker_size"] || "thickness", trim: true, onCommit: (s4) => setValue(vi, { marker_size: s4 }) })}
                             ${valueForm(v2, vi, "marker_icon", [{ name: "marker_icon", selector: { icon: {} } }], "Marker icon")}
-                            ${v2.marker_icon ? this._renderColorPicker("Icon color", v2.marker_icon_color || "", (h3, o5) => setValue(vi, { marker_icon_color: h3 ? this._serializeColor(h3, o5) : "" })) : ""}` : ""}</div></details>`)}
+                            ${v2.marker_icon ? this._renderColorPicker("Icon color", v2.marker_icon_color || "", (h3, o5) => setValue(vi, { marker_icon_color: h3 ? this._serializeColor(h3, o5) : "" })) : ""}
+                            ${p3 === "ring_" ? b2`<div class="toggle-group"><label class="toggle-row"><span>Gap in the ring</span>
+                                <ha-switch .checked=${v2.marker_gap === true} @change=${(e4) => setValue(vi, { marker_gap: e4.target.checked })}></ha-switch></label></div>` : ""}` : ""}</div></details>`)}
                 <button type="button" class="ring-threshold-add" @click=${addValue}><ha-icon icon="mdi:plus" style="--mdc-icon-size:14px"></ha-icon> Add value</button>
                 <div class="toggle-group"><label class="toggle-row"><span>Fill</span>
                     <ha-switch .checked=${fill} @change=${(e4) => write(p3 + "fill", e4.target.checked ? "" : false)}></ha-switch></label>
@@ -2670,7 +2680,7 @@ var WeatherCardEditor = class extends i4 {
                 ` : ""}</div>`;
   }
   _slider(opts) {
-    const { min, max, step = 1, label, helper, statusFn, onCommit } = opts;
+    const { min, max, step = 1, label, helper, statusFn, onCommit, noNumber } = opts;
     const int = opts.int === true;
     const parse = int ? (v2) => parseInt(v2, 10) : (v2) => parseFloat(v2);
     const fallbackNum = parse(opts.fallback != null ? opts.fallback : min);
@@ -2707,12 +2717,12 @@ var WeatherCardEditor = class extends i4 {
     return b2`<div class="wbk-slider">
                 <div class="wbk-slider-head">
                     <span class="wbk-slider-label">${label}</span>
-                    <input type="number" class="wbk-slider-num" min=${min} max=${max} step=${step}
-                        .value=${String(val)} @change=${onNumCommit}></div>
+                    ${noNumber ? "" : b2`<input type="number" class="wbk-slider-num" min=${min} max=${max} step=${step}
+                        .value=${String(val)} @change=${onNumCommit}>`}</div>
                 <input type="range" class="wbk-slider-range" min=${min} max=${max} step=${step}
                     .value=${String(val)} style="--origami-slider-pct:${toPct(val)}%"
                     @input=${onDrag} @change=${onRangeCommit} @click=${onRangeCommit}>
-                ${statusText != null ? b2`<div class="wbk-slider-status">${statusText}</div>` : ""}
+                ${statusText != null ? b2`<div class="wbk-slider-status" .textContent=${statusText}></div>` : ""}
                 ${helper ? b2`<div class="wbk-slider-helper">${helper}</div>` : ""}</div>`;
   }
   _renderSlider(field, label, min, max, step, helper, statusFn) {
@@ -2908,7 +2918,23 @@ var WeatherCardEditor = class extends i4 {
     return b2`
             ${this._renderContainerName(container, containerIdx)}
             ${this._renderContainerCustomCardsEditor(containerIdx)}
+            ${this._renderDisclosure("Layer", this._renderLayer(container, containerIdx))}
             ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
+  }
+  _renderLayer(container, containerIdx) {
+    const v2 = String(container.layer || "").toLowerCase(), i5 = LAYER_STOPS.findIndex((l3) => l3.value === v2);
+    return this._slider({
+      value: (i5 < 0 ? LAYER_STOPS.length - 1 : i5) + 1,
+      min: 1,
+      max: LAYER_STOPS.length,
+      step: 1,
+      int: true,
+      label: "Layer",
+      noNumber: true,
+      statusFn: (n4) => LAYER_STOPS[n4 - 1].label,
+      helper: "Left is further back. On the same layer, a container further down the list sits in front, and one with a free position in front of the others.",
+      onCommit: (n4) => this._updateContainerField(containerIdx, "layer", n4 === LAYER_STOPS.length ? "" : LAYER_STOPS[n4 - 1].value)
+    });
   }
   _moveContainer(idx, delta) {
     const areas = [...this._getContainers()], target = idx + delta;
@@ -3046,12 +3072,22 @@ var WeatherCardEditor = class extends i4 {
                             @change=${(e4) => uf("shadow", e4.target.checked ? "" : false)}></ha-switch></label>` : ""}
                     <label class="toggle-row"> <span>${LABELS.button_container_separator}</span> <ha-switch .checked=${container.separator === true}
                             @change=${(e4) => uf("separator", e4.target.checked || "")}></ha-switch></label></div>
+                ${container.grouped === true && container.blurred_background === true ? this._slider({
+      value: container.background_blur,
+      fallback: 10,
+      min: 0,
+      max: 40,
+      step: 1,
+      int: true,
+      label: "Blur",
+      onCommit: (v2) => uf("background_blur", v2)
+    }) : ""}
                 ${container.grouped === true ? this._renderContainerColorPicker(containerIdx, "background_color", "Group color") : ""}</div>`)}
             ${this._renderSubDisclosure("Background image", b2`<div class="vcb">
                 ${sf("image", "Image path", "/local/floorplan.png, home or old-home")}
                 ${sf("image_dark", "Dark mode image", "/local/home-dark.png")}
-                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Sized by the container width. Free-positioned buttons sit on top.</span></div></div>`)}
-            ${this._renderSubDisclosure("Position", this._renderPosition(container, (n4) => this._updateContainerAt(containerIdx, n4)))}
+                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Sized by the container width. Free-positioned buttons sit on top. To let the weather pass in front of the picture, move its Layer back.</span></div></div>`)}
+            ${this._renderSubDisclosure("Position and layer", b2`${this._renderPosition(container, (n4) => this._updateContainerAt(containerIdx, n4))}${this._renderLayer(container, containerIdx)}`)}
             ${this._renderSubDisclosure("Spacing", b2`<div class="vcb">
                 <div class="vcb-grid">
                     ${sf("gap", LABELS.button_container_gap, "auto")}
@@ -3383,7 +3419,7 @@ var WeatherCardEditor = class extends i4 {
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
                 ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c4.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v2) => this._updateField("cloud_image_path", v2) }))}
-                ${fx("mist_effects", "Mist", null, c4.cloud_effects !== false)}
+                ${fx("mist_effects", "Mist", this._renderSlider("mist_density", "Thickness", 0.25, 2, 0.05), c4.cloud_effects !== false)}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

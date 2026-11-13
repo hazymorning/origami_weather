@@ -136,7 +136,7 @@ const CLASSIC_COLORS = [
     ['hail', '#5a7888', '#29363d'],
     ['snowy', '#7890a6', '#384551'],
     ['snowy-rainy', '#677d91', '#313b44'],
-    ['exceptional', '#ad633b', '#472d1f']
+    ['exceptional', '#2784d5', '#182b4e']
 ];
 
 const WHITE = '#ffffff';
@@ -230,6 +230,7 @@ const CLASSIC_CONFIG = Object.freeze({
             background: true,
             grouped: true,
             blurred_background: true,
+            background_blur: 20,
             shadow: false,
             background_color: 'rgba(255, 255, 255, 0.12)',
             button_style: 'vertical',
@@ -368,7 +369,7 @@ const windCompass = () => ({
     ring_color: 'var(--secondary-text-color)',
     ring_marker_icon_size: 11,
     ring_values: [
-        { value: 0, marker_size: 12, marker_color: 'var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color)))', marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--secondary-text-color)' },
+        { value: 0, marker_size: 12, marker_gap: true, marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--secondary-text-color)' },
         { attribute: 'wind_bearing', marker_size: 7, marker_color: 'var(--primary-text-color)' }
     ],
     background: false,
@@ -382,6 +383,8 @@ const HOME_CONFIG = Object.freeze({
     sun_enabled: false,
     moon_enabled: false,
     cloud_effects: false,
+    mist_effects: true,
+    mist_density: 0.45,
     night_sky_effects: false,
     bird_effects: false,
     balloon_effects: false,
@@ -394,6 +397,7 @@ const HOME_CONFIG = Object.freeze({
     button_containers: [
         {
             name: 'House',
+            layer: 'back',
             position: 'custom',
             position_anchor: 'top-right',
             position_x: '34px',

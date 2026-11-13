@@ -70,6 +70,14 @@ const WEATHER_TUNING = Object.freeze({
     'default':         { icon: 'mdi:weather-cloudy',           precipitation: null,    lightning: false, sunVisibility: 0.85, sunSaturation: 0.90, cloudDensity: 0.30, cloudDarkness: 0.30, cloudSpeed: 1.0, mist: 'scattered', starCount: 800, starOpacity: 0.80 },
 });
 const _weatherTuning = (state) => WEATHER_TUNING[state] || WEATHER_TUNING.default;
+const _WIND_UNITS_MS = Object.freeze({ 'm/s': 1, 'km/h': 1 / 3.6, 'mph': 0.44704, 'kn': 0.514444, 'kt': 0.514444, 'ft/s': 0.3048 });
+const _windToMs = (value, unit) => {
+    const v = parseFloat(value), u = String(unit || '').trim();
+    if (!Number.isFinite(v) || v < 0) return null;
+    if (/^(bft|beaufort)$/i.test(u)) return 0.836 * Math.pow(v, 1.5);
+    const k = _WIND_UNITS_MS[u] || _WIND_UNITS_MS[u.toLowerCase()];
+    return k ? v * k : null;
+};
 const SUN_PALETTE = Object.freeze({
     noon:    { core: [255, 255, 255], inner: [255, 250, 240], mid: [255, 237, 200], edge: [255, 219, 158], glowInner: [255, 200, 124], glowOuter: [255, 238, 210] },
     horizon: { core: [255, 246, 222], inner: [255, 214, 148], mid: [255, 171, 92],  edge: [245, 137, 60],  glowInner: [240, 120, 55],  glowOuter: [252, 176, 110] }
@@ -332,10 +340,11 @@ const WeatherEffects = (() => {
     ]);
     const MIST_DARK = 0.4;
     const MIST = Object.freeze({
-        scattered: { count: 2, alpha: 0.55 },
-        overcast: { count: 3, alpha: 0.7 },
-        fog: { count: 3, alpha: 0.9 },
+        scattered: { count: 2, alpha: 0.6, speed: 1, clearings: 3, clear: 1 },
+        overcast: { count: 3, alpha: 0.75, speed: 1, clearings: 4, clear: 1 },
+        fog: { count: 3, alpha: 0.9, speed: 1.5, clearings: 4, clear: 0.95 },
     });
+    const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 3) / 7));
     const _cloudAtlas = new WeakMap();
     function _fit(img, max) {
         const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = max / Math.max(w, h);
@@ -781,37 +790,87 @@ const WeatherEffects = (() => {
         }
         return { puffs, key: tuning.cloudDensity };
     }
+    let _clearing = null;
+    function _clearingSprite() {
+        if (_clearing) return _clearing;
+        const c = document.createElement('canvas');
+        c.width = c.height = 256;
+        const x = c.getContext('2d'), rnd = _mulberry32(7);
+        for (let n = 0; n < 5; n++) {
+            const a = rnd() * Math.PI * 2, d = n ? 20 + rnd() * 50 : 0, cx = 128 + Math.cos(a) * d, cy = 128 + Math.sin(a) * d * 0.8, r = n ? 38 + rnd() * 34 : 70;
+            const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+            for (let k = 0; k <= 12; k++) {
+                const u = k / 12, v = 1 - u * u * (3 - 2 * u);
+                g.addColorStop(u, `rgba(0,0,0,${Math.pow(v, 1.2).toFixed(4)})`);
+            }
+            x.fillStyle = g;
+            x.fillRect(0, 0, 256, 256);
+        }
+        return (_clearing = c);
+    }
     function _buildMistField(tuning, seed) {
-        const look = MIST[tuning.mist], rnd = _mulberry32(seed || 1), puffs = [];
+        const look = MIST[tuning.mist], rnd = _mulberry32(seed || 1), puffs = [], clearings = [];
         for (let i = 0; i < look.count; i++) {
             const depth = (i + 0.5) / look.count;
             puffs.push({
-                size: 1.6 + depth,
-                x: (i + rnd() * 0.5) / look.count,
+                size: 1.3 + 2 * depth,
+                x: 0.2 + 0.6 * (i + rnd() * 0.8) / look.count,
                 y: 0.3 + rnd() * 0.4,
                 rot: rnd() * Math.PI * 2,
-                speed: (0.04 + 0.18 * depth) * (0.85 + rnd() * 0.3),
-                alpha: look.alpha * (0.8 + rnd() * 0.4),
+                speed: (0.002 + 0.014 * Math.pow(depth, 1.3)) * (0.85 + rnd() * 0.3) * look.speed,
+                alpha: look.alpha * (0.8 + rnd() * 0.4) * (0.7 + 0.6 * depth),
                 ph: rnd() * Math.PI * 2,
-                front: depth > 0.5,
             });
         }
-        return { puffs, key: tuning.mist };
+        for (let i = 0; i < look.clearings; i++) {
+            clearings.push({
+                size: 0.45 + rnd() * 0.4,
+                x: (i + rnd() * 0.8) / look.clearings,
+                y: 0.15 + rnd() * 0.7,
+                rot: rnd() * Math.PI * 2,
+                speed: 0.008 * (0.8 + rnd() * 0.4) * look.speed,
+                alpha: look.clear,
+            });
+        }
+        return { puffs, clearings, key: tuning.mist };
     }
-    function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, front, wind) {
-        const big = Math.max(w, h), ar = img.height / img.width, amt = env.schemeDark ? MIST_DARK : 1;
+    function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind) {
+        const big = Math.max(w, h), ar = img.height / img.width, amt = (env.schemeDark ? MIST_DARK : 1) * inst.mistDensity;
+        const cw = ctx.canvas.width, ch = ctx.canvas.height;
+        const mc = inst.mistCanvas || (inst.mistCanvas = document.createElement('canvas'));
+        if (mc.width !== cw || mc.height !== ch) { mc.width = cw; mc.height = ch; }
+        const m = mc.getContext('2d');
+        m.setTransform(1, 0, 0, 1, 0, 0);
+        m.clearRect(0, 0, cw, ch);
+        m.imageSmoothingEnabled = true;
+        m.imageSmoothingQuality = 'high';
+        const place = (p, size, alpha) => {
+            m.globalAlpha = alpha;
+            m.setTransform(s, 0, 0, s, (p.x * (w + size) - size / 2) * s, p.y * h * s);
+            m.rotate(p.rot);
+        };
         for (const p of inst.mist.puffs) {
-            if (p.front !== front) continue;
             const pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph));
             p.x += p.speed * wind * w * dt / (w + pw);
             if (p.x >= 1) { p.x -= 1; p.y = 0.3 + Math.random() * 0.4; p.rot = Math.random() * Math.PI * 2; }
-            ctx.globalAlpha = Math.min(1, p.alpha * amt * (1 + 0.25 * Math.sin(t * 0.07 + p.ph * 1.3)));
-            ctx.setTransform(s, 0, 0, s, (p.x * (w + pw) - pw / 2) * s, p.y * h * s);
-            ctx.rotate(p.rot);
-            ctx.drawImage(img, -pw / 2, -pw * ar / 2, pw, pw * ar);
+            place(p, pw, Math.min(1, p.alpha * amt * (1 + 0.25 * Math.sin(t * 0.07 + p.ph * 1.3))));
+            m.drawImage(img, -pw / 2, -pw * ar / 2, pw, pw * ar);
         }
-        ctx.setTransform(s, 0, 0, s, 0, 0);
+        m.globalCompositeOperation = 'destination-out';
+        const hole = _clearingSprite();
+        for (const c of inst.mist.clearings) {
+            const cs = c.size * big;
+            c.x += c.speed * wind * w * dt / (w + cs);
+            if (c.x >= 1) { c.x -= 1; c.y = 0.15 + Math.random() * 0.7; c.rot = Math.random() * Math.PI * 2; }
+            place(c, cs, c.alpha);
+            m.drawImage(hole, -cs / 2, -cs * 0.375, cs, cs * 0.75);
+        }
+        m.globalCompositeOperation = 'source-over';
+        m.globalAlpha = 1;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.globalAlpha = 1;
+        ctx.drawImage(mc, 0, 0);
+        ctx.setTransform(s, 0, 0, s, 0, 0);
     }
     const _lerp = (a, b, t) => a + (b - a) * t;
     const _count = (t, area) => Math.max(t.min, Math.min(t.max, Math.round(area / 10000 * t.perContainer)));
@@ -1068,8 +1127,10 @@ const WeatherEffects = (() => {
     function create() {
         return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, mist: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
     }
-    function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState) {
+    function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState, wind, mistDensity) {
         const area = Math.max(1, w * h);
+        inst.wind = Number.isFinite(wind) ? wind : null;
+        inst.mistDensity = mistDensity || 1;
         const grow = inst.area > 0 ? Math.abs(area - inst.area) / inst.area : 1;
         const sizeChanged = grow >= 0.22;
         inst.speed = speed || 1;
@@ -1086,6 +1147,7 @@ const WeatherEffects = (() => {
         };
         inst.cloud = field(inst.cloud, weatherState, inst.wp, _buildCloudField, inst.cloudImg);
         inst.mist = field(inst.mist, mistState, inst.wp + 1, _buildMistField, _getMistImg);
+        if (!inst.mist) inst.mistCanvas = null;
         const starCount = stars ? stars.count : 0;
         if (starCount <= 0) {
             inst.stars = null;
@@ -1167,10 +1229,9 @@ const WeatherEffects = (() => {
         }
         return brightness > 0.01 ? { puffs: fl.puffs, brightness } : null;
     }
-    function frame(inst, ctx, w, h, s, dt, t, env, starCtx) {
+    function frame(inst, ctx, w, h, s, dt, t, env, starCtx, nearCtx) {
         const activeEffects = !!inst.key || !!inst.cloud || !!inst.mist || !!inst.stars || !!inst.birds || !!inst.balloon || !!inst.planes;
-        ctx.setTransform(s, 0, 0, s, 0, 0);
-        ctx.clearRect(0, 0, w, h);
+        for (const c of nearCtx ? [ctx, nearCtx] : [ctx]) { c.setTransform(s, 0, 0, s, 0, 0); c.clearRect(0, 0, w, h); }
         if (!activeEffects) {
             if (starCtx) { starCtx.setTransform(s, 0, 0, s, 0, 0); starCtx.clearRect(0, 0, w, h); }
             return false;
@@ -1191,6 +1252,9 @@ const WeatherEffects = (() => {
             starCtx.setTransform(s, 0, 0, s, 0, 0); starCtx.clearRect(0, 0, w, h);
         }
         const wp = inst.wp;
+        const windGoal = inst.wind != null ? _windDrift(inst.wind) : ((inst.cloud && inst.cloud.speed) || (inst.mist && inst.mist.speed) || 1);
+        inst.windF = inst.windF == null ? windGoal : inst.windF + (windGoal - inst.windF) * Math.min(1, dt * 0.5);
+        const windF = inst.windF;
         const gust = 0.72 + 0.22 * Math.sin(t * 0.21 + wp) + 0.13 * Math.sin(t * 0.53 + wp * 1.7);
         const drift = Math.sin(t * 0.16 + wp * 0.6) + 0.4 * Math.sin(t * 0.41 + wp);
         const topF = h * 0.16, botY = h * 1.02, botF = h * 0.12;
@@ -1207,7 +1271,7 @@ const WeatherEffects = (() => {
         const cloudField = (field, bands, opAmt, storm) => {
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
-            const wind = (0.9 + 0.4 * gust) * field.speed;
+            const wind = (0.9 + 0.4 * gust) * windF;
             const scale = Math.max(1, Math.min(2.4, Math.sqrt(w * h) / 300));
             const drawPuff = (p, alpha) => {
                 const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
@@ -1238,13 +1302,19 @@ const WeatherEffects = (() => {
             ctx.setTransform(s, 0, 0, s, 0, 0);
             ctx.globalAlpha = 1;
         };
-        const mistImg = inst.mist && _getMistImg(), mistWind = inst.mist ? (0.9 + 0.4 * gust) * inst.mist.speed : 0;
-        if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, false, mistWind);
+        const mistImg = inst.mist && _getMistImg();
+        if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, (0.9 + 0.4 * gust) * windF);
         if (inst.cloud && inst.cloud.puffs.length) {
             const img = inst.cloudImg(), bands = img && _cloudBandSprites(img, inst.cloud.state, env.schemeDark, env.backgroundRGB);
             if (bands) cloudField(inst.cloud, bands, env.schemeDark ? 1.08 : 1, true);
         }
-        if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, true, mistWind);
+        if (nearCtx) {
+            ctx.setTransform(s, 0, 0, s, 0, 0);
+            ctx.globalAlpha = 1;
+            nearCtx.imageSmoothingEnabled = ctx.imageSmoothingEnabled;
+            nearCtx.imageSmoothingQuality = ctx.imageSmoothingQuality;
+            ctx = nearCtx;
+        }
         if (inst.birds) _birdsFrame(inst, ctx, w, h, s, dt, t, env, gust);
         const fall = dt * inst.speed;
         if (inst.rain && inst.rain.length) {
@@ -1472,6 +1542,9 @@ function strftime(hass, dt, format) {
     const numbers = { d: n.day, m: n.month, y: n.year.slice(-2), Y: n.year, H: n.hour, I: String(n.hour % 12 || 12).padStart(2, '0'), M: n.minute, S: n.second, p: n.hour < 12 ? 'AM' : 'PM' };
     return format.replace(DATE_CODE, (_, flag, c) => DATE_NAMES[c] ? dateFormat(hass, { calendar: 'gregory', ...DATE_NAMES[c] }).format(date) : flag ? numbers[c].replace(/^0/, '') : numbers[c]);
 }
+const Z = Object.freeze({ ...Object.fromEntries(['sky', 'pictures', 'layer-sky', 'stars', 'sun', 'pictures-front', 'layer-back', 'weather', 'layer-middle', 'near', 'tint', 'edge'].map((name, i, all) => [name, i - all.length])), free: 10 });
+const CONTAINER_LAYERS = Object.freeze(['sky', 'back', 'middle', 'front']);
+const containerLayer = (c) => { const v = String((c && c.layer) || '').toLowerCase(); return CONTAINER_LAYERS.includes(v) ? v : 'front'; };
 let _sharedStyles = null;
 class WeatherCard extends HTMLElement {
     constructor() {
@@ -1651,6 +1724,8 @@ class WeatherCard extends HTMLElement {
         this._themeDark = themeDark;
         this._updateSunMoon(sunObj, wObj);
         const wEntity = wObj || FALLBACK_WEATHER;
+        const wAttrs = wEntity.attributes || {};
+        this._windMs = _windToMs(wAttrs.wind_speed, wAttrs.wind_speed_unit);
         const botSig = allButtons.map(s => {
             if (!s.entity) return '';
             let sig;
@@ -1693,6 +1768,7 @@ class WeatherCard extends HTMLElement {
             themeDark,
             botSig,
             containerVisSig,
+            wind: this._windMs,
             locale: `${l.language}|${l.number_format}|${l.time_format}|${l.time_zone}`
         };
         if (this._lastSnapshot && !this._hasSnapshotChanged(this._lastSnapshot, snapshot)) return;
@@ -2229,14 +2305,14 @@ class WeatherCard extends HTMLElement {
             #card-root.bg-ha-card { background-color: var(--_text-bg); }
             #card-root.bg-custom-color { background-color: var(--origami-card-bg-color, var(--_text-bg)); }
             :host(.full-width) { --origami-fw-gap: var(--origami-full-width-margin, var(--ha-view-sections-column-gap, var(--column-gap, 32px))); width: calc(100% + 2 * var(--origami-fw-gap)); max-width: none; }
-            #card-root.edge-fade::before { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; background: linear-gradient(to bottom, var(--origami-edge-fade-color, var(--primary-background-color, #111)) 0%, transparent var(--origami-edge-fade-size, 10%), transparent calc(100% - var(--origami-edge-fade-size, 10%)), var(--origami-edge-fade-color, var(--primary-background-color, #111)) 100%); }
-            #card-root::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; background: var(--origami-gradient, none); }
+            #card-root.edge-fade::before { content: ""; position: absolute; inset: 0; z-index: ${Z.edge}; pointer-events: none; border-radius: inherit; background: linear-gradient(to bottom, var(--origami-edge-fade-color, var(--primary-background-color, #111)) 0%, transparent var(--origami-edge-fade-size, 10%), transparent calc(100% - var(--origami-edge-fade-size, 10%)), var(--origami-edge-fade-color, var(--primary-background-color, #111)) 100%); }
+            #card-root::after { content: ""; position: absolute; inset: 0; z-index: ${Z.tint}; pointer-events: none; border-radius: inherit; background: var(--origami-gradient, none); }
             #card-root:is(.has-default-bg, .has-weather-bg)::after { background-color: color-mix(in srgb, var(--_dash-bg) var(--origami-bg-blend, 0%), transparent); }
-            #weather-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
+            #weather-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.pictures}; display: none; overflow: hidden; overflow: clip; }
             #weather-bg > img, #weather-bg > video { display: block; width: 100%; height: 100%; object-fit: cover; border: none; outline: none; filter: brightness(var(--origami-bg-brightness, 1)) saturate(var(--origami-bg-saturation, 1)) blur(var(--origami-bg-blur, 0px)) var(--_origami-dark-theme-filter, ); }
             #card-root.has-weather-bg #weather-bg { display: block; }
-            #card-root.image-front #weather-bg { z-index: 3; }
-            #default-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
+            #card-root.image-front #weather-bg { z-index: ${Z['pictures-front']}; }
+            #default-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.sky}; display: none; overflow: hidden; overflow: clip; }
             #sky-base { position: absolute; inset: 0; border-radius: inherit; }
             #card-root.scheme-light #sky-base { background: var(--origami-default-bg-light, linear-gradient(125deg, #bdd8ee 0%, #d3e6f2 55%, #e4f0f7 100%)); }
             #card-root.scheme-dark #sky-base { background: var(--origami-default-bg-dark, linear-gradient(125deg, #0b1830 0%, #10203c 55%, #152a4c 100%)); }
@@ -2258,7 +2334,7 @@ class WeatherCard extends HTMLElement {
             @keyframes wbkO3 { 0%, 100% { opacity: 0.88; } 40% { opacity: 1; } 72% { opacity: 0.8; } }
             #card-root:is(.has-default-bg, .haze-only) #default-bg { display: block; }
             #card-root.haze-only #sky-base { display: none; }
-            #sun-moon-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 2; overflow: hidden; overflow: clip; display: none; }
+            #sun-moon-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.sun}; overflow: hidden; overflow: clip; display: none; }
             #card-root.has-sun-moon #sun-moon-layer { display: block; }
             #sun-moon { position: absolute; z-index: 1; left: var(--origami-sun-moon-x, 50%); top: clamp(calc(var(--origami-sun-moon-size, 80px) / 2 + 6px), var(--origami-sun-moon-y, 100%), 100%); width: var(--origami-sun-moon-size, 80px); height: var(--origami-sun-moon-size, 80px); transform: translate(-50%, -50%); }
             #sun-moon .sun, #sun-moon .moon { position: absolute; inset: 0; }
@@ -2357,7 +2433,7 @@ class WeatherCard extends HTMLElement {
             #card-root.scheme-dark #sun-rays::before, #card-root.scheme-dark #sun-rays::after { mix-blend-mode: screen; }
             #card-root.scheme-dark { --origami-sun-ray-shine: rgba(178,204,248,0.14); }
             @keyframes wbkRayShine { 0%, 100% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.35); } 50% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.9); } }
-            #content-layer { position: relative; container-type: inline-size; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; z-index: 5; }
+            #content-layer { position: relative; container-type: inline-size; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; }
             #content-layer.direction-row { flex-wrap: wrap; }
             #content-layer.direction-row > .buttons-group, #content-layer.direction-row > .cards-group { flex: 1 1 0; min-width: 0; }
             #content-layer > .buttons-group.has-custom-width, #content-layer > .cards-group.has-custom-width { flex: 0 0 auto; width: var(--origami-container-width); align-self: auto; }
@@ -2365,13 +2441,14 @@ class WeatherCard extends HTMLElement {
             #free-layer > .buttons-group.free-positioned.has-row-horizontal-scroll:not(.has-custom-width) { width: 100%; }
             #card-root.fixed-height #content-layer { position: absolute; inset: 0; height: 100%; }
             #card-root.fixed-height { --_origami-vscroll-fill: calc(100% - var(--_origami-pad-v, var(--origami-card-padding, 16px)) * 2); }
-            #free-layer { position: absolute; inset: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); pointer-events: none; box-sizing: border-box; overflow: visible; z-index: 6; container-type: size; }
+            #free-layer { position: absolute; inset: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); pointer-events: none; box-sizing: border-box; overflow: visible; container-type: size; }
             #free-layer > .buttons-group.free-positioned { position: absolute; max-width: 100%; }
+            #free-layer > .buttons-group:not(.layer-sky, .layer-back, .layer-middle) { z-index: ${Z.free}; }
             #free-layer > .buttons-group.free-positioned.has-custom-width { width: var(--origami-container-width); }
-            .buttons-group { pointer-events: auto; min-width: 0; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
+            .buttons-group { pointer-events: none; min-width: 0; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
             .buttons-group.has-image { display: grid; }
             .buttons-group.has-image > * { grid-area: 1 / 1; min-width: 0; }
-            .group-image { width: 100%; height: auto; }
+            .group-image { width: 100%; height: auto; pointer-events: auto; }
             #card-root:not(.scheme-dark) .group-image.dark, #card-root.scheme-dark .group-image.light { display: none; }
             .buttons-row, .group-image { color: var(--origami-text-color); }
             .buttons-row.has-free { position: relative; }
@@ -2382,19 +2459,19 @@ class WeatherCard extends HTMLElement {
             #card-root.fixed-height .buttons-group.has-row-vertical-scroll.has-vscroll-cap { display: flex; flex-direction: column; max-height: 100%; min-height: 0; }
             #card-root.fixed-height .buttons-group.has-row-vertical-scroll.has-vscroll-cap > .buttons-row { min-height: 0; }
             .buttons-group.grouped { border-radius: var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)); }
-            .buttons-group.grouped.with-bg { --_bg: var(--origami-container-bg-color, var(--origami-bottom-bg-color, var(--_text-bg))); background: var(--_bg); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-group-shadow, var(--_origami-shadow)); }
+            .buttons-group.grouped.with-bg { pointer-events: auto; --_bg: var(--origami-container-bg-color, var(--origami-bottom-bg-color, var(--_text-bg))); background: var(--_bg); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-group-shadow, var(--_origami-shadow)); }
             :where(.buttons-group.grouped, .button).with-bg.blurred { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .buttons-group.grouped.with-bg > .buttons-row .button.with-bg { background: none; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 0; padding: var(--origami-buttons-padding, 0); }
             .buttons-row.has-separator:not(.row-grid) > .button { position: relative; overflow: visible; }
             .buttons-row.has-separator:not(.row-grid) > .button + .button::before { content: ""; position: absolute; pointer-events: none; top: 0; bottom: 0; inset-inline-start: calc((var(--origami-bottom-gap, 8px) / -2) - (var(--origami-separator-width, 2px) / 2)); width: var(--origami-separator-width, 2px); background: var(--origami-separator-color, color-mix(in srgb, currentColor 10%, transparent)); }
             .buttons-row.has-separator:not(.row-grid).row-vertical-scroll > .button + .button::before { top: calc((var(--origami-bottom-gap, 8px) / -2) - (var(--origami-separator-width, 2px) / 2)); bottom: auto; left: 0; right: 0; inset-inline-start: 0; width: auto; height: var(--origami-separator-width, 2px); }
-            .buttons-row { font-size: var(--origami-bottom-font-size, 16px); font-weight: var(--origami-bottom-font-weight, 500); display: flex; align-items: var(--origami-row-align, center); gap: var(--origami-bottom-gap, 8px); width: 100%; box-sizing: border-box; pointer-events: auto; border-radius: inherit; }
+            .buttons-row { font-size: var(--origami-bottom-font-size, 16px); font-weight: var(--origami-bottom-font-weight, 500); display: flex; align-items: var(--origami-row-align, center); gap: var(--origami-bottom-gap, 8px); width: 100%; box-sizing: border-box; pointer-events: none; border-radius: inherit; }
             .buttons-row.row-wrap { flex-wrap: wrap; justify-content: var(--origami-row-justify, flex-start); }
-            .buttons-row.row-horizontal-scroll { justify-content: var(--origami-row-justify, flex-start); flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; height: 100%; overflow-anchor: none; scroll-snap-type: x proximity; scrollbar-width: none; pointer-events: auto; }
+            .buttons-row.row-horizontal-scroll { pointer-events: auto; justify-content: var(--origami-row-justify, flex-start); flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; height: 100%; overflow-anchor: none; scroll-snap-type: x proximity; scrollbar-width: none; pointer-events: auto; }
             .buttons-row.row-horizontal-scroll::-webkit-scrollbar { display: none; }
             .buttons-row.row-horizontal-scroll.has-visible-count { display: grid; grid-auto-flow: column; grid-auto-columns: var(--origami-button-basis); scroll-snap-type: x mandatory; }
             .buttons-row.row-horizontal-scroll.has-visible-count > .button { width: 100%; scroll-snap-align: start; }
-            .buttons-row.row-vertical-scroll { justify-content: var(--origami-row-justify, flex-start); align-items: var(--origami-row-align, stretch); flex-direction: column; flex-wrap: nowrap; overflow-y: auto; overflow-x: hidden; height: 100%; max-height: var(--origami-row-max-height, none); overflow-anchor: none; scroll-snap-type: y proximity; scrollbar-width: none; pointer-events: auto; }
+            .buttons-row.row-vertical-scroll { pointer-events: auto; justify-content: var(--origami-row-justify, flex-start); align-items: var(--origami-row-align, stretch); flex-direction: column; flex-wrap: nowrap; overflow-y: auto; overflow-x: hidden; height: 100%; max-height: var(--origami-row-max-height, none); overflow-anchor: none; scroll-snap-type: y proximity; scrollbar-width: none; pointer-events: auto; }
             .buttons-row.row-vertical-scroll::-webkit-scrollbar { display: none; }
             .buttons-row.row-vertical-scroll.has-visible-count { scroll-snap-type: y mandatory; }
             .buttons-row.row-vertical-scroll.has-visible-count > .button { flex: 0 0 auto; scroll-snap-align: start; }
@@ -2426,7 +2503,7 @@ class WeatherCard extends HTMLElement {
             .buttons-row.align-start > .button.format-vertical:not(.align-start, .align-center, .align-end, .align-spread) { align-items: flex-start; text-align: start; }
             .buttons-row.align-end > .button.format-vertical:not(.align-start, .align-center, .align-end, .align-spread) { align-items: flex-end; text-align: end; }
             .buttons-row.has-visible-count > .button.format-vertical { align-content: center; }
-            .button { display: flex; flex-direction: row; align-items: center; row-gap: var(--origami-button-gap, 6px); column-gap: var(--origami-button-gap, 0.40em); flex-wrap: nowrap; flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box; scroll-snap-align: start; padding: var(--origami-buttons-padding, 0); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
+            .button { display: flex; flex-direction: row; align-items: center; row-gap: var(--origami-button-gap, 6px); column-gap: var(--origami-button-gap, 0.40em); flex-wrap: nowrap; flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box; scroll-snap-align: start; padding: var(--origami-buttons-padding, 0); cursor: pointer; pointer-events: auto; -webkit-tap-highlight-color: transparent; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
             .button:active { transform: scale(0.94); opacity: 0.75; transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.12s cubic-bezier(0.2, 0, 0.2, 1); }
             .button .button-icon { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: var(--weather-icon-padding, 0); }
             .button .button-icon ha-icon,
@@ -2443,10 +2520,11 @@ class WeatherCard extends HTMLElement {
             .button:is(.with-bg, .has-bg-image) .button-text { text-shadow: none; }
             .button.has-bg-image { padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); overflow: hidden; background-image: var(--origami-button-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; }
             .button.button-round.has-bg-image { border-radius: 999px; }
-            #weather-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: 3; display: none; }
-            #card-root.has-weather-effects #weather-effects { display: block; }
-            #card-root:is(.has-default-bg, .has-weather-bg) :is(#sun-moon-layer, #weather-effects) { filter: var(--_origami-dark-theme-filter, none); }
-            #star-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: 2; display: none; }
+            #weather-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.weather}; display: none; }
+            #weather-near { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.near}; display: none; }
+            #card-root.has-weather-effects #weather-effects, #card-root.has-weather-effects.has-near-canvas #weather-near { display: block; }
+            #card-root:is(.has-default-bg, .has-weather-bg) :is(#sun-moon-layer, #weather-effects, #weather-near) { filter: var(--_origami-dark-theme-filter, none); }
+            #star-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.stars}; display: none; }
             #card-root.has-star-canvas #star-canvas { display: block; }
             .button.has-tint { position: relative; }
             .button.has-tint::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--origami-button-tint); opacity: 0.18; pointer-events: none; z-index: 0; }
@@ -2484,12 +2562,13 @@ class WeatherCard extends HTMLElement {
             @keyframes gauge-marker-in { from { opacity: 0; } }
             .gauge-marker ha-icon { --mdc-icon-size: var(--origami-marker-icon-size, calc(var(--origami-marker-size) * 0.66)); display: flex; }
             .button-ring-gauge { --_ring: radial-gradient(farthest-side, transparent calc(100% - var(--origami-gauge-w) - 0.5px), #000 calc(100% - var(--origami-gauge-w))); --_from: from var(--origami-gauge-start, 0deg); --_arc: var(--origami-gauge-arc, 1turn); position: absolute; inset: 0; pointer-events: none; }
-            .button-ring-gauge > :not(.gauge-marker) { --_seg: #000 var(--_arc), transparent 0; inset: 0; border-radius: 50%; -webkit-mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring); mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring); -webkit-mask-composite: source-in; mask-composite: intersect; }
+            .button-ring-gauge > :not(.gauge-marker) { --_seg: #000 var(--_arc), transparent 0; inset: 0; border-radius: 50%; -webkit-mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring), var(--_gaps, linear-gradient(#000 0 0)); mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring), var(--_gaps, linear-gradient(#000 0 0)); -webkit-mask-composite: source-in; mask-composite: intersect; }
             .button-ring-gauge > .gauge-fill { --_seg: #000 calc(var(--origami-gauge-pos) * var(--_arc)), transparent 0; background-image: conic-gradient(var(--_from), var(--origami-gauge-stops)); }
             .button-ring-gauge > .gauge-range { --_seg: transparent calc(var(--origami-range-from) * var(--_arc)), #000 0 calc(var(--origami-range-to) * var(--_arc)), transparent 0; }
             .button-ring-gauge > .gauge-marker { --_a: calc(var(--origami-gauge-pos) * var(--_arc) + var(--origami-gauge-start, 0deg)); left: 50%; top: 0; width: 0; height: 50%; box-shadow: none; transform: rotate(var(--_a)); transform-origin: bottom; }
             .button-ring-gauge > .gauge-marker::before, .button-ring-gauge > .gauge-marker ha-icon { position: absolute; left: 0; top: calc(var(--origami-gauge-w) / 2); transform: translate(-50%, -50%) rotate(calc(-1 * var(--_a))); }
             .button-ring-gauge > .gauge-marker::before { content: ''; width: var(--origami-marker-size); height: var(--origami-marker-size); border-radius: 50%; background: var(--origami-gauge-color); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.10); }
+            .button-ring-gauge > .gauge-marker.gap::before { background: none; box-shadow: none; }
             .button-ring-gauge > .gauge-marker.needle::before { top: calc((var(--origami-gauge-w) + var(--origami-marker-size)) / 2); bottom: 0; width: 1px; height: auto; border-radius: 0; box-shadow: none; transform: translateX(-50%); }
             .button-ring-wrap > .button { margin: var(--origami-ring-gap, 3px); z-index: 1; }
             .buttons-row.row-grid > .button-ring-wrap > .button,
@@ -2526,7 +2605,10 @@ class WeatherCard extends HTMLElement {
             .marquee-host.is-animating .marquee-track { animation: marquee var(--origami-marquee-duration, 20s) linear infinite; }
             .marquee-host.marquee-rtl .marquee-track { animation-direction: reverse; }
             @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-            .cards-group { pointer-events: auto; align-self: stretch; box-sizing: border-box; }
+            .cards-group { pointer-events: none; align-self: stretch; box-sizing: border-box; }
+            :is(.buttons-group, .cards-group).layer-sky { z-index: ${Z['layer-sky']}; }
+            :is(.buttons-group, .cards-group).layer-back { z-index: ${Z['layer-back']}; }
+            :is(.buttons-group, .cards-group).layer-middle { z-index: ${Z['layer-middle']}; }
             .cards-row { display: flex; flex-wrap: wrap; gap: 8px; pointer-events: none; }
             .cards-row > * { pointer-events: auto; }
             #card-root.is-offscreen :is(.marquee-track, .haze-layer, .sun-glow, .moon-glow), #card-root.is-offscreen .sun-disc::before, #card-root.is-offscreen .sun-disc::after, #card-root.is-offscreen #sun-moon-layer::before { animation-play-state: paused; }
@@ -2540,7 +2622,7 @@ class WeatherCard extends HTMLElement {
         }
         this.shadowRoot.adoptedStyleSheets = [_sharedStyles, this._userCss = new CSSStyleSheet()];
         const root = document.createElement('div'); root.id = 'card-root';
-        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><svg class="moon-disc" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="wbk-moon-surface" cx="38%" cy="34%" r="78%"><stop offset="0%" stop-color="#eef0f4"/><stop offset="45%" stop-color="#dce0e8"/><stop offset="100%" stop-color="#b8bcc6"/></radialGradient><clipPath id="wbk-moon-lit"><path class="moon-lit-path" d=""/></clipPath></defs><g clip-path="url(#wbk-moon-lit)"><circle class="moon-surface" cx="50" cy="50" r="48" fill="url(#wbk-moon-surface)"/><image class="moon-image" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid slice"/></g></svg></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
+        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><svg class="moon-disc" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="wbk-moon-surface" cx="38%" cy="34%" r="78%"><stop offset="0%" stop-color="#eef0f4"/><stop offset="45%" stop-color="#dce0e8"/><stop offset="100%" stop-color="#b8bcc6"/></radialGradient><clipPath id="wbk-moon-lit"><path class="moon-lit-path" d=""/></clipPath></defs><g clip-path="url(#wbk-moon-lit)"><circle class="moon-surface" cx="50" cy="50" r="48" fill="url(#wbk-moon-surface)"/><image class="moon-image" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid slice"/></g></svg></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><canvas id="weather-near"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
         this.shadowRoot.append(root);
         const q = (sel) => root.querySelector(sel);
         const contentLayer = q('#content-layer');
@@ -2558,6 +2640,7 @@ class WeatherCard extends HTMLElement {
             moonImage: q('.moon-image'),
             defaultBg: q('#default-bg'),
             effectsCanvas: q('#weather-effects'),
+            nearCanvas: q('#weather-near'),
             starCanvas: q('#star-canvas'),
             buttonContainerEls: [],
         };
@@ -2714,8 +2797,16 @@ class WeatherCard extends HTMLElement {
             this._applyContainerStyles(ai, this._containers[ai]);
         }
     }
+    _placeContainer(container, group, placed) {
+        const host = !container.custom_cards && String(container.position || '').toLowerCase() === 'custom' ? this._elements.freeLayer : this._elements.contentLayer;
+        const before = placed.has(host) ? placed.get(host).nextSibling : host.firstChild;
+        if (group !== before) host.insertBefore(group, before);
+        placed.set(host, group);
+    }
     _applyContainerStyles(ai, container) {
         const els = this._elements.buttonContainerEls[ai]; if (!els) return;
+        const layer = containerLayer(container);
+        for (const name of ['sky', 'back', 'middle']) els.group.classList.toggle(`layer-${name}`, layer === name);
         if (container.custom_cards) return;
         const bt = els.row, cg = els.group;
         if (!this._containerStyleCache[ai]) this._containerStyleCache[ai] = {};
@@ -2750,6 +2841,8 @@ class WeatherCard extends HTMLElement {
         }
         const containerShadow = container.shadow === false ? 'none' : '';
         cssVarContainer(cg, '--_origami-group-shadow', containerShadow, 'containerShadow');
+        const blurPx = parseFloat(container.background_blur);
+        cssVarContainer(cg, '--origami-bottom-bg-filter', Number.isFinite(blurPx) && blurPx >= 0 ? `blur(${blurPx}px)` : '', 'containerBlur');
         const customWidth = normalizeLength((container.custom_width || '').toString().trim());
         cssVarContainer(cg, '--origami-container-width', customWidth, 'containerWidth');
         if (cache.hasCustomWidth !== !!customWidth) { cache.hasCustomWidth = !!customWidth; cg.classList.toggle('has-custom-width', !!customWidth); }
@@ -2867,17 +2960,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
         if (!this._containerRenderCache) this._containerRenderCache = [];
         let anyRowRebuilt = false;
-        const allRendered = [];
+        const allRendered = [], placed = new Map();
         for (let ai = 0; ai < this._containers.length; ai++) {
             const container = this._containers[ai];
             const els = this._elements.buttonContainerEls[ai]; if (!els) continue;
+            this._placeContainer(container, els.group, placed);
             const containerVisible = this._checkButtonVisibility(container, hass);
             els.group.style.display = containerVisible ? '' : 'none';
-            if (!containerVisible) continue;
-            if (container.custom_cards) {
-                if (els.group.parentNode !== this._elements.contentLayer) this._elements.contentLayer.appendChild(els.group);
-                continue;
-            }
+            if (!containerVisible || container.custom_cards) continue;
             const bt = els.row;
             const showBottomBg = container.background === true;
             const buttonFormat = (container.button_style || '').toLowerCase();
@@ -2901,9 +2991,6 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 if (hasVis && rowLayout === 'vertical-scroll') this._scheduleVerticalMeasure(ai);
                 anyRowRebuilt = true;
             }
-            const isFreeContainer = (container.position || '').toString().toLowerCase() === 'custom';
-            const targetLayer = isFreeContainer ? this._elements.freeLayer : this._elements.contentLayer;
-            if (els.group.parentNode !== targetLayer) targetLayer.appendChild(els.group);
         }
         if (anyRowRebuilt) {
             this._nativeIconCache = null;
@@ -2954,12 +3041,17 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (n.marker_icon_size > 0) style.push(`--origami-marker-icon-size:${n.marker_icon_size}px`);
         if (n.start) style.push(`--origami-gauge-start:${n.start}deg`);
         if (arc < 360) style.push(`--origami-gauge-arc:${arc}deg`);
+        const gaps = p === 'ring_' && marked ? values.filter(v => v.def.marker_gap === true && v.size && !isNaN(v.value)).map(({ value, size }) => {
+            const a = (at(value) * arc + (n.start || 0)) * Math.PI / 180, r = size / 2 + 1.5, d = `(50% - ${w / 2}px)`;
+            return `radial-gradient(circle at calc(50% + ${Math.sin(a).toFixed(4)} * ${d}) calc(50% - ${Math.cos(a).toFixed(4)} * ${d}), transparent ${r}px, #000 ${r + 0.5}px)`;
+        }) : [];
+        if (gaps.length) style.push(`--_gaps:${gaps.join(', ')}`);
         const len = p === 'bar_' && n.width > 0 ? n.width : 0;
         if (len) style.push(`--origami-bar-len:${len}px`);
         let html = '<div class="gauge-track"></div>';
         if (o[p + 'fill'] !== false) html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ''}"></div>`;
         if (rb > ra) html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + 'range_color'] ? `;background:${cssValue(o[p + 'range_color'])}` : ''}"></div>`;
-        if (marked) html += values.filter(v => v.size && !isNaN(v.value)).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? ' needle' : ''}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ''}</div>`).join('');
+        if (marked) html += values.filter(v => v.size && !isNaN(v.value)).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? ' needle' : ''}${d.marker_gap === true && p === 'ring_' ? ' gap' : ''}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ''}</div>`).join('');
         return { style: style.join(';'), html, len, overflow: marked && values.some(v => v.size > w) };
     }
     _buildIconElement(el, resolved, color) {
@@ -3509,6 +3601,11 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         } else if (!this._effectsCtx) {
             this._effectsCtx = canvas.getContext('2d');
         }
+        if (els.nearCanvas) {
+            const nc = els.nearCanvas, nw = this._nearUsed ? cw : 0, nh = this._nearUsed ? ch : 0;
+            if (nc.width !== nw || nc.height !== nh) { nc.width = nw; nc.height = nh; }
+            this._nearCtx = this._nearUsed ? nc.getContext('2d') : null;
+        }
         if (els.starCanvas) {
             const sc = els.starCanvas;
             const starResized = sc.width !== cw || sc.height !== ch;
@@ -3544,12 +3641,15 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         };
         const birds = actor('bird', !this._schemeDark), balloon = actor('balloon', true), planes = actor('plane', true);
         const active = !!recipe || !!cloudState || !!mistState || !!stars || !!birds || !!balloon || !!planes;
+        const hass = this._hass;
+        this._nearUsed = !!hass && (this._containers || []).some((c) => containerLayer(c) === 'middle' && c.hide !== true && this._checkButtonVisibility(c, hass));
+        els.root.classList.toggle('has-near-canvas', this._nearUsed);
         if (active && !this._sizeEffectsCanvas()) {
             this._effectsActive = false;
             els.root.classList.remove('has-weather-effects');
             return;
         }
-        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor('precipitation_speed'), String(cfg.cloud_image_path || '').trim(), mistState);
+        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor('precipitation_speed'), String(cfg.cloud_image_path || '').trim(), mistState, this._windMs, Math.max(0.25, Math.min(2, parseFloat(cfg.mist_density) || 1)));
         this._effectsActive = active;
         els.root.classList.toggle('has-weather-effects', active);
         els.root.classList.toggle('has-star-canvas', !!stars);
@@ -3595,7 +3695,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (!w || !h) return;
         const dt = Math.max(0.001, Math.min(0.05, (now - this._lastEffectsTime) * 0.001));
         this._lastEffectsTime = now;
-        const alive = WeatherEffects.frame(this._effects, ctx, w, h, this._effectsScale, dt, now * 0.001, this._effectsEnv(), this._starCtx);
+        const alive = WeatherEffects.frame(this._effects, ctx, w, h, this._effectsScale, dt, now * 0.001, this._effectsEnv(), this._starCtx, this._nearUsed ? this._nearCtx : null);
         if (!alive) {
             this._effectsActive = false;
             els.root.classList.remove('has-weather-effects');

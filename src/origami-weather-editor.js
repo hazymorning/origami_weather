@@ -29,7 +29,7 @@ const KEY_ORDER = Object.freeze([
     "card_frame", "full_width", "full_width_margin", "edge_fade", "edge_fade_size", "shadow", "shadow_color",
     "icon_path",
     "bg_brightness", "bg_saturation", "bg_blur", "bg_blend",
-    "background_haze", "precipitation_effects", "precipitation_speed", "cloud_effects", "cloud_image_path", "mist_effects", "night_sky_effects", "bird_effects", "bird_density", "balloon_effects", "balloon_density", "plane_effects", "plane_density",
+    "background_haze", "precipitation_effects", "precipitation_speed", "cloud_effects", "cloud_image_path", "mist_effects", "mist_density", "night_sky_effects", "bird_effects", "bird_density", "balloon_effects", "balloon_density", "plane_effects", "plane_density",
     "button_containers"]);
 const CARD_THRESHOLD_KEYS = Object.freeze(["background_thresholds", "background_threshold_entity", "background_threshold_attribute"]);
 const nameFirst = (o) => { const n = typeof o.name === "string" ? o.name.trim() : ""; const { name, ...rest } = o; return n ? { name: n, ...rest } : rest; };
@@ -38,7 +38,12 @@ const DISPLAY_DEFAULTS = Object.freeze({
     color_mode: "sun", sun_entity: "sun.sun", background_mode: "default",
     sun_moon_size: 80, sun_moon_x: 50,
     bg_brightness: 1.0, bg_saturation: 1.0, bg_blur: 0, bg_blend: 0, gradient_angle: 180, gradient_x: 50, gradient_y: 50, gradient_stop_1: 0, gradient_stop_2: 100,
-    precipitation_speed: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
+    precipitation_speed: 1, mist_density: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
+const LAYER_STOPS = Object.freeze([
+    { value: "sky", label: "In the sky. The sun, the moon, the stars and the weather are in front of it." },
+    { value: "back", label: "Behind the weather. Clouds, mist, rain, snow, birds and planes pass in front of it." },
+    { value: "middle", label: "In the weather. Planes, mist and clouds pass behind it, birds, rain and snow in front of it." },
+    { value: "front", label: "In front of everything, like the text." }]);
 const OPT = Object.freeze({
     visual_mode: [
         { value: "images", label: "Custom images" },
@@ -1357,7 +1362,9 @@ class WeatherCardEditor extends LitElement {
                         ${markersOn ? html`${this._renderColorPicker("Marker color", v.marker_color || "", (h, o) => setValue(vi, { marker_color: h ? this._serializeColor(h, o) : "" }))}
                             ${this._cssTextField({ value: v.marker_size, label: "Marker size", placeholder: obj[p+"marker_size"] || "thickness", trim: true, onCommit: (s) => setValue(vi, { marker_size: s }) })}
                             ${valueForm(v, vi, "marker_icon", [{ name: "marker_icon", selector: { icon: {} } }], "Marker icon")}
-                            ${v.marker_icon ? this._renderColorPicker("Icon color", v.marker_icon_color || "", (h, o) => setValue(vi, { marker_icon_color: h ? this._serializeColor(h, o) : "" })) : ""}` : ""}</div></details>`)}
+                            ${v.marker_icon ? this._renderColorPicker("Icon color", v.marker_icon_color || "", (h, o) => setValue(vi, { marker_icon_color: h ? this._serializeColor(h, o) : "" })) : ""}
+                            ${p === "ring_" ? html`<div class="toggle-group"><label class="toggle-row"><span>Gap in the ring</span>
+                                <ha-switch .checked=${v.marker_gap === true} @change=${(e) => setValue(vi, { marker_gap: e.target.checked })}></ha-switch></label></div>` : ""}` : ""}</div></details>`)}
                 <button type="button" class="ring-threshold-add" @click=${addValue}><ha-icon icon="mdi:plus" style="--mdc-icon-size:14px"></ha-icon> Add value</button>
                 <div class="toggle-group"><label class="toggle-row"><span>Fill</span>
                     <ha-switch .checked=${fill} @change=${(e) => write(p+"fill", e.target.checked ? "" : false)}></ha-switch></label>
@@ -1466,7 +1473,7 @@ class WeatherCardEditor extends LitElement {
                         <span class="button-color-opacity-val">${Math.round(opacity*100)}%</span></div>
                 ` : ""}</div>`;}
     _slider(opts) {
-        const { min, max, step = 1, label, helper, statusFn, onCommit } = opts;
+        const { min, max, step = 1, label, helper, statusFn, onCommit, noNumber } = opts;
         const int = opts.int === true;
         const parse = int ? (v) => parseInt(v, 10) : (v) => parseFloat(v);
         const fallbackNum = parse(opts.fallback != null ? opts.fallback : min);
@@ -1494,12 +1501,12 @@ class WeatherCardEditor extends LitElement {
         return html`<div class="wbk-slider">
                 <div class="wbk-slider-head">
                     <span class="wbk-slider-label">${label}</span>
-                    <input type="number" class="wbk-slider-num" min=${min} max=${max} step=${step}
-                        .value=${String(val)} @change=${onNumCommit}></div>
+                    ${noNumber ? "" : html`<input type="number" class="wbk-slider-num" min=${min} max=${max} step=${step}
+                        .value=${String(val)} @change=${onNumCommit}>`}</div>
                 <input type="range" class="wbk-slider-range" min=${min} max=${max} step=${step}
                     .value=${String(val)} style="--origami-slider-pct:${toPct(val)}%"
                     @input=${onDrag} @change=${onRangeCommit} @click=${onRangeCommit}>
-                ${statusText != null ? html`<div class="wbk-slider-status">${statusText}</div>` : ""}
+                ${statusText != null ? html`<div class="wbk-slider-status" .textContent=${statusText}></div>` : ""}
                 ${helper ? html`<div class="wbk-slider-helper">${helper}</div>` : ""}</div>`;}
     _renderSlider(field, label, min, max, step, helper, statusFn) {
         return this._slider({
@@ -1646,7 +1653,15 @@ class WeatherCardEditor extends LitElement {
         return html`
             ${this._renderContainerName(container, containerIdx)}
             ${this._renderContainerCustomCardsEditor(containerIdx)}
+            ${this._renderDisclosure("Layer", this._renderLayer(container, containerIdx))}
             ${this._renderDisclosure("Visibility", this._renderContainerVisibility(container, containerIdx))}`;
+    }
+    _renderLayer(container, containerIdx) {
+        const v = String(container.layer || "").toLowerCase(), i = LAYER_STOPS.findIndex((l) => l.value === v);
+        return this._slider({ value: (i < 0 ? LAYER_STOPS.length - 1 : i) + 1, min: 1, max: LAYER_STOPS.length, step: 1, int: true, label: "Layer", noNumber: true,
+            statusFn: (n) => LAYER_STOPS[n - 1].label,
+            helper: "Left is further back. On the same layer, a container further down the list sits in front, and one with a free position in front of the others.",
+            onCommit: (n) => this._updateContainerField(containerIdx, "layer", n === LAYER_STOPS.length ? "" : LAYER_STOPS[n - 1].value) });
     }
     _moveContainer(idx, delta) {
         const areas = [...this._getContainers()], target = idx + delta;
@@ -1759,12 +1774,14 @@ class WeatherCardEditor extends LitElement {
                             @change=${(e) => uf("shadow", e.target.checked ? "" : false)}></ha-switch></label>` : ""}
                     <label class="toggle-row"> <span>${LABELS.button_container_separator}</span> <ha-switch .checked=${container.separator === true}
                             @change=${(e) => uf("separator", e.target.checked || "")}></ha-switch></label></div>
+                ${container.grouped === true && container.blurred_background === true ? this._slider({ value: container.background_blur, fallback: 10, min: 0, max: 40, step: 1, int: true, label: "Blur",
+                    onCommit: (v) => uf("background_blur", v) }) : ""}
                 ${container.grouped === true ? this._renderContainerColorPicker(containerIdx, "background_color", "Group color") : ""}</div>`)}
             ${this._renderSubDisclosure("Background image", html`<div class="vcb">
                 ${sf("image", "Image path", "/local/floorplan.png, home or old-home")}
                 ${sf("image_dark", "Dark mode image", "/local/home-dark.png")}
-                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Sized by the container width. Free-positioned buttons sit on top.</span></div></div>`)}
-            ${this._renderSubDisclosure("Position", this._renderPosition(container, (n) => this._updateContainerAt(containerIdx, n)))}
+                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Sized by the container width. Free-positioned buttons sit on top. To let the weather pass in front of the picture, move its Layer back.</span></div></div>`)}
+            ${this._renderSubDisclosure("Position and layer", html`${this._renderPosition(container, (n) => this._updateContainerAt(containerIdx, n))}${this._renderLayer(container, containerIdx)}`)}
             ${this._renderSubDisclosure("Spacing", html`<div class="vcb">
                 <div class="vcb-grid">
                     ${sf("gap", LABELS.button_container_gap, "auto")}
@@ -2018,7 +2035,7 @@ class WeatherCardEditor extends LitElement {
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
                 ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
-                ${fx("mist_effects", "Mist", null, c.cloud_effects !== false)}
+                ${fx("mist_effects", "Mist", this._renderSlider("mist_density", "Thickness", 0.25, 2, 0.05), c.cloud_effects !== false)}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

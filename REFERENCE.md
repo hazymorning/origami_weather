@@ -52,6 +52,30 @@ Each embedded card takes `custom_width` and `custom_height` if it needs a size o
 
 Containers and buttons can have a `name`. The card doesn't show it, but the visual editor lists them by it, which helps in a layout with many of them.
 
+Containers sit in front of the sky and everything that moves in it. `layer` moves a container further back.
+
+- `layer: back` puts it behind the weather, so clouds, mist, rain, snow, birds and planes pass in front of it. The house of the Home layout sits there.
+- `layer: middle` puts it into the weather, with planes, mist and clouds behind it and birds, rain and snow in front of it.
+- `layer: sky` puts it behind the sun, the moon and the stars as well, right in front of the sky and its pictures. Pictures with `weather_image_front` are in front of it too.
+
+```yaml
+button_containers:
+  - image: home
+    layer: back
+```
+
+On the same layer, a container further down the list sits in front of the ones above it, and a container with `position: custom` in front of the others. From back to front, the card draws
+
+1. the color and haze of the sky, and the background pictures
+2. containers with `layer: sky`
+3. the stars, the sun and the moon, and pictures with `weather_image_front`
+4. containers with `layer: back`
+5. planes, balloons, mist and clouds
+6. containers with `layer: middle`
+7. birds, rain, hail and snow
+8. the `gradient`, `bg_blend` and `edge_fade`
+9. all other containers
+
 ### Buttons
 
 Buttons are the items inside a container. Each one is tied to an entity and shows live data from it: a sensor value, a weather attribute, a forecast entry, or just an icon.
@@ -332,6 +356,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `background` | `boolean` | `false` | Add a background behind the buttons. |
 | `background_color` | `string` | — | Custom background color. |
 | `blurred_background` | `boolean` | `false` | Frosted glass effect on the container background. |
+| `background_blur` | `number` | `10` | How strongly the frosted glass blurs what's behind it, in pixels. Also applies to blurred buttons in the container, and takes the place of `--origami-bottom-bg-filter` there. |
 | `grouped` | `boolean` | `false` | Wrap buttons into a single shared background. Requires `background: true`. |
 | `separator` | `boolean` | `false` | Thin divider between buttons. Works on its own, `grouped` is not required. In a `grid` layout it draws both row and column dividers, in `vertical-scroll` it draws horizontal ones. |
 | `shadow` | `boolean` | — | Set to `false` to remove shadow from this container. |
@@ -352,6 +377,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
 | `position_y` | `string` | `0` | Vertical offset from anchor. |
+| `layer` | `string` | `front` | How far back the container sits among the sky and the weather. `sky`, `back`, `middle` or `front`, as [Containers](#containers) explains. |
 
 ### Button options
 
@@ -464,6 +490,7 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `marker_color` | `string` | — | Color of the marker. |
 | `marker_icon` | `string` | — | Icon drawn inside the marker. |
 | `marker_icon_color` | `string` | — | Color of that icon. |
+| `marker_gap` | `boolean` | `false` | Leaves a gap in the ring under the marker, so its icon sits on the background, like the N of a compass. Only in `ring_values`. |
 
 ### Ring gauge
 
@@ -520,7 +547,8 @@ These run on top of every background, including `images` and `none`.
 | `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
 | `cloud_effects` | `boolean` | `true` | The drifting clouds, in three layers of different size and speed. There are none on clear days and in fog, where the mist takes over. |
 | `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the clouds are drawn with instead of the built-in one. A PNG or WebP with a transparent background works best. |
-| `mist_effects` | `boolean` | same as `cloud_effects` | Layers of soft mist, drawn much larger than the card, that drift at different speeds behind and in front of the clouds. Thicker when it's cloudy, a dense veil in fog and none on clear days. It works with or without the clouds. |
+| `mist_effects` | `boolean` | same as `cloud_effects` | Layers of soft mist, drawn much larger than the card, that drift behind the clouds at different speeds. Thinner patches open and close as they pass. Thicker when it's cloudy, a dense veil in fog and none on clear days. It works with or without the clouds. |
+| `mist_density` | `number` | `1` | How thick the mist is, between `0.25` and `2`. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |
@@ -529,7 +557,9 @@ These run on top of every background, including `images` and `none`.
 | `plane_effects` | `boolean` | `true` | Planes crossing the sky, trailing contrails, with lights at night. Fewer of them in bad weather, none in thunderstorms, hail, fog or pouring rain. |
 | `plane_density` | `number` | `1` | How many planes, between `0.25` and `4`. |
 
-The sun and moon sit in this group too. Their options are under [Sun and moon](#sun-and-moon).
+The clouds and the mist drift with the wind speed of the weather entity. They move slowly on a calm day and faster in a storm, but never stand quite still. Without a wind speed they drift as fast as the weather suggests.
+
+The sun and moon sit in this group too. Their options are under [Sun and moon](#sun-and-moon). Containers can sit between these layers, as [Containers](#containers) explains.
 
 **Treatments over the whole thing**
 
@@ -538,8 +568,8 @@ The sun and moon sit in this group too. Their options are under [Sun and moon](#
 | `bg_brightness` | `number` | `1` | Brightness multiplier (e.g. `0.8` to darken). Applies to the animated sky and to background images. |
 | `bg_saturation` | `number` | `1` | Saturation multiplier (e.g. `0` for grayscale). Applies to both as well. |
 | `bg_blur` | `number` | — | Blur in pixels. Only applies to image backgrounds. |
-| `bg_blend` | `number` | `0` | Mixes the theme's card color over the animated sky or the images, from `0` to `100`. Tones the background down. |
-| `gradient` | `boolean` | `false` | A gradient over the background, the sun and the effects, under the content. Works with every `background_mode`. |
+| `bg_blend` | `number` | `0` | Mixes the theme's card color over the animated sky or the images, from `0` to `100`. Tones the background down, along with containers moved back with `layer`. |
+| `gradient` | `boolean` | `false` | A gradient over the background, the sun and the effects, under the content. Containers moved back with `layer` are under it too. Works with every `background_mode`. |
 | `gradient_type` | `string` | `linear` | `linear` or `radial`. |
 | `gradient_angle` | `number` | `180` | Direction of a linear gradient in degrees. `180` runs from top to bottom. |
 | `gradient_x` | `number` | `50` | Horizontal center of a radial gradient, in percent. |
@@ -589,7 +619,7 @@ These are for theming. None of them are needed to use the card. They change the 
 | :--- | :--- | :--- |
 | `--origami-bg-border` | `1px solid transparent` | Border on those backgrounds. Takes a full CSS border value. |
 | `--origami-bottom-bg-radius` | card radius minus 5px | Corner radius of container and button backgrounds. |
-| `--origami-bottom-bg-filter` | `blur(10px)` | The filter used by `blurred_background`. |
+| `--origami-bottom-bg-filter` | `blur(10px)` | The filter used by `blurred_background`. In a container with `background_blur`, a plain blur of that size takes its place. |
 | `--origami-icon-bg-radius` | button radius minus the inset | Corner radius of icon backgrounds. |
 | `--origami-icon-bg-inset` | `3px` | How much rounder the icon background is than the button around it. |
 

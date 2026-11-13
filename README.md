@@ -72,19 +72,19 @@ The diorama loads its pictures from Origami's repository through jsDelivr. To lo
 
 <img width="800" alt="The Classic layout: the temperature and the weather on a color that changes with it, today's high and low, and a forecast for the coming days with the chance of rain, on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. When it's cloudy, layers of soft mist drift across the card at different speeds, and in fog they close in.
+The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. When it's cloudy, layers of soft mist drift across the card with the wind, and in fog they close in.
 
 ### Centered
 
 <img width="800" alt="The Centered layout: the temperature in the middle with the high, the low and the wind, on a partly cloudy day and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
 
-The temperature and the current weather in the middle, with the day's high and low and the wind. The clouds drift through soft layers of mist, which fill the sky in fog.
+The temperature and the current weather in the middle, with the day's high and low and the wind. The clouds drift over soft layers of mist, which fill the sky in fog.
 
 ### Home
 
-<img width="800" alt="The Home layout: a house in its garden with the temperature of three rooms and a wind compass, lit by the sun on a sunny day and with lit windows on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
+<img width="800" alt="The Home layout: a house in its garden with the temperature of three rooms and a wind compass, lit by the sun on a sunny day and with lit windows behind rain and mist on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-A house in its garden that follows the sun, with the temperature of each room and a compass for the wind.
+A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Rain, snow and a light mist pass in front of it.
 
 <details>
 <summary><b>The house in detail</b></summary>
@@ -128,7 +128,7 @@ My home:
 - Lights that light up windows: [light.living_room: living room], [...]
 - What should change: [night / lights / sun and shadows / rain / snow / the trees with the seasons, from sensor.season]
 
-Draw my home as it really is, in the style I chose. It replaces the picture in my YAML. Read everything first. Work out from origami-weather.js how containers show `image` and `image_dark`, how free-positioned containers stack, and how `visibility` and the `css` option work. For the `css` option, the card sets the classes scheme-light or scheme-dark and weather-<condition> on #card-root, and these values: --origami-sun-x and --origami-sun-y, the direction of the sun (x is 1 in the east and -1 in the west, y is 1 in the north and -1 in the south), --origami-sun-light, how strong the direct sunlight is, from 0 at night or under thick clouds to 1 in full sun, and --origami-sun-shadow, how long a shadow is compared to the height of what casts it. My pictures are image files, so the card can't change anything inside them, and each change has to be a picture of its own, in a container with exactly the same position and width, stacked in the right order. Show me your plan and my home in daylight, and wait for my OK before making the rest.
+Draw my home as it really is, in the style I chose. It replaces the picture in my YAML. Read everything first. Work out from origami-weather.js how containers show `image` and `image_dark`, how free-positioned containers stack, and how `visibility` and the `css` option work. For the `css` option, the card sets the classes scheme-light or scheme-dark and weather-<condition> on #card-root, and these values: --origami-sun-x and --origami-sun-y, the direction of the sun (x is 1 in the east and -1 in the west, y is 1 in the north and -1 in the south), --origami-sun-light, how strong the direct sunlight is, from 0 at night or under thick clouds to 1 in full sun, and --origami-sun-shadow, how long a shadow is compared to the height of what casts it. My pictures are image files, so the card can't change anything inside them, and each change has to be a picture of its own, in a container with exactly the same position, width and `layer`, stacked in the right order. Show me your plan and my home in daylight, and wait for my OK before making the rest.
 
 1. Keep what makes my home recognizable, like the shape of the roofs, the floors, the windows and doors and the colors, and simplify the rest. It has to read at the size it gets in the card. Leave the background transparent wherever the card should show through.
 2. Draw every picture on the same canvas, so they line up exactly. SVG is easiest for that. If the style needs painted pictures, use PNG or WebP with transparency and keep the framing exactly the same. An overlay holds only what it changes, and only the parts of it that can be seen.
@@ -152,7 +152,7 @@ Give me the files, where they go (/config/www/home/, used as /local/home/...) an
 
 **Make it better.** It rarely comes out right on the first try. Send the AI screenshots of the card in light and dark mode and ask for specific changes, like a roof that's too flat, a window in the wrong place or a tree that should be taller. One or two at a time works best. If the card shows an error, send the AI the message as it is.
 
-Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the birds, the balloons and the planes, and only rain and snow still fall. Turning some of them back on can change the whole feel, especially with a sky around the home, and almost anything in the README and the reference can go into it, so let the AI try things.
+Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the birds, the balloons and the planes, so only rain, snow and a light mist are left. The house sits behind the weather, so clouds, birds, balloons and planes pass in front of it once they're back on, while the sun, the moon and the stars stay behind it. Turning some of them back on can change the whole feel, especially with a sky around the home, and almost anything in the README and the reference can go into it, so let the AI try things.
 
 </details>
 
@@ -657,7 +657,7 @@ grid_options:
 
 <br>
 
-The card shows an animated sky behind the content that follows the weather and the sun. Its color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past and planes pass overhead. Clouds, mist, rain and snow add to it.
+The card shows an animated sky behind the content that follows the weather and the sun. Its color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past and planes pass overhead. Clouds, mist, rain and snow add to it, and the clouds and the mist drift with the wind.
 
 The sky and each kind of effect can be turned off, rain and snow with one switch. The effects also work on top of the other backgrounds, which `background_mode` sets: a picture for each kind of weather, a color, the plain card background or none. The card also works in Home Assistant's plain style, with just the content and nothing else going on.
 
@@ -670,7 +670,7 @@ With `background_mode: none` and `card_frame: false`, the card loses its own sty
 
 <br>
 
-Every layout is built from the same blocks. Containers hold buttons, and each button shows an entity with text, icons, bars or a ring. A container can also hold a picture, such as a floor plan with each room's temperature on it, or other Home Assistant cards.
+Every layout is built from the same blocks. Containers hold buttons, and each button shows an entity with text, icons, bars or a ring. A container can also hold a picture, such as a floor plan with each room's temperature on it, or other Home Assistant cards. It can sit in front of the sky and the weather or further back, so rain and birds pass in front of a picture of a house.
 
 Containers and buttons can also have a name. The card doesn't show it, but the visual editor lists them by it, so the parts of a bigger layout are easy to tell apart.
 

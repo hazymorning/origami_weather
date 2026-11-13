@@ -41,7 +41,6 @@ var dioramaSun = (rising) => dioramaItem(rising ? "mdi:weather-sunset-up" : "mdi
   visibility: [{ condition: "state", entity: "sun.sun", state: rising ? "below_horizon" : "above_horizon" }]
 });
 var DIORAMA_CONFIG = Object.freeze({
-  color_mode: "theme",
   card_height: "176px",
   card_padding: "var(--ha-space-4, 16px)",
   content_direction: "row",
@@ -57,8 +56,6 @@ var DIORAMA_CONFIG = Object.freeze({
   shadow_color: "inset 0 1px 3px rgba(0, 0, 0, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.14)",
   card_tap_action: { action: "more-info" },
   css: `:host {
-  --origami-text-light: var(--primary-text-color);
-  --origami-text-dark: var(--primary-text-color);
   --origami-separator-width: 1px;
   --origami-separator-color: color-mix(in srgb, currentColor 18%, transparent);
 }

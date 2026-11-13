@@ -72,7 +72,7 @@ The diorama loads its pictures from Origami's repository through jsDelivr. To lo
 
 <img width="800" alt="The Classic layout: the temperature and the weather on a color that changes with it, today's high and low, and a forecast for the coming days with the chance of rain, on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. A soft mist drifts across the card. It is faint on clear days and thickens in fog.
+The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. When it's cloudy, layers of soft mist drift across the card at different speeds, and in fog they close in.
 
 ### Centered
 

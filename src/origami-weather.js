@@ -338,7 +338,7 @@ const WeatherEffects = (() => {
         { size: 150, bright: 0.96, alpha: 0.78, speed: 0.006, count: 4, stretch: 0.14, res: 1 },
         { size: 250, bright: 1.00, alpha: 0.92, speed: 0.015, count: 2, stretch: 0.10, res: 1.5 },
     ]);
-    const MIST_DARK = 0.4;
+    const MIST_DARK = 0.4, MIST_LIGHT = 3;
     const MIST = Object.freeze({
         scattered: { count: 2, alpha: 0.6, speed: 1, clearings: 3, clear: 1 },
         overcast: { count: 3, alpha: 0.75, speed: 1, clearings: 4, clear: 1 },
@@ -356,13 +356,14 @@ const WeatherEffects = (() => {
         cx.drawImage(img, 0, 0, c.width, c.height);
         return c;
     }
-    function _cloudBandSprites(img, state, schemeDark, backgroundRGB) {
+    function _cloudBandSprites(own, img, state, schemeDark, backgroundRGB) {
         if (!(img.naturalWidth || img.width)) return null;
+        const key = `${state}|${schemeDark}|${backgroundRGB}`;
+        if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
         let a = _cloudAtlas.get(img);
         if (!a) _cloudAtlas.set(img, a = { srcs: _cloudVariantSources(_fit(img, 512)), bands: new Map() });
-        const key = `${state}|${schemeDark}|${backgroundRGB}`;
         let bands = a.bands.get(key);
-        if (bands) return bands;
+        if (bands) return (own.sprites = { img, key, v: bands }).v;
         const pal = _cloudPalette(state, schemeDark, backgroundRGB);
         const cl = v => Math.max(0, Math.min(255, Math.round(v)));
         bands = CLOUD_BANDS.map(d => {
@@ -372,7 +373,7 @@ const WeatherEffects = (() => {
         });
         if (a.bands.size >= 4) a.bands.clear();
         a.bands.set(key, bands);
-        return bands;
+        return (own.sprites = { img, key, v: bands }).v;
     }
     const BIRD_SHEET_SPEC = Object.freeze({ cells: 13, flapFrames: 12, glideCell: 12, sub: 3, cell: 176, ax: 0.54, ay: 0.52 });
     const BIRD_ACTIVITY = Object.freeze({
@@ -387,12 +388,13 @@ const WeatherEffects = (() => {
     ]);
     const BIRD_MAX_PX = 36;
     const _birdAtlas = { img: null, cells: new Map() };
-    function _birdCells(img, state, schemeDark, night, backgroundRGB, s) {
+    function _birdCells(own, img, state, schemeDark, night, backgroundRGB, s) {
         if (!(img.naturalWidth || img.width)) return null;
         const key = `${state}|${schemeDark}|${night}|${backgroundRGB}|${s}`;
+        if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
         if (_birdAtlas.img !== img) { _birdAtlas.img = img; _birdAtlas.cells.clear(); }
         let cells = _birdAtlas.cells.get(key);
-        if (cells) return cells;
+        if (cells) return (own.sprites = { img, key, v: cells }).v;
         const pal = _cloudPalette(state, schemeDark, backgroundRGB);
         const spec = BIRD_SHEET_SPEC, src = spec.cell, cs = Math.min(src, Math.ceil(BIRD_MAX_PX * s));
         const fc = spec.flapFrames * spec.sub;
@@ -420,7 +422,7 @@ const WeatherEffects = (() => {
         }
         if (_birdAtlas.cells.size >= 4) _birdAtlas.cells.clear();
         _birdAtlas.cells.set(key, cells);
-        return cells;
+        return (own.sprites = { img, key, v: cells }).v;
     }
     function _weightedPick(tiers) {
         const r = Math.random();
@@ -490,7 +492,7 @@ const WeatherEffects = (() => {
         }
         if (st.list.length === 0) return;
         const img = _getBirdImg();
-        const cells = img && _birdCells(img, st.state, env.schemeDark, !!env.night, env.backgroundRGB, s);
+        const cells = img && _birdCells(st, img, st.state, env.schemeDark, !!env.night, env.backgroundRGB, s);
         const spec = BIRD_SHEET_SPEC, fc = spec.flapFrames * spec.sub;
         ctx.imageSmoothingQuality = 'high';
         for (let i = st.list.length - 1; i >= 0; i--) {
@@ -635,12 +637,13 @@ const WeatherEffects = (() => {
     const _planeActivity = (state) => { const v = PLANE_ACTIVITY[state]; return v === undefined ? 1 : v; };
     const PLANE_MAX_PX = 15, PLANE_TRAIL = 1.2, PLANE_VAPOR = [[1, 1.3, 0.16, 0.3], [0.7, 0.55, 0.3, 0.12], [0.4, 0.2, 0.85, 0.03]];
     const _planeAtlas = { img: null, cells: new Map() };
-    function _planeCells(img, state, schemeDark, backgroundRGB, s) {
+    function _planeCells(own, img, state, schemeDark, backgroundRGB, s) {
         if (!(img.naturalWidth || img.width)) return null;
         const key = `${state}|${schemeDark}|${backgroundRGB}|${s}`;
+        if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
         if (_planeAtlas.img !== img) { _planeAtlas.img = img; _planeAtlas.cells.clear(); }
         let cells = _planeAtlas.cells.get(key);
-        if (cells) return cells;
+        if (cells) return (own.sprites = { img, key, v: cells }).v;
         const spec = PLANE_SHEET_SPEC, pal = _cloudPalette(state, schemeDark, backgroundRGB);
         const ch = Math.min(spec.cellH, Math.ceil(PLANE_MAX_PX * s)), cw = Math.round(ch * spec.cellW / spec.cellH);
         const cell = (i) => {
@@ -659,7 +662,7 @@ const WeatherEffects = (() => {
         };
         if (_planeAtlas.cells.size >= 4) _planeAtlas.cells.clear();
         _planeAtlas.cells.set(key, cells);
-        return cells;
+        return (own.sprites = { img, key, v: cells }).v;
     }
     function _spawnPlane(st, w, h) {
         const r = Math.random, k = r(), dir = r() < 0.5 ? -1 : 1;
@@ -688,7 +691,7 @@ const WeatherEffects = (() => {
         }
         if (!st.list.length) return;
         const img = _getPlaneImg();
-        const cells = img && _planeCells(img, st.state, env.schemeDark, env.backgroundRGB, s);
+        const cells = img && _planeCells(st, img, st.state, env.schemeDark, env.backgroundRGB, s);
         if (!cells) return;
         const spec = PLANE_SHEET_SPEC, lit = env.schemeDark || !!env.night, tc = cells.trail;
         const fl = (tau) => tau < 0 ? 0 : tau < dt ? 1 : Math.max(0, 1 - (tau - dt) / 0.08);
@@ -843,7 +846,7 @@ const WeatherEffects = (() => {
         return { puffs, clearings, key: tuning.mist };
     }
     function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind) {
-        const big = Math.max(w, h), ar = img.height / img.width, amt = (env.schemeDark ? MIST_DARK : 1) * inst.mistDensity;
+        const big = Math.max(w, h), ar = img.height / img.width, amt = (env.schemeDark ? MIST_DARK : 1) * inst.mistDensity, l = _lumOf(env.backgroundRGB);
         const cw = ctx.canvas.width, ch = ctx.canvas.height;
         const mc = inst.mistCanvas || (inst.mistCanvas = document.createElement('canvas'));
         if (mc.width !== cw || mc.height !== ch) { mc.width = cw; mc.height = ch; }
@@ -876,8 +879,9 @@ const WeatherEffects = (() => {
         m.globalCompositeOperation = 'source-over';
         m.globalAlpha = 1;
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = Math.min(1, (MIST_LIGHT - 1) * Math.max(l, 24) / (255 - l));
         ctx.drawImage(mc, 0, 0);
+        ctx.globalAlpha = 1;
         ctx.setTransform(s, 0, 0, s, 0, 0);
     }
     const _lerp = (a, b, t) => a + (b - a) * t;
@@ -1313,7 +1317,7 @@ const WeatherEffects = (() => {
         const mistImg = inst.mist && _getMistImg();
         if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, (0.9 + 0.4 * gust) * windF);
         if (inst.cloud && inst.cloud.puffs.length) {
-            const img = inst.cloudImg(), bands = img && _cloudBandSprites(img, inst.cloud.state, env.schemeDark, env.backgroundRGB);
+            const img = inst.cloudImg(), bands = img && _cloudBandSprites(inst.cloud, img, inst.cloud.state, env.schemeDark, env.backgroundRGB);
             if (bands) cloudField(inst.cloud, bands, env.schemeDark ? 1.08 : 1, true);
         }
         if (nearCtx) {
@@ -3649,7 +3653,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         };
         const birds = actor('bird', !this._schemeDark), balloon = actor('balloon', true), planes = actor('plane', true);
         const active = !!recipe || !!cloudState || !!mistState || !!stars || !!birds || !!balloon || !!planes;
-        const hass = this._hass;
+        const hass = this._hass, bg = this._backgroundColor();
+        if (String(bg) !== String(this._effectsBg)) this._effectsBg = bg;
         this._nearUsed = !!hass && (this._containers || []).some((c) => containerLayer(c) === 'middle' && c.hide !== true && this._checkButtonVisibility(c, hass));
         els.root.classList.toggle('has-near-canvas', this._nearUsed);
         if (active && !this._sizeEffectsCanvas()) {
@@ -3674,27 +3679,20 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (this._sunMoonActive && this._isAstroNight) {
             moon = { x: cx, y: cy, r: sunSize / 2 };
         }
-        return { schemeDark: this._schemeDark, glow, moon, night: this._isAstroNight, backgroundRGB: this._backgroundColor(this._schemeDark) };
+        return { schemeDark: this._schemeDark, glow, moon, night: this._isAstroNight, backgroundRGB: this._effectsBg };
     }
-    _backgroundColor(schemeDark) {
-        const key = schemeDark ? 'dark' : 'light';
-        if (this._backgroundColorCache && this._backgroundColorCache.key === key) return this._backgroundColorCache.v;
-        let v = schemeDark ? [16, 33, 61] : [209, 229, 242];
-        try {
-            const sky = this._elements?.root?.querySelector('#sky-base');
-            if (sky) {
-                const bg = getComputedStyle(sky).backgroundImage || '';
-                const hexes = bg.match(/#([0-9a-f]{6})/gi);
-                const rgbs = bg.match(/rgba?\([^)]+\)/gi);
-                let r = 0, g = 0, b = 0, cnt = 0;
-                const add = (cr, cg, cb) => { r += cr; g += cg; b += cb; cnt++; };
-                if (hexes) for (const hx of hexes) { const n = hx.slice(1); add(parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)); }
-                if (rgbs) for (const rs of rgbs) { const p = rs.replace(/rgba?\(|\)/g, '').split(',').map(Number); if (p.length >= 3) add(p[0], p[1], p[2]); }
-                if (cnt) v = [Math.round(r / cnt), Math.round(g / cnt), Math.round(b / cnt)];
-            }
-        } catch (_) {}
-        this._backgroundColorCache = { key, v };
-        return v;
+    _backgroundColor() {
+        const root = this._elements.root, css = getComputedStyle(root).backgroundColor, own = /^(?:rgba?\(|color\(srgb )([^)]+)\)/.exec(css);
+        const c = own ? own[1].split(/[\s,/]+/).filter(Boolean).map((v, i) => i < 3 && css.startsWith('color') ? v * 255 : +v) : [];
+        if (c.length >= 3 && (c[3] ?? 1) >= 0.5) return c.slice(0, 3).map(Math.round);
+        const bg = getComputedStyle(root.querySelector('#sky-base')).backgroundImage || '';
+        const hexes = bg.match(/#([0-9a-f]{6})/gi);
+        const rgbs = bg.match(/rgba?\([^)]+\)/gi);
+        let r = 0, g = 0, b = 0, cnt = 0;
+        const add = (cr, cg, cb) => { r += cr; g += cg; b += cb; cnt++; };
+        if (hexes) for (const hx of hexes) { const n = hx.slice(1); add(parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)); }
+        if (rgbs) for (const rs of rgbs) { const p = rs.replace(/rgba?\(|\)/g, '').split(',').map(Number); if (p.length >= 3) add(p[0], p[1], p[2]); }
+        return cnt ? [Math.round(r / cnt), Math.round(g / cnt), Math.round(b / cnt)] : this._schemeDark ? [16, 33, 61] : [209, 229, 242];
     }
     _drawEffects(now) {
         const ctx = this._effectsCtx, els = this._elements;

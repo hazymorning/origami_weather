@@ -140,7 +140,6 @@ const CLASSIC_COLORS = [
 ];
 
 const WHITE = '#ffffff';
-const WHITE_82 = 'rgba(255, 255, 255, 0.82)';
 const WHITE_72 = 'rgba(255, 255, 255, 0.72)';
 const WHITE_60 = 'rgba(255, 255, 255, 0.6)';
 
@@ -161,18 +160,7 @@ const classicDay = (offset) => ({
 
 const TODAY_SIZE = 'clamp(12.5px, 5.1cqw, 14px)';
 
-const classicToday = (name, iconName, attribute) => ({
-    name,
-    entity: PRESET_ENTITY_TOKEN,
-    forecast: 'daily',
-    align: 'start',
-    background: false,
-    inner_gap: '5px',
-    elements: [
-        icon(iconName, { icon_size: '14px', color: WHITE_82, margin: '0 -2.1px 0 -2px' }),
-        text({ attribute, format: '\u00b0', size: TODAY_SIZE, weight: '500', color: WHITE_82 })
-    ]
-});
+const todayText = (extra) => text({ size: TODAY_SIZE, weight: '500', ...extra });
 
 const CLASSIC_CONFIG = Object.freeze({
     color_mode: 'dark',
@@ -211,12 +199,23 @@ const CLASSIC_CONFIG = Object.freeze({
             align: 'spread',
             align_items: 'center',
             gap: 'clamp(10px, 4.2cqw, 14px)',
-            margin: '4px 0 0',
+            margin: '6px 0 3px',
             padding: '0 4px',
             buttons: [
-                classicToday('High', 'mdi:arrow-up', 'temperature'),
-                classicToday('Low', 'mdi:arrow-down', 'templow'),
-                { name: 'Condition', entity: PRESET_ENTITY_TOKEN, background: false, elements: [text({ size: TODAY_SIZE, weight: '500', color: WHITE })] }
+                {
+                    name: 'High and low',
+                    entity: PRESET_ENTITY_TOKEN,
+                    forecast: 'daily',
+                    align: 'start',
+                    background: false,
+                    inner_gap: '3px',
+                    elements: [
+                        todayText({ attribute: 'temperature', format: '\u00b0', color: WHITE }),
+                        todayText({ text: '/', color: 'rgba(255, 255, 255, 0.5)' }),
+                        todayText({ attribute: 'templow', format: '\u00b0', color: WHITE_60 })
+                    ]
+                },
+                { name: 'Condition', entity: PRESET_ENTITY_TOKEN, background: false, elements: [todayText({ color: WHITE })] }
             ]
         },
         {
@@ -225,7 +224,7 @@ const CLASSIC_CONFIG = Object.freeze({
             scroll_count: 6,
             justify_content: 'center',
             margin: '20px 0 0',
-            padding: '0 4px',
+            padding: '4px',
             gap: '0',
             background: true,
             grouped: true,
@@ -367,9 +366,9 @@ const windCompass = () => ({
     ring_fill: false,
     ring_width: 1,
     ring_color: 'var(--secondary-text-color)',
-    ring_marker_icon_size: 11,
+    ring_marker_icon_size: 15,
     ring_values: [
-        { value: 0, marker_size: 12, marker_gap: true, marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--secondary-text-color)' },
+        { value: 0, marker_size: 14, marker_gap: true, marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--secondary-text-color)' },
         { attribute: 'wind_bearing', marker_size: 7, marker_color: 'var(--primary-text-color)' }
     ],
     background: false,
@@ -386,7 +385,7 @@ const HOME_CONFIG = Object.freeze({
     mist_effects: true,
     mist_density: 0.45,
     night_sky_effects: false,
-    bird_effects: false,
+    bird_effects: true,
     balloon_effects: false,
     plane_effects: false,
     background_mode: 'color',

@@ -82,9 +82,9 @@ The temperature and the current weather in the middle, with the day's high and l
 
 ### Home
 
-<img width="800" alt="The Home layout: a house in its garden with the temperature of three rooms and a wind compass, lit by the sun on a sunny day and with lit windows behind rain and mist on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
+<img width="800" alt="The Home layout: a house in its garden with the temperature of three rooms and a wind compass, lit by the sun with birds in the sky on a sunny day and with lit windows behind rain and mist on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Rain, snow and a light mist pass in front of it.
+A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Birds, rain, snow and a light mist pass in front of it.
 
 <details>
 <summary><b>The house in detail</b></summary>
@@ -152,7 +152,7 @@ Give me the files, where they go (/config/www/home/, used as /local/home/...) an
 
 **Make it better.** It rarely comes out right on the first try. Send the AI screenshots of the card in light and dark mode and ask for specific changes, like a roof that's too flat, a window in the wrong place or a tree that should be taller. One or two at a time works best. If the card shows an error, send the AI the message as it is.
 
-Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the birds, the balloons and the planes, so only rain, snow and a light mist are left. The house sits behind the weather, so clouds, birds, balloons and planes pass in front of it once they're back on, while the sun, the moon and the stars stay behind it. Turning some of them back on can change the whole feel, especially with a sky around the home, and almost anything in the README and the reference can go into it, so let the AI try things.
+Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, so only birds, rain, snow and a light mist are left. The house sits behind the weather, so clouds, balloons and planes pass in front of it once they're back on, while the sun, the moon and the stars stay behind it. Turning some of them back on can change the whole feel, especially with a sky around the home, and almost anything in the README and the reference can go into it, so let the AI try things.
 
 </details>
 

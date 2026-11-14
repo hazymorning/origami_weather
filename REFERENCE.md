@@ -547,7 +547,7 @@ These run on top of every background, including `images` and `none`.
 | `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
 | `cloud_effects` | `boolean` | `true` | The drifting clouds, in three layers of different size and speed. There are none on clear days and in fog, where the mist takes over. |
 | `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the clouds are drawn with instead of the built-in one. A PNG or WebP with a transparent background works best. |
-| `mist_effects` | `boolean` | same as `cloud_effects` | Layers of soft mist, drawn much larger than the card, that drift behind the clouds at different speeds. Thinner patches open and close as they pass. Thicker when it's cloudy, a dense veil in fog and none on clear days. It works with or without the clouds. |
+| `mist_effects` | `boolean` | same as `cloud_effects` | Layers of soft mist, drawn much larger than the card, that drift behind the clouds at different speeds. Thinner patches open and close as they pass. Thicker when it's cloudy, a dense veil in fog and none on clear days. The darker the card's background, the dimmer the mist, so it stays a soft veil at night and is white on a light sky. It works with or without the clouds. |
 | `mist_density` | `number` | `1` | How thick the mist is, between `0.25` and `2`. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |

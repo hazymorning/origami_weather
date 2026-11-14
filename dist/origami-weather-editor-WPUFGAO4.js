@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-C24ARABN.js";
+} from "./chunk-LLKZ4AM2.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -628,6 +628,7 @@ var KEY_ORDER = Object.freeze([
   "sun_entity",
   "sun_enabled",
   "moon_enabled",
+  "sun_moon_fade",
   "sun_moon_size",
   "sun_moon_x",
   "sun_moon_y",
@@ -1489,7 +1490,7 @@ var WeatherCardEditor = class extends i4 {
   _renderSunMoonPanel() {
     const c4 = this._formData || {};
     const sunEnabled = c4.sun_enabled !== false, moonEnabled = c4.moon_enabled !== false;
-    const xDynamic = c4.sun_moon_x === "dynamic";
+    const xDynamic = c4.sun_moon_x === "dynamic", xCss = !xDynamic && c4.sun_moon_x != null && c4.sun_moon_x !== "" && isNaN(c4.sun_moon_x);
     const yRaw = c4.sun_moon_y;
     const yFixed = yRaw != null && yRaw !== "";
     return b2`<div class="settings-group">
@@ -1498,7 +1499,10 @@ var WeatherCardEditor = class extends i4 {
                     @change=${(e4) => this._updateField("sun_enabled", e4.target.checked ? "" : false)}></ha-switch></label>
                 <label class="toggle-row"><span>Show Moon</span>
                 <ha-switch .checked=${moonEnabled}
-                    @change=${(e4) => this._updateField("moon_enabled", e4.target.checked ? "" : false)}></ha-switch></label></div>
+                    @change=${(e4) => this._updateField("moon_enabled", e4.target.checked ? "" : false)}></ha-switch></label>${sunEnabled || moonEnabled ? b2`
+                <label class="toggle-row"><span>Fade with the weather</span>
+                <ha-switch .checked=${c4.sun_moon_fade !== false}
+                    @change=${(e4) => this._updateField("sun_moon_fade", e4.target.checked ? "" : false)}></ha-switch></label>` : ""}</div>
             ${sunEnabled || moonEnabled ? b2`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
                 ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
@@ -1508,7 +1512,8 @@ var WeatherCardEditor = class extends i4 {
                         <button type="button" class=${xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", "dynamic")}>Dynamic</button>
                         <button type="button" class=${!xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", 50)}>Fixed</button>
                     </div></div>
-                ${xDynamic ? "" : this._renderSlider("sun_moon_x", "", 0, 100, 1)}
+                ${xDynamic ? "" : xCss ? b2`<div class="compact-field"><input type="text" .value=${String(c4.sun_moon_x)}
+                    @change=${(e4) => this._updateField("sun_moon_x", e4.target.value.trim() || 50)}></div>` : this._renderSlider("sun_moon_x", "", 0, 100, 1)}
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_y}</span>
                     <div class="segmented segmented-compact">

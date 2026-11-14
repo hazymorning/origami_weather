@@ -20,7 +20,7 @@ const LABELS = Object.freeze({
 const BUTTON_LABELS = Object.freeze({ entity: "", tap_action: "Tap action" });
 const KEY_ORDER = Object.freeze([
     "type", "name", "entity", "weather_entity",
-    "sun_entity", "sun_enabled", "moon_enabled", "sun_moon_size", "sun_moon_x", "sun_moon_y",
+    "sun_entity", "sun_enabled", "moon_enabled", "sun_moon_fade", "sun_moon_size", "sun_moon_x", "sun_moon_y",
     "color_mode", "dark_theme_adaptation", "card_height", "card_padding",
     "background_mode", "background_color", "background_color_dark", "background_threshold_entity", "background_threshold_attribute", "background_thresholds",
     "weather_image_path", "weather_image_path_dark", "weather_image_type", "weather_image_front",
@@ -693,7 +693,7 @@ class WeatherCardEditor extends LitElement {
     _renderSunMoonPanel() {
         const c = this._formData || {};
         const sunEnabled = c.sun_enabled !== false, moonEnabled = c.moon_enabled !== false;
-        const xDynamic = c.sun_moon_x === "dynamic";
+        const xDynamic = c.sun_moon_x === "dynamic", xCss = !xDynamic && c.sun_moon_x != null && c.sun_moon_x !== "" && isNaN(c.sun_moon_x);
         const yRaw = c.sun_moon_y;
         const yFixed = yRaw != null && yRaw !== "";
         return html`<div class="settings-group">
@@ -702,7 +702,10 @@ class WeatherCardEditor extends LitElement {
                     @change=${(e) => this._updateField("sun_enabled", e.target.checked ? "" : false)}></ha-switch></label>
                 <label class="toggle-row"><span>Show Moon</span>
                 <ha-switch .checked=${moonEnabled}
-                    @change=${(e) => this._updateField("moon_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
+                    @change=${(e) => this._updateField("moon_enabled", e.target.checked ? "" : false)}></ha-switch></label>${sunEnabled || moonEnabled ? html`
+                <label class="toggle-row"><span>Fade with the weather</span>
+                <ha-switch .checked=${c.sun_moon_fade !== false}
+                    @change=${(e) => this._updateField("sun_moon_fade", e.target.checked ? "" : false)}></ha-switch></label>` : ""}</div>
             ${sunEnabled || moonEnabled ? html`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
                 ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
@@ -712,7 +715,8 @@ class WeatherCardEditor extends LitElement {
                         <button type="button" class=${xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", "dynamic")}>Dynamic</button>
                         <button type="button" class=${!xDynamic ? "active" : ""} @click=${() => this._updateField("sun_moon_x", 50)}>Fixed</button>
                     </div></div>
-                ${xDynamic ? "" : this._renderSlider("sun_moon_x", "", 0, 100, 1)}
+                ${xDynamic ? "" : xCss ? html`<div class="compact-field"><input type="text" .value=${String(c.sun_moon_x)}
+                    @change=${(e) => this._updateField("sun_moon_x", e.target.value.trim() || 50)}></div>` : this._renderSlider("sun_moon_x", "", 0, 100, 1)}
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_y}</span>
                     <div class="segmented segmented-compact">

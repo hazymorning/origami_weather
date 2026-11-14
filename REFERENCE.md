@@ -325,6 +325,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only needed when the sun entity has a different ID. |
 | `sun_enabled` | `boolean` | `true` | Show or hide the sun. |
 | `moon_enabled` | `boolean` | `true` | Show or hide the moon. |
+| `sun_moon_fade` | `boolean` | `true` | The sun and moon fade behind clouds, rain and fog. Set to `false` to keep them fully visible, as on the line of the Daylight layout. Their glow and colors still follow the weather. |
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
 | `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, and a CSS length works too. With `dynamic`, the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. |
 | `sun_moon_y` | `string` | — | Vertical position, as a percentage from the top, clamped to 0-100. When unset it follows the sun's elevation. |
@@ -532,8 +533,8 @@ The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` en
 | `background_threshold_entity` | `string` | — | Entity the thresholds read from. Without it, they follow the card's weather, so each `value` can be a condition like `rainy`. |
 | `background_threshold_attribute` | `string` | — | Attribute to read for the threshold value. |
 | `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. On by default with the `default` sky. In the other modes it is off unless set to `true`. |
-| `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. |
-| `weather_image_path_dark` | `string` | — | Second folder used after sunset. Falls back to `weather_image_path`. |
+| `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. A folder that starts with neither `/` nor an address like `https://` is looked up in the card's own folder, like `diorama/light/` for the pictures that come with the card. |
+| `weather_image_path_dark` | `string` | — | Second folder, used while the card is in dark mode, which `color_mode` decides. Falls back to `weather_image_path`. |
 | `weather_image_type` | `string` | — | File type of those pictures, like `webp`. Without it, the card tries the usual types one after another until one loads. |
 | `weather_image_front` | `boolean` | `false` | Draws the pictures in front of the sun, the moon and the stars. Where a picture is transparent, they show through, so they can set behind the hills of a landscape. |
 

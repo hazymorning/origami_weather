@@ -363,7 +363,7 @@ var WeatherEffects = (() => {
     overcast: { count: 3, alpha: 0.75, speed: 1, clearings: 4, clear: 1 },
     fog: { count: 3, alpha: 0.9, speed: 1.5, clearings: 4, clear: 0.95 }
   });
-  const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 3) / 7));
+  const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 4.5) / 7.5));
   const _cloudAtlas = /* @__PURE__ */ new WeakMap();
   function _fit(img, max) {
     const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = max / Math.max(w, h);
@@ -1488,13 +1488,14 @@ var WeatherEffects = (() => {
         starCtx.clearRect(0, 0, w, h);
       }
       _drawStars(inst, sc, w, h, s, t, dt);
-      if (env.moon) {
-        sc.setTransform(s, 0, 0, s, 0, 0);
+      if (env.moon && env.moon.lit) {
+        const k = env.moon.r / 50;
+        sc.setTransform(s * k, 0, 0, s * k, s * (env.moon.x - env.moon.r), s * (env.moon.y - env.moon.r));
         sc.globalCompositeOperation = "destination-out";
-        sc.beginPath();
-        sc.arc(env.moon.x, env.moon.y, env.moon.r, 0, Math.PI * 2);
-        sc.fill();
+        sc.fillStyle = "#000";
+        sc.fill(env.moon.lit);
         sc.globalCompositeOperation = "source-over";
+        sc.setTransform(s, 0, 0, s, 0, 0);
       }
     } else if (starCtx) {
       starCtx.setTransform(s, 0, 0, s, 0, 0);
@@ -2105,12 +2106,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-NAXQQ53E.js");
+      await import("./origami-weather-editor-WPUFGAO4.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-YOE37HUR.js");
+    const { buildStubConfig } = await import("./layout-presets-UB7XVJ7F.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2230,7 +2231,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     st.setProperty("--origami-sun-moon-y", `${y}%`);
     st.setProperty("--origami-sun-moon-glow-opacity", String(tuning.sunVisibility));
     st.setProperty("--origami-sun-rays-opacity", String(rays));
-    st.opacity = String(tuning.sunVisibility);
+    st.opacity = cfg.sun_moon_fade === false ? "1" : String(tuning.sunVisibility);
     if (isAstroNight) {
       this._applyMoonPhase(phase);
       this._loadMoonImage();
@@ -2291,10 +2292,10 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   _applyMoonPhase(p) {
     if (this._moonPhaseApplied === p) return;
     this._moonPhaseApplied = p;
-    const litPath = this._elements?.moonLitPath;
-    if (!litPath) return;
     const lit = _WeatherCard._moonLitPath(p);
-    litPath.setAttribute("d", lit || "");
+    this._moonLit = lit ? new Path2D(lit) : null;
+    const litPath = this._elements?.moonLitPath;
+    if (litPath) litPath.setAttribute("d", lit || "");
   }
   _loadMoonImage() {
     const img = this._elements?.moonImage;
@@ -2673,15 +2674,13 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             #sun-moon .sun-disc { position: absolute; inset: 0; border-radius: 50%;
                 background:
                     radial-gradient(circle at 50% 50%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 40%),
-                    radial-gradient(circle at 50% 50%,
+                    radial-gradient(circle closest-side at 50% 50%,
                         var(--origami-sun-core) 0%,
-                        var(--origami-sun-core) 24%,
-                        var(--origami-sun-inner) 34%,
-                        color-mix(in srgb, var(--origami-sun-inner) 82%, transparent) 44%,
-                        color-mix(in srgb, var(--origami-sun-mid) 42%, transparent) 54%,
-                        color-mix(in srgb, var(--origami-sun-mid) 22%, transparent) 64%,
-                        color-mix(in srgb, var(--origami-sun-edge) 11%, transparent) 75%,
-                        color-mix(in srgb, var(--origami-sun-edge) 5%, transparent) 86%,
+                        var(--origami-sun-core) 34%,
+                        var(--origami-sun-inner) 48%,
+                        color-mix(in srgb, var(--origami-sun-inner) 82%, transparent) 62%,
+                        color-mix(in srgb, var(--origami-sun-mid) 42%, transparent) 76%,
+                        color-mix(in srgb, var(--origami-sun-edge) 18%, transparent) 90%,
                         transparent 100%); }
             #sun-moon .sun-disc::before { content: ""; position: absolute; inset: 18% -80%; border-radius: 50%; mix-blend-mode: screen; opacity: 0.5;
                 background: radial-gradient(ellipse at 50% 50%, rgba(255,250,238,0.5) 0%, rgba(255,244,220,0.16) 38%, rgba(255,244,220,0) 70%);
@@ -3692,14 +3691,15 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (this._weatherBgState === weatherState && this._weatherBgSchemeDark === useDarkScheme) return;
     this._weatherBgState = weatherState;
     this._weatherBgSchemeDark = useDarkScheme;
-    const folder = basePath.endsWith("/") ? basePath : basePath + "/";
+    const path = basePath.endsWith("/") ? basePath : basePath + "/", own = !/^(\/|[a-z][\w+.-]*:)/i.test(path);
+    const folder = own ? new URL(path, import.meta.url).href : path;
     const type = String(cfg.weather_image_type || "").trim().replace(/^\./, ""), found = WEATHER_MEDIA_FOUND.get(folder);
     const exts = type ? [`.${type}`] : found === void 0 ? WEATHER_MEDIA_EXTS : [found, ...WEATHER_MEDIA_EXTS.filter((e) => e !== found)];
     container.innerHTML = "";
     const probeId = this._weatherBgProbeId = (this._weatherBgProbeId || 0) + 1;
-    this._probeWeatherMedia(container, root, folder, weatherState, exts, 0, probeId);
+    this._probeWeatherMedia(container, root, folder, weatherState, exts, 0, probeId, own ? new URL(import.meta.url).search : "");
   }
-  _probeWeatherMedia(container, root, folder, state, exts, idx, probeId) {
+  _probeWeatherMedia(container, root, folder, state, exts, idx, probeId, query) {
     if (this._weatherBgProbeId !== probeId) return;
     if (idx >= exts.length) {
       root.classList.remove("has-weather-bg");
@@ -3710,7 +3710,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       }
       return;
     }
-    const url = `${folder}${state}${exts[idx]}`;
+    const url = `${folder}${state}${exts[idx]}${query}`;
     const apply = (el) => {
       if (this._weatherBgProbeId !== probeId) return;
       WEATHER_MEDIA_FOUND.set(folder, exts[idx]);
@@ -3736,7 +3736,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         video.onloadeddata = null;
         video.onerror = null;
         video.removeAttribute("src");
-        this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId);
+        this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId, query);
       };
     } else {
       const img = new Image();
@@ -3746,7 +3746,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       };
       img.onerror = () => {
         img.onload = null;
-        this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId);
+        this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId, query);
       };
       img.src = url;
     }
@@ -4086,7 +4086,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     }
     let moon = null;
     if (this._sunMoonActive && this._isAstroNight) {
-      moon = { x: cx, y: cy, r: sunSize / 2 };
+      moon = { x: cx, y: cy, r: sunSize / 2, lit: this._moonLit };
     }
     return { schemeDark: this._schemeDark, glow, moon, night: this._isAstroNight, backgroundRGB: this._effectsBg };
   }

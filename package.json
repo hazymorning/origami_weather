@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "prebuild": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
-    "build": "esbuild src/origami-weather.js --bundle --splitting --format=esm --chunk-names=[name]-[hash] --legal-comments=inline --outdir=dist"
+    "build": "esbuild src/origami-weather.js --bundle --splitting --format=esm --chunk-names=[name]-[hash] --legal-comments=inline --outdir=dist",
+    "postbuild": "node -e \"require('fs').cpSync('src/diorama', 'dist/diorama', { recursive: true })\""
   },
   "dependencies": {
     "lit": "3.2.1"

@@ -29,7 +29,7 @@ Origami Weather is in the HACS default store.
 
 2. Reload the page.
 
-Without HACS, copy every file in `dist` from the [latest release](https://github.com/hazymorning/origami_weather/releases/latest) to a folder of its own, such as `/config/www/origami-weather`, add `/local/origami-weather/origami-weather.js` as a **JavaScript module** under [Resources](https://my.home-assistant.io/redirect/lovelace_resources/) and reload the page with a hard refresh. The card loads the other files from the same folder when it needs them.
+Without HACS, copy everything in `dist` from the [latest release](https://github.com/hazymorning/origami_weather/releases/latest), the `diorama` folder included, to a folder of its own, such as `/config/www/origami-weather`, add `/local/origami-weather/origami-weather.js` as a **JavaScript module** under [Resources](https://my.home-assistant.io/redirect/lovelace_resources/) and reload the page with a hard refresh. The card loads the other files and the pictures from the same folder when it needs them.
 
 </details>
 
@@ -54,31 +54,36 @@ Without HACS, copy every file in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather: a partly cloudy midday with the sun above the hills, and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills, and a frosted bar in the top left corner slides through today's high and low, the wind, the next sunset or sunrise, the humidity and the UV index.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills, and a frosted bar in the bottom left corner slides through today's high and low, the wind, the next sunset or sunrise, the humidity and the UV index. The pictures come with the card, so Home Assistant serves them itself and nothing loads from the internet. A Diorama card made from Origami's `diorama.yaml` still loads its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 <details>
-<summary><b>Load the pictures from Home Assistant</b></summary>
+<summary><b>Other pictures</b></summary>
 
 <br>
 
-The diorama loads its pictures from Origami's repository through jsDelivr. To load them from Home Assistant instead:
+Any layout can show a picture for each kind of weather, and the Diorama can show other pictures too.
 
-1. Copy the folder [`diorama`](https://github.com/hazymorning/origami/tree/main/dashboard/weather/diorama) from Origami to `/config/www`, so the pictures are in `/config/www/diorama/light` and `/config/www/diorama/dark`.
-2. Set the two picture folders in the card to `/local/diorama/light/` and `/local/diorama/dark/`, under **Background** in the visual editor or as `weather_image_path` and `weather_image_path_dark` in the code editor.
+1. Name the pictures after the weather conditions, the way the Diorama's own pictures in [`src/diorama`](https://github.com/hazymorning/origami_weather/tree/main/src/diorama) are named, like `sunny.webp`, `partlycloudy.webp` and `clear-night.webp`.
+2. Copy them to a folder in `/config/www`, such as `/config/www/weather`, and the ones for dark mode to a second folder, if there are any.
+3. Under **Background**, set the card background to **Custom images** and the light mode folder to `/local/weather/`, and the dark mode folder to the second one, or clear it when there is none. In the code editor, these are `background_mode: images`, `weather_image_path` and `weather_image_path_dark`.
+
+In a Diorama card, also set the **File type** to the one the pictures have, or to **Automatic**, and turn off **In front of sun, moon and stars** unless the pictures have a transparent sky.
+
+Updates replace everything in the card's own folder, so other pictures belong in a folder outside it.
 
 </details>
 
 ### Classic
 
-<img width="800" alt="The Classic layout: the temperature and the weather on a color that changes with it, today's high and low, and a forecast for the coming days with the chance of rain, on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
+<img width="800" alt="The Classic layout: the temperature on a color that changes with the weather, the weather and today's high and low below it, the sun or the moon in the corner, and a forecast for the coming days with the chance of rain, on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature and the current weather on a color that changes with it, today's high and low, and a forecast that slides through the coming days, with the chance of rain under each day. When it's cloudy, layers of soft mist drift across the card with the wind, and in fog they close in.
+The temperature on a color that changes with the weather, with the current weather and today's high and low below it, and the sun by day or the moon in its real phase by night in the corner. A forecast slides through the coming days, with the chance of rain under each day. When it's cloudy, layers of soft mist drift across the card with the wind, and in fog they close in.
 
-### Centered
+### Daylight
 
-<img width="800" alt="The Centered layout: the temperature in the middle with the high, the low and the wind, on a partly cloudy day and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
+<img width="800" alt="The Daylight layout: a slim card with the temperature and the weather at the top and a line across it, with the sun on its way from sunrise to sunset on a partly cloudy day and the moon on its way from sunset to sunrise on a clear night, and today's high and low and the next sunset or sunrise under the line, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daylight.webp">
 
-The temperature and the current weather in the middle, with the day's high and low and the wind. The clouds drift over soft layers of mist, which fill the sky in fog.
+A slim card that draws the day as a line. The sun moves along it from sunrise to sunset, and at night the moon in its real phase moves from sunset to sunrise, so one look shows how much of the day or the night is left. The temperature and the current weather sit above the line, and today's high and low and the next sunset or sunrise below it. When it's cloudy, layers of soft mist drift across the card with the wind.
 
 ### Home
 
@@ -158,7 +163,114 @@ Once it works, play around with the settings to find a look that fits. The Home 
 
 ### Other layouts
 
-Slim, Comparison and Arc are no longer in the layout picker, but they still work. Paste one into the code editor and change each `weather.home` in it to the home's weather entity.
+Centered, Slim, Comparison and Arc are no longer in the layout picker, but they still work. Paste one into the code editor and change each `weather.home` in it to the home's weather entity.
+
+<details>
+<summary><b>Centered</b></summary>
+
+<br>
+
+<img width="800" alt="The Centered layout: the temperature in the middle with the high, the low and the wind, on a partly cloudy day and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
+
+The temperature and the current weather in the middle, with the day's high and low and the wind. The clouds drift over soft layers of mist, which fill the sky in fog.
+
+```yaml
+type: custom:origami-weather
+weather_entity: weather.home
+sun_moon_x: dynamic
+card_height: content
+card_padding: 34px 20px
+content_align: between
+content_align_items: center
+button_containers:
+- name: Temperature
+  padding: '0'
+  margin: 0 0 24px 0
+  align: center
+  buttons:
+  - name: Temperature and condition
+    entity: weather.home
+    background: false
+    style: vertical
+    align: center
+    text_size: 58px
+    inner_gap: 0px
+    padding: '0'
+    elements:
+    - type: text
+      weight: '700'
+      attribute: temperature
+      precision: 0
+      fancy_unit: true
+    - type: text
+      size: 15px
+      weight: '500'
+      entity: weather.home
+      margin: -3.5px 0 -1.5px
+- name: Details
+  gap: clamp(11px, 5.5cqw, 18px)
+  margin: 0 0 7px
+  padding: '0'
+  button_padding: '0'
+  button_gap: 5px
+  button_icon_size: 15px
+  button_text_size: 13px
+  align: center
+  justify_content: center
+  buttons:
+  - name: High
+    entity: weather.home
+    background: false
+    style: inline
+    align: center
+    padding: '0'
+    forecast: daily
+    elements:
+    - type: icon
+      icon: mdi:arrow-up
+      icon_background: false
+      margin: 0 -2px 0 -1.8px
+    - type: text
+      weight: '500'
+      attribute: temperature
+      format: °
+  - name: Low
+    entity: weather.home
+    background: false
+    style: inline
+    align: center
+    padding: '0'
+    forecast: daily
+    elements:
+    - type: icon
+      icon: mdi:arrow-down
+      icon_background: false
+      margin: 0 -2px 0 -1.8px
+    - type: text
+      weight: '500'
+      attribute: templow
+      format: °
+  - name: Wind
+    entity: weather.home
+    background: false
+    style: inline
+    align: center
+    padding: '0'
+    elements:
+    - type: icon
+      icon: mdi:weather-windy
+      icon_background: false
+      margin: 0 1px 0 -1.5px
+    - type: text
+      weight: '700'
+      attribute: wind_speed
+      precision: 0
+grid_options:
+  rows: auto
+  columns: 12
+```
+
+</details>
 
 <details>
 <summary><b>Slim</b></summary>

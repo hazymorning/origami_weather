@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-QIUD7KAD.js";
+} from "./chunk-PUOW3MF6.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -675,6 +675,7 @@ var KEY_ORDER = Object.freeze([
   "cloud_image_path",
   "mist_effects",
   "mist_density",
+  "mist_size",
   "night_sky_effects",
   "bird_effects",
   "bird_density",
@@ -711,6 +712,7 @@ var DISPLAY_DEFAULTS = Object.freeze({
   gradient_stop_2: 100,
   precipitation_speed: 1,
   mist_density: 1,
+  mist_size: 1,
   balloon_density: 1,
   plane_density: 1,
   weather_image_type: ""
@@ -1701,7 +1703,7 @@ var WeatherCardEditor = class extends i4 {
     const label = friendly || entity;
     if (button.forecast) {
       const type = button.forecast === "hourly" ? "Hourly" : "Daily", offset = parseInt(button.forecast_offset, 10) || 0;
-      const offsetLabel = button.forecast === "hourly" ? offset === 0 ? "now" : `+${offset}h` : offset === 0 ? "today" : offset === 1 ? "tomorrow" : `+${offset}d`;
+      const offsetLabel = button.forecast === "hourly" ? offset === 0 ? "next hour" : `+${offset + 1}h` : offset === 0 ? "today" : offset === 1 ? "tomorrow" : `+${offset}d`;
       const firstFcAttr = (els.find((e4) => e4 && e4.type === "text" && !e4.entity && e4.attribute) || {}).attribute;
       return two(name || label, `${type} \xB7 ${offsetLabel} \xB7 ${firstFcAttr || "condition"}`);
     }
@@ -2279,7 +2281,7 @@ var WeatherCardEditor = class extends i4 {
                     ${[{ v: "daily", l: "Daily" }, { v: "hourly", l: "Hourly" }].map((o5) => b2`<button type="button" class=${button.forecast === o5.v ? "active" : ""}
                         @click=${() => update({ ...button, forecast: o5.v, forecast_offset: 0 })}>${o5.l}</button>`)}</div>
                 ${(() => {
-      const mx = button.forecast === "hourly" ? 23 : 6, lb = button.forecast === "hourly" ? "Hours ahead" : "Days ahead", hp = button.forecast === "hourly" ? fcOff === 0 ? "Now" : `+${fcOff}h` : fcOff === 0 ? "Today" : fcOff === 1 ? "Tomorrow" : `+${fcOff} days`;
+      const mx = button.forecast === "hourly" ? 23 : 14, lb = button.forecast === "hourly" ? "Hours ahead" : "Days ahead", hp = button.forecast === "hourly" ? fcOff === 0 ? "Next hour" : `+${fcOff + 1}h` : fcOff === 0 ? "Today" : fcOff === 1 ? "Tomorrow" : `+${fcOff} days`;
       return this._slider({
         value: fcOff,
         fallback: 0,
@@ -3430,7 +3432,7 @@ var WeatherCardEditor = class extends i4 {
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
                 ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c4.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v2) => this._updateField("cloud_image_path", v2) }))}
-                ${fx("mist_effects", "Mist", this._renderSlider("mist_density", "Thickness", 0.25, 2, 0.05), c4.cloud_effects !== false)}
+                ${fx("mist_effects", "Mist", b2`<div style="display:flex;flex-direction:column;gap:var(--origami-e-s2)">${this._renderSlider("mist_density", "Thickness", 0.25, 2, 0.05)}${this._renderSlider("mist_size", "Size", 0.25, 2, 0.05)}</div>`, c4.cloud_effects !== false)}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

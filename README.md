@@ -81,15 +81,15 @@ The temperature on a color that changes with the weather, with the current weath
 
 ### Window
 
-<img width="800" alt="The Window layout: a plain card with a round window cut into it, the live sky inside with a cloud on a partly cloudy day and the moon and the stars on a clear night, the date, the temperature, the weather, today's high and low and the next sunset or sunrise beside it, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/window.webp">
+<img width="800" alt="The Window layout: a plain card with a round window cut into it, the live sky inside with the sun and a passing cloud on a partly cloudy day and the moon and the stars on a clear night, the date, the temperature, the weather, today's high and low and the next sunset or sunrise beside it, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/window.webp">
 
-A plain card with one round window cut into it. The sky lives only inside the window, with its clouds, rain, snow and stars, and the sun by day or the moon in its real phase by night. The date, the temperature, the current weather, today's high and low and the next sunset or sunrise sit on the card beside it, and the next hours below a thin line.
+A plain card with one round window cut into it. The sky lives only inside the window, with its clouds, mist, rain, snow and stars, and the sun by day or the moon in its real phase by night. The date, the temperature, the current weather, today's high and low and the next sunset or sunrise sit on the card beside it. Below them, the next hours slide by six at a time, a whole day ahead.
 
 ### Home
 
-<img width="800" alt="The Home layout: a house in its garden with the temperature of three rooms and a wind compass, lit by the sun with birds in the sky on a sunny day and with lit windows behind rain and mist on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
+<img width="800" alt="The Home layout: a house in its garden with the temperature of three rooms and a wind compass, lit by the sun on a sunny day, and with lit windows behind the rain and a light mist around the house on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Birds, rain, snow and a light mist pass in front of it.
+A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Birds, rain and snow pass in front of it, and a light mist drifts behind it.
 
 <details>
 <summary><b>The house in detail</b></summary>
@@ -157,7 +157,7 @@ Give me the files, where they go (/config/www/home/, used as /local/home/...) an
 
 **Make it better.** It rarely comes out right on the first try. Send the AI screenshots of the card in light and dark mode and ask for specific changes, like a roof that's too flat, a window in the wrong place or a tree that should be taller. One or two at a time works best. If the card shows an error, send the AI the message as it is.
 
-Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, so only birds, rain, snow and a light mist are left. The house sits behind the weather, so clouds, balloons and planes pass in front of it once they're back on, while the sun, the moon and the stars stay behind it. Turning some of them back on can change the whole feel, especially with a sky around the home, and almost anything in the README and the reference can go into it, so let the AI try things.
+Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, so only birds, rain, snow and a light mist are left. The house sits in the middle of the weather, so birds, rain and snow pass in front of it, while the mist, the sun, the moon and the stars stay behind it, and so do the clouds, balloons and planes once they're back on. Turning some of them back on can change the whole feel, especially with a sky around the home, and almost anything in the README and the reference can go into it, so let the AI try things.
 
 </details>
 
@@ -198,7 +198,7 @@ button_containers:
     padding: '0'
     elements:
     - type: text
-      weight: '700'
+      weight: '800'
       attribute: temperature
       precision: 0
       fancy_unit: true
@@ -301,7 +301,7 @@ button_containers:
       precision: 0
       entity: weather.home
       attribute: temperature
-      weight: '700'
+      weight: '800'
       fancy_unit: true
     style: inline
   padding: 4px
@@ -710,7 +710,7 @@ button_containers:
       precision: 0
       format: °
       size: clamp(24px, 8cqmin, 36px)
-      weight: '700'
+      weight: '800'
     - type: text
       size: clamp(13px, 3.5cqmin, 16px)
       weight: '500'
@@ -729,7 +729,7 @@ button_containers:
     - type: text
       attribute: next_setting
       size: clamp(24px, 8cqmin, 36px)
-      weight: '700'
+      weight: '800'
     - type: text
       text: Sunset
       size: clamp(13px, 3.5cqmin, 16px)
@@ -744,7 +744,7 @@ button_containers:
     - type: text
       attribute: next_rising
       size: clamp(24px, 8cqmin, 36px)
-      weight: '700'
+      weight: '800'
     - type: text
       text: Sunrise
       size: clamp(13px, 3.5cqmin, 16px)

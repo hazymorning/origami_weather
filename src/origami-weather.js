@@ -17,7 +17,7 @@ const _SKY_FILTERS = Object.freeze({
     'cloudy':          { light: 'brightness(0.92) saturate(0.72) contrast(0.96)', dark: 'brightness(0.88) saturate(0.65) contrast(0.95)' },
     'windy':           { light: 'brightness(1.02) saturate(1.05) hue-rotate(-3deg)', dark: 'brightness(0.98) saturate(1.00)' },
     'windy-variant':   { light: 'brightness(1.00) saturate(1.02) hue-rotate(-3deg)', dark: 'brightness(0.96) saturate(0.95)' },
-    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)', dark: 'brightness(1.12) saturate(0.30) contrast(0.80) hue-rotate(-6deg)' },
+    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)', dark: 'brightness(0.96) saturate(0.30) contrast(0.88) hue-rotate(-6deg)' },
     'rainy':           { light: 'brightness(0.95) saturate(0.80) contrast(0.96) hue-rotate(4deg)', dark: 'brightness(0.85) saturate(0.70) contrast(0.94) hue-rotate(3deg)' },
     'pouring':         { light: 'brightness(0.88) saturate(0.68) contrast(0.93) hue-rotate(5deg)', dark: 'brightness(0.78) saturate(0.55) contrast(0.90) hue-rotate(4deg)' },
     'lightning':       { light: 'brightness(0.89) saturate(0.62) contrast(1.10) hue-rotate(7deg)', dark: 'brightness(0.76) saturate(0.55) contrast(1.15) hue-rotate(6deg)' },
@@ -29,6 +29,34 @@ const _SKY_FILTERS = Object.freeze({
     'default':         { light: 'brightness(1.00) saturate(1.00)', dark: 'brightness(0.95) saturate(0.90)' },
 });
 const _DARK_THEME_FILTER = 'brightness(0.8) saturate(1.3)';
+function _filterMatrix(fn, k) {
+    if (fn === 'sepia') return [[0.393, 0.769, 0.189], [0.349, 0.686, 0.168], [0.272, 0.534, 0.131]].map((row, i) => row.map((v, j) => v * k + (i === j ? 1 - k : 0)));
+    const a = k * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
+    return [
+        [0.213 + co * 0.787 - si * 0.213, 0.715 - co * 0.715 - si * 0.715, 0.072 - co * 0.072 + si * 0.928],
+        [0.213 - co * 0.213 + si * 0.143, 0.715 + co * 0.285 + si * 0.14, 0.072 - co * 0.072 - si * 0.283],
+        [0.213 - co * 0.213 - si * 0.787, 0.715 - co * 0.715 + si * 0.715, 0.072 + co * 0.928 + si * 0.072],
+    ];
+}
+function _filterRGB(rgb, filter) {
+    let c = rgb.map((v) => v / 255);
+    for (const [, fn, arg, unit] of String(filter || '').matchAll(/(brightness|contrast|saturate|sepia|hue-rotate)\((-?[\d.]+)(%|deg)?\)/g)) {
+        const k = parseFloat(arg) / (unit === '%' ? 100 : 1), y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+        if (!Number.isFinite(k)) continue;
+        const m = fn === 'sepia' || fn === 'hue-rotate' ? _filterMatrix(fn, fn === 'sepia' ? Math.min(1, k) : k) : null;
+        c = (m ? m.map((row) => row[0] * c[0] + row[1] * c[1] + row[2] * c[2]) : c.map((v) => fn === 'brightness' ? v * k : fn === 'contrast' ? (v - 0.5) * k + 0.5 : y + (v - y) * k)).map((v) => Math.max(0, Math.min(1, v)));
+    }
+    return c.map((v) => Math.round(v * 255));
+}
+function _cssRGBA(css) {
+    const x = _cssRGBA.ctx || (_cssRGBA.ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true }));
+    x.clearRect(0, 0, 1, 1);
+    x.fillStyle = 'transparent';
+    x.fillStyle = String(css || '');
+    x.fillRect(0, 0, 1, 1);
+    const d = x.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2], d[3] / 255];
+}
 const _HAZE_PALETTE = Object.freeze({
     light: [{ c: [88, 176, 220, 0.62] }, { core: [255, 255, 250, 0.98], c: [214, 234, 250, 0.80] }, { c: [96, 140, 214, 0.60] }],
     dark:  [{ c: [58, 150, 190, 0.70] }, { core: [224, 236, 255, 0.60], c: [130, 168, 224, 0.50] }, { c: [46, 82, 168, 0.72] }],
@@ -40,7 +68,7 @@ const _HAZE_TUNING = Object.freeze({
     'cloudy':          { light: { tone: [222, 224, 230], mix: 0.34, alpha: 0.66, core: 0.82, scale: 1.10 }, dark: { tone: [66, 80, 108],   mix: 0.38, alpha: 0.76, core: 0.55, scale: 1.10 } },
     'windy':           { light: { tone: [232, 240, 240], mix: 0.18, alpha: 0.70, core: 1.00, scale: 1.05 }, dark: { tone: [58, 90, 138],   mix: 0.24, alpha: 0.80, core: 0.75, scale: 1.05 } },
     'windy-variant':   { light: { tone: [232, 240, 240], mix: 0.18, alpha: 0.70, core: 1.00, scale: 1.05 }, dark: { tone: [58, 90, 138],   mix: 0.24, alpha: 0.80, core: 0.75, scale: 1.05 } },
-    'fog':             { light: { tone: [236, 236, 234], mix: 0.52, alpha: 0.60, core: 0.88, scale: 1.35 }, dark: { tone: [150, 162, 180], mix: 0.68, alpha: 0.78, core: 0.60, scale: 1.35 } },
+    'fog':             { light: { tone: [236, 236, 234], mix: 0.52, alpha: 0.60, core: 0.88, scale: 1.35 }, dark: { tone: [92, 104, 126],  mix: 0.62, alpha: 0.78, core: 0.60, scale: 1.35 } },
     'rainy':           { light: { tone: [138, 158, 190], mix: 0.36, alpha: 0.68, core: 0.66, scale: 1.08 }, dark: { tone: [40, 58, 92],    mix: 0.42, alpha: 0.78, core: 0.45, scale: 1.08 } },
     'pouring':         { light: { tone: [108, 128, 166], mix: 0.44, alpha: 0.70, core: 0.58, scale: 1.10 }, dark: { tone: [30, 44, 74],    mix: 0.50, alpha: 0.80, core: 0.40, scale: 1.10 } },
     'lightning':       { light: { tone: [120, 128, 168], mix: 0.44, alpha: 0.68, core: 0.62, scale: 1.10 }, dark: { tone: [40, 46, 80],    mix: 0.46, alpha: 0.76, core: 0.45, scale: 1.10 } },
@@ -338,11 +366,12 @@ const WeatherEffects = (() => {
         { size: 150, bright: 0.96, alpha: 0.78, speed: 0.006, count: 4, stretch: 0.14, res: 1 },
         { size: 250, bright: 1.00, alpha: 0.92, speed: 0.015, count: 2, stretch: 0.10, res: 1.5 },
     ]);
-    const MIST_DARK = 0.4, MIST_LIGHT = 3;
+    const MIST_TONE = Object.freeze({ at: [0.25, 0.36, 0.6], lift: [0.12, 0.08, 0.08], keep: [1, 1, 0.92], tint: [[-0.005, -0.02], [-0.005, -0.02], [0, -0.004]], top: 0.985, room: 0.06, shade: 0.05, dark: 0.6 });
+    const MIST_CEILING = Object.freeze({ scattered: 0.43, overcast: 0.43, fog: 0.47 });
     const MIST = Object.freeze({
-        scattered: { count: 2, alpha: 0.6, speed: 1, clearings: 3, clear: 1 },
-        overcast: { count: 3, alpha: 0.75, speed: 1, clearings: 4, clear: 1 },
-        fog: { count: 3, alpha: 0.9, speed: 1.5, clearings: 4, clear: 0.95 },
+        scattered: { count: 3, alpha: 0.4, speed: 1, clearings: 3, clear: 1, disc: 0.9 },
+        overcast: { count: 3, alpha: 0.36, speed: 1, clearings: 4, clear: 1, disc: 0.8 },
+        fog: { count: 3, alpha: 0.4, speed: 1.5, clearings: 4, clear: 0.9, disc: 0.5 },
     });
     const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 4.5) / 7.5));
     const _cloudAtlas = new WeakMap();
@@ -823,7 +852,7 @@ const WeatherEffects = (() => {
         const look = MIST[tuning.mist], rnd = _mulberry32(seed || 1), puffs = [], clearings = [];
         for (let i = 0; i < look.count; i++) {
             const depth = (i + 0.5) / look.count;
-            puffs.push({
+            const puff = {
                 size: 1.3 + 2 * depth,
                 x: 0.2 + 0.6 * (i + rnd() * 0.8) / look.count,
                 y: 0.3 + rnd() * 0.4,
@@ -831,7 +860,8 @@ const WeatherEffects = (() => {
                 speed: (0.002 + 0.014 * Math.pow(depth, 1.3)) * (0.85 + rnd() * 0.3) * look.speed,
                 alpha: look.alpha * (0.8 + rnd() * 0.4) * (0.7 + 0.6 * depth),
                 ph: rnd() * Math.PI * 2,
-            });
+            };
+            puffs.push(puff, { ...puff, x: (puff.x + 0.5) % 1, y: 0.3 + rnd() * 0.4, rot: rnd() * Math.PI * 2, ph: rnd() * Math.PI * 2 });
         }
         for (let i = 0; i < look.clearings; i++) {
             clearings.push({
@@ -845,9 +875,29 @@ const WeatherEffects = (() => {
         }
         return { puffs, clearings, key: tuning.mist };
     }
+    const _lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const _enc = (v) => { v = Math.max(0, Math.min(1, v)); return Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)); };
+    function _toOklab(rgb) {
+        const [r, g, b] = rgb.map(_lin);
+        const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+        return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+    }
+    function _fromOklab([L, a, b]) {
+        const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+        return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s].map(_enc);
+    }
+    function _mistColor(bg, ceiling) {
+        const T = MIST_TONE, [L, a, b] = _toOklab(bg), i = L < T.at[1] ? 0 : 1, u = Math.max(0, Math.min(1, (L - T.at[i]) / (T.at[i + 1] - T.at[i]))), lighter = L + T.room <= T.top;
+        if (!Number.isFinite(L)) return 'transparent';
+        const at = (k) => k[i] + (k[i + 1] - k[i]) * u, keep = lighter ? at(T.keep) : T.keep[2], tint = [0, 1].map((c) => at(T.tint.map((v) => v[c])));
+        const Lm = lighter ? Math.min(L + at(T.lift), T.top, ceiling && L < T.dark ? Math.max(L + T.room / 2, ceiling) : 1) : L - T.shade;
+        return `rgb(${_fromOklab([Lm, a * keep + tint[0], b * keep + tint[1]]).join(',')})`;
+    }
     function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind) {
-        const big = Math.max(w, h), ar = img.height / img.width, amt = (env.schemeDark ? MIST_DARK : 1) * inst.mistDensity, l = _lumOf(env.backgroundRGB);
-        const cw = ctx.canvas.width, ch = ctx.canvas.height;
+        const big = Math.max(w, h) * inst.mistSize, ar = img.height / img.width, amt = inst.mistDensity, bg = env.mistRGB || env.backgroundRGB;
+        const ceiling = env.dark ? MIST_CEILING[inst.mist.key] : 0;
+        if (!inst.mistTone || inst.mistTone.bg !== bg || inst.mistTone.ceiling !== ceiling) inst.mistTone = { bg, ceiling, color: _mistColor(bg, ceiling) };
+        const cw = Math.ceil(ctx.canvas.width / 2), ch = Math.ceil(ctx.canvas.height / 2), ms = s / 2;
         const mc = inst.mistCanvas || (inst.mistCanvas = document.createElement('canvas'));
         if (mc.width !== cw || mc.height !== ch) { mc.width = cw; mc.height = ch; }
         const m = mc.getContext('2d');
@@ -857,14 +907,14 @@ const WeatherEffects = (() => {
         m.imageSmoothingQuality = 'high';
         const place = (p, size, alpha) => {
             m.globalAlpha = alpha;
-            m.setTransform(s, 0, 0, s, (p.x * (w + size) - size / 2) * s, p.y * h * s);
+            m.setTransform(ms, 0, 0, ms, (p.x * (w + size) - size / 2) * ms, p.y * h * ms);
             m.rotate(p.rot);
         };
         for (const p of inst.mist.puffs) {
             const pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph));
             p.x += p.speed * wind * w * dt / (w + pw);
             if (p.x >= 1) { p.x -= 1; p.y = 0.3 + Math.random() * 0.4; p.rot = Math.random() * Math.PI * 2; }
-            place(p, pw, Math.min(1, p.alpha * amt * (1 + 0.25 * Math.sin(t * 0.07 + p.ph * 1.3))));
+            place(p, pw, Math.min(1, p.alpha * amt * (1 + 0.15 * Math.sin(t * 0.07 + p.ph * 1.3))));
             m.drawImage(img, -pw / 2, -pw * ar / 2, pw, pw * ar);
         }
         m.globalCompositeOperation = 'destination-out';
@@ -876,11 +926,23 @@ const WeatherEffects = (() => {
             place(c, cs, c.alpha);
             m.drawImage(hole.img, (hole.x - 0.5) * cs, (hole.y - 0.5) * cs * 0.75, hole.w * cs, hole.h * cs * 0.75);
         }
-        m.globalCompositeOperation = 'source-over';
+        m.setTransform(1, 0, 0, 1, 0, 0);
+        if (env.disc && env.disc.clear > 0) {
+            const mx = env.disc.x * ms, my = env.disc.y * ms, mr = env.disc.r * ms, glow = m.createRadialGradient(mx, my, mr, mx, my, mr * 1.5);
+            glow.addColorStop(0, `rgba(0,0,0,${MIST[inst.mist.key].disc * env.disc.clear})`);
+            glow.addColorStop(1, 'rgba(0,0,0,0)');
+            m.globalAlpha = 1;
+            m.fillStyle = glow;
+            m.fillRect(mx - mr * 1.5, my - mr * 1.5, mr * 3, mr * 3);
+        }
+        m.globalCompositeOperation = 'source-in';
         m.globalAlpha = 1;
+        m.fillStyle = inst.mistTone.color;
+        m.fillRect(0, 0, cw, ch);
+        m.globalCompositeOperation = 'source-over';
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.globalAlpha = Math.min(1, (MIST_LIGHT - 1) * Math.max(l, 24) / (255 - l));
-        ctx.drawImage(mc, 0, 0);
+        ctx.globalAlpha = 1;
+        ctx.drawImage(mc, 0, 0, cw * 2, ch * 2);
         ctx.globalAlpha = 1;
         ctx.setTransform(s, 0, 0, s, 0, 0);
     }
@@ -1139,10 +1201,11 @@ const WeatherEffects = (() => {
     function create() {
         return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, mist: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
     }
-    function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState, wind, mistDensity) {
+    function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState, wind, mistDensity, mistSize) {
         const area = Math.max(1, w * h);
         inst.wind = Number.isFinite(wind) ? wind : null;
         inst.mistDensity = mistDensity || 1;
+        inst.mistSize = mistSize || 1;
         const grow = inst.area > 0 ? Math.abs(area - inst.area) / inst.area : 1;
         const sizeChanged = grow >= 0.22;
         inst.speed = speed || 1;
@@ -1563,7 +1626,8 @@ function dateFormat(hass, options, language = hass.locale.language) {
     return new Intl.DateTimeFormat(language, options);
 }
 function forecastLabel(dt, daily, hass) {
-    return dateFormat(hass, daily ? { weekday: 'short' } : { hour: 'numeric', minute: '2-digit' }).format(new Date(dt));
+    const date = new Date(dt), options = daily ? { weekday: 'short' } : { hour: 'numeric', minute: '2-digit' }, format = dateFormat(hass, options);
+    return options.hourCycle === 'h12' && dateFormat(hass, { minute: 'numeric' }, 'en').format(date) === '0' ? dateFormat(hass, { hour: 'numeric' }).format(date) : format.format(date);
 }
 const DATE_CODE = /%(-?)([aAbBdmyYHIMSp])/g, DATE_NAMES = { a: { weekday: 'short' }, A: { weekday: 'long' }, b: { month: 'short' }, B: { month: 'long' } };
 const isDatePattern = v => typeof v === 'string' && v.search(DATE_CODE) >= 0;
@@ -1753,6 +1817,11 @@ class WeatherCard extends HTMLElement {
         const sunId = cfg.sun_entity || 'sun.sun';
         const sunObj = hass.states[sunId] || null;
         const themeDark = !!(hass.themes && hass.themes.darkMode);
+        const rtl = !!(hass.translationMetadata && hass.translationMetadata.translations && (hass.translationMetadata.translations[hass.language || 'en'] || {}).isRTL);
+        if (rtl !== !!this._rtl) {
+            this._rtl = rtl;
+            this._applyConfigStyles();
+        }
         if (this._lastSnapshot
             && wObj === this._refW && sunObj === this._refSun
             && themeDark === this._themeDark
@@ -2847,7 +2916,7 @@ class WeatherCard extends HTMLElement {
         const sunMoonSize = cfg.sun_moon_size != null && cfg.sun_moon_size !== '' ? normalizeLength(cfg.sun_moon_size) : '';
         const sunMoonX = cfg.sun_moon_x != null && cfg.sun_moon_x !== '' && cfg.sun_moon_x !== 'dynamic' ? (isNaN(cfg.sun_moon_x) ? String(cfg.sun_moon_x).trim() : `${parseFloat(cfg.sun_moon_x)}%`) : '';
         this._cssVar(root, '--origami-sun-moon-size', sunMoonSize, '_prevSunMoonSize');
-        this._cssVar(root, '--origami-sun-moon-x', sunMoonX, '_prevSunMoonX');
+        this._cssVar(root, '--origami-sun-moon-x', sunMoonX && this._rtl && bgMode !== 'images' ? `calc(100% - (${sunMoonX}))` : sunMoonX, '_prevSunMoonX');
         const padParts = cssLength(cfg.card_padding).match(/(?:[^\s(]+|\([^)]*\))+/g) || [''];
         this._cssVar(root, '--_origami-pad-v', padParts[0], '_prevPadV');
         this._cssVar(root, '--_origami-pad-h', padParts[1] || padParts[0], '_prevPadH');
@@ -3364,6 +3433,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (this._weatherBgProbeId !== probeId) return;
         if (idx >= exts.length) {
             root.classList.remove('has-weather-bg');
+            this._syncEffectColors();
             const wasActive = this._weatherBgActive;
             this._weatherBgActive = false;
             if (wasActive) {
@@ -3378,6 +3448,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             container.innerHTML = '';
             container.appendChild(el);
             root.classList.add('has-weather-bg');
+            this._syncEffectColors();
             this._weatherBgActive = true;
             this._startAnimation();
         };
@@ -3430,6 +3501,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const themeFilter = this._themeDark && !schemeDark && cfg.dark_theme_adaptation !== false ? _DARK_THEME_FILTER : '';
         this._cssVar(this._elements.root, '--_origami-dark-theme-filter', themeFilter, '_prevDarkThemeFilter');
         if (this._backgroundMode() !== 'default') {
+            this._skyFilter = '';
             if (this._weatherFilterSig) { defaultBg.style.removeProperty('filter'); this._weatherFilterSig = null; }
             return;
         }
@@ -3444,6 +3516,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             : '';
         const bri = cfg.bg_brightness != null && String(cfg.bg_brightness) !== '' ? `brightness(${cfg.bg_brightness})` : '';
         const sat = cfg.bg_saturation != null && String(cfg.bg_saturation) !== '' ? `saturate(${cfg.bg_saturation})` : '';
+        this._skyFilter = [weatherFilter, sunsetFilter, bri, sat].join(' ');
         defaultBg.style.filter = [weatherFilter, sunsetFilter, bri, sat, themeFilter].filter(Boolean).join(' ');
     }
     _updateHazeStyles(weatherState, schemeDark) {
@@ -3455,6 +3528,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         this._hazeStyleSig = sig;
         const ht = (_HAZE_TUNING[weatherState] || _HAZE_TUNING.default)[scheme];
         const pal = _HAZE_PALETTE[scheme];
+        const weight = pal.reduce((sum, p) => sum + p.c[3], 0);
+        this._hazeTone = [0, 1, 2].map((i) => pal.reduce((sum, p) => sum + (p.c[i] + (ht.tone[i] - p.c[i]) * ht.mix) * p.c[3], 0) / weight);
         const toned = (c, aMul) => {
             const ch = i => Math.round(c[i] + (ht.tone[i] - c[i]) * ht.mix);
             return `rgba(${ch(0)},${ch(1)},${ch(2)},${Math.min(1, c[3] * aMul).toFixed(3)})`;
@@ -3707,8 +3782,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         };
         const birds = actor('bird', !this._schemeDark), balloon = actor('balloon', true), planes = actor('plane', true);
         const active = !!recipe || !!cloudState || !!mistState || !!stars || !!birds || !!balloon || !!planes;
-        const hass = this._hass, bg = this._backgroundColor();
-        if (String(bg) !== String(this._effectsBg)) this._effectsBg = bg;
+        const hass = this._hass;
+        this._syncEffectColors();
         this._nearUsed = !!hass && (this._containers || []).some((c) => containerLayer(c) === 'middle' && c.hide !== true && this._checkButtonVisibility(c, hass));
         els.root.classList.toggle('has-near-canvas', this._nearUsed);
         if (active && !this._sizeEffectsCanvas()) {
@@ -3716,7 +3791,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             els.root.classList.remove('has-weather-effects');
             return;
         }
-        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor('precipitation_speed'), String(cfg.cloud_image_path || '').trim(), mistState, this._windMs, Math.max(0.25, Math.min(2, parseFloat(cfg.mist_density) || 1)));
+        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor('precipitation_speed'), String(cfg.cloud_image_path || '').trim(), mistState, this._windMs, Math.max(0.25, Math.min(2, parseFloat(cfg.mist_density) || 1)), Math.max(0.25, Math.min(2, parseFloat(cfg.mist_size) || 1)));
         this._effectsActive = active;
         els.root.classList.toggle('has-weather-effects', active);
         els.root.classList.toggle('has-star-canvas', !!stars);
@@ -3733,20 +3808,26 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (this._sunMoonActive && this._isAstroNight) {
             moon = { x: cx, y: cy, r: sunSize / 2, lit: this._moonLit };
         }
-        return { schemeDark: this._schemeDark, glow, moon, night: this._isAstroNight, backgroundRGB: this._effectsBg };
+        const disc = this._sunMoonActive ? { x: cx, y: cy, r: sunSize / 2, clear: this._isAstroNight ? (this._moonLit ? 1 : 0) : Math.min(1, this._sunGlowVisibility) } : null;
+        const dark = /^(color|images)$/.test(this._backgroundMode()) && /^(dark|light)$/i.test(this._config.color_mode || '') ? this._isAstroNight : this._schemeDark;
+        return { schemeDark: this._schemeDark, glow, moon, disc, night: this._isAstroNight, dark, backgroundRGB: this._effectsBg, mistRGB: this._mistBg };
+    }
+    _syncEffectColors() {
+        const root = this._elements.root, bg = this._backgroundColor();
+        if (String(bg) !== String(this._effectsBg)) this._effectsBg = bg;
+        const pictures = root.classList.contains('has-weather-bg'), toward = pictures ? [128, 128, 128] : !root.classList.contains('no-haze') && this._hazeTone;
+        const mistBg = _filterRGB(toward ? bg.map((v, i) => v + (toward[i] - v) * (pictures ? 0.2 : 0.4)) : bg, this._skyFilter);
+        if (String(mistBg) !== String(this._mistBg)) this._mistBg = mistBg;
     }
     _backgroundColor() {
-        const root = this._elements.root, css = getComputedStyle(root).backgroundColor, own = /^(?:rgba?\(|color\(srgb )([^)]+)\)/.exec(css);
-        const c = own ? own[1].split(/[\s,/]+/).filter(Boolean).map((v, i) => i < 3 && css.startsWith('color') ? v * 255 : +v) : [];
-        if (c.length >= 3 && (c[3] ?? 1) >= 0.5) return c.slice(0, 3).map(Math.round);
-        const bg = getComputedStyle(root.querySelector('#sky-base')).backgroundImage || '';
-        const hexes = bg.match(/#([0-9a-f]{6})/gi);
-        const rgbs = bg.match(/rgba?\([^)]+\)/gi);
-        let r = 0, g = 0, b = 0, cnt = 0;
-        const add = (cr, cg, cb) => { r += cr; g += cg; b += cb; cnt++; };
-        if (hexes) for (const hx of hexes) { const n = hx.slice(1); add(parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)); }
-        if (rgbs) for (const rs of rgbs) { const p = rs.replace(/rgba?\(|\)/g, '').split(',').map(Number); if (p.length >= 3) add(p[0], p[1], p[2]); }
-        return cnt ? [Math.round(r / cnt), Math.round(g / cnt), Math.round(b / cnt)] : this._schemeDark ? [16, 33, 61] : [209, 229, 242];
+        const root = this._elements.root, c = _cssRGBA(getComputedStyle(root).backgroundColor);
+        const page = c[3] < 1 && this._backgroundMode() !== 'default' && !root.classList.contains('has-weather-bg') && _cssRGBA(getComputedStyle(this).getPropertyValue('--primary-background-color'));
+        if (page && page[3] >= 0.5) return c.slice(0, 3).map((v, i) => Math.round(v * c[3] + page[i] * (1 - c[3])));
+        if (c[3] >= 0.5) return c.slice(0, 3);
+        const sky = getComputedStyle(root.querySelector('#sky-base')), solid = _cssRGBA(sky.backgroundColor);
+        const stops = ((sky.backgroundImage || '').match(/#[0-9a-f]{3,8}\b|(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^)]*\)/gi) || []).map(_cssRGBA).filter((v) => v[3] > 0);
+        if (stops.length) return [0, 1, 2].map((i) => Math.round(stops.reduce((sum, v) => sum + v[i], 0) / stops.length));
+        return solid[3] >= 0.5 ? solid.slice(0, 3) : this._schemeDark ? [16, 33, 61] : [209, 229, 242];
     }
     _drawEffects(now) {
         const ctx = this._effectsCtx, els = this._elements;

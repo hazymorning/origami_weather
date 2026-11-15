@@ -55,14 +55,14 @@ Containers and buttons can have a `name`. The card doesn't show it, but the visu
 Containers sit in front of the sky and everything that moves in it. `layer` moves a container further back.
 
 - `layer: base` keeps it in front of the weather, but behind the containers without a `layer`. The card around the window of the Window layout sits there.
-- `layer: back` puts it behind the weather, so clouds, mist, rain, snow, birds and planes pass in front of it. The house of the Home layout sits there.
-- `layer: middle` puts it into the weather, with planes, mist and clouds behind it and birds, rain and snow in front of it.
+- `layer: back` puts it behind the weather, so clouds, mist, rain, snow, birds and planes pass in front of it.
+- `layer: middle` puts it into the weather, with planes, mist and clouds behind it and birds, rain and snow in front of it. The house of the Home layout sits there.
 - `layer: sky` puts it behind the sun, the moon and the stars as well, right in front of the sky and its pictures. Pictures with `weather_image_front` are in front of it too.
 
 ```yaml
 button_containers:
   - image: home
-    layer: back
+    layer: middle
 ```
 
 On the same layer, a container further down the list sits in front of the ones above it, and a container with `position: custom` in front of the others. From back to front, the card draws
@@ -328,7 +328,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_enabled` | `boolean` | `true` | Show or hide the sun. |
 | `moon_enabled` | `boolean` | `true` | Show or hide the moon. |
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
-| `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, and a CSS length works too. With `dynamic`, the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. |
+| `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, and a CSS length works too. With `dynamic`, the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. In right-to-left languages a fixed position counts from the right, so the sun or the moon mirrors with the layout, except over background pictures. |
 | `sun_moon_y` | `string` | — | Vertical position from the top. A bare number is read as a percentage, clamped to 0-100, and a CSS length works too. When unset it follows the sun's elevation. |
 
 The old `sun_moon_enabled` is converted to the two separate toggles automatically and a leftover `moon_phase_entity` is simply ignored, so existing configs keep working.
@@ -550,8 +550,9 @@ These run on top of every background, including `images` and `none`.
 | `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
 | `cloud_effects` | `boolean` | `true` | The drifting clouds, in three layers of different size and speed. There are none on clear days and in fog, where the mist takes over. |
 | `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the clouds are drawn with instead of the built-in one. A PNG or WebP with a transparent background works best. |
-| `mist_effects` | `boolean` | same as `cloud_effects` | Layers of soft mist, drawn much larger than the card, that drift behind the clouds at different speeds. Thinner patches open and close as they pass. Thicker when it's cloudy, a dense veil in fog and none on clear days. The darker the card's background, the dimmer the mist, so it stays a soft veil at night and is white on a light sky. It works with or without the clouds. |
+| `mist_effects` | `boolean` | same as `cloud_effects` | Layers of soft mist that drift behind the clouds at different speeds, with thinner patches that open and close as they pass. There is mist whenever there are clouds, rain or snow, a little denser in fog, and none on clear days. The mist takes its color from the background behind it. On a dark sky it is only a little lighter, so at night it stays a dim blue veil and never turns the card gray. On a light sky it is a paler version of the sky, and on a white card a soft shade. It thins out around the sun and the moon, so they still shine through, though less so in fog. It works with or without the clouds. |
 | `mist_density` | `number` | `1` | How thick the mist is, between `0.25` and `2`. |
+| `mist_size` | `number` | `1` | How big the patches of mist and the gaps between them are, between `0.25` and `2`. Smaller patches suit a small opening, like the round window of the Window layout. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |

@@ -29,7 +29,7 @@ const KEY_ORDER = Object.freeze([
     "card_frame", "full_width", "full_width_margin", "edge_fade", "edge_fade_size", "shadow", "shadow_color",
     "icon_path",
     "bg_brightness", "bg_saturation", "bg_blur", "bg_blend",
-    "background_haze", "precipitation_effects", "precipitation_speed", "cloud_effects", "cloud_image_path", "mist_effects", "mist_density", "night_sky_effects", "bird_effects", "bird_density", "balloon_effects", "balloon_density", "plane_effects", "plane_density",
+    "background_haze", "precipitation_effects", "precipitation_speed", "cloud_effects", "cloud_image_path", "mist_effects", "mist_density", "mist_size", "night_sky_effects", "bird_effects", "bird_density", "balloon_effects", "balloon_density", "plane_effects", "plane_density",
     "button_containers"]);
 const CARD_THRESHOLD_KEYS = Object.freeze(["background_thresholds", "background_threshold_entity", "background_threshold_attribute"]);
 const nameFirst = (o) => { const n = typeof o.name === "string" ? o.name.trim() : ""; const { name, ...rest } = o; return n ? { name: n, ...rest } : rest; };
@@ -38,7 +38,7 @@ const DISPLAY_DEFAULTS = Object.freeze({
     color_mode: "sun", sun_entity: "sun.sun", background_mode: "default",
     sun_moon_size: 80, sun_moon_x: 50,
     bg_brightness: 1.0, bg_saturation: 1.0, bg_blur: 0, bg_blend: 0, gradient_angle: 180, gradient_x: 50, gradient_y: 50, gradient_stop_1: 0, gradient_stop_2: 100,
-    precipitation_speed: 1, mist_density: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
+    precipitation_speed: 1, mist_density: 1, mist_size: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
 const LAYER_STOPS = Object.freeze([
     { value: "sky", label: "In the sky. The sun, the moon, the stars and the weather are in front of it." },
     { value: "back", label: "Behind the weather. Clouds, mist, rain, snow, birds and planes pass in front of it." },
@@ -859,7 +859,7 @@ class WeatherCardEditor extends LitElement {
         if (button.forecast) {
             const type = button.forecast === "hourly" ? "Hourly" : "Daily", offset = parseInt(button.forecast_offset, 10) || 0;
             const offsetLabel = button.forecast === "hourly"
-                ? (offset === 0 ? "now" : `+${offset}h`)
+                ? (offset === 0 ? "next hour" : `+${offset + 1}h`)
                 : (offset === 0 ? "today" : offset === 1 ? "tomorrow" : `+${offset}d`);
             const firstFcAttr = (els.find(e => e && e.type === "text" && !e.entity && e.attribute) || {}).attribute;
             return two(name || label, `${type} · ${offsetLabel} · ${firstFcAttr || "condition"}`);}
@@ -1250,8 +1250,8 @@ class WeatherCardEditor extends LitElement {
         const fcSettings = isFc && !fcEntityMissing ? html`<div class="segmented">
                     ${[{v:"daily",l:"Daily"},{v:"hourly",l:"Hourly"}].map(o=>html`<button type="button" class=${button.forecast===o.v?"active":""}
                         @click=${()=>update({...button,forecast:o.v,forecast_offset:0})}>${o.l}</button>`)}</div>
-                ${(()=>{const mx=button.forecast==="hourly"?23:6,lb=button.forecast==="hourly"?"Hours ahead":"Days ahead",
-                    hp=button.forecast==="hourly"?(fcOff===0?"Now":`+${fcOff}h`):(fcOff===0?"Today":fcOff===1?"Tomorrow":`+${fcOff} days`);
+                ${(()=>{const mx=button.forecast==="hourly"?23:14,lb=button.forecast==="hourly"?"Hours ahead":"Days ahead",
+                    hp=button.forecast==="hourly"?(fcOff===0?"Next hour":`+${fcOff + 1}h`):(fcOff===0?"Today":fcOff===1?"Tomorrow":`+${fcOff} days`);
                     return this._slider({ value: fcOff, fallback: 0, min: 0, max: mx, step: 1, int: true, label: lb, helper: hp,
                         onCommit: (v) => update({ ...button, forecast_offset: v }) });})()}` : null;
         const fcMissingHint = isFc && fcEntityMissing ? html`<div class="button-nudge warning" style="margin-top:var(--origami-e-s2)"><ha-icon icon="mdi:alert-circle-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon> Forecast needs a weather entity.</div>` : null;
@@ -2047,7 +2047,7 @@ class WeatherCardEditor extends LitElement {
                 ${fx("background_haze", "Background haze", null, mode === "default")}
                 ${fx("precipitation_effects", "Precipitation", this._renderSlider("precipitation_speed", "Speed", 0.25, 4, 0.05))}
                 ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
-                ${fx("mist_effects", "Mist", this._renderSlider("mist_density", "Thickness", 0.25, 2, 0.05), c.cloud_effects !== false)}
+                ${fx("mist_effects", "Mist", html`<div style="display:flex;flex-direction:column;gap:var(--origami-e-s2)">${this._renderSlider("mist_density", "Thickness", 0.25, 2, 0.05)}${this._renderSlider("mist_size", "Size", 0.25, 2, 0.05)}</div>`, c.cloud_effects !== false)}
                 ${fx("night_sky_effects", "Stars")}
                 ${fx("bird_effects", "Birds")}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}

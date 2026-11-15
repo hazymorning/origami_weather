@@ -78,7 +78,7 @@ const DIORAMA_CONFIG = Object.freeze({
                     inner_gap: '6px',
                     background: false,
                     elements: [
-                        text({ size: '40px', weight: '700', precision: 0, format: '\u00b0' }),
+                        text({ size: '40px', weight: '800', precision: 0, format: '\u00b0' }),
                         text({ entity: PRESET_ENTITY_TOKEN, size: '12px', weight: '500', overflow: 'wrap' })
                     ]
                 }
@@ -125,7 +125,7 @@ const CLASSIC_COLORS = [
     ['clear-night', '#1c2b49', '#1c2b49'],
     ['partlycloudy', '#5687b8', '#273449'],
     ['cloudy', '#6e8196', '#303740'],
-    ['fog', '#80898f', '#3b4044'],
+    ['fog', '#80898f', '#353a3e'],
     ['windy', '#4d8a90', '#233b3e'],
     ['windy-variant', '#56869c', '#273a44'],
     ['rainy', '#566a80', '#272f3a'],
@@ -133,8 +133,8 @@ const CLASSIC_COLORS = [
     ['lightning', '#575370', '#282636'],
     ['lightning-rainy', '#4c4965', '#211f2d'],
     ['hail', '#5a7888', '#29363d'],
-    ['snowy', '#7890a6', '#384551'],
-    ['snowy-rainy', '#677d91', '#313b44'],
+    ['snowy', '#7890a6', '#313d49'],
+    ['snowy-rainy', '#677d91', '#2d3740'],
     ['exceptional', '#2784d5', '#182b4e']
 ];
 
@@ -161,9 +161,9 @@ const todayText = (extra) => text({ size: '15px', weight: '500', ...extra });
 
 const CLASSIC_CONFIG = Object.freeze({
     color_mode: 'dark',
-    sun_moon_size: 46,
-    sun_moon_x: 'calc(100% - 20px - (100% - 40px) / 12)',
-    sun_moon_y: 16,
+    sun_moon_size: 56,
+    sun_moon_x: 'calc(100% - var(--_origami-pad-h, var(--origami-card-padding, 16px)) - 40px)',
+    sun_moon_y: 'calc(var(--_origami-pad-v, var(--origami-card-padding, 16px)) + 36px)',
     cloud_effects: false,
     mist_effects: true,
     bird_effects: false,
@@ -173,7 +173,7 @@ const CLASSIC_CONFIG = Object.freeze({
     background_color: '#5687b8',
     background_color_dark: '#273449',
     background_thresholds: thresholds(CLASSIC_COLORS),
-    background_haze: true,
+    background_haze: false,
     card_tap_action: { action: 'more-info' },
     gradient: true,
     gradient_type: 'linear',
@@ -187,13 +187,14 @@ const CLASSIC_CONFIG = Object.freeze({
             name: 'Now',
             padding: '0 4px',
             buttons: [
-                { name: 'Temperature', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', background: false, elements: [text({ size: '64px', weight: '500', precision: 0, format: '\u00b0', color: WHITE, margin: '-0.2em -0.06em -0.1em' })] }
+                { name: 'Temperature', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', background: false, elements: [text({ size: '52px', weight: '800', precision: 0, format: '\u00b0', color: WHITE, margin: '-0.165em -0.06em -0.1em' })] }
             ]
         },
         {
             name: 'Today',
+            custom_width: 'calc(100% - 76px)',
             align_items: 'baseline',
-            gap: '16px',
+            gap: '2px 16px',
             margin: '2px 0 0',
             padding: '0 4px',
             buttons: [
@@ -239,20 +240,15 @@ const CLASSIC_CONFIG = Object.freeze({
     }
 });
 
-const WINDOW_HEIGHT = 274, WINDOW_INSET = 16, WINDOW_MAX = 144;
-const WINDOW_MIDDLE = WINDOW_INSET + WINDOW_MAX / 2;
-const WINDOW_SIZE = `min(${WINDOW_MAX}px, 40cqw)`;
+const WINDOW_MAX = 136, WINDOW_SHARE = 40, WINDOW_HOUR = 28;
+const WINDOW_SIZE = `min(${WINDOW_MAX}px, ${WINDOW_SHARE}cqw)`;
 const windowPad = (side) => `var(--_origami-pad-${side}, var(--origami-card-padding, 16px))`;
-const WINDOW_TEXT_WIDTH = `calc(100cqw - ${WINDOW_SIZE} - 48px)`;
-const WINDOW_DATE_WIDTH = `calc(100cqw - ${WINDOW_SIZE} - 24px)`;
-const WINDOW_TODAY_WIDTH = `max(${WINDOW_DATE_WIDTH}, 150px, 46cqw + 26px)`;
-const WINDOW_WIDE = 'calc(100cqw - 40px)';
-const WINDOW_LABEL = 'clamp(10px, 4cqw, 12px)';
+const WINDOW_BLEED = `min(${windowPad('h')}, max(0px, (100cqw - ${6 * WINDOW_HOUR}px)/10))`;
 const WINDOW_INK = 'var(--primary-text-color)';
 const WINDOW_MUTED = 'var(--secondary-text-color)';
 const WINDOW_PAPER = 'var(--ha-card-background, var(--card-background-color, #fff))';
 const windowSoft = (share) => `color-mix(in srgb, ${WINDOW_INK} ${share}%, transparent)`;
-const windowSmall = (extra) => text({ size: 'clamp(11.5px, 4.2cqw, 13px)', weight: '500', ...extra });
+const windowSmall = (extra) => text({ size: '13px', weight: '500', ...extra });
 
 const WINDOW_SKY = [
     ['sunny', '#5f9fd6', '#14223f'],
@@ -275,8 +271,9 @@ const WINDOW_SKY = [
 const WINDOW_CUT = [
     `0 0 0 100vmax ${WINDOW_PAPER}`,
     '0 0 0 100vmax var(--primary-background-color)',
-    'inset 0 1.5px 1px -0.5px rgba(0, 0, 0, 0.16)',
-    'inset 0 10px 14px -8px rgba(0, 0, 0, 0.48)',
+    `inset 0 0 0 1px ${windowSoft(10)}`,
+    'inset 0 1.5px 1px -0.5px rgba(0, 0, 0, 0.1)',
+    'inset 0 6px 12px -6px rgba(0, 0, 0, 0.3)',
     `inset 0 -1.5px 0 color-mix(in srgb, ${WINDOW_PAPER} 75%, #fff)`
 ].join(', ');
 
@@ -297,92 +294,55 @@ const windowColumn = (name, label, extra) => ({
     ...extra,
     background: false,
     padding: '0',
-    style: 'vertical',
-    align: 'center',
-    inner_gap: '6px',
-    width: 'min(56px, 20%)',
     elements: [
         label,
-        icon('weather', { icon_size: '24px', color: WINDOW_INK, margin: '0 auto' }),
-        text({ attribute: 'temperature', format: '\u00b0', precision: 0, size: '16px', weight: '500', color: WINDOW_INK })
+        icon('weather', { icon_size: '24px', color: WINDOW_INK }),
+        text({ attribute: 'temperature', format: '\u00b0', precision: 0, size: '15px', weight: '500', color: WINDOW_INK })
     ]
 });
 
-const windowHour = (offset) => windowColumn(offset ? `In ${offset + 1} hours` : 'Next hour', text({ attribute: 'datetime', size: WINDOW_LABEL, weight: '500', color: WINDOW_MUTED }), {
+const windowHour = (offset) => windowColumn(offset ? `In ${offset + 1} hours` : 'Next hour', text({ attribute: 'datetime', size: '12px', weight: '500', color: WINDOW_MUTED }), {
     forecast: 'hourly',
     ...(offset ? { forecast_offset: offset } : {})
 });
 
 const WINDOW_CONFIG = Object.freeze({
-    card_height: `${WINDOW_HEIGHT}px`,
-    card_padding: '0',
-    sun_moon_size: 36,
-    sun_moon_x: `calc(100% - ${windowPad('h')} - ${WINDOW_INSET}px - min(${WINDOW_MAX}px, 0.4 * (100% - 2 * ${windowPad('h')})) / 2)`,
-    sun_moon_y: `calc(${windowPad('v')} + ${WINDOW_MIDDLE}px)`,
+    card_height: 'content',
+    card_padding: '20px',
+    content_direction: 'row',
+    content_align: 'between',
+    sun_moon_size: 50,
+    sun_moon_x: `calc(100% - ${windowPad('h')} - min(${WINDOW_MAX}px, ${WINDOW_SHARE / 100} * (100% - 2 * ${windowPad('h')})) / 2)`,
+    sun_moon_y: `calc(${windowPad('v')} + ${WINDOW_MAX / 2}px)`,
     balloon_effects: false,
-    mist_density: 0.7,
+    mist_density: 1.2,
+    mist_size: 0.5,
     background_mode: 'color',
     background_color: '#6ea2cf',
     background_color_dark: '#1a2741',
     background_thresholds: thresholds(WINDOW_SKY),
-    background_haze: true,
+    background_haze: false,
     card_tap_action: { action: 'more-info' },
     button_containers: [
         {
-            name: 'Window',
-            position: 'custom',
-            position_anchor: 'top-right',
-            position_x: `${WINDOW_INSET}px`,
-            position_y: `calc(${WINDOW_MIDDLE}px - ${WINDOW_SIZE} / 2)`,
-            layer: 'base',
-            custom_width: WINDOW_SIZE,
-            buttons: [{ name: 'Window', entity: PRESET_ENTITY_TOKEN, background: true, background_color: 'transparent', button_round: true, width: WINDOW_SIZE, height: WINDOW_SIZE, padding: '0', shadow_color: WINDOW_CUT, tap_action: { action: 'none' }, elements: [] }]
-        },
-        {
-            name: 'Date',
-            position: 'custom',
-            position_x: '20px',
-            position_y: '17px',
-            custom_width: WINDOW_DATE_WIDTH,
+            name: 'Now',
+            custom_width: `calc(100% - ${WINDOW_SIZE} - 16px)`,
+            gap: '0 12px',
             buttons: [
                 {
                     name: 'Date',
                     entity: PRESET_ENTITY_TOKEN,
                     background: false,
-                    padding: '0',
-                    inner_gap: '5px',
+                    width: '100%',
+                    padding: '0 0 12px',
+                    inner_gap: '4px',
                     elements: [
-                        text({ attribute: 'datetime', format: '%A', size: '14px', weight: '700', color: WINDOW_INK }),
-                        text({ attribute: 'datetime', format: '%-d %b', size: '14px', weight: '500', color: WINDOW_MUTED })
+                        text({ attribute: 'datetime', format: '%A', size: '13px', weight: '700', color: WINDOW_INK }),
+                        text({ attribute: 'datetime', format: '%-d %b', size: '13px', weight: '500', color: WINDOW_MUTED })
                     ]
-                }
-            ]
-        },
-        {
-            name: 'Temperature',
-            position: 'custom',
-            position_x: '18px',
-            position_y: '44px',
-            custom_width: WINDOW_TEXT_WIDTH,
-            buttons: [{ name: 'Temperature', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', background: false, padding: '0', elements: [text({ size: '48px', weight: '500', precision: 0, format: '\u00b0', color: WINDOW_INK, margin: '-0.2em -0.06em -0.12em' })] }]
-        },
-        {
-            name: 'Condition',
-            position: 'custom',
-            position_x: '18px',
-            position_y: '93px',
-            custom_width: WINDOW_TEXT_WIDTH,
-            buttons: [{ name: 'Condition', entity: PRESET_ENTITY_TOKEN, background: false, padding: '0', elements: [text({ size: 'clamp(12px, 4.8cqw, 15px)', weight: '500', color: WINDOW_INK, overflow: 'wrap', margin: '0 0 0 2px' })] }]
-        },
-        {
-            name: 'Today',
-            position: 'custom',
-            position_x: '20px',
-            position_y: '143px',
-            custom_width: WINDOW_TODAY_WIDTH,
-            align_items: 'center',
-            gap: 'clamp(8px, 100cqw - 296px, 14px)',
-            buttons: [
+                },
+                { name: 'Temperature', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', background: false, width: '100%', padding: '0', elements: [text({ size: '52px', weight: '800', precision: 0, format: '\u00b0', color: WINDOW_INK, margin: '-0.2em -0.06em -0.12em' })] },
+                { name: 'Condition', entity: PRESET_ENTITY_TOKEN, background: false, width: '100%', padding: '8px 0 18px', elements: [text({ size: '15px', weight: '500', color: WINDOW_INK, overflow: 'wrap' })] },
                 {
                     name: 'High and low',
                     entity: PRESET_ENTITY_TOKEN,
@@ -401,22 +361,25 @@ const WINDOW_CONFIG = Object.freeze({
             ]
         },
         {
-            name: 'Line',
-            position: 'custom',
-            position_x: '20px',
-            position_y: '176px',
-            custom_width: WINDOW_WIDE,
-            buttons: [{ name: 'Line', entity: PRESET_ENTITY_TOKEN, background: false, padding: '0', width: '100%', elements: [{ type: 'bar', bar_height: '1px', bar_color: windowSoft(12), bar_values: [{ value: 100, marker_size: 0 }] }] }]
+            name: 'Window',
+            custom_width: WINDOW_SIZE,
+            padding: `calc((${WINDOW_MAX}px - ${WINDOW_SIZE}) / 2) 0`,
+            layer: 'base',
+            buttons: [{ name: 'Window', entity: PRESET_ENTITY_TOKEN, background: true, background_color: 'transparent', button_round: true, width: WINDOW_SIZE, height: WINDOW_SIZE, padding: '0', shadow_color: WINDOW_CUT, tap_action: { action: 'none' }, elements: [] }]
         },
         {
             name: 'Next hours',
-            position: 'custom',
-            position_x: '4px',
-            position_y: '190px',
-            custom_width: 'calc(100cqw - 8px)',
-            justify_content: 'between',
+            custom_width: `calc(100cqw + 2*${WINDOW_BLEED})`,
+            margin: `24px calc(-1*${WINDOW_BLEED}) 0`,
+            layout: 'horizontal-scroll',
+            scroll_count: 6,
+            scroll_fade: true,
+            scroll_fade_size: `min(8px, ${WINDOW_BLEED})`,
             gap: '0',
-            buttons: [windowColumn('Now', text({ text: 'Now', size: WINDOW_LABEL, weight: '700', color: WINDOW_INK })), ...[0, 1, 2, 3].map(windowHour)]
+            button_style: 'vertical',
+            button_gap: '6px',
+            align: 'center',
+            buttons: [windowColumn('Now', text({ text: 'Now', size: '12px', weight: '700', color: WINDOW_INK })), ...Array.from({ length: 24 }, (_, i) => windowHour(i))]
         }
     ],
     grid_options: {
@@ -494,7 +457,7 @@ const HOME_CONFIG = Object.freeze({
     moon_enabled: false,
     cloud_effects: false,
     mist_effects: true,
-    mist_density: 0.45,
+    mist_density: 0.8,
     night_sky_effects: false,
     bird_effects: true,
     balloon_effects: false,
@@ -507,7 +470,7 @@ const HOME_CONFIG = Object.freeze({
     button_containers: [
         {
             name: 'House',
-            layer: 'back',
+            layer: 'middle',
             position: 'custom',
             position_anchor: 'top-right',
             position_x: '34px',
@@ -533,7 +496,7 @@ const HOME_CONFIG = Object.freeze({
                     entity: PRESET_ENTITY_TOKEN,
                     attribute: 'temperature',
                     style: 'split',
-                    elements: [homeTemp('clamp(40px, 17cqw, 52px)', '700'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
+                    elements: [homeTemp('clamp(40px, 17cqw, 52px)', '800'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
                 },
                 room('Living'),
                 room('Office'),

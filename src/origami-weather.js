@@ -48,6 +48,44 @@ function _filterRGB(rgb, filter) {
     }
     return c.map((v) => Math.round(v * 255));
 }
+let _moonPhotoReady = null;
+function _moonPhoto() {
+    if (!_moonPhotoReady) _moonPhotoReady = new Promise((done) => { const img = new Image(); img.onload = () => done(img); img.onerror = () => done(null); img.src = MOON_SURFACE; });
+    return _moonPhotoReady;
+}
+function _soften(v, n) {
+    const a = new Float32Array(v.length), b = new Float32Array(v.length);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const i = y * n + x; a[i] = (v[i - (x > 0)] + 2 * v[i] + v[i + (x < n - 1)]) / 4; }
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const i = y * n + x; b[i] = (a[i - (y > 0) * n] + 2 * a[i] + a[i + (y < n - 1) * n]) / 4; }
+    return b;
+}
+function _moonImageData(photo, size, phase) {
+    const c = Object.assign(document.createElement('canvas'), { width: size, height: size }), x = c.getContext('2d', { willReadFrequently: true });
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(photo, 0, 0, size, size);
+    const d = x.getImageData(0, 0, size, size).data, n = size * size, lum = new Float32Array(n), seen = [];
+    for (let i = 0; i < n; i++) {
+        lum[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255;
+        if (d[i * 4 + 3] > 230) seen.push(lum[i]);
+    }
+    seen.sort((a, b) => a - b);
+    const lo = seen[Math.floor(seen.length * 0.02)] || 0, hi = seen[Math.floor(seen.length * 0.995)] || 1;
+    const alb = lum.map((v) => Math.pow(Math.max(0, Math.min(1, (v - lo) / (hi - lo || 1))), 1.2) * 0.72 + 0.28), h = _soften(alb, size);
+    const R = size / 2 * 0.98, phi = 2 * Math.PI * phase, lx = Math.sin(phi), lz = -Math.cos(phi), bump = 1.4 * size / 300, k = 1 - Math.exp(-2.1);
+    const out = x.createImageData(size, size), o = out.data;
+    for (let py = 0; py < size; py++) for (let px = 0; px < size; px++) {
+        const u = (px + 0.5 - size / 2) / R, v = (py + 0.5 - size / 2) / R, r2 = u * u + v * v, i = py * size + px;
+        if (r2 >= 1) continue;
+        const z = Math.sqrt(1 - r2), gx = (h[i + (px < size - 1)] - h[i - (px > 0)]) / 2, gy = (h[i + (py < size - 1) * size] - h[i - (py > 0) * size]) / 2;
+        const nx = u - bump * gx, ny = -v + bump * gy, len = Math.hypot(nx, ny, z), mu0 = Math.max(0, (nx * lx + z * lz) / len);
+        const t = Math.min(1, (1 - Math.exp(-2.1 * Math.min(1.4, 2 * mu0 / (mu0 + Math.max(z, 1e-3))) * alb[i])) / k);
+        o[i * 4] = 255 * t;
+        o[i * 4 + 1] = 252 * t;
+        o[i * 4 + 2] = 247 * t;
+        o[i * 4 + 3] = 255 * Math.min(1, t * 2.6) * Math.min(1, (1 - Math.sqrt(r2)) * R / 0.9);
+    }
+    return out;
+}
 function _cssRGBA(css) {
     const x = _cssRGBA.ctx || (_cssRGBA.ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true }));
     x.clearRect(0, 0, 1, 1);
@@ -1701,6 +1739,7 @@ class WeatherCard extends HTMLElement {
                     w = entry.target.offsetWidth; h = entry.target.offsetHeight;
                 }
                 const changed = this._updateCanvasDimensions(w, h);
+                if (this._isAstroNight) this._drawMoon();
                 if (!this._initializationComplete) {
                     this._tryInitialize();
                 } else if (changed) {
@@ -2047,7 +2086,6 @@ class WeatherCard extends HTMLElement {
         st.opacity = String(tuning.sunVisibility);
         if (isAstroNight) {
             this._applyMoonPhase(phase);
-            this._loadMoonImage();
             st.setProperty('--origami-moon-phase-glow', String(Math.round(Math.sin(phase * Math.PI) * 100) / 100));
         } else {
             const c = WeatherCard._sunPalette(warm, tuning.sunSaturation);
@@ -2107,12 +2145,19 @@ class WeatherCard extends HTMLElement {
         this._moonPhaseApplied = p;
         const lit = WeatherCard._moonLitPath(p);
         this._moonLit = lit ? new Path2D(lit) : null;
-        const litPath = this._elements?.moonLitPath;
-        if (litPath) litPath.setAttribute('d', lit || '');
+        this._drawMoon();
     }
-    _loadMoonImage() {
-        const img = this._elements?.moonImage;
-        if (img && !img.hasAttribute('href')) img.setAttribute('href', MOON_SURFACE);
+    _drawMoon() {
+        const cv = this._elements && this._elements.moonCanvas, p = this._moonPhaseApplied;
+        if (!cv || p == null) return;
+        const size = Math.min(320, Math.round(cv.clientWidth * (window.devicePixelRatio || 1))), key = `${p}|${size}`;
+        if (!size || this._moonKey === key) return;
+        this._moonKey = key;
+        _moonPhoto().then((photo) => {
+            if (!photo || this._moonKey !== key) return;
+            cv.width = cv.height = size;
+            cv.getContext('2d').putImageData(_moonImageData(photo, size, p), 0, 0);
+        });
     }
     static _moonPhase() { return (Date.now() - 947182440000) / 2551442877 % 1; }
     static _moonLitPath(p) {
@@ -2514,9 +2559,8 @@ class WeatherCard extends HTMLElement {
                 animation: wbkMoonGlow 14s ease-in-out infinite; }
             #card-root.scheme-light #sun-moon .moon-glow { --_moon-glow: rgba(190,208,234,0.34); }
             #sun-moon .moon-disc { position: absolute; inset: 0; width: 100%; height: 100%; }
-            #sun-moon .moon-image { filter: brightness(1.6) contrast(1.35) saturate(0.1) sepia(0.12); mix-blend-mode: luminosity; opacity: 0.88; }
-            #card-root.scheme-light #sun-moon .moon-image { filter: brightness(2.0) contrast(1.2) saturate(0.08) sepia(0.15); opacity: 0.72; }
-            #card-root.scheme-light #sun-moon .moon-surface { fill-opacity: 0.90; }
+            #sun-moon .moon-disc { filter: drop-shadow(0 0 calc(var(--origami-sun-moon-size, 80px) * 0.05) rgba(232, 238, 255, 0.4)); }
+            #card-root.scheme-light #sun-moon .moon-disc { opacity: 0.92; }
             #sun-moon .moon { opacity: 0; }
             #sun-moon.is-astro-night .sun { opacity: 0; }
             #sun-moon.is-astro-night .moon { opacity: 1; }
@@ -2750,13 +2794,14 @@ class WeatherCard extends HTMLElement {
         }
         this.shadowRoot.adoptedStyleSheets = [_sharedStyles, this._userCss = new CSSStyleSheet()];
         const root = document.createElement('div'); root.id = 'card-root';
-        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><svg class="moon-disc" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="wbk-moon-surface" cx="38%" cy="34%" r="78%"><stop offset="0%" stop-color="#eef0f4"/><stop offset="45%" stop-color="#dce0e8"/><stop offset="100%" stop-color="#b8bcc6"/></radialGradient><clipPath id="wbk-moon-lit"><path class="moon-lit-path" d=""/></clipPath></defs><g clip-path="url(#wbk-moon-lit)"><circle class="moon-surface" cx="50" cy="50" r="48" fill="url(#wbk-moon-surface)"/><image class="moon-image" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid slice"/></g></svg></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><canvas id="weather-near"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
+        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><canvas class="moon-disc" aria-hidden="true"></canvas></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><canvas id="weather-near"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
         this.shadowRoot.append(root);
         const q = (sel) => root.querySelector(sel);
         const contentLayer = q('#content-layer');
         contentLayer.addEventListener('click', (e) => this._handleButtonClick(e));
         const freeLayer = q('#free-layer');
         freeLayer.addEventListener('click', (e) => this._handleButtonClick(e));
+        this._moonKey = null;
         this._elements = {
             root,
             contentLayer,
@@ -2764,8 +2809,7 @@ class WeatherCard extends HTMLElement {
             weatherBg: q('#weather-bg'),
             sunMoonLayer: q('#sun-moon-layer'),
             sunMoon: q('#sun-moon'),
-            moonLitPath: q('.moon-lit-path'),
-            moonImage: q('.moon-image'),
+            moonCanvas: q('.moon-disc'),
             defaultBg: q('#default-bg'),
             effectsCanvas: q('#weather-effects'),
             nearCanvas: q('#weather-near'),

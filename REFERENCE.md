@@ -54,6 +54,7 @@ Containers and buttons can have a `name`. The card doesn't show it, but the visu
 
 Containers sit in front of the sky and everything that moves in it. `layer` moves a container further back.
 
+- `layer: base` keeps it in front of the weather, but behind the containers without a `layer`. The card around the window of the Window layout sits there.
 - `layer: back` puts it behind the weather, so clouds, mist, rain, snow, birds and planes pass in front of it. The house of the Home layout sits there.
 - `layer: middle` puts it into the weather, with planes, mist and clouds behind it and birds, rain and snow in front of it.
 - `layer: sky` puts it behind the sun, the moon and the stars as well, right in front of the sky and its pictures. Pictures with `weather_image_front` are in front of it too.
@@ -74,7 +75,8 @@ On the same layer, a container further down the list sits in front of the ones a
 6. containers with `layer: middle`
 7. birds, rain, hail and snow
 8. the `gradient`, `bg_blend` and `edge_fade`
-9. all other containers
+9. containers with `layer: base`
+10. all other containers
 
 ### Buttons
 
@@ -168,7 +170,7 @@ buttons:
 
 ### Forecasts
 
-Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. A text element with `attribute: datetime` prints the matching label (day name or time), and [date codes](#dates) in its `format` change what that label says. With `icon: weather` on an icon element, the icon matches the forecasted condition.
+Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today or the next hour, `1` is tomorrow or the hour after, and so on. A text element with `attribute: datetime` prints the matching label (day name or time), and [date codes](#dates) in its `format` change what that label says. With `icon: weather` on an icon element, the icon matches the forecasted condition, and the hours between sunset and sunrise get the same night icons as the current weather at night.
 
 A button whose `forecast_offset` lies past the last entry the weather service sends is not drawn. A row can therefore hold ten days and show as many as there are, like the Classic layout does. On a weather entity without that kind of forecast the buttons stay and print `N/A`.
 
@@ -187,7 +189,7 @@ buttons:
 
 ### Dates
 
-A forecast's `datetime` and timestamps like the sun's `next_rising` print a short label, a day name or a time. Put date codes into `format` to print the date in that pattern instead.
+A forecast's `datetime` and timestamps like the sun's `next_rising` print a short label, a day name or a time. On a weather button without `forecast`, `datetime` gives today's date. Put date codes into `format` to print the date in that pattern instead.
 
 ```yaml
 elements:
@@ -208,7 +210,7 @@ This prints `Thu, 12`. The codes are the ones Home Assistant templates use.
 | `%M` `%S` | Minute and second. |
 | `%p` | `AM` or `PM`. |
 
-Day and month names are in the Home Assistant language. A `-` after the percent sign drops the leading zero, so `%-d` prints `5`. A `format` without a code is still glued to the end of the label.
+Day and month names are in the Home Assistant language. A `-` after the percent sign drops the leading zero, so `%-d` prints `5`. A `format` without a code is still glued to the end of the label. With codes for the time, today's date on a weather button is a clock that moves on every minute.
 
 ### Gauges
 
@@ -325,10 +327,9 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only needed when the sun entity has a different ID. |
 | `sun_enabled` | `boolean` | `true` | Show or hide the sun. |
 | `moon_enabled` | `boolean` | `true` | Show or hide the moon. |
-| `sun_moon_fade` | `boolean` | `true` | The sun and moon fade behind clouds, rain and fog. Set to `false` to keep them fully visible, as on the line of the Daylight layout. Their glow and colors still follow the weather. |
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
 | `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, and a CSS length works too. With `dynamic`, the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. |
-| `sun_moon_y` | `string` | — | Vertical position, as a percentage from the top, clamped to 0-100. When unset it follows the sun's elevation. |
+| `sun_moon_y` | `string` | — | Vertical position from the top. A bare number is read as a percentage, clamped to 0-100, and a CSS length works too. When unset it follows the sun's elevation. |
 
 The old `sun_moon_enabled` is converted to the two separate toggles automatically and a leftover `moon_phase_entity` is simply ignored, so existing configs keep working.
 
@@ -378,7 +379,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
 | `position_y` | `string` | `0` | Vertical offset from anchor. |
-| `layer` | `string` | `front` | How far back the container sits among the sky and the weather. `sky`, `back`, `middle` or `front`, as [Containers](#containers) explains. |
+| `layer` | `string` | `front` | How far back the container sits among the sky and the weather. `sky`, `back`, `middle`, `base` or `front`, as [Containers](#containers) explains. |
 
 ### Button options
 
@@ -404,6 +405,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `blurred_background` | `boolean` | — | Override the container's blur setting. |
 | `button_round` | `boolean` | `false` | Fully rounded pill shape. |
 | `shadow` | `boolean` | — | Set to `false` to remove the shadow from this button. |
+| `shadow_color` | `string` | — | Replaces the shadow of this button's background with a custom CSS box-shadow. |
 | `width` | `string` | — | Button width. Required for scrolling text. |
 | `height` | `string` | — | Button height. |
 | `padding` | `string` | — | Inner padding. |
@@ -413,10 +415,10 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `color_threshold_attribute` | `string` | — | Attribute to read for the tint value. |
 | `marquee_speed` | `number` | `30` | Scroll speed in px/s for text elements using `overflow: marquee`. |
 | `marquee_rtl` | `boolean` | `false` | Reverse the scroll direction. |
-| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). |
+| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). With `action: none` the button doesn't react to taps, and a tap on it goes to `card_tap_action`. |
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
-| `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` = today/now, `1` = next, etc. Past the last entry the weather service sends, the button is not drawn. |
+| `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` is today or the next hour, `1` the one after, and so on. Past the last entry the weather service sends, the button is not drawn. |
 | `position` | `string` | — | Set to `custom` to detach the button and place it freely inside its container. |
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
@@ -569,8 +571,8 @@ The sun and moon sit in this group too. Their options are under [Sun and moon](#
 | `bg_brightness` | `number` | `1` | Brightness multiplier (e.g. `0.8` to darken). Applies to the animated sky and to background images. |
 | `bg_saturation` | `number` | `1` | Saturation multiplier (e.g. `0` for grayscale). Applies to both as well. |
 | `bg_blur` | `number` | — | Blur in pixels. Only applies to image backgrounds. |
-| `bg_blend` | `number` | `0` | Mixes the theme's card color over the animated sky or the images, from `0` to `100`. Tones the background down, along with containers moved back with `layer`. |
-| `gradient` | `boolean` | `false` | A gradient over the background, the sun and the effects, under the content. Containers moved back with `layer` are under it too. Works with every `background_mode`. |
+| `bg_blend` | `number` | `0` | Mixes the theme's card color over the animated sky or the images, from `0` to `100`. Tones the background down, along with containers on the `sky`, `back` and `middle` layers. |
+| `gradient` | `boolean` | `false` | A gradient over the background, the sun and the effects, under the content. Containers on the `sky`, `back` and `middle` layers are under it too. Works with every `background_mode`. |
 | `gradient_type` | `string` | `linear` | `linear` or `radial`. |
 | `gradient_angle` | `number` | `180` | Direction of a linear gradient in degrees. `180` runs from top to bottom. |
 | `gradient_x` | `number` | `50` | Horizontal center of a radial gradient, in percent. |

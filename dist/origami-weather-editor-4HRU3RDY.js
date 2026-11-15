@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-LLKZ4AM2.js";
+} from "./chunk-QIUD7KAD.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -628,7 +628,6 @@ var KEY_ORDER = Object.freeze([
   "sun_entity",
   "sun_enabled",
   "moon_enabled",
-  "sun_moon_fade",
   "sun_moon_size",
   "sun_moon_x",
   "sun_moon_y",
@@ -720,6 +719,7 @@ var LAYER_STOPS = Object.freeze([
   { value: "sky", label: "In the sky. The sun, the moon, the stars and the weather are in front of it." },
   { value: "back", label: "Behind the weather. Clouds, mist, rain, snow, birds and planes pass in front of it." },
   { value: "middle", label: "In the weather. Planes, mist and clouds pass behind it, birds, rain and snow in front of it." },
+  { value: "base", label: "In front of the weather, behind the other containers." },
   { value: "front", label: "In front of everything, like the text." }
 ]);
 var OPT = Object.freeze({
@@ -1492,17 +1492,14 @@ var WeatherCardEditor = class extends i4 {
     const sunEnabled = c4.sun_enabled !== false, moonEnabled = c4.moon_enabled !== false;
     const xDynamic = c4.sun_moon_x === "dynamic", xCss = !xDynamic && c4.sun_moon_x != null && c4.sun_moon_x !== "" && isNaN(c4.sun_moon_x);
     const yRaw = c4.sun_moon_y;
-    const yFixed = yRaw != null && yRaw !== "";
+    const yFixed = yRaw != null && yRaw !== "", yCss = yFixed && isNaN(yRaw);
     return b2`<div class="settings-group">
             <div class="toggle-group"><label class="toggle-row"><span>Show Sun</span>
                 <ha-switch .checked=${sunEnabled}
                     @change=${(e4) => this._updateField("sun_enabled", e4.target.checked ? "" : false)}></ha-switch></label>
                 <label class="toggle-row"><span>Show Moon</span>
                 <ha-switch .checked=${moonEnabled}
-                    @change=${(e4) => this._updateField("moon_enabled", e4.target.checked ? "" : false)}></ha-switch></label>${sunEnabled || moonEnabled ? b2`
-                <label class="toggle-row"><span>Fade with the weather</span>
-                <ha-switch .checked=${c4.sun_moon_fade !== false}
-                    @change=${(e4) => this._updateField("sun_moon_fade", e4.target.checked ? "" : false)}></ha-switch></label>` : ""}</div>
+                    @change=${(e4) => this._updateField("moon_enabled", e4.target.checked ? "" : false)}></ha-switch></label></div>
             ${sunEnabled || moonEnabled ? b2`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
                 ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
@@ -1520,7 +1517,8 @@ var WeatherCardEditor = class extends i4 {
                         <button type="button" class=${!yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", "")}>Dynamic</button>
                         <button type="button" class=${yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
                     </div></div>
-                ${yFixed ? this._renderSlider("sun_moon_y", "", 0, 100, 1) : ""}` : ""}</div>`;
+                ${!yFixed ? "" : yCss ? b2`<div class="compact-field"><input type="text" .value=${String(yRaw)}
+                    @change=${(e4) => this._updateField("sun_moon_y", e4.target.value.trim() || 50)}></div>` : this._renderSlider("sun_moon_y", "", 0, 100, 1)}` : ""}</div>`;
   }
   _renderCardStyleSegmented() {
     return b2`<div class="compact-fields">
@@ -1733,8 +1731,7 @@ var WeatherCardEditor = class extends i4 {
     if (out.forecast_offset === 0) delete out.forecast_offset;
     if (Array.isArray(out.elements)) {
       const elements = out.elements.map((e4) => this._cleanElement(e4 || {})).filter((e4) => e4 && (e4.type === "text" || e4.type === "icon" || e4.type === "bar"));
-      if (elements.length === 0) delete out.elements;
-      else if (elements.length === 1 && elements[0].type === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
+      if (elements.length === 1 && elements[0].type === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
       else out.elements = elements;
     }
     if (out.type === "ring") {
@@ -1995,7 +1992,7 @@ var WeatherCardEditor = class extends i4 {
     const fcOff = parseInt(button.forecast_offset, 10) || 0;
     const st = this.hass && this.hass.states && this.hass.states[entityId];
     const stAttr = st && st.attributes;
-    const elements = Array.isArray(button.elements) && button.elements.length ? button.elements.map((e4) => e4 && typeof e4 === "object" ? e4 : {}) : [{ type: "text" }];
+    const elements = Array.isArray(button.elements) ? button.elements.map((e4) => e4 && typeof e4 === "object" ? e4 : {}) : [{ type: "text" }];
     const commitElements = (arr) => {
       const n4 = { ...button };
       if (!arr.length) delete n4.elements;
@@ -2163,6 +2160,13 @@ var WeatherCardEditor = class extends i4 {
       const v2 = s4.attributes && s4.attributes[attr];
       return v2 != null && isFinite(parseFloat(v2));
     };
+    const _isTimestamp = (eid, attr) => {
+      const s4 = this.hass && this.hass.states && this.hass.states[eid];
+      if (!s4) return false;
+      const a3 = s4.attributes || {};
+      const v2 = attr && (a3[attr] != null || eid.startsWith("weather.")) ? a3[attr] : s4.state;
+      return typeof v2 === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v2);
+    };
     const textElContent = (txt, ei, spacing) => {
       const txtEntityId = (txt.entity || "").toString().trim();
       const fcNumeric = isFc && !txtEntityId && txt.attribute && txt.attribute !== "condition" && txt.attribute !== "datetime";
@@ -2173,6 +2177,8 @@ var WeatherCardEditor = class extends i4 {
         showPrecision = txt.attribute ? _isNumericAttr(entityId, txt.attribute) : _isNumericEntity(entityId);
       }
       const wantsEntity = txtEntityId || txt.source === "entity";
+      const dateAttr = !txtEntityId && txt.attribute === "datetime" && (isFc || entityId.startsWith("weather."));
+      const isDate = txtEntityId ? _isTimestamp(txtEntityId, txt.attribute) : (txt.text == null || txt.text === "") && (dateAttr || !isFc && _isTimestamp(entityId, txt.attribute || button.attribute));
       return b2`${txtField(txt, ei, "text", "Text", "Static text")}
                 ${isFc ? b2`<div class="segmented segmented-compact">
                     <button type="button" class=${!wantsEntity ? "active" : ""}
@@ -2202,7 +2208,7 @@ var WeatherCardEditor = class extends i4 {
         };
         return this._slider({ value: prec, fallback: 0, min: 0, max: 2, step: 1, int: true, label: "Decimals", onCommit: setPrec });
       })() : ""}
-                <div class="vcb-grid">${isFc && !wantsEntity && txt.attribute === "datetime" ? txtField(txt, ei, "format", "Date format", "%a, %d", true) : txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
+                <div class="vcb-grid">${isDate ? txtField(txt, ei, "format", "Date format", dateAttr && button.forecast !== "hourly" ? "%a, %d" : "%H:%M", true) : txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
                 <div class="segmented segmented-compact">
                     ${[{ v: "", l: "Normal" }, { v: "500", l: "Medium" }, { v: "600", l: "Semibold" }, { v: "700", l: "Bold" }].map((o5) => b2`<button type="button" class=${(txt.weight || "") === o5.v ? "active" : ""}
                         @click=${() => {
@@ -2560,7 +2566,7 @@ var WeatherCardEditor = class extends i4 {
     }}></ha-switch></label></div>
             ${isRingType ? gaugeFields("ring", button, update) : ""}`;
     const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
-    const BUTTON_STYLE_KEYS = ["style", "align", "background", "blurred_background", "icon_background", "background_color", "icon_background_color", "padding", "text_size", "inner_gap", "icon_size", "icon_padding", "width", "height", "button_round", "color_thresholds", "color_threshold_entity", "color_threshold_attribute", "text_shadow", "shadow"];
+    const BUTTON_STYLE_KEYS = ["style", "align", "background", "blurred_background", "icon_background", "background_color", "icon_background_color", "padding", "text_size", "inner_gap", "icon_size", "icon_padding", "width", "height", "button_round", "color_thresholds", "color_threshold_entity", "color_threshold_attribute", "text_shadow", "shadow", "shadow_color"];
     const hasStyleOverrides = BUTTON_STYLE_KEYS.some((k2) => button[k2] !== void 0 && button[k2] !== "");
     const elSpacing = (el, ei) => {
       const box = (key, label) => this._cssTextField({

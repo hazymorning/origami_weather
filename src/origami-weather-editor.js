@@ -20,7 +20,7 @@ const LABELS = Object.freeze({
 const BUTTON_LABELS = Object.freeze({ entity: "", tap_action: "Tap action" });
 const KEY_ORDER = Object.freeze([
     "type", "name", "entity", "weather_entity",
-    "sun_entity", "sun_enabled", "moon_enabled", "sun_moon_fade", "sun_moon_size", "sun_moon_x", "sun_moon_y",
+    "sun_entity", "sun_enabled", "moon_enabled", "sun_moon_size", "sun_moon_x", "sun_moon_y",
     "color_mode", "dark_theme_adaptation", "card_height", "card_padding",
     "background_mode", "background_color", "background_color_dark", "background_threshold_entity", "background_threshold_attribute", "background_thresholds",
     "weather_image_path", "weather_image_path_dark", "weather_image_type", "weather_image_front",
@@ -43,6 +43,7 @@ const LAYER_STOPS = Object.freeze([
     { value: "sky", label: "In the sky. The sun, the moon, the stars and the weather are in front of it." },
     { value: "back", label: "Behind the weather. Clouds, mist, rain, snow, birds and planes pass in front of it." },
     { value: "middle", label: "In the weather. Planes, mist and clouds pass behind it, birds, rain and snow in front of it." },
+    { value: "base", label: "In front of the weather, behind the other containers." },
     { value: "front", label: "In front of everything, like the text." }]);
 const OPT = Object.freeze({
     visual_mode: [
@@ -695,17 +696,14 @@ class WeatherCardEditor extends LitElement {
         const sunEnabled = c.sun_enabled !== false, moonEnabled = c.moon_enabled !== false;
         const xDynamic = c.sun_moon_x === "dynamic", xCss = !xDynamic && c.sun_moon_x != null && c.sun_moon_x !== "" && isNaN(c.sun_moon_x);
         const yRaw = c.sun_moon_y;
-        const yFixed = yRaw != null && yRaw !== "";
+        const yFixed = yRaw != null && yRaw !== "", yCss = yFixed && isNaN(yRaw);
         return html`<div class="settings-group">
             <div class="toggle-group"><label class="toggle-row"><span>Show Sun</span>
                 <ha-switch .checked=${sunEnabled}
                     @change=${(e) => this._updateField("sun_enabled", e.target.checked ? "" : false)}></ha-switch></label>
                 <label class="toggle-row"><span>Show Moon</span>
                 <ha-switch .checked=${moonEnabled}
-                    @change=${(e) => this._updateField("moon_enabled", e.target.checked ? "" : false)}></ha-switch></label>${sunEnabled || moonEnabled ? html`
-                <label class="toggle-row"><span>Fade with the weather</span>
-                <ha-switch .checked=${c.sun_moon_fade !== false}
-                    @change=${(e) => this._updateField("sun_moon_fade", e.target.checked ? "" : false)}></ha-switch></label>` : ""}</div>
+                    @change=${(e) => this._updateField("moon_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
             ${sunEnabled || moonEnabled ? html`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
                 ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
@@ -723,7 +721,8 @@ class WeatherCardEditor extends LitElement {
                         <button type="button" class=${!yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", "")}>Dynamic</button>
                         <button type="button" class=${yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
                     </div></div>
-                ${yFixed ? this._renderSlider("sun_moon_y", "", 0, 100, 1) : ""}` : ""}</div>`;}
+                ${!yFixed ? "" : yCss ? html`<div class="compact-field"><input type="text" .value=${String(yRaw)}
+                    @change=${(e) => this._updateField("sun_moon_y", e.target.value.trim() || 50)}></div>` : this._renderSlider("sun_moon_y", "", 0, 100, 1)}` : ""}</div>`;}
     _renderCardStyleSegmented() {
         return html`<div class="compact-fields">
                     ${this._renderCardHeightControl()}
@@ -885,8 +884,7 @@ class WeatherCardEditor extends LitElement {
             const elements = out.elements
                 .map(e => this._cleanElement(e || {}))
                 .filter(e => e && (e.type === "text" || e.type === "icon" || e.type === "bar"));
-            if (elements.length === 0) delete out.elements;
-            else if (elements.length === 1 && elements[0].type === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
+            if (elements.length === 1 && elements[0].type === "text" && Object.keys(elements[0]).length === 1) delete out.elements;
             else out.elements = elements;
         }
         if (out.type === 'ring') {
@@ -1068,7 +1066,7 @@ class WeatherCardEditor extends LitElement {
         const fcOff = parseInt(button.forecast_offset, 10) || 0;
         const st = this.hass && this.hass.states && this.hass.states[entityId];
         const stAttr = st && st.attributes;
-        const elements = Array.isArray(button.elements) && button.elements.length
+        const elements = Array.isArray(button.elements)
             ? button.elements.map(e => (e && typeof e === "object") ? e : {})
             : [{ type: "text" }];
         const commitElements = (arr) => {
@@ -1177,6 +1175,13 @@ class WeatherCardEditor extends LitElement {
             const v = s.attributes && s.attributes[attr];
             return v != null && isFinite(parseFloat(v));
         };
+        const _isTimestamp = (eid, attr) => {
+            const s = this.hass && this.hass.states && this.hass.states[eid];
+            if (!s) return false;
+            const a = s.attributes || {};
+            const v = attr && (a[attr] != null || eid.startsWith("weather.")) ? a[attr] : s.state;
+            return typeof v === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v);
+        };
         const textElContent = (txt, ei, spacing) => {
             const txtEntityId = (txt.entity || "").toString().trim();
             const fcNumeric = isFc && !txtEntityId && txt.attribute && txt.attribute !== "condition" && txt.attribute !== "datetime";
@@ -1187,6 +1192,9 @@ class WeatherCardEditor extends LitElement {
                 showPrecision = txt.attribute ? _isNumericAttr(entityId, txt.attribute) : _isNumericEntity(entityId);
             }
             const wantsEntity = txtEntityId || txt.source === "entity";
+            const dateAttr = !txtEntityId && txt.attribute === "datetime" && (isFc || entityId.startsWith("weather."));
+            const isDate = txtEntityId ? _isTimestamp(txtEntityId, txt.attribute)
+                : (txt.text == null || txt.text === "") && (dateAttr || (!isFc && _isTimestamp(entityId, txt.attribute || button.attribute)));
             return html`${txtField(txt, ei, "text", "Text", "Static text")}
                 ${isFc ? html`<div class="segmented segmented-compact">
                     <button type="button" class=${!wantsEntity ? "active" : ""}
@@ -1201,7 +1209,7 @@ class WeatherCardEditor extends LitElement {
                     const setPrec = (v) => { const n = { ...txt }; if (v >= 0) n.precision = v; else delete n.precision; updateEl(ei, n); };
                     return this._slider({ value: prec, fallback: 0, min: 0, max: 2, step: 1, int: true, label: "Decimals", onCommit: setPrec });
                 })() : ""}
-                <div class="vcb-grid">${isFc && !wantsEntity && txt.attribute === "datetime" ? txtField(txt, ei, "format", "Date format", "%a, %d", true) : txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
+                <div class="vcb-grid">${isDate ? txtField(txt, ei, "format", "Date format", dateAttr && button.forecast !== "hourly" ? "%a, %d" : "%H:%M", true) : txtField(txt, ei, "format", "Custom unit", "", true)}${txtField(txt, ei, "size", "Size", "auto")}</div>
                 <div class="segmented segmented-compact">
                     ${[{v:"",l:"Normal"},{v:"500",l:"Medium"},{v:"600",l:"Semibold"},{v:"700",l:"Bold"}].map(o => html`<button type="button" class=${(txt.weight||"")===o.v?"active":""}
                         @click=${()=>{const n={...txt};if(o.v)n.weight=o.v;else delete n.weight;updateEl(ei,n);}}>${o.l}</button>`)}</div>
@@ -1388,7 +1396,7 @@ class WeatherCardEditor extends LitElement {
                 if (e.target.checked) { n.type = 'ring'; } else { delete n.type; } update(n); }}></ha-switch></label></div>
             ${isRingType ? gaugeFields("ring", button, update) : ""}`;
         const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
-        const BUTTON_STYLE_KEYS = ["style","align","background","blurred_background","icon_background","background_color","icon_background_color","padding","text_size","inner_gap","icon_size","icon_padding","width","height","button_round","color_thresholds","color_threshold_entity","color_threshold_attribute","text_shadow","shadow"];
+        const BUTTON_STYLE_KEYS = ["style","align","background","blurred_background","icon_background","background_color","icon_background_color","padding","text_size","inner_gap","icon_size","icon_padding","width","height","button_round","color_thresholds","color_threshold_entity","color_threshold_attribute","text_shadow","shadow","shadow_color"];
         const hasStyleOverrides = BUTTON_STYLE_KEYS.some(k => button[k] !== undefined && button[k] !== "");
         const elSpacing = (el, ei) => {
             const box = (key, label) => this._cssTextField({

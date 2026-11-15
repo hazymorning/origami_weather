@@ -79,11 +79,11 @@ Updates replace everything in the card's own folder, so other pictures belong in
 
 The temperature on a color that changes with the weather, with the current weather and today's high and low below it, and the sun by day or the moon in its real phase by night in the corner. A forecast slides through the coming days, with the chance of rain under each day. When it's cloudy, layers of soft mist drift across the card with the wind, and in fog they close in.
 
-### Daylight
+### Window
 
-<img width="800" alt="The Daylight layout: a slim card with the temperature and the weather at the top and a line across it, with the sun on its way from sunrise to sunset on a partly cloudy day and the moon on its way from sunset to sunrise on a clear night, and today's high and low and the next sunset or sunrise under the line, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daylight.webp">
+<img width="800" alt="The Window layout: a plain card with a round window cut into it, the live sky inside with a cloud on a partly cloudy day and the moon and the stars on a clear night, the date, the temperature, the weather, today's high and low and the next sunset or sunrise beside it, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/window.webp">
 
-A slim card that draws the day as a line. The sun moves along it from sunrise to sunset, and at night the moon in its real phase moves from sunset to sunrise, so one look shows how much of the day or the night is left. The temperature and the current weather sit above the line, and today's high and low and the next sunset or sunrise below it. When it's cloudy, layers of soft mist drift across the card with the wind.
+A plain card with one round window cut into it. The sky lives only inside the window, with its clouds, rain, snow and stars, and the sun by day or the moon in its real phase by night. The date, the temperature, the current weather, today's high and low and the next sunset or sunrise sit on the card beside it, and the next hours below a thin line.
 
 ### Home
 

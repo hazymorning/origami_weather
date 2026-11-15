@@ -229,78 +229,145 @@ var CLASSIC_CONFIG = Object.freeze({
     columns: 12
   }
 });
-var DAYLIGHT_SIDE = "7cqw";
-var DAYLIGHT_SUN = 63;
-var daylightBelow = (px) => `calc(${DAYLIGHT_SUN}cqh + ${px}px)`;
-var daylightSoft = (share) => `color-mix(in srgb, currentColor ${share}%, transparent)`;
-var daylightText = (extra) => text({ size: "13px", weight: "500", ...extra });
-var daylightSunTime = (state, label, attribute) => ({
-  name: state === "above_horizon" ? `${label} (by day)` : `${label} (at night)`,
+var WINDOW_HEIGHT = 274;
+var WINDOW_INSET = 16;
+var WINDOW_MAX = 144;
+var WINDOW_MIDDLE = WINDOW_INSET + WINDOW_MAX / 2;
+var WINDOW_SIZE = `min(${WINDOW_MAX}px, 40cqw)`;
+var windowPad = (side) => `var(--_origami-pad-${side}, var(--origami-card-padding, 16px))`;
+var WINDOW_TEXT_WIDTH = `calc(100cqw - ${WINDOW_SIZE} - 48px)`;
+var WINDOW_DATE_WIDTH = `calc(100cqw - ${WINDOW_SIZE} - 24px)`;
+var WINDOW_TODAY_WIDTH = `max(${WINDOW_DATE_WIDTH}, 150px, 46cqw + 26px)`;
+var WINDOW_WIDE = "calc(100cqw - 40px)";
+var WINDOW_LABEL = "clamp(10px, 4cqw, 12px)";
+var WINDOW_INK = "var(--primary-text-color)";
+var WINDOW_MUTED = "var(--secondary-text-color)";
+var WINDOW_PAPER = "var(--ha-card-background, var(--card-background-color, #fff))";
+var windowSoft = (share) => `color-mix(in srgb, ${WINDOW_INK} ${share}%, transparent)`;
+var windowSmall = (extra) => text({ size: "clamp(11.5px, 4.2cqw, 13px)", weight: "500", ...extra });
+var WINDOW_SKY = [
+  ["sunny", "#5f9fd6", "#14223f"],
+  ["clear-night", "#5f9fd6", "#14223f"],
+  ["exceptional", "#4f97dc", "#14223f"],
+  ["partlycloudy", "#6ea2cf", "#1a2741"],
+  ["windy", "#66a2c4", "#172a39"],
+  ["windy-variant", "#71a1bf", "#1a2a3b"],
+  ["cloudy", "#8a9daf", "#222a36"],
+  ["fog", "#a0a8ae", "#2a3036"],
+  ["rainy", "#738aa0", "#1c2531"],
+  ["pouring", "#617286", "#18202a"],
+  ["lightning", "#6d6c8b", "#211e31"],
+  ["lightning-rainy", "#615f7c", "#1c1a2a"],
+  ["hail", "#7a92a1", "#1d2930"],
+  ["snowy", "#8ea5ba", "#25303c"],
+  ["snowy-rainy", "#8397a9", "#212b35"]
+];
+var WINDOW_CUT = [
+  `0 0 0 100vmax ${WINDOW_PAPER}`,
+  "0 0 0 100vmax var(--primary-background-color)",
+  "inset 0 1.5px 1px -0.5px rgba(0, 0, 0, 0.16)",
+  "inset 0 10px 14px -8px rgba(0, 0, 0, 0.48)",
+  `inset 0 -1.5px 0 color-mix(in srgb, ${WINDOW_PAPER} 75%, #fff)`
+].join(", ");
+var windowSun = (rising) => ({
+  name: rising ? "Sunrise (at night)" : "Sunset (by day)",
   entity: "sun.sun",
-  attribute,
+  attribute: rising ? "next_rising" : "next_setting",
   background: false,
   padding: "0",
-  inner_gap: "6px",
-  text_shadow: true,
-  visibility: [{ condition: "state", entity: "sun.sun", state }],
-  elements: [daylightText({ text: label, color: daylightSoft(72) }), daylightText({ weight: "700" })]
+  inner_gap: "4px",
+  visibility: [{ condition: "state", entity: "sun.sun", state: rising ? "below_horizon" : "above_horizon" }],
+  elements: [icon(rising ? "mdi:weather-sunset-up" : "mdi:weather-sunset-down", { icon_size: "16px", color: WINDOW_MUTED }), windowSmall({ weight: "700", color: WINDOW_INK })]
 });
-var DAYLIGHT_CONFIG = Object.freeze({
-  sun_moon_x: "dynamic",
-  sun_moon_y: DAYLIGHT_SUN,
-  sun_moon_size: 30,
-  sun_moon_fade: false,
-  cloud_effects: false,
-  mist_effects: true,
-  mist_density: 0.6,
-  card_height: "150px",
+var windowColumn = (name, label, extra) => ({
+  name,
+  entity: PRESET_ENTITY_TOKEN,
+  ...extra,
+  background: false,
+  padding: "0",
+  style: "vertical",
+  align: "center",
+  inner_gap: "6px",
+  width: "min(56px, 20%)",
+  elements: [
+    label,
+    icon("weather", { icon_size: "24px", color: WINDOW_INK, margin: "0 auto" }),
+    text({ attribute: "temperature", format: "\xB0", precision: 0, size: "16px", weight: "500", color: WINDOW_INK })
+  ]
+});
+var windowHour = (offset) => windowColumn(offset ? `In ${offset + 1} hours` : "Next hour", text({ attribute: "datetime", size: WINDOW_LABEL, weight: "500", color: WINDOW_MUTED }), {
+  forecast: "hourly",
+  ...offset ? { forecast_offset: offset } : {}
+});
+var WINDOW_CONFIG = Object.freeze({
+  card_height: `${WINDOW_HEIGHT}px`,
   card_padding: "0",
+  sun_moon_size: 36,
+  sun_moon_x: `calc(100% - ${windowPad("h")} - ${WINDOW_INSET}px - min(${WINDOW_MAX}px, 0.4 * (100% - 2 * ${windowPad("h")})) / 2)`,
+  sun_moon_y: `calc(${windowPad("v")} + ${WINDOW_MIDDLE}px)`,
+  balloon_effects: false,
+  mist_density: 0.7,
+  background_mode: "color",
+  background_color: "#6ea2cf",
+  background_color_dark: "#1a2741",
+  background_thresholds: thresholds(WINDOW_SKY),
+  background_haze: true,
   card_tap_action: { action: "more-info" },
   button_containers: [
     {
-      name: "Day line",
-      layer: "sky",
+      name: "Window",
       position: "custom",
-      position_x: DAYLIGHT_SIDE,
-      position_y: daylightBelow(15),
-      custom_width: "86cqw",
+      position_anchor: "top-right",
+      position_x: `${WINDOW_INSET}px`,
+      position_y: `calc(${WINDOW_MIDDLE}px - ${WINDOW_SIZE} / 2)`,
+      layer: "base",
+      custom_width: WINDOW_SIZE,
+      buttons: [{ name: "Window", entity: PRESET_ENTITY_TOKEN, background: true, background_color: "transparent", button_round: true, width: WINDOW_SIZE, height: WINDOW_SIZE, padding: "0", shadow_color: WINDOW_CUT, tap_action: { action: "none" }, elements: [] }]
+    },
+    {
+      name: "Date",
+      position: "custom",
+      position_x: "20px",
+      position_y: "17px",
+      custom_width: WINDOW_DATE_WIDTH,
       buttons: [
         {
-          name: "Line",
-          entity: "sun.sun",
+          name: "Date",
+          entity: PRESET_ENTITY_TOKEN,
           background: false,
           padding: "0",
-          width: "100%",
+          inner_gap: "5px",
           elements: [
-            {
-              type: "bar",
-              bar_height: "2px",
-              bar_color: daylightSoft(30),
-              bar_marker_size: "6px",
-              bar_values: [{ value: 100, marker_size: 0 }, { value: 0, marker_color: daylightSoft(55) }, { value: 100, marker_color: daylightSoft(55) }]
-            }
+            text({ attribute: "datetime", format: "%A", size: "14px", weight: "700", color: WINDOW_INK }),
+            text({ attribute: "datetime", format: "%-d %b", size: "14px", weight: "500", color: WINDOW_MUTED })
           ]
         }
       ]
     },
     {
-      name: "Now",
+      name: "Temperature",
       position: "custom",
-      position_x: DAYLIGHT_SIDE,
-      position_y: "15px",
-      custom_width: "86cqw",
-      align_items: "baseline",
-      gap: "10px",
-      buttons: [
-        { name: "Temperature", entity: PRESET_ENTITY_TOKEN, attribute: "temperature", background: false, padding: "0", text_shadow: true, elements: [text({ size: "52px", weight: "700", precision: 0, format: "\xB0", margin: "-0.12em -0.04em -0.1em -0.06em" })] },
-        { name: "Condition", entity: PRESET_ENTITY_TOKEN, background: false, padding: "0", text_shadow: true, elements: [text({ size: "15px", weight: "500" })] }
-      ]
+      position_x: "18px",
+      position_y: "44px",
+      custom_width: WINDOW_TEXT_WIDTH,
+      buttons: [{ name: "Temperature", entity: PRESET_ENTITY_TOKEN, attribute: "temperature", background: false, padding: "0", elements: [text({ size: "48px", weight: "500", precision: 0, format: "\xB0", color: WINDOW_INK, margin: "-0.2em -0.06em -0.12em" })] }]
+    },
+    {
+      name: "Condition",
+      position: "custom",
+      position_x: "18px",
+      position_y: "93px",
+      custom_width: WINDOW_TEXT_WIDTH,
+      buttons: [{ name: "Condition", entity: PRESET_ENTITY_TOKEN, background: false, padding: "0", elements: [text({ size: "clamp(12px, 4.8cqw, 15px)", weight: "500", color: WINDOW_INK, overflow: "wrap", margin: "0 0 0 2px" })] }]
     },
     {
       name: "Today",
       position: "custom",
-      position_x: DAYLIGHT_SIDE,
-      position_y: daylightBelow(25),
+      position_x: "20px",
+      position_y: "143px",
+      custom_width: WINDOW_TODAY_WIDTH,
+      align_items: "center",
+      gap: "clamp(8px, 100cqw - 296px, 14px)",
       buttons: [
         {
           name: "High and low",
@@ -309,22 +376,33 @@ var DAYLIGHT_CONFIG = Object.freeze({
           background: false,
           padding: "0",
           inner_gap: "5px",
-          text_shadow: true,
           elements: [
-            daylightText({ attribute: "temperature", format: "\xB0", weight: "600" }),
-            daylightText({ text: "/", color: daylightSoft(40) }),
-            daylightText({ attribute: "templow", format: "\xB0", color: daylightSoft(72) })
+            windowSmall({ attribute: "temperature", format: "\xB0", weight: "700", color: WINDOW_INK }),
+            windowSmall({ text: "/", color: windowSoft(40) }),
+            windowSmall({ attribute: "templow", format: "\xB0", color: windowSoft(72) })
           ]
-        }
+        },
+        windowSun(false),
+        windowSun(true)
       ]
     },
     {
-      name: "Next sunset or sunrise",
+      name: "Line",
       position: "custom",
-      position_anchor: "top-right",
-      position_x: DAYLIGHT_SIDE,
-      position_y: daylightBelow(25),
-      buttons: [daylightSunTime("above_horizon", "Sunset", "next_setting"), daylightSunTime("below_horizon", "Sunrise", "next_rising")]
+      position_x: "20px",
+      position_y: "176px",
+      custom_width: WINDOW_WIDE,
+      buttons: [{ name: "Line", entity: PRESET_ENTITY_TOKEN, background: false, padding: "0", width: "100%", elements: [{ type: "bar", bar_height: "1px", bar_color: windowSoft(12), bar_values: [{ value: 100, marker_size: 0 }] }] }]
+    },
+    {
+      name: "Next hours",
+      position: "custom",
+      position_x: "4px",
+      position_y: "190px",
+      custom_width: "calc(100cqw - 8px)",
+      justify_content: "between",
+      gap: "0",
+      buttons: [windowColumn("Now", text({ text: "Now", size: WINDOW_LABEL, weight: "700", color: WINDOW_INK })), ...[0, 1, 2, 3].map(windowHour)]
     }
   ],
   grid_options: {
@@ -462,11 +540,11 @@ var LAYOUT_PRESETS = Object.freeze([
     config: CLASSIC_CONFIG
   },
   {
-    id: "daylight",
-    name: "Daylight",
-    description: "Slim, sunrise to sunset",
-    icon: "mdi:weather-sunset",
-    config: DAYLIGHT_CONFIG
+    id: "window",
+    name: "Window",
+    description: "The sky through a round window",
+    icon: "mdi:circle-outline",
+    config: WINDOW_CONFIG
   },
   {
     id: "home",
@@ -498,7 +576,7 @@ var rebindPresetEntities = (value, entity) => {
 var instantiatePreset = (preset, entity) => rebindPresetEntities(deepClone(preset.config), entity);
 var buildStubConfig = (hass) => {
   const entity = hass ? Object.keys(hass.states).find((e) => e.startsWith("weather.")) || "weather.home" : "weather.home";
-  const preset = LAYOUT_PRESETS.find((p) => p.id === "daylight") || LAYOUT_PRESETS[0];
+  const preset = LAYOUT_PRESETS.find((p) => p.id === "window") || LAYOUT_PRESETS[0];
   return { weather_entity: entity, ...instantiatePreset(preset, entity) };
 };
 

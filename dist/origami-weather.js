@@ -1731,6 +1731,10 @@ function _loadBuiltinImage(src) {
   }));
   return _builtinPending.get(src);
 }
+function _dayNightState(state, night) {
+  if (night && (state === "sunny" || state === "exceptional")) return "clear-night";
+  return !night && state === "clear-night" ? "sunny" : state;
+}
 function _elBoxStyle(el) {
   let s = "";
   if (el && el.margin !== void 0 && el.margin !== "") s += `;margin:${cssLength(el.margin)}`;
@@ -1749,7 +1753,7 @@ function gaugeRefs(o, p) {
 var isTime = (v) => typeof v === "string" && v.includes(":");
 function gaugeNum(v, hass) {
   if (!isTime(v)) return parseFloat(v);
-  const d = new Date(v), [h, m] = (isNaN(d) ? v : d.toLocaleTimeString("en-GB", { timeZone: hass.locale.time_zone === "server" ? hass.config.time_zone : void 0 })).split(":");
+  const d = new Date(v), [h, m] = (isNaN(d) ? v : d.toLocaleTimeString("en-GB", { timeZone: hass.locale.time_zone === "server" ? serverZone(hass) : void 0 })).split(":");
   return +h + m / 60;
 }
 function iconSourceValue(hass, button, el) {
@@ -1787,9 +1791,36 @@ function pickThreshold(thresholds, value) {
   }
   return color;
 }
-function forecastFilterPast(raw, daily) {
-  const now = /* @__PURE__ */ new Date(), cut = daily ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() : now.getTime();
-  return raw.filter((f) => Date.parse(f.datetime) >= cut);
+var ZONES = /* @__PURE__ */ new Map();
+function serverZone(hass) {
+  const zone = hass.config.time_zone;
+  if (!ZONES.has(zone)) {
+    try {
+      new Intl.DateTimeFormat("en", { timeZone: zone });
+      ZONES.set(zone, zone);
+    } catch (_e) {
+      ZONES.set(zone, void 0);
+    }
+  }
+  return ZONES.get(zone);
+}
+var DAY_FORMAT = [];
+function dayKey(hass, t) {
+  const zone = hass.locale.time_zone === "server" && serverZone(hass);
+  if (!zone) {
+    const d = new Date(t);
+    return d.getFullYear() * 1e4 + (d.getMonth() + 1) * 100 + d.getDate();
+  }
+  if (DAY_FORMAT[0] !== zone) DAY_FORMAT = [zone, dateFormat(hass, { year: "numeric", month: "2-digit", day: "2-digit" }, "en")];
+  const n = Object.fromEntries(DAY_FORMAT[1].formatToParts(t).map((p) => [p.type, p.value]));
+  return n.year * 1e4 + n.month * 100 + +n.day;
+}
+function forecastFilterPast(raw, daily, hass) {
+  const now = Date.now(), today = daily ? dayKey(hass, now) : "";
+  return raw.filter((f) => {
+    const t = Date.parse(f.datetime);
+    return t >= now || daily && Number.isFinite(t) && dayKey(hass, t) >= today;
+  });
 }
 function forecastFingerprint(forecast) {
   if (!forecast || !forecast.length) return "";
@@ -1805,7 +1836,7 @@ function numberFormat(locale, precision) {
 function dateFormat(hass, options, language = hass.locale.language) {
   const l = hass.locale, tf = l.time_format;
   if (options.hour && !options.hourCycle) options.hourCycle = (tf === "12" || tf === "24" ? tf === "12" : (/* @__PURE__ */ new Date("January 1, 2023 22:00:00")).toLocaleString(tf === "language" ? l.language : void 0).includes("10")) ? "h12" : "h23";
-  if (l.time_zone === "server") options.timeZone = hass.config.time_zone;
+  if (l.time_zone === "server") options.timeZone = serverZone(hass);
   return new Intl.DateTimeFormat(language, options);
 }
 function forecastLabel(dt, daily, hass) {
@@ -1820,8 +1851,8 @@ function strftime(hass, dt, format) {
   const numbers = { d: n.day, m: n.month, y: n.year.slice(-2), Y: n.year, H: n.hour, I: String(n.hour % 12 || 12).padStart(2, "0"), M: n.minute, S: n.second, p: n.hour < 12 ? "AM" : "PM" };
   return format.replace(DATE_CODE, (_, flag, c) => DATE_NAMES[c] ? dateFormat(hass, { calendar: "gregory", ...DATE_NAMES[c] }).format(date) : flag ? numbers[c].replace(/^0/, "") : numbers[c]);
 }
-var Z = Object.freeze({ ...Object.fromEntries(["sky", "pictures", "layer-sky", "stars", "sun", "pictures-front", "layer-back", "weather", "layer-middle", "near", "tint", "edge"].map((name, i, all) => [name, i - all.length])), free: 10 });
-var CONTAINER_LAYERS = Object.freeze(["sky", "back", "middle", "front"]);
+var Z = Object.freeze({ ...Object.fromEntries(["sky", "pictures", "layer-sky", "stars", "sun", "pictures-front", "layer-back", "weather", "layer-middle", "near", "tint", "edge", "layer-base"].map((name, i, all) => [name, i - all.length])), free: 10 });
+var CONTAINER_LAYERS = Object.freeze(["sky", "back", "middle", "base", "front"]);
 var containerLayer = (c) => {
   const v = String(c && c.layer || "").toLowerCase();
   return CONTAINER_LAYERS.includes(v) ? v : "front";
@@ -1902,10 +1933,24 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     }
     this._observeRoot();
     document.addEventListener("visibilitychange", this._boundDocVisibility);
+    this._scheduleClockTick();
     if (this._hasReceivedFirstHass) {
       this._syncForecasts();
       this._tryInitialize();
     }
+  }
+  _scheduleClockTick() {
+    clearTimeout(this._clockTimer);
+    const step = this._showsTime() ? 6e4 : 9e5;
+    this._clockTimer = setTimeout(() => this._clockTick(), step - Date.now() % step + 1e3);
+  }
+  _clockTick() {
+    this._lastSnapshot = null;
+    this._scheduleClockTick();
+    if (this._hass) this.hass = this._hass;
+  }
+  _showsTime() {
+    return !!this._containers && this._allButtons().some((b) => !b.forecast && String(b.entity).startsWith("weather.") && Array.isArray(b.elements) && b.elements.some((el) => el && !el.entity && el.attribute === "datetime" && /%-?[HIMSp]/.test(el.format)));
   }
   disconnectedCallback() {
     this._stopAnimation();
@@ -1924,6 +1969,8 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       clearTimeout(this._resizeDebounceTimer);
       this._resizeDebounceTimer = null;
     }
+    clearTimeout(this._clockTimer);
+    this._clockTimer = null;
     if (this._vertMeasureRaf != null) {
       cancelAnimationFrame(this._vertMeasureRaf);
       this._vertMeasureRaf = null;
@@ -1997,6 +2044,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     this._applyConfigStyles();
     if (this._lastState) this._syncEffects(this._lastState);
     if (this._initializationComplete && this._isVisible) this._startAnimation();
+    if (this.isConnected) this._scheduleClockTick();
   }
   set hass(hass) {
     if (!hass || !this._config) return;
@@ -2070,14 +2118,11 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       botSig,
       containerVisSig,
       wind: this._windMs,
-      locale: `${l.language}|${l.number_format}|${l.time_format}|${l.time_zone}`
+      locale: `${l.language}|${l.number_format}|${l.time_format}|${l.time_zone === "server" ? hass.config.time_zone : l.time_zone}`
     };
     if (this._lastSnapshot && !this._hasSnapshotChanged(this._lastSnapshot, snapshot)) return;
     this._lastSnapshot = snapshot;
-    let weatherState = (wEntity.state || "default").toLowerCase();
-    if (isAstroNight && weatherState === "sunny") weatherState = "clear-night";
-    if (!isAstroNight && weatherState === "clear-night") weatherState = "sunny";
-    if (weatherState === "exceptional" && isAstroNight) weatherState = "clear-night";
+    const weatherState = _dayNightState((wEntity.state || "default").toLowerCase(), isAstroNight);
     this._weatherState = weatherState;
     this._updateSchemeStyles(weatherState);
     this._updateTextElements(hass, weatherState);
@@ -2106,12 +2151,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-WPUFGAO4.js");
+      await import("./origami-weather-editor-4HRU3RDY.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-UB7XVJ7F.js");
+    const { buildStubConfig } = await import("./layout-presets-ALUZF372.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2209,7 +2254,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     }
     const t = Number.isFinite(elev) ? Math.min(1, Math.max(0, isAstroNight ? -elev / 24 : elev / 60)) : 0.5;
     const yFixed = cfg.sun_moon_y != null && cfg.sun_moon_y !== "";
-    const y = yFixed ? Math.min(100, Math.max(0, parseFloat(cfg.sun_moon_y) || 0)) : Math.round((100 - t * 86) * 2) / 2;
+    const y = yFixed && isNaN(cfg.sun_moon_y) ? cssValue(String(cfg.sun_moon_y).trim()) : `${yFixed ? Math.min(100, Math.max(0, parseFloat(cfg.sun_moon_y) || 0)) : Math.round((100 - t * 86) * 2) / 2}%`;
     const x = cfg.sun_moon_x === "dynamic" ? Math.round((7 + _WeatherCard._pathProgress(sun.attributes || {}, isAstroNight) * 86) * 2) / 2 : null;
     const warm = isAstroNight ? 0 : Math.round(Math.pow(1 - t, 1.6) * 20) / 20;
     this._sunGlowVisibility = tuning.sunVisibility;
@@ -2228,10 +2273,10 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const st = els.sunMoonLayer.style;
     if (x == null) st.removeProperty("--origami-sun-moon-x");
     else st.setProperty("--origami-sun-moon-x", `${x}%`);
-    st.setProperty("--origami-sun-moon-y", `${y}%`);
+    st.setProperty("--origami-sun-moon-y", y);
     st.setProperty("--origami-sun-moon-glow-opacity", String(tuning.sunVisibility));
     st.setProperty("--origami-sun-rays-opacity", String(rays));
-    st.opacity = cfg.sun_moon_fade === false ? "1" : String(tuning.sunVisibility);
+    st.opacity = String(tuning.sunVisibility);
     if (isAstroNight) {
       this._applyMoonPhase(phase);
       this._loadMoonImage();
@@ -2314,6 +2359,14 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const innerSweep = k > 0 === waxing ? 0 : 1;
     return `M 50 2 A 48 48 0 0 ${outerSweep} 50 98 A ${rx} 48 0 0 ${innerSweep} 50 2 Z`;
   }
+  _isNightAt(when) {
+    const a = this._refSun && this._refSun.attributes || {};
+    const rising = Date.parse(a.next_rising), setting = Date.parse(a.next_setting), day = 864e5;
+    const t = Date.parse(when), ahead = t - Date.now();
+    if (!Number.isFinite(t) || !Number.isFinite(rising) || !Number.isFinite(setting)) return null;
+    const at = ahead >= day ? t - Math.floor(ahead / day) * day : t;
+    return setting < rising ? at >= setting && at < rising : at < rising || at >= setting;
+  }
   _warnMissingSun() {
     if (this._sunWarned) return;
     this._sunWarned = true;
@@ -2393,7 +2446,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     };
     this._forecastSubs.set(key, pending);
     hass.connection.subscribeMessage(
-      (msg) => this._onForecastData(key, msg.forecast != null ? msg.forecast : [], type === "daily"),
+      (msg) => this._onForecastData(key, msg.forecast != null ? msg.forecast : []),
       { type: "weather/subscribe_forecast", forecast_type: type, entity_id: entity }
     ).then((unsub) => {
       if (!this.isConnected || this._forecastSubs.get(key) !== pending) {
@@ -2403,14 +2456,14 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       this._forecastSubs.set(key, unsub);
     }).catch(() => {
       if (this._forecastSubs.get(key) === pending) this._forecastSubs.delete(key);
-      if (!this._forecastData.has(key)) this._onForecastData(key, [], type === "daily");
+      if (!this._forecastData.has(key)) this._onForecastData(key, []);
     });
   }
-  _onForecastData(key, raw, daily) {
-    const processed = forecastFilterPast(raw, daily), fp = forecastFingerprint(processed);
+  _onForecastData(key, list) {
+    const fp = forecastFingerprint(list);
     const _existing = this._forecastData.get(key);
     if (_existing && _existing.fp === fp) return;
-    const entry = { processed, fp };
+    const entry = { list, fp };
     this._forecastData.set(key, entry);
     this._lastSnapshot = null;
     FORECAST_CACHE.set(key, entry);
@@ -2420,14 +2473,17 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     }
     this.hass = this._hass;
   }
+  _forecastList(hass, entity, type) {
+    const cached = this._forecastData.get(`${entity}|${type}`);
+    return cached && forecastFilterPast(cached.list, type === "daily", hass);
+  }
   _resolveForecastValue(hass, button) {
     const type = button.forecast === "hourly" ? "hourly" : "daily";
     const offset = Math.max(0, parseInt(button.forecast_offset, 10) || 0);
     const missing = { formatted: "N/A", condition: null, datetime: null };
     const st = hass.states[button.entity], sf = st && st.attributes ? Number(st.attributes.supported_features) : NaN;
     if (Number.isFinite(sf) && !(sf & (type === "hourly" ? 2 : 1))) return missing;
-    const _forecastEntry = this._forecastData.get(`${button.entity}|${type}`);
-    const forecast = _forecastEntry && _forecastEntry.processed;
+    const forecast = this._forecastList(hass, button.entity, type);
     if (!forecast) return { formatted: "", condition: null, datetime: null, loading: true };
     if (!forecast.length) return missing;
     if (offset >= forecast.length) return { formatted: "", condition: null, datetime: null, none: true };
@@ -2456,14 +2512,14 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     return { value, unit };
   }
   _resolveButtonText(hass, button, txt, ctx) {
-    const hasFormat = txt.format !== void 0;
+    const hasFormat = txt.format != null;
     const tight = hasFormat || txt.fancy_unit === true;
     if (txt.entity) {
       const r = this._resolveSensorValue(hass, txt.entity, txt.attribute);
       const { value: value2, unit: unit2 } = this._reshapeValue(hass, r, txt, hasFormat, txt.entity, txt.attribute);
       return { value: value2, unit: unit2, tight, sig: `e:${txt.entity}|${txt.attribute || ""}|${txt.precision ?? ""}|${value2}${unit2}` };
     }
-    if (txt.text !== void 0 && txt.text !== "") {
+    if (txt.text != null && txt.text !== "") {
       const value2 = String(txt.text);
       return { value: value2, unit: hasFormat ? txt.format : "", tight: true, sig: `t:${value2}|${hasFormat ? txt.format : ""}` };
     }
@@ -2492,6 +2548,10 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
           }
         }
         return { value: value3, unit: unit3, tight: hasFormat || txt.fancy_unit === true, sig: `forecast:${txt.attribute}|${value3}${unit3}` };
+      }
+      if (txt.attribute === "datetime" && String(button.entity).startsWith("weather.")) {
+        const now = /* @__PURE__ */ new Date(), custom = strftime(hass, now, txt.format), value3 = custom || forecastLabel(now, true, hass);
+        return { value: value3, unit: !custom && hasFormat ? txt.format : "", tight: true, sig: `today|${value3}` };
       }
       const r = this._resolveSensorValue(hass, button.entity, txt.attribute);
       const { value: value2, unit: unit2 } = this._reshapeValue(hass, r, txt, hasFormat, button.entity, txt.attribute);
@@ -2590,8 +2650,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     if (!stateObj) return NaN;
     if (spec.forecast) {
       const type = spec.forecast === "hourly" ? "hourly" : "daily";
-      const cached = this._forecastData.get(`${entity}|${type}`);
-      const list = cached && cached.processed;
+      const list = this._forecastList(hass, entity, type);
       if (!list || !list.length) return NaN;
       const offset = Math.max(0, parseInt(spec.forecast_offset, 10) || 0);
       const entry = list[Math.min(offset, list.length - 1)];
@@ -2758,7 +2817,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             #card-root.fixed-height { --_origami-vscroll-fill: calc(100% - var(--_origami-pad-v, var(--origami-card-padding, 16px)) * 2); }
             #free-layer { position: absolute; inset: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); pointer-events: none; box-sizing: border-box; overflow: visible; container-type: size; }
             #free-layer > .buttons-group.free-positioned { position: absolute; max-width: 100%; }
-            #free-layer > .buttons-group:not(.layer-sky, .layer-back, .layer-middle) { z-index: ${Z.free}; }
+            #free-layer > .buttons-group:not(.layer-sky, .layer-back, .layer-middle, .layer-base) { z-index: ${Z.free}; }
             #free-layer > .buttons-group.free-positioned.has-custom-width { width: var(--origami-container-width); }
             .buttons-group { pointer-events: none; min-width: 0; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
             .buttons-group.has-image { display: grid; }
@@ -2820,6 +2879,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .buttons-row.has-visible-count > .button.format-vertical { align-content: center; }
             .button { display: flex; flex-direction: row; align-items: center; row-gap: var(--origami-button-gap, 6px); column-gap: var(--origami-button-gap, 0.40em); flex-wrap: nowrap; flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box; scroll-snap-align: start; padding: var(--origami-buttons-padding, 0); cursor: pointer; pointer-events: auto; -webkit-tap-highlight-color: transparent; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
             .button:active { transform: scale(0.94); opacity: 0.75; transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.12s cubic-bezier(0.2, 0, 0.2, 1); }
+            .button.no-action { pointer-events: none; }
             .button .button-icon { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: var(--weather-icon-padding, 0); }
             .button .button-icon ha-icon,
             .button .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.1em); opacity: 0.9; }
@@ -2924,6 +2984,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             :is(.buttons-group, .cards-group).layer-sky { z-index: ${Z["layer-sky"]}; }
             :is(.buttons-group, .cards-group).layer-back { z-index: ${Z["layer-back"]}; }
             :is(.buttons-group, .cards-group).layer-middle { z-index: ${Z["layer-middle"]}; }
+            :is(.buttons-group, .cards-group).layer-base { z-index: ${Z["layer-base"]}; }
             .cards-row { display: flex; flex-wrap: wrap; gap: 8px; pointer-events: none; }
             .cards-row > * { pointer-events: auto; }
             #card-root.is-offscreen :is(.marquee-track, .haze-layer, .sun-glow, .moon-glow), #card-root.is-offscreen .sun-disc::before, #card-root.is-offscreen .sun-disc::after, #card-root.is-offscreen #sun-moon-layer::before { animation-play-state: paused; }
@@ -3133,7 +3194,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const els = this._elements.buttonContainerEls[ai];
     if (!els) return;
     const layer = containerLayer(container);
-    for (const name of ["sky", "back", "middle"]) els.group.classList.toggle(`layer-${name}`, layer === name);
+    for (const name of ["sky", "back", "middle", "base"]) els.group.classList.toggle(`layer-${name}`, layer === name);
     if (container.custom_cards) return;
     const bt = els.row, cg = els.group;
     if (!this._containerStyleCache[ai]) this._containerStyleCache[ai] = {};
@@ -3548,14 +3609,17 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       const configPath = el.icon_path || ((configIcon === "weather" || !ownIcon && !configIcon) && this._config && this._config.icon_path ? this._config.icon_path : "");
       if (!configIcon) return { strategy: strat0, value: val0 };
       const live = !isForecast || !!el.entity;
-      const resolvedBase = configIcon === "weather" ? !live && forecastCondition ? forecastCondition : weatherState : configIcon;
+      const hourly = !live && button.forecast === "hourly";
+      const night = configIcon !== "weather" ? null : live ? this._isAstroNight : hourly ? this._isNightAt(forecastDatetime) : null;
+      let resolvedBase = configIcon === "weather" ? !live && forecastCondition ? forecastCondition : weatherState : configIcon;
+      if (hourly && night !== null) resolvedBase = _dayNightState(resolvedBase, night);
       if (configPath) {
         const basePath = configPath.endsWith("/") ? configPath : configPath + "/";
         const ext = resolvedBase.includes(".") ? "" : ".svg";
         return { strategy: "image", value: `${basePath}${resolvedBase}${ext}` };
       }
       if (configIcon === "weather" && BUILTIN_ICONS[resolvedBase]) {
-        return { strategy: "builtin", value: live && this._isAstroNight && BUILTIN_ICONS[`${resolvedBase}-night`] ? `${resolvedBase}-night` : resolvedBase };
+        return { strategy: "builtin", value: night && BUILTIN_ICONS[`${resolvedBase}-night`] ? `${resolvedBase}-night` : resolvedBase };
       }
       return { strategy: "static", value: configIcon === "weather" ? _weatherTuning(resolvedBase).icon : configIcon };
     };
@@ -3600,6 +3664,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (barOverflow) classes.push("has-bar-overflow");
     if (effectiveFormat !== "inline") classes.push(`format-${effectiveFormat}`);
     if (isRingType) classes.push("button-ring");
+    if (button.tap_action && button.tap_action.action === "none") classes.push("no-action");
     const iconBg = button.icon_background !== void 0 ? button.icon_background : containerCtx.button_icon_background;
     if (iconBg === true) classes.push("has-icon-bg");
     else if (iconBg === false) classes.push("no-icon-bg");
@@ -3645,6 +3710,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (button.text_shadow === true) inlineStyles.push("--_button-no-bg-shadow:var(--_button-shadow-avail)");
     const effectiveButtonShadow = (button.shadow !== void 0 ? button.shadow : containerCtx.button_shadow) !== false;
     if (!effectiveButtonShadow || containerScrollable) inlineStyles.push("--_origami-button-shadow:none");
+    else if (button.shadow_color) inlineStyles.push(`--_origami-button-shadow:${cssValue(button.shadow_color)}`);
     const buttonAlignClass = _ALIGN_CLASSES.has(button.align) ? button.align : "";
     if (buttonAlignClass) classes.push(`align-${buttonAlignClass}`);
     if (button.button_round === true) classes.push("button-round");
@@ -3947,8 +4013,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
   _handleDocVisibility() {
     if (document.hidden) {
       this._stopAnimation();
-    } else if (this._isVisible) {
-      this._startAnimation();
+    } else {
+      if (this._isVisible) this._startAnimation();
+      this._clockTick();
     }
   }
   _handleTap(e) {

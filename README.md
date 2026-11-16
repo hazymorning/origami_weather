@@ -54,7 +54,7 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature, the current weather and today's high and low in a corner of the sky. The sun and the moon cross the sky and set behind the hills.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the current weather and the temperature in a corner of the sky. The sun and the moon cross the sky and set behind the hills.
 
 ### Classic
 
@@ -64,9 +64,9 @@ The temperature and the current weather on a color that changes with the weather
 
 ### Panel
 
-<img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next days below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
+<img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
-The current weather and the temperature on a soft color that follows the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next days below. Mist, rain and snow pass behind the tiles.
+The current weather and the temperature on a soft color that follows the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below. Mist, rain and snow pass behind the tiles.
 
 ### Home
 
@@ -610,7 +610,8 @@ The sun on an arc from sunrise to sunset and the moon on one from sunset to sunr
 ```yaml
 type: custom:origami-weather
 weather_entity: weather.home
-sun_moon_size: 100
+sun_size: 100
+moon_size: 100
 sun_moon_y: 44
 card_height: auto
 card_padding: '0'

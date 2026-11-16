@@ -2281,18 +2281,25 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-TGSPOCKM.js");
+      await import("./origami-weather-editor-D7B6ORJP.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-JJNMLTGF.js");
+    const { buildStubConfig } = await import("./layout-presets-CXMT73OJ.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
-    if (!("sun_moon_enabled" in config)) return config;
-    const { sun_moon_enabled: sunMoonEnabled, ...rest } = config;
-    return sunMoonEnabled === false ? { sun_enabled: false, moon_enabled: false, ...rest } : rest;
+    let c = config;
+    if ("sun_moon_enabled" in c) {
+      const { sun_moon_enabled: on, ...rest } = c;
+      c = on === false ? { sun_enabled: false, moon_enabled: false, ...rest } : rest;
+    }
+    if ("sun_moon_size" in c) {
+      const { sun_moon_size: size, ...rest } = c;
+      c = { sun_size: size, moon_size: size, ...rest };
+    }
+    return c;
   }
   getCardSize() {
     return 4;
@@ -2401,7 +2408,9 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     els.sunMoon.classList.toggle("is-astro-night", isAstroNight);
     const rays = isAstroNight ? 0 : _WeatherCard._rayStrength(tuning, t);
     els.root.classList.toggle("has-sun-rays", rays > 0);
-    const st = els.sunMoonLayer.style;
+    const st = els.sunMoonLayer.style, size = isAstroNight ? cfg.moon_size : cfg.sun_size;
+    if (size == null || size === "") st.removeProperty("--origami-sun-moon-size");
+    else st.setProperty("--origami-sun-moon-size", cssLength(size));
     if (x == null) st.removeProperty("--origami-sun-moon-x");
     else st.setProperty("--origami-sun-moon-x", `${x}%`);
     st.setProperty("--origami-sun-moon-y", y);
@@ -3312,9 +3321,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const caiKey = (cfg.content_align_items || "").toString().toLowerCase();
     const caiVal = ALIGN_MAP[caiKey] || "";
     this._cssVar(root, "--origami-content-align-items", caiVal || (isRow ? "flex-start" : ""), "_prevContentAlignItems");
-    const sunMoonSize = cfg.sun_moon_size != null && cfg.sun_moon_size !== "" ? normalizeLength(cfg.sun_moon_size) : "";
     const sunMoonX = cfg.sun_moon_x != null && cfg.sun_moon_x !== "" && cfg.sun_moon_x !== "dynamic" ? isNaN(cfg.sun_moon_x) ? String(cfg.sun_moon_x).trim() : `${parseFloat(cfg.sun_moon_x)}%` : "";
-    this._cssVar(root, "--origami-sun-moon-size", sunMoonSize, "_prevSunMoonSize");
     this._cssVar(root, "--origami-sun-moon-x", sunMoonX && this._rtl && bgMode !== "images" ? `calc(100% - (${sunMoonX}))` : sunMoonX, "_prevSunMoonX");
     const [padV = "", padH = padV] = splitCss(cssLength(cfg.card_padding));
     this._cssVar(root, "--_origami-pad-v", padV, "_prevPadV");

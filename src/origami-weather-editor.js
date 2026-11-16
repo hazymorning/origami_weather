@@ -2,7 +2,7 @@ import { LitElement, html, css } from "lit";
 import { LAYOUT_PRESETS, instantiatePreset } from "./layout-presets.js";
 const LABELS = Object.freeze({
     weather_entity: "", sun_entity: "Sun entity",
-    sun_moon_size: "Diameter", sun_moon_x: "Horizontal position", sun_moon_y: "Vertical position",
+    sun_size: "Sun diameter", moon_size: "Moon diameter", sun_moon_x: "Horizontal position", sun_moon_y: "Vertical position",
     color_mode: "Light / dark mode", card_height: "Card height",
     background_mode: "Card background",
     card_padding: "Card padding", card_offset: "Card offset", card_tap_action: "Tap action",
@@ -20,7 +20,7 @@ const LABELS = Object.freeze({
 const BUTTON_LABELS = Object.freeze({ entity: "", tap_action: "Tap action" });
 const KEY_ORDER = Object.freeze([
     "type", "name", "entity", "weather_entity",
-    "sun_entity", "sun_enabled", "moon_enabled", "sun_moon_size", "sun_moon_x", "sun_moon_y",
+    "sun_entity", "sun_enabled", "moon_enabled", "sun_size", "moon_size", "sun_moon_x", "sun_moon_y",
     "color_mode", "dark_theme_adaptation", "card_height", "card_padding",
     "background_mode", "background_color", "background_color_dark", "background_threshold_entity", "background_threshold_attribute", "background_thresholds",
     "weather_image_path", "weather_image_path_dark", "weather_image_type", "weather_image_front",
@@ -36,7 +36,7 @@ const nameFirst = (o) => { const n = typeof o.name === "string" ? o.name.trim() 
 const buttonStyle = (v) => { const s = (v || "").toString().toLowerCase(); return s === "vertical" || s === "split" ? s : "inline"; };
 const DISPLAY_DEFAULTS = Object.freeze({
     color_mode: "sun", sun_entity: "sun.sun", background_mode: "default",
-    sun_moon_size: 80, sun_moon_x: 50,
+    sun_size: 80, moon_size: 80, sun_moon_x: 50,
     bg_brightness: 1.0, bg_saturation: 1.0, bg_blur: 0, bg_blend: 0, gradient_angle: 180, gradient_x: 50, gradient_y: 50, gradient_stop_1: 0, gradient_stop_2: 100,
     precipitation_speed: 1, mist_density: 1, mist_size: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
 const LAYER_STOPS = Object.freeze([
@@ -495,6 +495,11 @@ class WeatherCardEditor extends LitElement {
                 if (c.moon_enabled === undefined) c.moon_enabled = false;}
             delete c.sun_moon_enabled;
             autofilled = true;}
+        if ("sun_moon_size" in c) {
+            if (c.sun_size === undefined) c.sun_size = c.sun_moon_size;
+            if (c.moon_size === undefined) c.moon_size = c.sun_moon_size;
+            delete c.sun_moon_size;
+            autofilled = true;}
         if ("moon_phase_entity" in c) {
             delete c.moon_phase_entity;
             autofilled = true;}
@@ -714,7 +719,8 @@ class WeatherCardEditor extends LitElement {
                     @change=${(e) => this._updateField("moon_enabled", e.target.checked ? "" : false)}></ha-switch></label></div>
             ${sunEnabled || moonEnabled ? html`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
-                ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
+                ${sunEnabled ? this._renderSlider("sun_size", LABELS.sun_size, 20, 200, 2) : ""}
+                ${moonEnabled ? this._renderSlider("moon_size", LABELS.moon_size, 20, 200, 2) : ""}
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_x}</span>
                     <div class="segmented segmented-compact">

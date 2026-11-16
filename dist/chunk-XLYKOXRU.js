@@ -21,9 +21,10 @@ var DIORAMA_PAPER = [
   ["exceptional", "#eadad3", "#271a15"]
 ];
 var DIORAMA_CONFIG = Object.freeze({
-  card_height: "176px",
+  card_height: "160px",
   card_padding: "var(--ha-space-4, 16px)",
-  sun_moon_size: 40,
+  sun_size: 30,
+  moon_size: 30,
   sun_moon_x: "dynamic",
   cloud_effects: false,
   background_mode: "images",
@@ -36,33 +37,19 @@ var DIORAMA_CONFIG = Object.freeze({
   css: "#weather-bg > img { object-position: right bottom; }",
   button_containers: [
     {
-      name: "Temperature",
-      gap: "6px",
+      name: "Now",
       buttons: [
         {
-          name: "Temperature and condition",
+          name: "Condition and temperature",
           entity: PRESET_ENTITY_TOKEN,
           attribute: "temperature",
           style: "vertical",
           align: "start",
-          width: "100%",
-          inner_gap: "6px",
-          background: false,
-          elements: [
-            text({ size: "40px", weight: "800", precision: 0, format: "\xB0" }),
-            text({ entity: PRESET_ENTITY_TOKEN, size: "12px", weight: "500", overflow: "wrap" })
-          ]
-        },
-        {
-          name: "High and low",
-          entity: PRESET_ENTITY_TOKEN,
-          forecast: "daily",
-          background: false,
           inner_gap: "4px",
+          background: false,
           elements: [
-            text({ attribute: "temperature", format: "\xB0", size: "12px", weight: "500" }),
-            text({ text: "/", size: "12px", weight: "500", color: "color-mix(in srgb, currentColor 45%, transparent)" }),
-            text({ attribute: "templow", format: "\xB0", size: "12px", weight: "500" })
+            text({ entity: PRESET_ENTITY_TOKEN, size: "12px", weight: "500", overflow: "wrap" }),
+            text({ size: "40px", weight: "800", precision: 0, format: "\xB0" })
           ]
         }
       ]
@@ -110,7 +97,8 @@ var classicDay = (offset) => ({
 var classicStat = (iconName, extra) => [icon(iconName, { icon_size: "14px", color: WHITE_72 }), text({ size: "14px", weight: "500", color: WHITE, ...extra })];
 var CLASSIC_CONFIG = Object.freeze({
   color_mode: "dark",
-  sun_moon_size: 56,
+  sun_size: 56,
+  moon_size: 56,
   sun_moon_y: "110px 34px",
   cloud_effects: false,
   mist_effects: true,
@@ -145,7 +133,7 @@ var CLASSIC_CONFIG = Object.freeze({
           style: "vertical",
           align: "start",
           width: "100%",
-          inner_gap: "2px",
+          inner_gap: "5px",
           background: false,
           elements: [
             text({ attribute: "datetime", format: "%A", size: "20px", weight: "600", color: WHITE }),
@@ -166,7 +154,7 @@ var CLASSIC_CONFIG = Object.freeze({
     {
       name: "Now",
       custom_width: "auto",
-      padding: "0 4px 2px",
+      padding: "0 4px 2.5px",
       buttons: [
         {
           name: "Temperature and condition",
@@ -174,11 +162,11 @@ var CLASSIC_CONFIG = Object.freeze({
           attribute: "temperature",
           style: "vertical",
           align: "end",
-          inner_gap: "4px",
+          inner_gap: "10px",
           background: false,
           elements: [
-            text({ size: "52px", weight: "600", precision: 0, format: "\xB0", color: WHITE, margin: "-0.165em -0.06em -0.1em 0" }),
-            text({ entity: PRESET_ENTITY_TOKEN, size: "18px", weight: "500", color: WHITE })
+            text({ size: "48px", weight: "600", precision: 0, format: "\xB0", color: WHITE, margin: "-0.165em -0.06em -0.1em 0" }),
+            text({ entity: PRESET_ENTITY_TOKEN, size: "14px", weight: "500", color: WHITE })
           ]
         }
       ]
@@ -256,17 +244,17 @@ var panelTile = (name, iconName, value, margin, extra) => ({
     { name: "Value", entity: PRESET_ENTITY_TOKEN, ...extra, background: false, elements: [text({ size: "17px", weight: "600", color: PANEL_INK, ...value })] }
   ]
 });
-var panelDay = (offset) => ({
-  name: ["Today", "Tomorrow"][offset] || `In ${offset} days`,
+var panelHour = (offset) => ({
+  name: offset ? `In ${offset + 1} hours` : "Next hour",
   entity: PRESET_ENTITY_TOKEN,
-  forecast: "daily",
+  forecast: "hourly",
   forecast_offset: offset,
   background: false,
   padding: "0",
   elements: [
     text({ attribute: "datetime", size: "12px", weight: "500", color: PANEL_MUTED }),
     icon("weather", { icon_size: "24px", color: PANEL_INK, margin: "6px 0" }),
-    text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "600", color: PANEL_INK })
+    text({ attribute: "temperature", format: "\xB0", precision: 0, size: "15px", weight: "600", color: PANEL_INK })
   ]
 });
 var PANEL_CONFIG = Object.freeze({
@@ -295,7 +283,7 @@ var PANEL_CONFIG = Object.freeze({
       custom_width: "60%",
       gap: "6px",
       buttons: [
-        { name: "Condition", entity: PRESET_ENTITY_TOKEN, background: false, padding: "0", width: "100%", elements: [text({ size: "20px", weight: "600", color: PANEL_INK })] },
+        { name: "Condition", entity: PRESET_ENTITY_TOKEN, background: false, padding: "0", width: "100%", elements: [text({ size: "24px", weight: "600", color: PANEL_INK, overflow: "wrap" })] },
         {
           name: "High and low",
           entity: PRESET_ENTITY_TOKEN,
@@ -304,10 +292,10 @@ var PANEL_CONFIG = Object.freeze({
           padding: "0",
           inner_gap: "2px",
           elements: [
-            icon("mdi:arrow-up", { icon_size: "15px", color: PANEL_MUTED }),
-            text({ attribute: "temperature", format: "\xB0", size: "14px", weight: "500", color: PANEL_INK, margin: "0 10px 0 0" }),
-            icon("mdi:arrow-down", { icon_size: "15px", color: PANEL_MUTED }),
-            text({ attribute: "templow", format: "\xB0", size: "14px", weight: "500", color: PANEL_INK })
+            icon("mdi:arrow-up", { icon_size: "16px", color: PANEL_MUTED }),
+            text({ attribute: "temperature", format: "\xB0", size: "16px", weight: "500", color: PANEL_INK, margin: "0 12px 0 0" }),
+            icon("mdi:arrow-down", { icon_size: "16px", color: PANEL_MUTED }),
+            text({ attribute: "templow", format: "\xB0", size: "16px", weight: "500", color: PANEL_INK })
           ]
         }
       ]
@@ -328,9 +316,10 @@ var PANEL_CONFIG = Object.freeze({
       layout: "horizontal-scroll",
       scroll_count: 5,
       margin: "18px 0 0",
+      padding: "4px 0",
       button_style: "vertical",
       align: "center",
-      buttons: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(panelDay)
+      buttons: Array.from({ length: 24 }, (_, i) => panelHour(i))
     }
   ],
   grid_options: {
@@ -384,7 +373,7 @@ var windCompass = () => ({
   ring_fill: false,
   ring_width: 1,
   ring_color: "var(--secondary-text-color)",
-  ring_marker_icon_size: 15,
+  ring_marker_icon_size: 17,
   ring_values: [
     { value: 0, marker_size: 14, marker_gap: true, marker_icon: "mdi:alpha-n", marker_icon_color: "var(--secondary-text-color)" },
     { attribute: "wind_bearing", marker_size: 7, marker_color: "var(--primary-text-color)" }

@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-JZ4UCLIE.js";
+} from "./chunk-XLYKOXRU.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -584,7 +584,8 @@ o4?.({ LitElement: i4 });
 var LABELS = Object.freeze({
   weather_entity: "",
   sun_entity: "Sun entity",
-  sun_moon_size: "Diameter",
+  sun_size: "Sun diameter",
+  moon_size: "Moon diameter",
   sun_moon_x: "Horizontal position",
   sun_moon_y: "Vertical position",
   color_mode: "Light / dark mode",
@@ -628,7 +629,8 @@ var KEY_ORDER = Object.freeze([
   "sun_entity",
   "sun_enabled",
   "moon_enabled",
-  "sun_moon_size",
+  "sun_size",
+  "moon_size",
   "sun_moon_x",
   "sun_moon_y",
   "color_mode",
@@ -699,7 +701,8 @@ var DISPLAY_DEFAULTS = Object.freeze({
   color_mode: "sun",
   sun_entity: "sun.sun",
   background_mode: "default",
-  sun_moon_size: 80,
+  sun_size: 80,
+  moon_size: 80,
   sun_moon_x: 50,
   bg_brightness: 1,
   bg_saturation: 1,
@@ -1252,6 +1255,12 @@ var WeatherCardEditor = class extends i4 {
       delete c4.sun_moon_enabled;
       autofilled = true;
     }
+    if ("sun_moon_size" in c4) {
+      if (c4.sun_size === void 0) c4.sun_size = c4.sun_moon_size;
+      if (c4.moon_size === void 0) c4.moon_size = c4.sun_moon_size;
+      delete c4.sun_moon_size;
+      autofilled = true;
+    }
     if ("moon_phase_entity" in c4) {
       delete c4.moon_phase_entity;
       autofilled = true;
@@ -1510,7 +1519,8 @@ var WeatherCardEditor = class extends i4 {
                     @change=${(e4) => this._updateField("moon_enabled", e4.target.checked ? "" : false)}></ha-switch></label></div>
             ${sunEnabled || moonEnabled ? b2`
                 ${this._renderEntityField("sun_entity", { domain: "sun" })}
-                ${this._renderSlider("sun_moon_size", LABELS.sun_moon_size, 20, 200, 2)}
+                ${sunEnabled ? this._renderSlider("sun_size", LABELS.sun_size, 20, 200, 2) : ""}
+                ${moonEnabled ? this._renderSlider("moon_size", LABELS.moon_size, 20, 200, 2) : ""}
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_x}</span>
                     <div class="segmented segmented-compact">

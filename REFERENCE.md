@@ -415,7 +415,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `color_threshold_attribute` | `string` | — | Attribute to read for the tint value. |
 | `marquee_speed` | `number` | `30` | Scroll speed in px/s for text elements using `overflow: marquee`. |
 | `marquee_rtl` | `boolean` | `false` | Reverse the scroll direction. |
-| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). With `action: none` the button doesn't react to taps, and a tap on it goes to `card_tap_action`. |
+| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). |
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
 | `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` is today or the next hour, `1` the one after, and so on. Past the last entry the weather service sends, the button is not drawn. |
@@ -535,7 +535,7 @@ The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` en
 | `background_threshold_entity` | `string` | — | Entity the thresholds read from. Without it, they follow the card's weather, so each `value` can be a condition like `rainy`. |
 | `background_threshold_attribute` | `string` | — | Attribute to read for the threshold value. |
 | `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. On by default with the `default` sky. In the other modes it is off unless set to `true`. |
-| `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. A folder that starts with neither `/` nor an address like `https://` is looked up in the card's own folder, like `diorama/light/` for the pictures that come with the card. |
+| `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. A folder that starts with neither `/`, `.` nor an address like `https://` is looked up in the card's own folder, like `diorama/light/` for the pictures that come with the card. |
 | `weather_image_path_dark` | `string` | — | Second folder, used while the card is in dark mode, which `color_mode` decides. Falls back to `weather_image_path`. |
 | `weather_image_type` | `string` | — | File type of those pictures, like `webp`. Without it, the card tries the usual types one after another until one loads. |
 | `weather_image_front` | `boolean` | `false` | Draws the pictures in front of the sun, the moon and the stars. Where a picture is transparent, they show through, so they can set behind the hills of a landscape. |

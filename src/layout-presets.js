@@ -365,7 +365,7 @@ const WINDOW_CONFIG = Object.freeze({
             custom_width: WINDOW_SIZE,
             padding: `calc((${WINDOW_MAX}px - ${WINDOW_SIZE}) / 2) 0`,
             layer: 'base',
-            buttons: [{ name: 'Window', entity: PRESET_ENTITY_TOKEN, background: true, background_color: 'transparent', button_round: true, width: WINDOW_SIZE, height: WINDOW_SIZE, padding: '0', shadow_color: WINDOW_CUT, tap_action: { action: 'none' }, elements: [] }]
+            buttons: [{ name: 'Window', entity: PRESET_ENTITY_TOKEN, background: true, background_color: 'transparent', button_round: true, width: WINDOW_SIZE, height: WINDOW_SIZE, padding: '0', shadow_color: WINDOW_CUT, elements: [] }]
         },
         {
             name: 'Next hours',

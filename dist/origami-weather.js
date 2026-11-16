@@ -1775,6 +1775,7 @@ var ESCAPE_MAP = { "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" };
 var escapeHtml = (v) => String(v).replace(/["&<>]/g, (c) => ESCAPE_MAP[c]);
 var _CSS_STRIP = /["'<>;{}\\]|\/\*|\*\/|@|url\s*\(|expression\s*\(/gi;
 var cssValue = (v) => String(v).replace(/[\u0000-\u001F\u007F]/g, "").replace(_CSS_STRIP, "");
+var _freeContainer = (c) => !c.custom_cards && String(c.position || "").toLowerCase() === "custom";
 var _ALIGN_CLASSES = /* @__PURE__ */ new Set(["start", "center", "end", "spread"]);
 var _BUTTON_STYLES = /* @__PURE__ */ new Set(["vertical", "split"]);
 var JUSTIFY_MAP = Object.freeze({ start: "flex-start", center: "center", end: "flex-end", between: "space-between", around: "space-around", evenly: "space-evenly" });
@@ -2254,12 +2255,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-KZSRRSNG.js");
+      await import("./origami-weather-editor-7RDNJTH2.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-Y5D45KBV.js");
+    const { buildStubConfig } = await import("./layout-presets-3XZXXQW6.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2357,7 +2358,8 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     }
     const t = Number.isFinite(elev) ? Math.min(1, Math.max(0, isAstroNight ? -elev / 24 : elev / 60)) : 0.5;
     const yFixed = cfg.sun_moon_y != null && cfg.sun_moon_y !== "";
-    const y = yFixed && isNaN(cfg.sun_moon_y) ? cssValue(String(cfg.sun_moon_y).trim()) : `${yFixed ? Math.min(100, Math.max(0, parseFloat(cfg.sun_moon_y) || 0)) : Math.round((100 - t * 86) * 2) / 2}%`;
+    const ys = yFixed ? String(cfg.sun_moon_y).trim() : "", yCss = yFixed && isNaN(ys) && !/^-?[\d.]+\s*%$/.test(ys) && CSS.supports("top", cssValue(ys)) ? cssValue(ys) : "";
+    const y = yCss || `${yFixed ? Math.min(100, Math.max(0, parseFloat(ys) || 0)) : Math.round((100 - t * 86) * 2) / 2}%`;
     const x = cfg.sun_moon_x === "dynamic" ? Math.round((7 + _WeatherCard._pathProgress(sun.attributes || {}, isAstroNight) * 86) * 2) / 2 : null;
     const warm = isAstroNight ? 0 : Math.round(Math.pow(1 - t, 1.6) * 20) / 20;
     this._sunGlowVisibility = tuning.sunVisibility;
@@ -2915,7 +2917,8 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             #card-root.scheme-dark #sun-rays::before, #card-root.scheme-dark #sun-rays::after { mix-blend-mode: screen; }
             #card-root.scheme-dark { --origami-sun-ray-shine: rgba(178,204,248,0.14); }
             @keyframes wbkRayShine { 0%, 100% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.35); } 50% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.9); } }
-            #content-layer { position: relative; container-type: inline-size; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; }
+            #content-layer { position: relative; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; }
+            #content-layer.has-cq { container-type: inline-size; }
             #content-layer.direction-row { flex-wrap: wrap; }
             #content-layer.direction-row > .buttons-group, #content-layer.direction-row > .cards-group { flex: 1 1 0; min-width: 0; }
             #content-layer > .buttons-group.has-custom-width, #content-layer > .cards-group.has-custom-width { flex: 0 0 auto; width: var(--origami-container-width); align-self: auto; }
@@ -2987,7 +2990,6 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .buttons-row.has-visible-count > .button.format-vertical { align-content: center; }
             .button { display: flex; flex-direction: row; align-items: center; row-gap: var(--origami-button-gap, 6px); column-gap: var(--origami-button-gap, 0.40em); flex-wrap: nowrap; flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box; scroll-snap-align: start; padding: var(--origami-buttons-padding, 0); cursor: pointer; pointer-events: auto; -webkit-tap-highlight-color: transparent; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
             .button:active { transform: scale(0.94); opacity: 0.75; transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.12s cubic-bezier(0.2, 0, 0.2, 1); }
-            .button.no-action { pointer-events: none; }
             .button .button-icon { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: var(--weather-icon-padding, 0); }
             .button .button-icon ha-icon,
             .button .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.1em); opacity: 0.9; }
@@ -3287,13 +3289,14 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const padParts = cssLength(cfg.card_padding).match(/(?:[^\s(]+|\([^)]*\))+/g) || [""];
     this._cssVar(root, "--_origami-pad-v", padParts[0], "_prevPadV");
     this._cssVar(root, "--_origami-pad-h", padParts[1] || padParts[0], "_prevPadH");
+    this._elements.contentLayer.classList.toggle("has-cq", this._containers.some((c) => !_freeContainer(c) && /\dcq(w|h|i|b|min|max)\b/i.test(JSON.stringify(c))));
     if (!this._containerStyleCache) this._containerStyleCache = [];
     for (let ai = 0; ai < this._containers.length; ai++) {
       this._applyContainerStyles(ai, this._containers[ai]);
     }
   }
   _placeContainer(container, group, placed) {
-    const host = !container.custom_cards && String(container.position || "").toLowerCase() === "custom" ? this._elements.freeLayer : this._elements.contentLayer;
+    const host = _freeContainer(container) ? this._elements.freeLayer : this._elements.contentLayer;
     const before = placed.has(host) ? placed.get(host).nextSibling : host.firstChild;
     if (group !== before) host.insertBefore(group, before);
     placed.set(host, group);
@@ -3499,7 +3502,6 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         (button, idx) => this._renderButton(button, idx, hass, weatherState, showBottomBg, containerBlurred, buttonFormat, ai, containerCtx)
       );
       allRendered.push(...rendered.filter((r) => !r.hidden));
-      if (rendered.length && rendered.every((r) => r.hidden)) els.group.style.display = "none";
       if (!this._containerRenderCache[ai]) this._containerRenderCache[ai] = {};
       const ac = this._containerRenderCache[ai];
       const rowSig = rendered.map((r) => r.sig).join("\xA7");
@@ -3717,6 +3719,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       const configPath = el.icon_path || ((configIcon === "weather" || !ownIcon && !configIcon) && this._config && this._config.icon_path ? this._config.icon_path : "");
       if (!configIcon) return { strategy: strat0, value: val0 };
       const live = !isForecast || !!el.entity;
+      if (configIcon === "weather" && !live && !forecastCondition) return { strategy: "static", value: iconValue };
       const hourly = !live && button.forecast === "hourly";
       const night = configIcon !== "weather" ? null : live ? this._isAstroNight : hourly ? this._isNightAt(forecastDatetime) : null;
       let resolvedBase = configIcon === "weather" ? !live && forecastCondition ? forecastCondition : weatherState : configIcon;
@@ -3772,7 +3775,6 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (barOverflow) classes.push("has-bar-overflow");
     if (effectiveFormat !== "inline") classes.push(`format-${effectiveFormat}`);
     if (isRingType) classes.push("button-ring");
-    if (button.tap_action && button.tap_action.action === "none") classes.push("no-action");
     const iconBg = button.icon_background !== void 0 ? button.icon_background : containerCtx.button_icon_background;
     if (iconBg === true) classes.push("has-icon-bg");
     else if (iconBg === false) classes.push("no-icon-bg");
@@ -3865,7 +3867,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (this._weatherBgState === weatherState && this._weatherBgSchemeDark === useDarkScheme) return;
     this._weatherBgState = weatherState;
     this._weatherBgSchemeDark = useDarkScheme;
-    const path = basePath.endsWith("/") ? basePath : basePath + "/", own = !/^(\/|[a-z][\w+.-]*:)/i.test(path);
+    const path = basePath.endsWith("/") ? basePath : basePath + "/", own = !/^(\/|\.|[a-z][\w+.-]*:)/i.test(path);
     const folder = own ? new URL(path, import.meta.url).href : path;
     const type = String(cfg.weather_image_type || "").trim().replace(/^\./, ""), found = WEATHER_MEDIA_FOUND.get(folder);
     const exts = type ? [`.${type}`] : found === void 0 ? WEATHER_MEDIA_EXTS : [found, ...WEATHER_MEDIA_EXTS.filter((e) => e !== found)];

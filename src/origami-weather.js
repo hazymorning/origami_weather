@@ -2558,8 +2558,8 @@ class WeatherCard extends HTMLElement {
                     transparent 100%);
                 animation: wbkMoonGlow 14s ease-in-out infinite; }
             #card-root.scheme-light #sun-moon .moon-glow { --_moon-glow: rgba(190,208,234,0.34); }
-            #sun-moon .moon-disc { position: absolute; inset: 0; width: 100%; height: 100%; }
-            #sun-moon .moon-disc { filter: drop-shadow(0 0 calc(var(--origami-sun-moon-size, 80px) * 0.05) rgba(232, 238, 255, 0.4)); }
+            #sun-moon .moon-disc { position: absolute; inset: -5%; width: 110%; height: 110%; }
+            #sun-moon .moon-disc { filter: drop-shadow(0 0 calc(var(--origami-sun-moon-size, 80px) * 0.05) rgba(232, 238, 255, 0.45)) drop-shadow(0 0 calc(var(--origami-sun-moon-size, 80px) * 0.24) rgba(214, 228, 255, 0.42)); }
             #card-root.scheme-light #sun-moon .moon-disc { opacity: 0.92; }
             #sun-moon .moon { opacity: 0; }
             #sun-moon.is-astro-night .sun { opacity: 0; }
@@ -3850,9 +3850,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
         let moon = null;
         if (this._sunMoonActive && this._isAstroNight) {
-            moon = { x: cx, y: cy, r: sunSize / 2, lit: this._moonLit };
+            moon = { x: cx, y: cy, r: sunSize * 0.55, lit: this._moonLit };
         }
-        const disc = this._sunMoonActive ? { x: cx, y: cy, r: sunSize / 2, clear: this._isAstroNight ? (this._moonLit ? 1 : 0) : Math.min(1, this._sunGlowVisibility) } : null;
+        const disc = this._sunMoonActive ? { x: cx, y: cy, r: sunSize * (this._isAstroNight ? 0.55 : 0.5), clear: this._isAstroNight ? (this._moonLit ? 1 : 0) : Math.min(1, this._sunGlowVisibility) } : null;
         const dark = /^(color|images)$/.test(this._backgroundMode()) && /^(dark|light)$/i.test(this._config.color_mode || '') ? this._isAstroNight : this._schemeDark;
         return { schemeDark: this._schemeDark, glow, moon, disc, night: this._isAstroNight, dark, backgroundRGB: this._effectsBg, mistRGB: this._mistBg };
     }

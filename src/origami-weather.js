@@ -404,13 +404,18 @@ const WeatherEffects = (() => {
         { size: 150, bright: 0.96, alpha: 0.78, speed: 0.006, count: 4, stretch: 0.14, res: 1 },
         { size: 250, bright: 1.00, alpha: 0.92, speed: 0.015, count: 2, stretch: 0.10, res: 1.5 },
     ]);
-    const MIST_TONE = Object.freeze({ at: [0.25, 0.36, 0.6], lift: [0.12, 0.08, 0.08], keep: [1, 1, 0.92], tint: [[-0.005, -0.02], [-0.005, -0.02], [0, -0.004]], top: 0.985, room: 0.06, shade: 0.05, dark: 0.6 });
-    const MIST_CEILING = Object.freeze({ scattered: 0.43, overcast: 0.43, fog: 0.47 });
+    const MIST_TONE = Object.freeze({ at: [0.25, 0.36, 0.6], lift: [0.19, 0.13, 0.1], keep: [1, 1, 0.92], tint: [[-0.005, -0.02], [-0.005, -0.02], [0, -0.004]], top: 0.985, room: 0.06, shade: 0.05, dark: 0.6 });
+    const MIST_CEILING = Object.freeze({ scattered: 0.49, overcast: 0.49, fog: 0.53 });
     const MIST = Object.freeze({
-        scattered: { count: 3, alpha: 0.4, speed: 1, clearings: 3, clear: 1, disc: 0.9 },
-        overcast: { count: 3, alpha: 0.36, speed: 1, clearings: 4, clear: 1, disc: 0.8 },
-        fog: { count: 3, alpha: 0.4, speed: 1.5, clearings: 4, clear: 0.9, disc: 0.5 },
+        scattered: { alpha: 0.85, speed: 1, gap: [0.34, 0.7], disc: 0.9 },
+        overcast: { alpha: 1, speed: 1, gap: [0.3, 0.68], disc: 0.8 },
+        fog: { alpha: 1, speed: 1.5, gap: [0.2, 0.62], disc: 0.5 },
     });
+    const MIST_LAYERS = Object.freeze([
+        { size: 0.7, count: 3, speed: 0.005, alpha: 0.5, lift: 0.55, y: [0.2, 0.8] },
+        { size: 1.2, count: 3, speed: 0.011, alpha: 0.6, lift: 0.8, y: [0.25, 0.75] },
+        { size: 2.6, count: 2, speed: 0.024, alpha: 0.7, lift: 1, y: [0.3, 0.7] },
+    ]);
     const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 4.5) / 7.5));
     const _cloudAtlas = new WeakMap();
     function _fit(img, max) {
@@ -860,58 +865,40 @@ const WeatherEffects = (() => {
         }
         return { puffs, key: tuning.cloudDensity };
     }
-    let _clearing = null;
-    function _clearingSprite() {
-        if (_clearing) return _clearing;
-        const rnd = _mulberry32(7), blobs = [];
-        for (let n = 0; n < 5; n++) {
-            const a = rnd() * Math.PI * 2, d = n ? 20 + rnd() * 50 : 0, r = n ? 38 + rnd() * 34 : 70;
-            blobs.push([128 + Math.cos(a) * d, 128 + Math.sin(a) * d * 0.8, r]);
+    const _mistSprites = new Map();
+    function _mistSprite(img, gap) {
+        const key = gap.join();
+        if (_mistSprites.has(key)) return _mistSprites.get(key);
+        const k = Math.min(1, 512 / img.width), c = Object.assign(document.createElement('canvas'), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
+        const x = c.getContext('2d', { willReadFrequently: true });
+        x.drawImage(img, 0, 0, c.width, c.height);
+        const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+        for (let i = 0; i < p.length; i += 4) {
+            const u = Math.max(0, Math.min(1, (p[i + 3] / 255 - gap[0]) / (gap[1] - gap[0])));
+            p[i] = p[i + 1] = p[i + 2] = 255;
+            p[i + 3] = Math.round(255 * u * u * (3 - 2 * u));
         }
-        const lo = (i) => Math.max(0, Math.floor(Math.min(...blobs.map((b) => b[i] - b[2])) - 2));
-        const hi = (i) => Math.min(256, Math.ceil(Math.max(...blobs.map((b) => b[i] + b[2])) + 2));
-        const x0 = lo(0), y0 = lo(1), c = document.createElement('canvas');
-        c.width = hi(0) - x0;
-        c.height = hi(1) - y0;
-        const x = c.getContext('2d');
-        x.translate(-x0, -y0);
-        for (const [cx, cy, r] of blobs) {
-            const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
-            for (let k = 0; k <= 12; k++) {
-                const u = k / 12, v = 1 - u * u * (3 - 2 * u);
-                g.addColorStop(u, `rgba(0,0,0,${Math.pow(v, 1.2).toFixed(4)})`);
-            }
-            x.fillStyle = g;
-            x.fillRect(x0, y0, c.width, c.height);
-        }
-        return (_clearing = { img: c, x: x0 / 256, y: y0 / 256, w: c.width / 256, h: c.height / 256 });
+        x.putImageData(d, 0, 0);
+        _mistSprites.set(key, c);
+        return c;
     }
     function _buildMistField(tuning, seed) {
-        const look = MIST[tuning.mist], rnd = _mulberry32(seed || 1), puffs = [], clearings = [];
-        for (let i = 0; i < look.count; i++) {
-            const depth = (i + 0.5) / look.count;
-            const puff = {
-                size: 1.3 + 2 * depth,
-                x: 0.2 + 0.6 * (i + rnd() * 0.8) / look.count,
-                y: 0.3 + rnd() * 0.4,
-                rot: rnd() * Math.PI * 2,
-                speed: (0.002 + 0.014 * Math.pow(depth, 1.3)) * (0.85 + rnd() * 0.3) * look.speed,
-                alpha: look.alpha * (0.8 + rnd() * 0.4) * (0.7 + 0.6 * depth),
-                ph: rnd() * Math.PI * 2,
-            };
-            puffs.push(puff, { ...puff, x: (puff.x + 0.5) % 1, y: 0.3 + rnd() * 0.4, rot: rnd() * Math.PI * 2, ph: rnd() * Math.PI * 2 });
-        }
-        for (let i = 0; i < look.clearings; i++) {
-            clearings.push({
-                size: 0.45 + rnd() * 0.4,
-                x: (i + rnd() * 0.8) / look.clearings,
-                y: 0.15 + rnd() * 0.7,
-                rot: rnd() * Math.PI * 2,
-                speed: 0.008 * (0.8 + rnd() * 0.4) * look.speed,
-                alpha: look.clear,
-            });
-        }
-        return { puffs, clearings, key: tuning.mist };
+        const look = MIST[tuning.mist], rnd = _mulberry32(seed || 1), puffs = [];
+        MIST_LAYERS.forEach((layer, i) => {
+            for (let n = 0; n < layer.count; n++) {
+                puffs.push({
+                    layer: i,
+                    size: layer.size * (0.9 + rnd() * 0.2),
+                    x: (n + 0.35 + rnd() * 0.3) / layer.count,
+                    y: layer.y[0] + rnd() * (layer.y[1] - layer.y[0]),
+                    rot: rnd() * Math.PI * 2,
+                    speed: layer.speed * (0.85 + rnd() * 0.3) * look.speed,
+                    alpha: layer.alpha * look.alpha * (0.9 + rnd() * 0.2),
+                    ph: rnd() * Math.PI * 2,
+                });
+            }
+        });
+        return { puffs, key: tuning.mist };
     }
     const _lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
     const _enc = (v) => { v = Math.max(0, Math.min(1, v)); return Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)); };
@@ -924,17 +911,28 @@ const WeatherEffects = (() => {
         const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
         return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s].map(_enc);
     }
-    function _mistColor(bg, ceiling) {
-        const T = MIST_TONE, [L, a, b] = _toOklab(bg), i = L < T.at[1] ? 0 : 1, u = Math.max(0, Math.min(1, (L - T.at[i]) / (T.at[i + 1] - T.at[i]))), lighter = L + T.room <= T.top;
-        if (!Number.isFinite(L)) return 'transparent';
+    function _mistLayers(sprite, bg, ceiling) {
+        const T = MIST_TONE, base = _toOklab(bg), [L, a, b] = base, i = L < T.at[1] ? 0 : 1, u = Math.max(0, Math.min(1, (L - T.at[i]) / (T.at[i + 1] - T.at[i]))), lighter = L + T.room <= T.top;
+        if (!Number.isFinite(L)) return null;
         const at = (k) => k[i] + (k[i + 1] - k[i]) * u, keep = lighter ? at(T.keep) : T.keep[2], tint = [0, 1].map((c) => at(T.tint.map((v) => v[c])));
         const Lm = lighter ? Math.min(L + at(T.lift), T.top, ceiling && L < T.dark ? Math.max(L + T.room / 2, ceiling) : 1) : L - T.shade;
-        return `rgb(${_fromOklab([Lm, a * keep + tint[0], b * keep + tint[1]]).join(',')})`;
+        const top = [Lm, a * keep + tint[0], b * keep + tint[1]];
+        return MIST_LAYERS.map((layer) => {
+            const c = Object.assign(document.createElement('canvas'), { width: sprite.width, height: sprite.height }), x = c.getContext('2d');
+            x.drawImage(sprite, 0, 0);
+            x.globalCompositeOperation = 'source-in';
+            x.fillStyle = `rgb(${_fromOklab(base.map((v, n) => v + (top[n] - v) * layer.lift)).join(',')})`;
+            x.fillRect(0, 0, c.width, c.height);
+            return c;
+        });
     }
     function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind) {
-        const big = Math.max(w, h) * inst.mistSize, ar = img.height / img.width, amt = inst.mistDensity, bg = env.mistRGB || env.backgroundRGB;
+        const sprite = _mistSprite(img, MIST[inst.mist.key].gap), bg = env.mistRGB || env.backgroundRGB;
         const ceiling = env.dark ? MIST_CEILING[inst.mist.key] : 0;
-        if (!inst.mistTone || inst.mistTone.bg !== bg || inst.mistTone.ceiling !== ceiling) inst.mistTone = { bg, ceiling, color: _mistColor(bg, ceiling) };
+        if (!inst.mistTone || inst.mistTone.bg !== bg || inst.mistTone.ceiling !== ceiling || inst.mistTone.sprite !== sprite) inst.mistTone = { bg, ceiling, sprite, layers: _mistLayers(sprite, bg, ceiling) };
+        const layers = inst.mistTone.layers;
+        if (!layers) return;
+        const big = Math.max(w, h) * inst.mistSize, ar = sprite.height / sprite.width, amt = inst.mistDensity;
         const cw = Math.ceil(ctx.canvas.width / 2), ch = Math.ceil(ctx.canvas.height / 2), ms = s / 2;
         const mc = inst.mistCanvas || (inst.mistCanvas = document.createElement('canvas'));
         if (mc.width !== cw || mc.height !== ch) { mc.width = cw; mc.height = ch; }
@@ -943,45 +941,29 @@ const WeatherEffects = (() => {
         m.clearRect(0, 0, cw, ch);
         m.imageSmoothingEnabled = true;
         m.imageSmoothingQuality = 'high';
-        const place = (p, size, alpha) => {
-            m.globalAlpha = alpha;
-            m.setTransform(ms, 0, 0, ms, (p.x * (w + size) - size / 2) * ms, p.y * h * ms);
-            m.rotate(p.rot);
-        };
         for (const p of inst.mist.puffs) {
-            const pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph));
+            const pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph)), span = MIST_LAYERS[p.layer].y;
             p.x += p.speed * wind * w * dt / (w + pw);
-            if (p.x >= 1) { p.x -= 1; p.y = 0.3 + Math.random() * 0.4; p.rot = Math.random() * Math.PI * 2; }
-            place(p, pw, Math.min(1, p.alpha * amt * (1 + 0.15 * Math.sin(t * 0.07 + p.ph * 1.3))));
-            m.drawImage(img, -pw / 2, -pw * ar / 2, pw, pw * ar);
-        }
-        m.globalCompositeOperation = 'destination-out';
-        const hole = _clearingSprite();
-        for (const c of inst.mist.clearings) {
-            const cs = c.size * big;
-            c.x += c.speed * wind * w * dt / (w + cs);
-            if (c.x >= 1) { c.x -= 1; c.y = 0.15 + Math.random() * 0.7; c.rot = Math.random() * Math.PI * 2; }
-            place(c, cs, c.alpha);
-            m.drawImage(hole.img, (hole.x - 0.5) * cs, (hole.y - 0.5) * cs * 0.75, hole.w * cs, hole.h * cs * 0.75);
+            if (p.x >= 1) { p.x -= 1; p.y = span[0] + Math.random() * (span[1] - span[0]); p.rot = Math.random() * Math.PI * 2; }
+            m.globalAlpha = Math.min(1, p.alpha * amt * (1 + 0.15 * Math.sin(t * 0.07 + p.ph * 1.3)));
+            m.setTransform(ms, 0, 0, ms, (p.x * (w + pw) - pw / 2) * ms, p.y * h * ms);
+            m.rotate(p.rot);
+            m.drawImage(layers[p.layer], -pw / 2, -pw * ar / 2, pw, pw * ar);
         }
         m.setTransform(1, 0, 0, 1, 0, 0);
+        m.globalAlpha = 1;
         if (env.disc && env.disc.clear > 0) {
             const mx = env.disc.x * ms, my = env.disc.y * ms, mr = env.disc.r * ms, glow = m.createRadialGradient(mx, my, mr, mx, my, mr * 1.5);
             glow.addColorStop(0, `rgba(0,0,0,${MIST[inst.mist.key].disc * env.disc.clear})`);
             glow.addColorStop(1, 'rgba(0,0,0,0)');
-            m.globalAlpha = 1;
+            m.globalCompositeOperation = 'destination-out';
             m.fillStyle = glow;
             m.fillRect(mx - mr * 1.5, my - mr * 1.5, mr * 3, mr * 3);
+            m.globalCompositeOperation = 'source-over';
         }
-        m.globalCompositeOperation = 'source-in';
-        m.globalAlpha = 1;
-        m.fillStyle = inst.mistTone.color;
-        m.fillRect(0, 0, cw, ch);
-        m.globalCompositeOperation = 'source-over';
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.globalAlpha = 1;
         ctx.drawImage(mc, 0, 0, cw * 2, ch * 2);
-        ctx.globalAlpha = 1;
         ctx.setTransform(s, 0, 0, s, 0, 0);
     }
     const _lerp = (a, b, t) => a + (b - a) * t;

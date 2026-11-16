@@ -54,19 +54,19 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills, and a frosted bar slides through today's high and low, the wind, the next sunset or sunrise, the humidity and the UV index.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature, the current weather and today's high and low in a corner of the sky. The sun and the moon cross the sky and set behind the hills.
 
 ### Classic
 
 <img width="800" alt="The Classic layout, the temperature on a color that changes with the weather, with a forecast for the coming days, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature on a color that changes with the weather, with a large weather icon beside it and the current weather and today's high and low below. A forecast slides through the coming days, with the chance of rain under each day.
+The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. A forecast slides through the coming days, with the chance of rain under each day.
 
 ### Panel
 
 <img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next days below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
-The current weather and the temperature on a soft color that follows the weather and the theme, with tiles for the wind, the humidity, the UV index and the chance of rain, and the next days below.
+The current weather and the temperature on a soft color that follows the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next days below. Mist, rain and snow pass behind the tiles.
 
 ### Home
 

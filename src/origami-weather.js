@@ -2065,9 +2065,9 @@ class WeatherCard extends HTMLElement {
             return;
         }
         const t = Number.isFinite(elev) ? Math.min(1, Math.max(0, isAstroNight ? -elev / 24 : elev / 60)) : 0.5;
-        const yFixed = cfg.sun_moon_y != null && cfg.sun_moon_y !== '';
-        const ys = yFixed ? String(cfg.sun_moon_y).trim() : '', yCss = yFixed && isNaN(ys) && !/^-?[\d.]+\s*%$/.test(ys) && CSS.supports('top', cssValue(ys)) ? cssValue(ys) : '';
-        const y = yCss || `${yFixed ? Math.min(100, Math.max(0, parseFloat(ys) || 0)) : Math.round((100 - t * 86) * 2) / 2}%`;
+        const yAt = (v) => isNaN(v) && !/^-?[\d.]+\s*%$/.test(v) && CSS.supports('top', cssValue(v)) ? cssValue(v) : `${Math.min(100, Math.max(0, parseFloat(v) || 0))}%`;
+        const ys = cfg.sun_moon_y != null && cfg.sun_moon_y !== '' ? splitCss(String(cfg.sun_moon_y).trim()) : [];
+        const y = ys.length === 2 ? `calc(${yAt(ys[0])} + (${yAt(ys[1])} - ${yAt(ys[0])}) * ${Math.round(t * 100) / 100})` : ys.length ? yAt(ys.join(' ')) : `${Math.round((100 - t * 86) * 2) / 2}%`;
         const x = cfg.sun_moon_x === 'dynamic' ? Math.round((7 + WeatherCard._pathProgress(sun.attributes || {}, isAstroNight) * 86) * 2) / 2 : null;
         const warm = isAstroNight ? 0 : Math.round(Math.pow(1 - t, 1.6) * 20) / 20;
         this._sunGlowVisibility = tuning.sunVisibility;

@@ -329,7 +329,7 @@ The card renders a sun during the day and a moon at night, positioned within the
 | `moon_enabled` | `boolean` | `true` | Show or hide the moon. |
 | `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
 | `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, and a CSS length works too. With `dynamic`, the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. In right-to-left languages a fixed position counts from the right, so the sun or the moon mirrors with the layout, except over background pictures. |
-| `sun_moon_y` | `string` | — | Vertical position from the top. A bare number is read as a percentage, clamped to 0-100, and a CSS length works too. When unset it follows the sun's elevation. |
+| `sun_moon_y` | `string` | — | Vertical position from the top. A bare number is read as a percentage, clamped to 0-100, and a CSS length works too. When unset it follows the sun's elevation. With two values, like `110px 30px`, it still follows the elevation, from the first value at the horizon to the second high in the sky. |
 
 The old `sun_moon_enabled` is converted to the two separate toggles automatically and a leftover `moon_phase_entity` is simply ignored, so existing configs keep working.
 

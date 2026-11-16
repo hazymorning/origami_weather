@@ -704,7 +704,7 @@ class WeatherCardEditor extends LitElement {
         const sunEnabled = c.sun_enabled !== false, moonEnabled = c.moon_enabled !== false;
         const xDynamic = c.sun_moon_x === "dynamic", xCss = !xDynamic && c.sun_moon_x != null && c.sun_moon_x !== "" && isNaN(c.sun_moon_x);
         const yRaw = c.sun_moon_y;
-        const yFixed = yRaw != null && yRaw !== "", yCss = yFixed && isNaN(yRaw);
+        const yFixed = yRaw != null && yRaw !== "", yCss = yFixed && isNaN(yRaw), yPath = yCss && /^\S+\s+\S+$/.test(String(yRaw).trim());
         return html`<div class="settings-group">
             <div class="toggle-group"><label class="toggle-row"><span>Show Sun</span>
                 <ha-switch .checked=${sunEnabled}
@@ -726,8 +726,8 @@ class WeatherCardEditor extends LitElement {
                 <div class="compact-field">
                     <span class="compact-field-label">${LABELS.sun_moon_y}</span>
                     <div class="segmented segmented-compact">
-                        <button type="button" class=${!yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", "")}>Dynamic</button>
-                        <button type="button" class=${yFixed ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
+                        <button type="button" class=${!yFixed || yPath ? "active" : ""} @click=${() => this._updateField("sun_moon_y", "")}>Dynamic</button>
+                        <button type="button" class=${yFixed && !yPath ? "active" : ""} @click=${() => this._updateField("sun_moon_y", 50)}>Fixed</button>
                     </div></div>
                 ${!yFixed ? "" : yCss ? html`<div class="compact-field"><input type="text" .value=${String(yRaw)}
                     @change=${(e) => this._updateField("sun_moon_y", e.target.value.trim() || 50)}></div>` : this._renderSlider("sun_moon_y", "", 0, 100, 1)}` : ""}</div>`;}

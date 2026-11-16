@@ -2,9 +2,8 @@
   "name": "origami-weather",
   "private": true,
   "scripts": {
-    "prebuild": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
-    "build": "esbuild src/origami-weather.js --bundle --splitting --format=esm --chunk-names=[name]-[hash] --legal-comments=inline --outdir=dist",
-    "postbuild": "node -e \"require('fs').cpSync('src/diorama', 'dist/diorama', { recursive: true })\""
+    "prebuild": "node -e \"const fs = require('fs'); for (const f of fs.readdirSync('dist')) if (f.endsWith('.js')) fs.rmSync('dist/' + f)\"",
+    "build": "esbuild src/origami-weather.js --bundle --splitting --format=esm --chunk-names=[name]-[hash] --legal-comments=inline --outdir=dist"
   },
   "dependencies": {
     "lit": "3.2.1"

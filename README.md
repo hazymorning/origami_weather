@@ -97,7 +97,7 @@ With `background_mode: none` and `card_frame: false`, the card loses its own sty
 
 The Diorama's pictures come with the card, so Home Assistant serves them itself and nothing loads from the internet. Any layout can show a picture for each kind of weather, and the Diorama can show other pictures too.
 
-1. Name the pictures after the weather conditions, the way the Diorama's own pictures in [`src/diorama`](https://github.com/hazymorning/origami_weather/tree/main/src/diorama) are named, like `sunny.webp`, `partlycloudy.webp` and `clear-night.webp`.
+1. Name the pictures after the weather conditions, the way the Diorama's own pictures in [`dist/diorama`](https://github.com/hazymorning/origami_weather/tree/main/dist/diorama) are named, like `sunny.webp`, `partlycloudy.webp` and `clear-night.webp`.
 2. Copy them to a folder in `/config/www`, such as `/config/www/weather`, and the ones for dark mode to a second folder, if there are any.
 3. Under **Background**, set the card background to **Custom images** and the light mode folder to `/local/weather/`, and the dark mode folder to the second one, or clear it when there is none. In the code editor, these are `background_mode: images`, `weather_image_path` and `weather_image_path_dark`.
 

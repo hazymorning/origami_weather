@@ -52,16 +52,50 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 ### Diorama
 
-<img width="800" alt="The Diorama layout, a paper landscape for each kind of weather: a partly cloudy midday with the sun above the hills, and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
+<img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills, and a frosted bar in the bottom left corner slides through today's high and low, the wind, the next sunset or sunrise, the humidity and the UV index. The pictures come with the card, so Home Assistant serves them itself and nothing loads from the internet. A Diorama card made from Origami's `diorama.yaml` still loads its pictures from jsDelivr until Diorama is picked in the layout picker.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. The sun and the moon cross the sky and set behind the hills, and a frosted bar slides through today's high and low, the wind, the next sunset or sunrise, the humidity and the UV index.
 
+### Classic
+
+<img width="800" alt="The Classic layout, the temperature on a color that changes with the weather, with a forecast for the coming days, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
+
+The temperature on a color that changes with the weather, with the current weather and today's high and low below it, and the sun by day or the moon in its real phase by night in the corner. A forecast slides through the coming days, with the chance of rain under each day.
+
+### Window
+
+<img width="800" alt="The Window layout, a plain card with a round window that shows the sky, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/window.webp">
+
+A plain card with one round window cut into it. The sky lives only inside the window, with its clouds, mist, rain, snow and stars, and the sun or the moon. The temperature and the current weather sit beside it, and the next hours slide by below.
+
+### Home
+
+<img width="800" alt="The Home layout, a house in its garden with the temperature of each room and a wind compass, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
+
+A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Birds, rain and snow pass in front of it, and a light mist drifts behind it.
+
+## More
+
+<a name="backgrounds"></a>
 <details>
-<summary><b>Other pictures</b></summary>
+<summary><b>The sky and its effects</b></summary>
 
 <br>
 
-Any layout can show a picture for each kind of weather, and the Diorama can show other pictures too.
+The card shows an animated sky behind the content that follows the weather and the sun. Its color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past and planes pass overhead. Clouds, mist, rain and snow add to it, and the clouds and the mist drift with the wind.
+
+The sky and each kind of effect can be turned off, rain and snow with one switch. The effects also work on top of the other backgrounds, which `background_mode` sets: a picture for each kind of weather, a color, the plain card background or none. The card also works in Home Assistant's plain style, with just the content and nothing else going on.
+
+With `background_mode: none` and `card_frame: false`, the card loses its own styling and blends in with the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, such as a dashboard header. The [reference](REFERENCE.md#background) lists every option.
+
+</details>
+
+<details>
+<summary><b>Pictures for each kind of weather</b></summary>
+
+<br>
+
+The Diorama's pictures come with the card, so Home Assistant serves them itself and nothing loads from the internet. Any layout can show a picture for each kind of weather, and the Diorama can show other pictures too.
 
 1. Name the pictures after the weather conditions, the way the Diorama's own pictures in [`src/diorama`](https://github.com/hazymorning/origami_weather/tree/main/src/diorama) are named, like `sunny.webp`, `partlycloudy.webp` and `clear-night.webp`.
 2. Copy them to a folder in `/config/www`, such as `/config/www/weather`, and the ones for dark mode to a second folder, if there are any.
@@ -73,26 +107,8 @@ Updates replace everything in the card's own folder, so other pictures belong in
 
 </details>
 
-### Classic
-
-<img width="800" alt="The Classic layout: the temperature on a color that changes with the weather, the weather and today's high and low below it, the sun or the moon in the corner, and a forecast for the coming days with the chance of rain, on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
-
-The temperature on a color that changes with the weather, with the current weather and today's high and low below it, and the sun by day or the moon in its real phase by night in the corner. A forecast slides through the coming days, with the chance of rain under each day. When it's cloudy, layers of soft mist drift across the card with the wind, and in fog they close in.
-
-### Window
-
-<img width="800" alt="The Window layout: a plain card with a round window cut into it, the live sky inside with the sun and a passing cloud on a partly cloudy day and the moon and the stars on a clear night, the date, the temperature, the weather, today's high and low and the next sunset or sunrise beside it, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/window.webp">
-
-A plain card with one round window cut into it. The sky lives only inside the window, with its clouds, mist, rain, snow and stars, and the sun by day or the moon in its real phase by night. The date, the temperature, the current weather, today's high and low and the next sunset or sunrise sit on the card beside it. Below them, the next hours slide by six at a time, a whole day ahead.
-
-### Home
-
-<img width="800" alt="The Home layout: a house in its garden with the temperature of three rooms and a wind compass, lit by the sun on a sunny day, and with lit windows behind the rain and a light mist around the house on a rainy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
-
-A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Birds, rain and snow pass in front of it, and a light mist drifts behind it.
-
 <details>
-<summary><b>The house in detail</b></summary>
+<summary><b>The house in the Home layout</b></summary>
 
 <br>
 
@@ -140,7 +156,10 @@ Once it works, play around with the settings to find a look that fits. The Home 
 
 </details>
 
-### Other layouts
+<details>
+<summary><b>Other layouts</b></summary>
+
+<br>
 
 Centered, Slim, Comparison and Arc are no longer in the layout picker, but they still work. Paste one into the code editor and change each `weather.home` in it to the home's weather entity.
 
@@ -740,20 +759,6 @@ grid_options:
 
 </details>
 
-## More
-
-<a name="backgrounds"></a>
-<details>
-<summary><b>The sky and its effects</b></summary>
-
-<br>
-
-The card shows an animated sky behind the content that follows the weather and the sun. Its color shifts from day to night, the sun rises and sets, stars come out at night with the occasional shooting star, birds cross the sky, balloons drift past and planes pass overhead. Clouds, mist, rain and snow add to it, and the clouds and the mist drift with the wind.
-
-The sky and each kind of effect can be turned off, rain and snow with one switch. The effects also work on top of the other backgrounds, which `background_mode` sets: a picture for each kind of weather, a color, the plain card background or none. The card also works in Home Assistant's plain style, with just the content and nothing else going on.
-
-With `background_mode: none` and `card_frame: false`, the card loses its own styling and blends in with the dashboard, and `full_width: true` stretches it over the full width. This mostly works in specific places, such as a dashboard header. The [reference](REFERENCE.md#background) lists every option.
-
 </details>
 
 <details>
@@ -777,6 +782,21 @@ The [reference](REFERENCE.md) explains each block and every option. For a new la
 An animated weather card has to run on all kinds of setups, so a lot of care went into keeping this one light. That's why there are no extra performance options. It already runs at the lowest level that still lets it do what it's meant to do. Pictures like the clouds, the birds and the house only load once a card shows them, and the editor only when a card is edited.
 
 If it still feels too heavy on a device, most features can be turned off one by one. Plain weather pictures, or leaving out the decorative parts entirely, make it even lighter.
+
+</details>
+
+<details>
+<summary><b>Coming from an earlier version</b></summary>
+
+<br>
+
+Cards keep their settings when the card is updated. A layout only changes when it's picked again in the layout picker.
+
+Slim, Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+
+Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
+
+Without HACS, the card now comes as several files, and they all belong in one folder. Copy everything in `dist`, the `diorama` folder included, next to `origami-weather.js`, or into a folder of its own as **Install the card** describes.
 
 </details>
 

@@ -1999,6 +1999,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     this._effectsH = 0;
     this._sunGlowVisibility = 0;
     this._sunGlowIsNight = false;
+    this._switches = {};
     this._sunsetF = 0;
     this._isAstroNight = false;
     this._schemeDark = false;
@@ -2281,12 +2282,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-4ZNITPO2.js");
+      await import("./origami-weather-editor-7YXAXEZ4.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-TXYGMCDS.js");
+    const { buildStubConfig } = await import("./layout-presets-G66MAB3X.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2737,7 +2738,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     switch (c.condition) {
       case "state": {
         if (!c.entity) return true;
-        const stateObj = hass.states[c.entity];
+        const stateObj = this._entityState(hass, c.entity);
         if (!stateObj) return false;
         const val = stateObj.state;
         if (c.state != null) {
@@ -2788,6 +2789,52 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       default:
         return true;
     }
+  }
+  _entityState(hass, id) {
+    if (!String(id).startsWith("origami.")) return hass.states[id];
+    if (!(id in this._switches) && this._config.remember_switches === true) {
+      try {
+        this._switches[id] = localStorage.getItem(`origami-weather:${id}`) || "off";
+      } catch (_e) {
+      }
+    }
+    return { state: this._switches[id] || "off" };
+  }
+  _flipSwitch(action) {
+    const id = action && action.action === "toggle" ? String(action.entity || "") : "";
+    if (!id.startsWith("origami.")) return false;
+    const next = this._entityState(this._hass, id).state === "on" ? "off" : "on";
+    this._switches[id] = next;
+    if (this._config.remember_switches === true) {
+      try {
+        localStorage.setItem(`origami-weather:${id}`, next);
+      } catch (_e) {
+      }
+    }
+    this._lastSnapshot = null;
+    if (this._hass) this.hass = this._hass;
+    return true;
+  }
+  _showGroup(el, show) {
+    const shown = el.style.display !== "none" && !el.classList.contains("faded");
+    const fade = this._config.visibility_fade === true && el._origamiSeen;
+    el._origamiSeen = true;
+    if (show === shown) return;
+    clearTimeout(el._origamiHide);
+    if (!fade) {
+      el.classList.remove("faded");
+      el.style.display = show ? "" : "none";
+      return;
+    }
+    if (show && el.style.display === "none") {
+      el.classList.add("faded");
+      el.style.display = "";
+      void el.offsetWidth;
+    }
+    el.classList.toggle("faded", !show);
+    if (!show) el._origamiHide = setTimeout(() => {
+      el.style.display = "none";
+    }, 350);
   }
   _conditionNumber(hass, spec, fallbackEntity) {
     if (spec == null) return NaN;
@@ -3077,6 +3124,9 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .button-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; scroll-snap-align: start; }
             .gauge-track, .gauge-fill, .gauge-range, .gauge-marker { position: absolute; pointer-events: none; }
             .gauge-track { background: currentColor; opacity: 0.10; }
+            #card-root.visibility-fade .buttons-group { transition: opacity 0.35s ease; }
+            #card-root.visibility-fade .buttons-group.faded { opacity: 0; pointer-events: none; }
+            @media (prefers-reduced-motion: reduce) { #card-root.visibility-fade .buttons-group { transition: none; } }
             .gauge-fill, .gauge-marker { background: var(--origami-gauge-color); transition: --origami-gauge-pos 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
             .gauge-range { background: color-mix(in srgb, currentColor 18%, transparent); }
             .gauge-marker { width: var(--origami-marker-size); height: var(--origami-marker-size); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.10); transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 2; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
@@ -3311,6 +3361,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     root.classList.toggle("no-haze", !haze);
     root.classList.toggle("haze-only", haze && bgMode !== "default");
     root.classList.toggle("image-front", cfg.weather_image_front === true);
+    root.classList.toggle("visibility-fade", cfg.visibility_fade === true);
     this._cssVar(root, "--origami-shadow", (cfg.shadow_color || "").toString().trim(), "_prevShadow");
     const caKey = (cfg.content_align || "").toString().toLowerCase();
     const caVal = JUSTIFY_MAP[caKey] || "";
@@ -3534,7 +3585,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       if (!els) continue;
       this._placeContainer(container, els.group, placed);
       const containerVisible = this._checkButtonVisibility(container, hass);
-      els.group.style.display = containerVisible ? "" : "none";
+      this._showGroup(els.group, containerVisible);
       if (!containerVisible || container.custom_cards) continue;
       const bt = els.row;
       const showBottomBg = container.background === true;
@@ -3782,7 +3833,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const marqueeSpeed = Math.max(5, parseFloat(button.marquee_speed) || 30);
     const marqueeRtl = button.marquee_rtl === true, width = (button.width || "").toString().trim(), height = (button.height || "").toString().trim();
     const textCtx = { isForecast, forecastEntry, forecastDatetime, forecastTextAttr, formatted, primaryResolved };
-    const gauge = (o, p) => this._buildGauge(o, p, (def) => this._resolveGaugeValue(hass, button, def, textCtx));
+    const gauge = (o, p) => this._buildGauge(o, p, (def) => {
+      const id = def.entity || button.entity, sun = def.value == null && !(def.entity || def.attribute ? def.attribute : button.attribute) && String(id).startsWith("sun.") && hass.states[id];
+      return sun ? _WeatherCard._pathProgress(sun.attributes, sun.state === "below_horizon") * 100 : this._resolveGaugeValue(hass, button, def, textCtx);
+    });
     const threshold = (o, def) => Array.isArray(o.color_thresholds) && o.color_thresholds.length ? pickThreshold(o.color_thresholds, this._resolveGaugeValue(hass, button, def, textCtx)) : "";
     const parts = [];
     const push = (html, icon) => {
@@ -4182,7 +4236,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
   _handleTap(e) {
     e.stopPropagation();
     const cfg = this._config;
-    if (!cfg || !cfg.card_tap_action || cfg.card_tap_action.action === "none") return;
+    if (!cfg || !cfg.card_tap_action || cfg.card_tap_action.action === "none" || this._flipSwitch(cfg.card_tap_action)) return;
     this.dispatchEvent(new CustomEvent("hass-action", { bubbles: true, composed: true, detail: { config: { entity: cfg.weather_entity, tap_action: cfg.card_tap_action }, action: "tap" } }));
   }
   _handleButtonClick(e) {
@@ -4197,6 +4251,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (!button || !button.entity) return;
     e.stopPropagation();
     const tapAction = button.tap_action || { action: "more-info" };
+    if (this._flipSwitch(tapAction)) return;
     this.dispatchEvent(new CustomEvent("hass-action", { bubbles: true, composed: true, detail: { config: { entity: button.entity, tap_action: tapAction }, action: "tap" } }));
   }
   _tryInitialize() {

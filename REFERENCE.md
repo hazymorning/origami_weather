@@ -106,6 +106,21 @@ buttons:
 
 State, numeric state, screen size, user, and `and`/`or`/`not` conditions are supported. A `numeric_state` condition can read an `attribute` instead of the state, or a forecast entry with `forecast: daily` or `hourly` plus `forecast_offset`. With several conditions, all of them have to pass. Visibility also works at the container level.
 
+**Switches.** A card can also show and hide things on a tap, without a helper in Home Assistant. It has its own switches, named like entities with `origami.` in front, and each one starts off. A `toggle` tap action flips one, and a `state` condition reads it like any other entity:
+
+```yaml
+card_tap_action:
+  action: toggle
+  entity: origami.details
+button_containers:
+  - visibility:
+      - condition: state
+        entity: origami.details
+        state: "on"
+```
+
+Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. The Sky layout is built like that.
+
 **Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is.
 
 **Free positioning.** Any button can be taken out of the normal flow and placed freely inside its container:
@@ -172,7 +187,7 @@ buttons:
 
 Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today or the next hour, `1` is tomorrow or the hour after, and so on. A text element with `attribute: datetime` prints the matching label (day name or time), and [date codes](#dates) in its `format` change what that label says. With `icon: weather` on an icon element, the icon matches the forecasted condition, and the hours between sunset and sunrise get the same night icons as the current weather at night.
 
-A button whose `forecast_offset` lies past the last entry the weather service sends is not drawn. A row can therefore hold ten days and show as many as there are, like the Classic layout does. On a weather entity without that kind of forecast the buttons stay and print `N/A`.
+A button whose `forecast_offset` lies past the last entry the weather service sends is not drawn. A row can therefore hold 24 hours and show as many as there are, like the Panel layout does. On a weather entity without that kind of forecast the buttons stay and print `N/A`.
 
 ```yaml
 buttons:
@@ -266,6 +281,8 @@ A ring doesn't have to be a full circle. `ring_start` rotates where it begins, i
 
 Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset. The Arc layout is built exactly like that.
 
+A gauge on the sun entity without an attribute shows how far the day has come from sunrise to sunset, from 0 to 100, and at night how far the night has come from sunset to sunrise. The line at the bottom of the Sky layout is a bar like that.
+
 Any button or icon element can also use `color_thresholds` to tint itself based on a value, with no gauge involved. An icon reads its own entity or attribute if it has one, otherwise the button's value. The value doesn't have to be a number here, a state like `on` or `home` works too.
 
 ### Icons
@@ -302,7 +319,9 @@ icon_path: /local/weather-icons/
 | `content_direction` | `string` | `column` | Set to `row` to lay out containers horizontally instead of vertically. |
 | `content_align` | `string` | — | How containers are spread along the card: `start`, `center`, `end`, `between`, `around`, `evenly`. |
 | `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
-| `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. |
+| `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons). |
+| `visibility_fade` | `boolean` | `false` | Containers fade in and out when their visibility changes. |
+| `remember_switches` | `boolean` | `false` | The card's switches keep their state on this device after a reload. |
 | `icon_path` | `string` | — | Folder of custom SVG weather icons, used by every `icon: weather` element that doesn't set its own path. |
 | `css` | `string` | — | Custom CSS, applied inside the card, for small changes without card-mod. |
 
@@ -416,7 +435,7 @@ The old `sun_moon_enabled` and `sun_moon_size` are converted to the separate tog
 | `color_threshold_attribute` | `string` | — | Attribute to read for the tint value. |
 | `marquee_speed` | `number` | `30` | Scroll speed in px/s for text elements using `overflow: marquee`. |
 | `marquee_rtl` | `boolean` | `false` | Reverse the scroll direction. |
-| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). |
+| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons). |
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
 | `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` is today or the next hour, `1` the one after, and so on. Past the last entry the weather service sends, the button is not drawn. |

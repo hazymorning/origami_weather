@@ -56,17 +56,17 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills.
 
-### Classic
+### Daily Forecast
 
-<img width="800" alt="The Classic layout, the temperature on a color that changes with the weather, with a forecast for the coming days, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
+<img width="800" alt="The Daily Forecast layout, the temperature on a color that changes with the weather, with the next six days below, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daily-forecast.webp">
 
 The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. Below them are the next six days, with the chance of rain under each day.
 
-### Panel
+### Sky
 
-<img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
+<img width="800" alt="The Sky layout, the live sky with the temperature above a thin line for the sun's day, and the frosted tiles that a tap shows, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
 
-The current weather and the temperature on a soft color that follows the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below. Mist, rain and snow pass behind the tiles.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes, and only the temperature and the current weather above a thin line. The dot on the line shows where the sun is between sunrise and sunset, and at night where the night is. A tap shows the wind, the humidity, the UV index and the chance of rain on frosted tiles.
 
 ### Home
 
@@ -154,6 +154,17 @@ The pictures go into `/config/www/home`, for example with the File editor or a S
 It rarely comes out right on the first try. Screenshots of the card and one or two concrete wishes at a time work best, like a flatter roof or a taller tree. Error messages can go to the AI as they are.
 
 Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, so only birds, rain, snow and a light mist are left. The house sits in the middle of the weather, so birds, rain and snow pass in front of it, while the mist, the sun, the moon and the stars stay behind it, and so do the clouds, balloons and planes once they're back on. Turning some of them back on or trying another background can change the whole feel, and almost anything in the README and the reference can go into it, so let the AI try things.
+
+</details>
+
+<details>
+<summary><b>Panel</b></summary>
+
+<br>
+
+<img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
+
+The current weather and the temperature on a soft color that follows the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below. Mist, rain and snow pass behind the tiles. Panel is in the layout picker.
 
 </details>
 

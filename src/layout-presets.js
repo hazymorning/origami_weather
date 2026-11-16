@@ -63,7 +63,7 @@ const DIORAMA_CONFIG = Object.freeze({
     }
 });
 
-const CLASSIC_COLORS = [
+const DAILY_COLORS = [
     ['sunny', '#4a8bcb', '#1c2b49'],
     ['clear-night', '#1c2b49', '#1c2b49'],
     ['partlycloudy', '#5687b8', '#273449'],
@@ -85,7 +85,7 @@ const WHITE = '#ffffff';
 const WHITE_72 = 'rgba(255, 255, 255, 0.72)';
 const WHITE_60 = 'rgba(255, 255, 255, 0.6)';
 
-const classicDay = (offset) => ({
+const dailyColumn = (offset) => ({
     name: offset === 1 ? 'Tomorrow' : `In ${offset} days`,
     entity: PRESET_ENTITY_TOKEN,
     forecast: 'daily',
@@ -100,9 +100,9 @@ const classicDay = (offset) => ({
     ]
 });
 
-const classicStat = (iconName, extra) => [icon(iconName, { icon_size: '14px', color: WHITE_72 }), text({ size: '14px', weight: '500', color: WHITE, ...extra })];
+const dailyStat = (iconName, extra) => [icon(iconName, { icon_size: '14px', color: WHITE_72 }), text({ size: '14px', weight: '500', color: WHITE, ...extra })];
 
-const CLASSIC_CONFIG = Object.freeze({
+const DAILY_CONFIG = Object.freeze({
     color_mode: 'dark',
     sun_size: 56,
     moon_size: 56,
@@ -115,7 +115,7 @@ const CLASSIC_CONFIG = Object.freeze({
     background_mode: 'color',
     background_color: '#5687b8',
     background_color_dark: '#273449',
-    background_thresholds: thresholds(CLASSIC_COLORS),
+    background_thresholds: thresholds(DAILY_COLORS),
     background_haze: false,
     shadow_color: 'inset 0 1px 3px rgba(0, 0, 0, 0.14)',
     card_tap_action: { action: 'more-info' },
@@ -153,9 +153,9 @@ const CLASSIC_CONFIG = Object.freeze({
                     forecast: 'daily',
                     background: false,
                     inner_gap: '2px',
-                    elements: [...classicStat('mdi:arrow-up', { attribute: 'temperature', format: '\u00b0', margin: '0 10px 0 0' }), ...classicStat('mdi:arrow-down', { attribute: 'templow', format: '\u00b0' })]
+                    elements: [...dailyStat('mdi:arrow-up', { attribute: 'temperature', format: '\u00b0', margin: '0 10px 0 0' }), ...dailyStat('mdi:arrow-down', { attribute: 'templow', format: '\u00b0' })]
                 },
-                { name: 'Humidity', entity: PRESET_ENTITY_TOKEN, attribute: 'humidity', background: false, inner_gap: '2px', elements: classicStat('mdi:water-outline') }
+                { name: 'Humidity', entity: PRESET_ENTITY_TOKEN, attribute: 'humidity', background: false, inner_gap: '2px', elements: dailyStat('mdi:water-outline') }
             ]
         },
         {
@@ -197,7 +197,7 @@ const CLASSIC_CONFIG = Object.freeze({
             button_gap: '5px',
             button_padding: '14px 0',
             align: 'center',
-            buttons: [1, 2, 3, 4, 5, 6].map(classicDay)
+            buttons: [1, 2, 3, 4, 5, 6].map(dailyColumn)
         }
     ],
     grid_options: {
@@ -462,6 +462,90 @@ const HOME_CONFIG = Object.freeze({
     }
 });
 
+const SKY_SWITCH = 'origami.details';
+const skyShown = (state) => [{ condition: 'state', entity: SKY_SWITCH, state }];
+const SKY_TAP = { action: 'toggle', entity: SKY_SWITCH };
+
+const skyTile = (name, value, extra) => ({
+    name,
+    entity: PRESET_ENTITY_TOKEN,
+    ...extra,
+    tap_action: SKY_TAP,
+    style: 'vertical',
+    align: 'start',
+    background: true,
+    background_color: 'rgba(255, 255, 255, 0.24)',
+    blurred_background: true,
+    shadow: false,
+    padding: '12px 14px',
+    inner_gap: '6px',
+    elements: [
+        text({ text: name, size: '12px', weight: '500' }),
+        text({ size: '18px', weight: '700', color: 'currentColor', ...value })
+    ]
+});
+
+const SKY_CONFIG = Object.freeze({
+    card_height: '184px',
+    card_padding: '18px',
+    content_align: 'end',
+    sun_moon_x: 'dynamic',
+    sun_moon_y: '160px 42px',
+    sun_size: 52,
+    moon_size: 52,
+    visibility_fade: true,
+    card_tap_action: SKY_TAP,
+    button_containers: [
+        {
+            name: 'Details',
+            position: 'custom',
+            position_anchor: 'top-left',
+            position_x: '0',
+            position_y: '0',
+            custom_width: '100%',
+            layout: 'grid',
+            columns: 2,
+            gap: '8px',
+            visibility: skyShown('on'),
+            buttons: [
+                skyTile('Wind', { attribute: 'wind_speed', precision: 0 }),
+                skyTile('Humidity', { attribute: 'humidity' }),
+                skyTile('UV index', { attribute: 'uv_index' }),
+                skyTile('Rain', { attribute: 'precipitation_probability', format: '%' }, { forecast: 'daily' })
+            ]
+        },
+        {
+            name: 'Now',
+            justify_content: 'between',
+            align_items: 'baseline',
+            visibility: skyShown('off'),
+            buttons: [
+                { name: 'Temperature', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', tap_action: SKY_TAP, background: false, padding: '0', elements: [text({ size: '40px', weight: '700', precision: 0, format: '\u00b0', color: 'currentColor', margin: '-0.2em -0.06em -0.12em -0.04em' })] },
+                { name: 'Condition', entity: PRESET_ENTITY_TOKEN, tap_action: SKY_TAP, background: false, padding: '0', elements: [text({ size: '13px', weight: '500' })] }
+            ]
+        },
+        {
+            name: 'Day',
+            margin: '12px 0 0',
+            buttons: [
+                {
+                    name: 'Sun',
+                    entity: 'sun.sun',
+                    tap_action: SKY_TAP,
+                    width: '100%',
+                    background: false,
+                    padding: '0',
+                    elements: [{ type: 'bar', bar_height: '2px', bar_fill: false, bar_range_from: 0, bar_range_to: 100, bar_range_color: 'color-mix(in srgb, currentColor 40%, transparent)', bar_marker: true, bar_marker_size: '9px', bar_values: [{ marker_color: 'currentColor' }] }]
+                }
+            ]
+        }
+    ],
+    grid_options: {
+        rows: 'auto',
+        columns: 12
+    }
+});
+
 export const LAYOUT_PRESETS = Object.freeze([
     {
         id: 'diorama',
@@ -471,11 +555,11 @@ export const LAYOUT_PRESETS = Object.freeze([
         config: DIORAMA_CONFIG
     },
     {
-        id: 'classic',
-        name: 'Classic',
-        description: 'Weather colors, daily forecast',
+        id: 'daily-forecast',
+        name: 'Daily Forecast',
+        description: 'Weather colors, next six days',
         icon: 'mdi:view-dashboard-variant-outline',
-        config: CLASSIC_CONFIG
+        config: DAILY_CONFIG
     },
     {
         id: 'panel',
@@ -483,6 +567,13 @@ export const LAYOUT_PRESETS = Object.freeze([
         description: 'Calm colors, details, forecast',
         icon: 'mdi:view-grid-outline',
         config: PANEL_CONFIG
+    },
+    {
+        id: 'sky',
+        name: 'Sky',
+        description: 'Live sky, tap for details',
+        icon: 'mdi:weather-partly-cloudy',
+        config: SKY_CONFIG
     },
     {
         id: 'home',

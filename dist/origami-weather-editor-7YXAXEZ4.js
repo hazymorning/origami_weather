@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-76NOQVPS.js";
+} from "./chunk-2NTRLFYW.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -657,6 +657,8 @@ var KEY_ORDER = Object.freeze([
   "gradient_stop_1",
   "gradient_stop_2",
   "card_tap_action",
+  "visibility_fade",
+  "remember_switches",
   "card_offset",
   "card_frame",
   "full_width",
@@ -1503,6 +1505,16 @@ var WeatherCardEditor = class extends i4 {
                         <span class="preset-desc">${preset.description}</span>
                     </button>`)}
             </div></div>`;
+  }
+  _renderSwitchTap(action, set) {
+    const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "";
+    return b2`<div class="compact-fields"><div class="compact-field"><span class="compact-field-label">Switch</span>
+                <input type="text" placeholder="none" .value=${name}
+                    @change=${(e4) => {
+      const v2 = e4.target.value.trim();
+      if (v2 || name) set(v2 ? { action: "toggle", entity: `origami.${v2}` } : null);
+    }}></div></div>
+            ${name ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>A tap flips this switch. Containers and buttons with a Switch condition named ${name} show or hide.</span></div>` : ""}`;
   }
   _renderSunMoonPanel() {
     const c4 = this._formData || {};
@@ -2583,7 +2595,12 @@ var WeatherCardEditor = class extends i4 {
       update(n4);
     }}></ha-switch></label></div>
             ${isRingType ? gaugeFields("ring", button, update) : ""}`;
-    const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
+    const tapContent = b2`${buttonForm([{ name: "tap_action", selector: { ui_action: {} } }])}${this._renderSwitchTap(button.tap_action, (a3) => {
+      const n4 = { ...button };
+      if (a3) n4.tap_action = a3;
+      else delete n4.tap_action;
+      update(n4);
+    })}`;
     const BUTTON_STYLE_KEYS = ["style", "align", "background", "blurred_background", "icon_background", "background_color", "icon_background_color", "padding", "text_size", "inner_gap", "icon_size", "icon_padding", "width", "height", "button_round", "color_thresholds", "color_threshold_entity", "color_threshold_attribute", "text_shadow", "shadow", "shadow_color"];
     const hasStyleOverrides = BUTTON_STYLE_KEYS.some((k2) => button[k2] !== void 0 && button[k2] !== "");
     const elSpacing = (el, ei) => {
@@ -3157,7 +3174,8 @@ var WeatherCardEditor = class extends i4 {
       { value: "state", label: "State" },
       { value: "numeric_state", label: "Numeric state" },
       { value: "screen", label: "Screen size" },
-      { value: "user", label: "User" }
+      { value: "user", label: "User" },
+      { value: "switch", label: "Switch" }
     ];
     const removeCondition = (ci) => {
       const arr = [...conditions];
@@ -3201,11 +3219,14 @@ var WeatherCardEditor = class extends i4 {
       commitList([...conditions, { condition: "state", entity: "", state: "" }]);
     };
     return b2`${conditions.map((c4, ci) => {
-      const cType = c4.condition || "state";
+      const cType = (c4.condition || "state") === "state" && String(c4.entity || "").startsWith("origami.") ? "switch" : c4.condition || "state";
       const onTypeChange = (newType) => {
-        const base = { condition: newType };
-        if (newType === "state") {
-          base.entity = c4.entity || "";
+        const base = { condition: newType === "switch" ? "state" : newType };
+        if (newType === "switch") {
+          base.entity = "origami.details";
+          base.state = "on";
+        } else if (newType === "state") {
+          base.entity = String(c4.entity || "").startsWith("origami.") ? "" : c4.entity || "";
           base.state = "";
         } else if (newType === "numeric_state") {
           base.entity = c4.entity || "";
@@ -3292,6 +3313,21 @@ var WeatherCardEditor = class extends i4 {
                                 .value=${c4.media_query || ""}
                                 @change=${(e4) => updateCondition(ci, { media_query: e4.target.value.trim() })}
                             ></div>` : ""}
+                    ${cType === "switch" ? b2`<div class="css-field-row cols-2">
+                            <div class="css-field">
+                                <span class="css-field-label">Switch</span>
+                                <input type="text" placeholder="details" .value=${String(c4.entity).slice(8)}
+                                    @change=${(e4) => updateCondition(ci, { entity: `origami.${e4.target.value.trim() || "details"}` })}></div>
+                            <div class="css-field">
+                                <span class="css-field-label">Visible when</span>
+                                <div class="segmented segmented-compact">${["on", "off"].map((v2) => b2`<button type="button" class=${(c4.state || "on") === v2 ? "active" : ""}
+                                    @click=${() => {
+        const arr = [...conditions];
+        const entry = { ...arr[ci], state: v2 };
+        delete entry.state_not;
+        arr[ci] = entry;
+        commitList(arr);
+      }}>${v2 === "on" ? "On" : "Off"}</button>`)}</div></div></div>` : ""}
                     ${cType === "user" ? b2`<div class="css-field">
                             <span class="css-field-label">User IDs (comma-separated)</span>
                             <input type="text" placeholder="abc123, def456"
@@ -3513,7 +3549,13 @@ var WeatherCardEditor = class extends i4 {
                 ${this._renderDisclosure("Custom icons", b2`<div class="settings-group">
                     ${this._renderClearableText("icon_path")}</div>`)}
                 ${this._renderDisclosure("Tap action", b2`<div class="settings-group">
-                    ${this._renderForm([{ name: "card_tap_action", selector: { ui_action: {} } }])}</div>`)}
+                    ${this._renderForm([{ name: "card_tap_action", selector: { ui_action: {} } }])}
+                    ${this._renderSwitchTap(this._formData.card_tap_action, (a3) => this._updateField("card_tap_action", a3 || ""))}
+                    <div class="toggle-group">
+                        <label class="toggle-row"><span>Fade containers in and out</span><ha-switch .checked=${this._formData.visibility_fade === true}
+                            @change=${(e4) => this._updateField("visibility_fade", e4.target.checked || "")}></ha-switch></label>
+                        <label class="toggle-row"><span>Remember switches on this device</span><ha-switch .checked=${this._formData.remember_switches === true}
+                            @change=${(e4) => this._updateField("remember_switches", e4.target.checked || "")}></ha-switch></label></div></div>`)}
                 ${this._renderDisclosure("CSS", b2`<div class="settings-group">
                     ${this._renderForm([{ name: "css", selector: { text: { multiline: true } } }])}</div>`)}</ha-expansion-panel>
             <ha-expansion-panel

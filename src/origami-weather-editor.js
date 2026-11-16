@@ -25,7 +25,7 @@ const KEY_ORDER = Object.freeze([
     "background_mode", "background_color", "background_color_dark", "background_threshold_entity", "background_threshold_attribute", "background_thresholds",
     "weather_image_path", "weather_image_path_dark", "weather_image_type", "weather_image_front",
     "gradient", "gradient_type", "gradient_angle", "gradient_x", "gradient_y", "gradient_color_1", "gradient_color_2", "gradient_stop_1", "gradient_stop_2",
-    "card_tap_action", "card_offset",
+    "card_tap_action", "visibility_fade", "remember_switches", "card_offset",
     "card_frame", "full_width", "full_width_margin", "edge_fade", "edge_fade_size", "shadow", "shadow_color",
     "icon_path",
     "bg_brightness", "bg_saturation", "bg_blur", "bg_blend",
@@ -704,6 +704,12 @@ class WeatherCardEditor extends LitElement {
                         <span class="preset-desc">${preset.description}</span>
                     </button>`)}
             </div></div>`;}
+    _renderSwitchTap(action, set) {
+        const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "";
+        return html`<div class="compact-fields"><div class="compact-field"><span class="compact-field-label">Switch</span>
+                <input type="text" placeholder="none" .value=${name}
+                    @change=${(e) => { const v = e.target.value.trim(); if (v || name) set(v ? { action: "toggle", entity: `origami.${v}` } : null); }}></div></div>
+            ${name ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>A tap flips this switch. Containers and buttons with a Switch condition named ${name} show or hide.</span></div>` : ""}`;}
     _renderSunMoonPanel() {
         const c = this._formData || {};
         const sunEnabled = c.sun_enabled !== false, moonEnabled = c.moon_enabled !== false;
@@ -1409,7 +1415,7 @@ class WeatherCardEditor extends LitElement {
             <ha-switch .checked=${isRingType} @change=${(e) => { const n = { ...button };
                 if (e.target.checked) { n.type = 'ring'; } else { delete n.type; } update(n); }}></ha-switch></label></div>
             ${isRingType ? gaugeFields("ring", button, update) : ""}`;
-        const tapContent = buttonForm([{ name: "tap_action", selector: { ui_action: {} } }]);
+        const tapContent = html`${buttonForm([{ name: "tap_action", selector: { ui_action: {} } }])}${this._renderSwitchTap(button.tap_action, (a) => { const n = { ...button }; if (a) n.tap_action = a; else delete n.tap_action; update(n); })}`;
         const BUTTON_STYLE_KEYS = ["style","align","background","blurred_background","icon_background","background_color","icon_background_color","padding","text_size","inner_gap","icon_size","icon_padding","width","height","button_round","color_thresholds","color_threshold_entity","color_threshold_attribute","text_shadow","shadow","shadow_color"];
         const hasStyleOverrides = BUTTON_STYLE_KEYS.some(k => button[k] !== undefined && button[k] !== "");
         const elSpacing = (el, ei) => {
@@ -1844,6 +1850,7 @@ class WeatherCardEditor extends LitElement {
             { value: "numeric_state", label: "Numeric state" },
             { value: "screen", label: "Screen size" },
             { value: "user", label: "User" },
+            { value: "switch", label: "Switch" },
         ];
         const removeCondition = (ci) => {
             const arr = [...conditions]; arr.splice(ci, 1); commitList(arr);
@@ -1878,10 +1885,11 @@ class WeatherCardEditor extends LitElement {
             commitList([...conditions, { condition: "state", entity: "", state: "" }]);
         };
         return html`${conditions.map((c, ci) => {
-                const cType = c.condition || "state";
+                const cType = (c.condition || "state") === "state" && String(c.entity || "").startsWith("origami.") ? "switch" : c.condition || "state";
                 const onTypeChange = (newType) => {
-                    const base = { condition: newType };
-                    if (newType === "state") { base.entity = c.entity || ""; base.state = ""; }
+                    const base = { condition: newType === "switch" ? "state" : newType };
+                    if (newType === "switch") { base.entity = "origami.details"; base.state = "on"; }
+                    else if (newType === "state") { base.entity = String(c.entity || "").startsWith("origami.") ? "" : c.entity || ""; base.state = ""; }
                     else if (newType === "numeric_state") { base.entity = c.entity || ""; }
                     else if (newType === "screen") { base.media_query = c.media_query || "(min-width: 768px)"; }
                     else if (newType === "user") { base.users = c.users || []; }
@@ -1931,6 +1939,15 @@ class WeatherCardEditor extends LitElement {
                                 .value=${c.media_query || ""}
                                 @change=${(e) => updateCondition(ci, { media_query: e.target.value.trim() })}
                             ></div>` : ""}
+                    ${cType === "switch" ? html`<div class="css-field-row cols-2">
+                            <div class="css-field">
+                                <span class="css-field-label">Switch</span>
+                                <input type="text" placeholder="details" .value=${String(c.entity).slice(8)}
+                                    @change=${(e) => updateCondition(ci, { entity: `origami.${e.target.value.trim() || "details"}` })}></div>
+                            <div class="css-field">
+                                <span class="css-field-label">Visible when</span>
+                                <div class="segmented segmented-compact">${["on", "off"].map((v) => html`<button type="button" class=${(c.state || "on") === v ? "active" : ""}
+                                    @click=${() => { const arr = [...conditions]; const entry = { ...arr[ci], state: v }; delete entry.state_not; arr[ci] = entry; commitList(arr); }}>${v === "on" ? "On" : "Off"}</button>`)}</div></div></div>` : ""}
                     ${cType === "user" ? html`<div class="css-field">
                             <span class="css-field-label">User IDs (comma-separated)</span>
                             <input type="text" placeholder="abc123, def456"
@@ -2124,7 +2141,13 @@ class WeatherCardEditor extends LitElement {
                 ${this._renderDisclosure("Custom icons", html`<div class="settings-group">
                     ${this._renderClearableText("icon_path")}</div>`)}
                 ${this._renderDisclosure("Tap action", html`<div class="settings-group">
-                    ${this._renderForm([{ name: "card_tap_action", selector: { ui_action: {} } }])}</div>`)}
+                    ${this._renderForm([{ name: "card_tap_action", selector: { ui_action: {} } }])}
+                    ${this._renderSwitchTap(this._formData.card_tap_action, (a) => this._updateField("card_tap_action", a || ""))}
+                    <div class="toggle-group">
+                        <label class="toggle-row"><span>Fade containers in and out</span><ha-switch .checked=${this._formData.visibility_fade === true}
+                            @change=${(e) => this._updateField("visibility_fade", e.target.checked || "")}></ha-switch></label>
+                        <label class="toggle-row"><span>Remember switches on this device</span><ha-switch .checked=${this._formData.remember_switches === true}
+                            @change=${(e) => this._updateField("remember_switches", e.target.checked || "")}></ha-switch></label></div></div>`)}
                 ${this._renderDisclosure("CSS", html`<div class="settings-group">
                     ${this._renderForm([{ name: "css", selector: { text: { multiline: true } } }])}</div>`)}</ha-expansion-panel>
             <ha-expansion-panel

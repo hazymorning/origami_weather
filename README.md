@@ -54,13 +54,13 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the current weather and the temperature in a corner of the sky. The sun and the moon cross the sky and set behind the hills.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills.
 
 ### Classic
 
 <img width="800" alt="The Classic layout, the temperature on a color that changes with the weather, with a forecast for the coming days, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. A forecast slides through the coming days, with the chance of rain under each day.
+The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. Below them are the next six days, with the chance of rain under each day.
 
 ### Panel
 

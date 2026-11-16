@@ -42,16 +42,16 @@ const DIORAMA_CONFIG = Object.freeze({
             name: 'Now',
             buttons: [
                 {
-                    name: 'Condition and temperature',
+                    name: 'Temperature and condition',
                     entity: PRESET_ENTITY_TOKEN,
                     attribute: 'temperature',
                     style: 'vertical',
                     align: 'start',
-                    inner_gap: '4px',
+                    inner_gap: '6px',
                     background: false,
                     elements: [
-                        text({ entity: PRESET_ENTITY_TOKEN, size: '12px', weight: '500', overflow: 'wrap' }),
-                        text({ size: '40px', weight: '800', precision: 0, format: '\u00b0' })
+                        text({ size: '40px', weight: '800', precision: 0, format: '\u00b0' }),
+                        text({ entity: PRESET_ENTITY_TOKEN, size: '12px', weight: '500', overflow: 'wrap' })
                     ]
                 }
             ]
@@ -106,7 +106,7 @@ const CLASSIC_CONFIG = Object.freeze({
     color_mode: 'dark',
     sun_size: 56,
     moon_size: 56,
-    sun_moon_y: '110px 34px',
+    sun_moon_y: '111px 34px',
     cloud_effects: false,
     mist_effects: true,
     bird_effects: false,
@@ -132,7 +132,7 @@ const CLASSIC_CONFIG = Object.freeze({
         {
             name: 'Today',
             gap: '12px',
-            padding: '0 4px',
+            padding: '4px 8px 0',
             buttons: [
                 {
                     name: 'Day',
@@ -144,7 +144,7 @@ const CLASSIC_CONFIG = Object.freeze({
                     background: false,
                     elements: [
                         text({ attribute: 'datetime', format: '%A', size: '20px', weight: '600', color: WHITE }),
-                        text({ attribute: 'datetime', format: '%-d %B', size: '14px', weight: '500', color: WHITE_72 })
+                        text({ attribute: 'datetime', format: '%-d. %B', size: '14px', weight: '500', color: WHITE_72 })
                     ]
                 },
                 {
@@ -161,7 +161,7 @@ const CLASSIC_CONFIG = Object.freeze({
         {
             name: 'Now',
             custom_width: 'auto',
-            padding: '0 4px 2.5px',
+            padding: '4px 8px 2.5px',
             buttons: [
                 {
                     name: 'Temperature and condition',
@@ -181,11 +181,8 @@ const CLASSIC_CONFIG = Object.freeze({
         {
             name: 'Forecast',
             custom_width: '100%',
-            layout: 'horizontal-scroll',
-            scroll_count: 6,
-            scroll_fade: true,
-            scroll_fade_size: '40px',
-            justify_content: 'center',
+            layout: 'grid',
+            columns: 6,
             margin: '20px 0 0',
             padding: '4px',
             gap: '0',
@@ -198,7 +195,7 @@ const CLASSIC_CONFIG = Object.freeze({
             button_gap: '5px',
             button_padding: '14px 0',
             align: 'center',
-            buttons: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(classicDay)
+            buttons: [1, 2, 3, 4, 5, 6].map(classicDay)
         }
     ],
     grid_options: {
@@ -449,7 +446,7 @@ const HOME_CONFIG = Object.freeze({
                     entity: PRESET_ENTITY_TOKEN,
                     attribute: 'temperature',
                     style: 'split',
-                    elements: [homeTemp('clamp(40px, 17cqw, 52px)', '800'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
+                    elements: [homeTemp('clamp(40px, 17cqw, 52px)', '700'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
                 },
                 room('Living'),
                 room('Office'),

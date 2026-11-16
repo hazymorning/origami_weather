@@ -157,6 +157,7 @@ Once it works, play around with the settings to find a look that fits. The Home 
 
 </details>
 
+<a name="more-layouts"></a>
 <details>
 <summary><b>Other layouts</b></summary>
 

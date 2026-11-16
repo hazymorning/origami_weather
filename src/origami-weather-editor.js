@@ -695,7 +695,7 @@ class WeatherCardEditor extends LitElement {
     }
     _renderLayoutsPanel() {
         return html`<div class="settings-group">
-            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Replaces all current settings.</span></div>
+            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML.</span></div>
             <div class="preset-grid">
                 ${LAYOUT_PRESETS.map((preset) => html`
                     <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>

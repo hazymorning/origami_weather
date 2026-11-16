@@ -174,8 +174,10 @@ var CLASSIC_CONFIG = Object.freeze({
     {
       name: "Forecast",
       custom_width: "100%",
-      layout: "grid",
-      columns: 6,
+      layout: "horizontal-scroll",
+      scroll_count: 6,
+      row_height: "134px",
+      justify_content: "center",
       margin: "20px 0 0",
       padding: "4px",
       gap: "0",

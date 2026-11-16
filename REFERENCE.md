@@ -387,7 +387,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | :--- | :--- | :--- | :--- |
 | `name` | `string` | — | A name for the button in the visual editor's list. The card doesn't show it. |
 | `entity` | `string` | — | **Required.** Any sensor, binary_sensor, or weather entity. |
-| `attribute` | `string` | — | Read a specific attribute instead of the state. When the entity isn't a weather entity and doesn't have that attribute, its state is shown instead, so a weather button can be pointed at a room sensor without changing anything else. |
+| `attribute` | `string` | — | Read a specific attribute instead of the state. |
 | `elements` | `list` | — | What the button contains. See [Elements](#elements). |
 | `type` | `string` | — | Set to `ring` for a circular gauge around the button. |
 | `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`, `split`). |

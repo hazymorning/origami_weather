@@ -60,13 +60,13 @@ A little paper landscape for each kind of weather, made for the [Origami](https:
 
 <img width="800" alt="The Classic layout, the temperature on a color that changes with the weather, with a forecast for the coming days, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The temperature on a color that changes with the weather, with the current weather and today's high and low below it, and the sun by day or the moon in its real phase by night in the corner. A forecast slides through the coming days, with the chance of rain under each day.
+The temperature on a color that changes with the weather, with a large weather icon beside it and the current weather and today's high and low below. A forecast slides through the coming days, with the chance of rain under each day.
 
-### Window
+### Panel
 
-<img width="800" alt="The Window layout, a plain card with a round window that shows the sky, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/window.webp">
+<img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next days below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
-A plain card with one round window cut into it. The sky lives only inside the window, with its clouds, mist, rain, snow and stars, and the sun or the moon. The temperature and the current weather sit beside it, and the next hours slide by below.
+The current weather and the temperature on a soft color that follows the weather and the theme, with tiles for the wind, the humidity, the UV index and the chance of rain, and the next days below.
 
 ### Home
 
@@ -90,6 +90,7 @@ With `background_mode: none` and `card_frame: false`, the card loses its own sty
 
 </details>
 
+<a name="pictures"></a>
 <details>
 <summary><b>Pictures for each kind of weather</b></summary>
 

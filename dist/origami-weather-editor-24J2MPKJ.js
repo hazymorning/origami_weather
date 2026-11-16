@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-45UTFDIA.js";
+} from "./chunk-WDXDZWLO.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -1131,6 +1131,7 @@ var WeatherCardEditor = class extends i4 {
             .button-nudge { display: flex; align-items: flex-start; gap: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); margin: var(--origami-e-s1) 0; border-radius: var(--origami-e-r-ctrl); font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); line-height: 1.5; & code { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.08); padding: 0 4px; border-radius: 3px; } }
             .button-nudge.warning { background: rgba(var(--rgb-warning-color, 255, 152, 0), 0.10); border: 1px solid rgba(var(--rgb-warning-color, 255, 152, 0), 0.25); }
             .button-nudge.info { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.04); border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09); }
+            .button-nudge a { color: var(--primary-color); }
             /* Button color picker */
             .button-color-box { margin-top: var(--origami-e-s2); padding: var(--origami-e-s2) var(--origami-e-s3); border: 1px solid rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.10); border-radius: var(--origami-e-r-ctrl); background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.03); }
             .button-color-row { display: flex; align-items: center; gap: var(--origami-e-s2); }
@@ -1476,6 +1477,11 @@ var WeatherCardEditor = class extends i4 {
     this._expandedContainer = null;
     this._expandedButton = null;
     this._expandedCard = null;
+  }
+  _imagesHint(c4) {
+    const path = `${c4.weather_image_path || ""} ${c4.weather_image_path_dark || ""}`;
+    const text = /hazymorning\/origami@/.test(path) ? "These pictures load from the internet. Picking Diorama under Layouts switches to the ones that come with the card." : /(^|\s)diorama\//.test(path) ? "These pictures come with the card, so they also work offline." : b2`Put the pictures in a folder in <code>/config/www</code> and enter it here as <code>/local/…/</code>. <a href="https://github.com/hazymorning/origami_weather#pictures" target="_blank" rel="noreferrer">More</a>`;
+    return b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${text}</span></div>`;
   }
   _renderLayoutsPanel() {
     return b2`<div class="settings-group">
@@ -3395,6 +3401,7 @@ var WeatherCardEditor = class extends i4 {
                 <div class="settings-group">
                     ${this._renderClearableText("weather_image_path")}
                     ${this._renderClearableText("weather_image_path_dark")}
+                    ${this._imagesHint(c4)}
                     ${this._renderForm([{ name: "weather_image_type", selector: { select: { mode: "dropdown", options: OPT.weather_image_type } } }])}
                     <div class="toggle-group">${fx("weather_image_front", "In front of sun, moon and stars", null, false)}</div>
                 </div>

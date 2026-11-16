@@ -442,9 +442,9 @@ var WeatherEffects = (() => {
     fog: { alpha: 1, speed: 1.5, gap: [0.2, 0.62], disc: 0.5 }
   });
   const MIST_LAYERS = Object.freeze([
-    { size: 0.7, count: 3, speed: 5e-3, alpha: 0.5, lift: 0.55, y: [0.2, 0.8] },
-    { size: 1.2, count: 3, speed: 0.011, alpha: 0.6, lift: 0.8, y: [0.25, 0.75] },
-    { size: 2.6, count: 2, speed: 0.024, alpha: 0.7, lift: 1, y: [0.3, 0.7] }
+    { size: 1, count: 3, speed: 5e-3, alpha: 0.7, lift: 0.55, y: [0.2, 0.8] },
+    { size: 1.7, count: 3, speed: 0.011, alpha: 0.85, lift: 0.8, y: [0.25, 0.75] },
+    { size: 3.6, count: 2, speed: 0.024, alpha: 0.95, lift: 1, y: [0.3, 0.7] }
   ]);
   const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 4.5) / 7.5));
   const _cloudAtlas = /* @__PURE__ */ new WeakMap();
@@ -1070,7 +1070,7 @@ var WeatherEffects = (() => {
       return c;
     });
   }
-  function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind) {
+  function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind, nearCtx) {
     const sprite = _mistSprite(img, MIST[inst.mist.key].gap), bg = env.mistRGB || env.backgroundRGB;
     const ceiling = env.dark ? MIST_CEILING[inst.mist.key] : 0;
     if (!inst.mistTone || inst.mistTone.bg !== bg || inst.mistTone.ceiling !== ceiling || inst.mistTone.sprite !== sprite) inst.mistTone = { bg, ceiling, sprite, layers: _mistLayers(sprite, bg, ceiling) };
@@ -1078,44 +1078,51 @@ var WeatherEffects = (() => {
     if (!layers) return;
     const big = Math.max(w, h) * inst.mistSize, ar = sprite.height / sprite.width, amt = inst.mistDensity;
     const cw = Math.ceil(ctx.canvas.width / 2), ch = Math.ceil(ctx.canvas.height / 2), ms = s / 2;
-    const mc = inst.mistCanvas || (inst.mistCanvas = document.createElement("canvas"));
-    if (mc.width !== cw || mc.height !== ch) {
-      mc.width = cw;
-      mc.height = ch;
-    }
-    const m = mc.getContext("2d");
-    m.setTransform(1, 0, 0, 1, 0, 0);
-    m.clearRect(0, 0, cw, ch);
-    m.imageSmoothingEnabled = true;
-    m.imageSmoothingQuality = "high";
     for (const p of inst.mist.puffs) {
-      const pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph)), span = MIST_LAYERS[p.layer].y;
-      p.x += p.speed * wind * w * dt / (w + pw);
+      const span = MIST_LAYERS[p.layer].y;
+      p.pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph));
+      p.x += p.speed * wind * w * dt / (w + p.pw);
       if (p.x >= 1) {
         p.x -= 1;
         p.y = span[0] + Math.random() * (span[1] - span[0]);
         p.rot = Math.random() * Math.PI * 2;
       }
-      m.globalAlpha = Math.min(1, p.alpha * amt * (1 + 0.15 * Math.sin(t * 0.07 + p.ph * 1.3)));
-      m.setTransform(ms, 0, 0, ms, (p.x * (w + pw) - pw / 2) * ms, p.y * h * ms);
-      m.rotate(p.rot);
-      m.drawImage(layers[p.layer], -pw / 2, -pw * ar / 2, pw, pw * ar);
     }
-    m.setTransform(1, 0, 0, 1, 0, 0);
-    m.globalAlpha = 1;
-    if (env.disc && env.disc.clear > 0) {
-      const mx = env.disc.x * ms, my = env.disc.y * ms, mr = env.disc.r * ms, glow = m.createRadialGradient(mx, my, mr, mx, my, mr * 1.5);
-      glow.addColorStop(0, `rgba(0,0,0,${MIST[inst.mist.key].disc * env.disc.clear})`);
-      glow.addColorStop(1, "rgba(0,0,0,0)");
-      m.globalCompositeOperation = "destination-out";
-      m.fillStyle = glow;
-      m.fillRect(mx - mr * 1.5, my - mr * 1.5, mr * 3, mr * 3);
-      m.globalCompositeOperation = "source-over";
+    const near = nearCtx ? MIST_LAYERS.length - 1 : MIST_LAYERS.length;
+    for (const [target, key, inFront] of nearCtx ? [[ctx, "mistCanvas", false], [nearCtx, "mistNearCanvas", true]] : [[ctx, "mistCanvas", false]]) {
+      const mc = inst[key] || (inst[key] = document.createElement("canvas"));
+      if (mc.width !== cw || mc.height !== ch) {
+        mc.width = cw;
+        mc.height = ch;
+      }
+      const m = mc.getContext("2d");
+      m.setTransform(1, 0, 0, 1, 0, 0);
+      m.clearRect(0, 0, cw, ch);
+      m.imageSmoothingEnabled = true;
+      m.imageSmoothingQuality = "high";
+      for (const p of inst.mist.puffs) {
+        if (p.layer >= near !== inFront) continue;
+        m.globalAlpha = Math.min(1, p.alpha * amt * (1 + 0.15 * Math.sin(t * 0.07 + p.ph * 1.3)));
+        m.setTransform(ms, 0, 0, ms, (p.x * (w + p.pw) - p.pw / 2) * ms, p.y * h * ms);
+        m.rotate(p.rot);
+        m.drawImage(layers[p.layer], -p.pw / 2, -p.pw * ar / 2, p.pw, p.pw * ar);
+      }
+      m.setTransform(1, 0, 0, 1, 0, 0);
+      m.globalAlpha = 1;
+      if (env.disc && env.disc.clear > 0) {
+        const mx = env.disc.x * ms, my = env.disc.y * ms, mr = env.disc.r * ms, glow = m.createRadialGradient(mx, my, mr, mx, my, mr * 1.5);
+        glow.addColorStop(0, `rgba(0,0,0,${MIST[inst.mist.key].disc * env.disc.clear})`);
+        glow.addColorStop(1, "rgba(0,0,0,0)");
+        m.globalCompositeOperation = "destination-out";
+        m.fillStyle = glow;
+        m.fillRect(mx - mr * 1.5, my - mr * 1.5, mr * 3, mr * 3);
+        m.globalCompositeOperation = "source-over";
+      }
+      target.setTransform(1, 0, 0, 1, 0, 0);
+      target.globalAlpha = 1;
+      target.drawImage(mc, 0, 0, cw * 2, ch * 2);
+      target.setTransform(s, 0, 0, s, 0, 0);
     }
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalAlpha = 1;
-    ctx.drawImage(mc, 0, 0, cw * 2, ch * 2);
-    ctx.setTransform(s, 0, 0, s, 0, 0);
   }
   const _lerp = (a, b, t) => a + (b - a) * t;
   const _count = (t, area) => Math.max(t.min, Math.min(t.max, Math.round(area / 1e4 * t.perContainer)));
@@ -1471,7 +1478,7 @@ var WeatherEffects = (() => {
     };
     inst.cloud = field(inst.cloud, weatherState, inst.wp, _buildCloudField, inst.cloudImg);
     inst.mist = field(inst.mist, mistState, inst.wp + 1, _buildMistField, _getMistImg);
-    if (!inst.mist) inst.mistCanvas = null;
+    if (!inst.mist) inst.mistCanvas = inst.mistNearCanvas = null;
     const starCount = stars ? stars.count : 0;
     if (starCount <= 0) {
       inst.stars = null;
@@ -1649,7 +1656,7 @@ var WeatherEffects = (() => {
       ctx.globalAlpha = 1;
     };
     const mistImg = inst.mist && _getMistImg();
-    if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, (0.9 + 0.4 * gust) * windF);
+    if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, (0.9 + 0.4 * gust) * windF, nearCtx);
     if (inst.cloud && inst.cloud.puffs.length) {
       const img = inst.cloudImg(), bands = img && _cloudBandSprites(inst.cloud, img, inst.cloud.state, env.schemeDark, env.backgroundRGB);
       if (bands) cloudField(inst.cloud, bands, env.schemeDark ? 1.08 : 1);
@@ -2274,12 +2281,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-7RDNJTH2.js");
+      await import("./origami-weather-editor-24J2MPKJ.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-3XZXXQW6.js");
+    const { buildStubConfig } = await import("./layout-presets-LBW3SIRM.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {

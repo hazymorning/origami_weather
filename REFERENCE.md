@@ -54,7 +54,7 @@ Containers and buttons can have a `name`. The card doesn't show it, but the visu
 
 Containers sit in front of the sky and everything that moves in it. `layer` moves a container further back.
 
-- `layer: base` keeps it in front of the weather, but behind the containers without a `layer`. The card around the window of the Window layout sits there.
+- `layer: base` keeps it in front of the weather, but behind the containers without a `layer`.
 - `layer: back` puts it behind the weather, so clouds, mist, rain, snow, birds and planes pass in front of it.
 - `layer: middle` puts it into the weather, with planes, mist and clouds behind it and birds, rain and snow in front of it. The house of the Home layout sits there.
 - `layer: sky` puts it behind the sun, the moon and the stars as well, right in front of the sky and its pictures. Pictures with `weather_image_front` are in front of it too.
@@ -552,7 +552,7 @@ These run on top of every background, including `images` and `none`.
 | `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the clouds are drawn with instead of the built-in one. A PNG or WebP with a transparent background works best. |
 | `mist_effects` | `boolean` | same as `cloud_effects` | Three layers of mist that drift behind the clouds with the wind. The far layer is small and slow and the near one large and quicker, with gaps between the patches where the sky shows through. There is mist whenever there are clouds, rain or snow, denser in fog, and none on clear days. The mist takes its color from the background behind it: a lighter shade of a dark sky, a paler version of a light sky, and a soft shade on a white card. It thins out around the sun and the moon, so they still shine through, though less so in fog. It works with or without the clouds. |
 | `mist_density` | `number` | `1` | How thick the mist is, between `0.25` and `2`. |
-| `mist_size` | `number` | `1` | How big the patches of mist and the gaps between them are, between `0.25` and `2`. Smaller patches suit a small opening, like the round window of the Window layout. |
+| `mist_size` | `number` | `1` | How big the patches of mist and the gaps between them are, between `0.25` and `2`. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |

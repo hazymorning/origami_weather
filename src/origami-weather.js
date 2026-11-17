@@ -6,6 +6,9 @@ console.info(
 for (const _prop of ['--origami-fade-start', '--origami-fade-end', '--origami-gauge-pos']) {
     try { CSS.registerProperty({ name: _prop, syntax: '<number>', inherits: false, initialValue: '0' }); } catch (_e) { }
 }
+for (const [_prop, _initial] of [['--origami-sun-moon-x', '50%'], ['--origami-sun-moon-y', '100%']]) {
+    try { CSS.registerProperty({ name: _prop, syntax: '<length-percentage>', inherits: true, initialValue: _initial }); } catch (_e) { }
+}
 const FALLBACK_WEATHER = Object.freeze({
     state: 'cloudy',
     attributes: { temperature: '--', temperature_unit: '', wind_speed: 0, wind_speed_unit: '', friendly_name: 'Weather Unavailable' }
@@ -1745,6 +1748,7 @@ class WeatherCard extends HTMLElement {
         }
         this._observeRoot();
         this._observeCurves(this.shadowRoot);
+        this._observeCorners(this.shadowRoot);
         document.addEventListener('visibilitychange', this._boundDocVisibility);
         this._scheduleClockTick();
         if (this._hasReceivedFirstHass) { this._syncForecasts(); this._tryInitialize(); }
@@ -1768,6 +1772,7 @@ class WeatherCard extends HTMLElement {
         if (this._resizeObserver) this._resizeObserver.disconnect();
         if (this._intersectionObserver) this._intersectionObserver.disconnect();
         if (this._marqueeObserver) this._marqueeObserver.disconnect();
+        if (this._cornerObserver) this._cornerObserver.disconnect();
         this._marqueeObserver = null;
         for (const unsub of this._forecastSubs.values()) { try { unsub(); } catch (_) {} }
         this._forecastSubs.clear();
@@ -2066,6 +2071,9 @@ class WeatherCard extends HTMLElement {
         const sig = `${isAstroNight ? 'night' : 'day'}|${x ?? ''}|${y}|${weatherState}|${warm}|${this._schemeDark ? 'd' : 'l'}|${phase}`;
         if (this._sunMoonSig === sig) return;
         this._sunMoonSig = sig;
+        const flip = this._sunMoonNight !== isAstroNight;
+        this._sunMoonNight = isAstroNight;
+        if (flip) els.sunMoonLayer.classList.add('no-glide');
         if (!this._sunMoonActive) {
             this._sunMoonActive = true;
             els.root.classList.add('has-sun-moon');
@@ -2079,6 +2087,7 @@ class WeatherCard extends HTMLElement {
         if (x == null) st.removeProperty('--origami-sun-moon-x');
         else st.setProperty('--origami-sun-moon-x', `${x}%`);
         st.setProperty('--origami-sun-moon-y', y);
+        if (flip) { getComputedStyle(els.sunMoonLayer).getPropertyValue('--origami-sun-moon-y'); els.sunMoonLayer.classList.remove('no-glide'); }
         st.setProperty('--origami-sun-moon-glow-opacity', String(tuning.sunVisibility));
         st.setProperty('--origami-sun-rays-opacity', String(rays));
         st.opacity = String(tuning.sunVisibility);
@@ -2538,7 +2547,9 @@ class WeatherCard extends HTMLElement {
             @keyframes wbkO3 { 0%, 100% { opacity: 0.88; } 40% { opacity: 1; } 72% { opacity: 0.8; } }
             #card-root:is(.has-default-bg, .haze-only) #default-bg { display: block; }
             #card-root.haze-only #sky-base { display: none; }
-            #sun-moon-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.sun}; overflow: hidden; overflow: clip; display: none; }
+            #sun-moon-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.sun}; overflow: hidden; overflow: clip; display: none; transition: --origami-sun-moon-x 2s ease-in-out, --origami-sun-moon-y 2s ease-in-out; }
+            #sun-moon-layer.no-glide { transition: none; }
+            @media (prefers-reduced-motion: reduce) { #sun-moon-layer { transition: none; } }
             #card-root.has-sun-moon #sun-moon-layer { display: block; }
             #sun-moon { position: absolute; z-index: 1; left: var(--origami-sun-moon-x, 50%); top: clamp(calc(var(--origami-sun-moon-size, 80px) / 2 + 6px), var(--origami-sun-moon-y, 100%), 100%); width: var(--origami-sun-moon-size, 80px); height: var(--origami-sun-moon-size, 80px); transform: translate(-50%, -50%); }
             #sun-moon .sun, #sun-moon .moon { position: absolute; inset: 0; }
@@ -3203,6 +3214,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 this._animateGauges(bt, `a${ai}`);
                 bt.classList.remove('has-curve');
                 this._observeCurves(bt);
+                this._observeCorners(bt);
                 if (hasVis && rowLayout === 'vertical-scroll') this._scheduleVerticalMeasure(ai);
                 anyRowRebuilt = true;
             }
@@ -3240,6 +3252,17 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             prev.set(key, target);
         });
         if (queue.length) requestAnimationFrame(() => requestAnimationFrame(() => { for (const [el, t] of queue) el.style.setProperty('--origami-gauge-pos', t); }));
+    }
+    _observeCorners(root) {
+        const obs = this._cornerObserver ||= new ResizeObserver(es => {
+            for (const e of es) {
+                if (!e.target.isConnected) { obs.unobserve(e.target); continue; }
+                const box = e.borderBoxSize && e.borderBoxSize[0], side = box ? Math.min(box.inlineSize, box.blockSize) : Math.min(e.target.offsetWidth, e.target.offsetHeight);
+                const radius = `min(var(--_radius), ${Math.round(side * 0.7) / 2}px)`;
+                if (side > 0 && e.target.style.getPropertyValue('--_button-radius') !== radius) e.target.style.setProperty('--_button-radius', radius);
+            }
+        });
+        for (const b of root.querySelectorAll('.button.with-bg, .button.has-bg-image')) obs.observe(b, { box: 'border-box' });
     }
     _observeCurves(root) {
         const obs = this._curveObserver ||= new ResizeObserver(es => {

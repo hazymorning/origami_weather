@@ -52,19 +52,19 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, on a partly cloudy day with the sun and on a clear night with the moon and stars" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A small paper landscape for every kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in the top left corner. The sun and the moon move across the sky and set behind the hills. A tap on the card shows the next days on frosted tiles.
+A small paper landscape for every kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in the top left corner. The sun and the moon move across the sky and set behind the hills. A tap on the card shows the next days on a frosted panel, joined by a faint line through their highs.
 
-### Daily Forecast
+### Forecast
 
-<img width="800" alt="The Daily Forecast layout, the temperature on a color that changes with the weather, with the next days and a faint temperature line below, on a snowy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daily-forecast.webp">
+<img width="800" alt="The Forecast layout, the temperature on a color that changes with the weather, with the next days and a faint temperature line below, on a snowy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/forecast.webp">
 
 A classic forecast on a background color that changes with the weather. The top shows the day and the date, the temperature, today's high and low, the humidity and the current weather, with the sun or the moon between them. Below, a scrollable row on a frosted panel shows the next days, each with its weather, high, low and chance of rain, and a faint line traces the highs across the days.
 
-### The Sky
+### Sky
 
-<img width="800" alt="The Sky layout, the animated sky of a partly cloudy afternoon with the current weather, the temperature and a button with today's high and low, and at night after a tap the next days as a curve on a soft blur" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
+<img width="800" alt="The Sky layout, the animated sky of a partly cloudy afternoon with clouds drifting over the current weather and the temperature, a button with today's high and low, and at night after a tap the next days as a curve on a soft blur" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
 
-The animated sky on its own, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the top left corner, and a button below them shows today's weather, high and low. A tap anywhere on the card lays a soft blur over it and shows the next days as a curve, with each day's weather on the line and its high and low below.
+The animated sky on its own, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the top left corner, behind the clouds that drift past, and a button below them shows today's weather, high and low. A tap anywhere on the card lays a soft blur over it and shows the next days as a curve, with each day's weather on the line and its high and low below.
 
 ### Home
 
@@ -1408,11 +1408,11 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Updating the card keeps the settings of every card. A layout only changes when it's picked again in the layout picker.
 
-Centered, Comparison and Arc are no longer in the layout picker. Cards made with them keep working, and their YAML is under **More layouts**. Classic is now called Daily Forecast and Slim is now The Sky, and cards made with Classic or Slim keep working as they are. Cards with `image: demo-home-image` keep the house from previous versions, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker. Cards made with them keep working, and their YAML is under **More layouts**. Classic is now called Forecast and Slim is now Sky, and cards made with Classic or Slim keep working as they are. Cards with `image: demo-home-image` keep the house from previous versions, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
 
-Button backgrounds are now rounded by at most 10px, so small buttons don't turn into capsules on themes with very round cards. `--origami-bottom-bg-radius` still sets any radius.
+The corners of button backgrounds now follow the size of the button: 35% of its height, or of its width if that is smaller, and never rounder than the card. Small buttons no longer turn into capsules on themes with very round cards, and `--origami-bottom-bg-radius` still sets any radius.
 
 The card's border is now drawn on top of the card's background. A see-through border color from the theme no longer lets the dashboard show through at the edge, and the content can reach the very edge of the card.
 

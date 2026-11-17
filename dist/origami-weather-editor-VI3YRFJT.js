@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-IOXWMNGY.js";
+} from "./chunk-7SOBZNY5.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -1483,7 +1483,7 @@ var WeatherCardEditor = class extends i4 {
   }
   _renderLayoutsPanel() {
     return b2`<div class="settings-group">
-            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Careful: Picking a layout replaces all current settings.</span></div>
+            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span><b>Careful:</b> Picking a layout replaces all current settings.</span></div>
             <div class="preset-grid">
                 ${LAYOUT_PRESETS.map((preset) => b2`
                     <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>
@@ -1492,7 +1492,7 @@ var WeatherCardEditor = class extends i4 {
                         <span class="preset-desc">${preset.description}</span>
                     </button>`)}
             </div>
-            <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>None of the layouts fits? The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts use the same containers, buttons and elements, so single parts can also be copied from one layout to another.</span></div></div>`;
+            <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span><b>None of the layouts fits?</b> The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts use the same containers, buttons and elements, so single parts can also be copied from one layout to another.</span></div></div>`;
   }
   _renderSwitchTap(action, set) {
     const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "", value = name && action.state ? String(action.state) : "";

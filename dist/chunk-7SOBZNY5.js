@@ -37,12 +37,13 @@ var dioramaDay = (offset) => ({
     text({ attribute: "datetime", format: "%a", weight: "500" }),
     icon("weather", { margin: "5px 0 0" }),
     text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "700" }),
-    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500" })
+    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500" }),
+    { type: "bar", bar_shape: "curve", bar_height: "2px", bar_color: "color-mix(in srgb, currentColor 22%, transparent)", margin: "-71px 0 0", bar_values: [{ attribute: "temperature", marker_size: "28px", marker_gap: true }] }
   ]
 });
 var DIORAMA_CONFIG = Object.freeze({
   card_height: "160px",
-  card_padding: "var(--ha-space-4, 16px)",
+  card_padding: "0",
   sun_size: 30,
   moon_size: 30,
   sun_moon_x: "dynamic",
@@ -59,6 +60,7 @@ var DIORAMA_CONFIG = Object.freeze({
   button_containers: [
     {
       name: "Now",
+      padding: "var(--ha-space-4, 16px)",
       visibility: DIORAMA_SWITCH.shown("off"),
       buttons: [
         {
@@ -81,19 +83,25 @@ var DIORAMA_CONFIG = Object.freeze({
       position_x: "0",
       position_y: "0",
       custom_width: "100%",
+      padding: "36px 0",
       layout: "horizontal-scroll",
       scroll_count: 5,
       row_height: "100%",
-      gap: "8px",
+      align_items: "stretch",
+      gap: "0",
       align: "center",
+      scroll_fade: true,
+      scroll_fade_size: "48px",
       background: true,
+      grouped: true,
+      border: "none",
+      blurred_background: true,
+      background_blur: 16,
+      background_color: CARD_TINT(30),
       button_style: "vertical",
-      button_padding: "16px 0",
       button_gap: "5px",
       button_text_size: "12px",
       button_icon_size: "28px",
-      button_background_color: CARD_TINT(76, `color-mix(in srgb, ${CARD_COLOR}, black 5%)`),
-      button_blurred_background: true,
       visibility: DIORAMA_SWITCH.shown("on"),
       buttons: days(0, dioramaDay)
     }
@@ -101,21 +109,21 @@ var DIORAMA_CONFIG = Object.freeze({
   grid_options: { columns: "full" }
 });
 var DAILY_COLORS = [
-  ["sunny", "#4a8bcb", "#1c2b49"],
-  ["clear-night", "#1c2b49", "#1c2b49"],
-  ["partlycloudy", "#5687b8", "#273449"],
-  ["cloudy", "#6e8196", "#303740"],
-  ["fog", "#80898f", "#353a3e"],
-  ["windy", "#4d8a90", "#233b3e"],
-  ["windy-variant", "#56869c", "#273a44"],
-  ["rainy", "#566a80", "#272f3a"],
-  ["pouring", "#465669", "#1e252f"],
-  ["lightning", "#575370", "#282636"],
-  ["lightning-rainy", "#4c4965", "#211f2d"],
-  ["hail", "#5a7888", "#29363d"],
-  ["snowy", "#7890a6", "#313d49"],
-  ["snowy-rainy", "#677d91", "#2d3740"],
-  ["exceptional", "#2784d5", "#182b4e"]
+  ["sunny", "#4f93d5", "#172541"],
+  ["clear-night", "#172541", "#172541"],
+  ["partlycloudy", "#5c8fc2", "#222e41"],
+  ["cloudy", "#75899e", "#2a3139"],
+  ["fog", "#879197", "#2f3437"],
+  ["windy", "#539298", "#1e3437"],
+  ["windy-variant", "#5c8ea5", "#22333d"],
+  ["rainy", "#5c7188", "#212933"],
+  ["pouring", "#4c5d71", "#191f28"],
+  ["lightning", "#5e5a78", "#22202f"],
+  ["lightning-rainy", "#53506d", "#1b1926"],
+  ["hail", "#608090", "#233036"],
+  ["snowy", "#7f98af", "#2b3642"],
+  ["snowy-rainy", "#6e8599", "#273139"],
+  ["exceptional", "#2c8ce0", "#132545"]
 ];
 var WHITE = "#ffffff";
 var WHITE_72 = "rgba(255, 255, 255, 0.72)";
@@ -146,15 +154,11 @@ var DAILY_CONFIG = Object.freeze({
   balloon_effects: false,
   plane_effects: false,
   background_mode: "color",
-  background_color: "#5687b8",
-  background_color_dark: "#273449",
+  background_color: "#5c8fc2",
+  background_color_dark: "#222e41",
   background_thresholds: thresholds(DAILY_COLORS),
   shadow_color: "inset 0 1px 3px rgba(0, 0, 0, 0.14)",
   card_tap_action: { action: "more-info" },
-  gradient: true,
-  gradient_color_1: "rgba(255, 255, 255, 0.08)",
-  gradient_color_2: "rgba(255, 255, 255, 0)",
-  gradient_stop_2: 70,
   card_height: "content",
   card_padding: "var(--ha-space-4, 16px)",
   button_containers: [
@@ -344,7 +348,7 @@ var skyDay = (offset) => ({
     { type: "bar", bar_shape: "curve", bar_height: "2px", bar_color: "currentColor", bar_marker_icon_size: "30px", margin: "0 0 5px", bar_values: [{ attribute: "temperature", marker_size: "36px", marker_gap: true, marker_icon: "weather" }] },
     text({ attribute: "datetime", format: "%a", weight: "500", margin: "-0.1em -0.06em 2.5px" }),
     text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "700", color: "currentColor" }),
-    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500", margin: "-6px -0.06em -0.1em" })
+    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500", margin: "-3px -0.06em -0.1em" })
   ]
 });
 var SKY_CONFIG = Object.freeze({
@@ -360,14 +364,15 @@ var SKY_CONFIG = Object.freeze({
   button_containers: [
     {
       name: "Now",
-      padding: "18px 18px 0",
+      layer: "back",
+      padding: "22px 22px 0",
       visibility: SKY_SWITCH.shown("off"),
       buttons: [
         {
           name: "Condition and temperature",
           entity: PRESET_ENTITY_TOKEN,
           style: "vertical",
-          inner_gap: "8px",
+          inner_gap: "10px",
           elements: [
             text({ size: "14px", weight: "500" }),
             text({ attribute: "temperature", precision: 0, format: "\xB0", size: "52px", weight: "700", color: "currentColor", margin: "-0.2em -0.06em -0.1em -0.05em" })
@@ -436,21 +441,21 @@ var LAYOUT_PRESETS = Object.freeze([
   {
     id: "diorama",
     name: "Diorama",
-    description: "A landscape that changes with the weather, tap for the next days",
+    description: "A landscape that changes with the weather, tap shows a forecast",
     icon: "mdi:image-filter-hdr",
     config: DIORAMA_CONFIG
   },
   {
-    id: "daily-forecast",
-    name: "Daily Forecast",
+    id: "forecast",
+    name: "Forecast",
     description: "Today's weather with high, low and humidity, and the next days",
     icon: "mdi:view-dashboard-variant-outline",
     config: DAILY_CONFIG
   },
   {
     id: "sky",
-    name: "The Sky",
-    description: "Animated sky with today's high and low, tap for the next days",
+    name: "Sky",
+    description: "Animated sky with today's high and low, tap shows a forecast",
     icon: "mdi:view-compact-outline",
     config: SKY_CONFIG
   },

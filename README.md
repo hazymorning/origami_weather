@@ -62,11 +62,11 @@ A little paper landscape for each kind of weather, made for the [Origami](https:
 
 The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. Below them are the next six days, with the chance of rain under each day and a faint curve of the temperatures behind them.
 
-### Slim
+### Hourly & Daily
 
-<img width="800" alt="The Slim layout, the live sky with the current weather, the temperature and two buttons for the next two hours and today, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
+<img width="800" alt="The Hourly &amp; Daily layout, the live sky with the current weather, the temperature and two buttons for the next two hours and today, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hourly-daily.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with two buttons below, one for the next two hours and one for today. Each one lays a soft blur over the card and shows its forecast as a curve, the next day in steps of two hours or the next days, with the weather on it and the temperature below.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with two buttons below for the weather in the next two hours and today. A tap on either lays a soft blur over the card and shows its forecast as a curve, the next day in steps of two hours or the next days, with the weather on it and the temperature below.
 
 ### Home
 
@@ -239,7 +239,6 @@ background_thresholds:
 - value: snowy-rainy
   color: 'color-mix(in srgb, rgb(150 176 204) 24%, var(--ha-card-background, var(--card-background-color, #fff)))'
   color_dark: 'color-mix(in srgb, rgb(150 176 204) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
-background_haze: false
 card_tap_action:
   action: more-info
 button_containers:
@@ -260,26 +259,23 @@ button_containers:
     entity: weather.home
     forecast: daily
     inner_gap: 2px
+    icon_size: 16px
     elements:
     - type: icon
       icon: mdi:arrow-up
-      icon_size: 16px
       color: var(--secondary-text-color)
     - type: text
       attribute: temperature
       format: °
-      size: 16px
       weight: '500'
       color: var(--primary-text-color)
       margin: 0 12px 0 0
     - type: icon
       icon: mdi:arrow-down
-      icon_size: 16px
       color: var(--secondary-text-color)
     - type: text
       attribute: templow
       format: °
-      size: 16px
       weight: '500'
       color: var(--primary-text-color)
 - name: Temperature
@@ -439,6 +435,9 @@ button_containers:
   margin: 18px 0 0
   padding: 4px 0
   button_style: vertical
+  button_gap: 12px
+  button_text_size: 12px
+  button_icon_size: 24px
   align: center
   buttons:
   - name: Next hour
@@ -448,14 +447,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -469,14 +465,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -490,14 +483,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -511,14 +501,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -532,14 +519,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -553,14 +537,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -574,14 +555,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -595,14 +573,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -616,14 +591,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -637,14 +609,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -658,14 +627,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -679,14 +645,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -700,14 +663,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -721,14 +681,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -742,14 +699,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -763,14 +717,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -784,14 +735,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -805,14 +753,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -826,14 +771,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -847,14 +789,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -868,14 +807,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -889,14 +825,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -910,14 +843,11 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
@@ -931,23 +861,17 @@ button_containers:
     elements:
     - type: text
       attribute: datetime
-      size: 12px
       weight: '500'
       color: var(--secondary-text-color)
     - type: icon
       icon: weather
-      icon_size: 24px
       color: var(--primary-text-color)
-      margin: 6px 0
     - type: text
       attribute: temperature
       format: °
       size: 15px
       weight: '600'
       color: var(--primary-text-color)
-grid_options:
-  rows: auto
-  columns: 12
 ```
 
 </details>
@@ -971,18 +895,14 @@ content_align: between
 content_align_items: center
 button_containers:
 - name: Temperature
-  padding: '0'
   margin: 0 0 24px 0
   align: center
   buttons:
   - name: Temperature and condition
     entity: weather.home
-    background: false
     style: vertical
-    align: center
     text_size: 58px
     inner_gap: 0px
-    padding: '0'
     elements:
     - type: text
       weight: '700'
@@ -997,25 +917,17 @@ button_containers:
 - name: Details
   gap: clamp(11px, 5.5cqw, 18px)
   margin: 0 0 7px
-  padding: '0'
-  button_padding: '0'
   button_gap: 5px
   button_icon_size: 15px
   button_text_size: 13px
-  align: center
   justify_content: center
   buttons:
   - name: High
     entity: weather.home
-    background: false
-    style: inline
-    align: center
-    padding: '0'
     forecast: daily
     elements:
     - type: icon
       icon: mdi:arrow-up
-      icon_background: false
       margin: 0 -2px 0 -1.8px
     - type: text
       weight: '500'
@@ -1023,15 +935,10 @@ button_containers:
       format: °
   - name: Low
     entity: weather.home
-    background: false
-    style: inline
-    align: center
-    padding: '0'
     forecast: daily
     elements:
     - type: icon
       icon: mdi:arrow-down
-      icon_background: false
       margin: 0 -2px 0 -1.8px
     - type: text
       weight: '500'
@@ -1039,22 +946,14 @@ button_containers:
       format: °
   - name: Wind
     entity: weather.home
-    background: false
-    style: inline
-    align: center
-    padding: '0'
     elements:
     - type: icon
       icon: mdi:weather-windy
-      icon_background: false
       margin: 0 1px 0 -1.5px
     - type: text
       weight: '700'
       attribute: wind_speed
       precision: 0
-grid_options:
-  rows: auto
-  columns: 12
 ```
 
 </details>
@@ -1073,7 +972,6 @@ type: custom:origami-weather
 weather_entity: weather.home
 sun_enabled: false
 moon_enabled: false
-sun_moon_x: dynamic
 card_height: content
 card_padding: 20px
 card_offset: 8px 0px 0px 0px
@@ -1111,18 +1009,13 @@ background_thresholds:
   color: color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) 80%, rgb(135,175,215))
 - value: exceptional
   color: color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) 76%, rgb(230,95,65))
-background_haze: false
 precipitation_effects: false
 cloud_effects: false
 night_sky_effects: false
 button_containers:
 - buttons:
   - entity: weather.home
-    background: false
-    padding: '0'
     style: vertical
-    align: start
-    inner_gap: 6px
     elements:
     - type: text
       text: Outside
@@ -1147,10 +1040,10 @@ button_containers:
   button_icon_padding: 0 0 8px 0
   button_shadow: false
   button_blurred_background: true
+  align: center
   buttons:
   - entity: weather.home
     forecast: daily
-    align: center
     background_color: rgba(150,150,150,0.14)
     elements:
     - type: icon
@@ -1166,7 +1059,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 1
-    align: center
     background_color: rgba(150,150,150,0.12)
     elements:
     - type: icon
@@ -1182,7 +1074,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 2
-    align: center
     background_color: rgba(150,150,150,0.1)
     elements:
     - type: icon
@@ -1198,7 +1089,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 3
-    align: center
     background_color: rgba(150,150,150,0.08)
     elements:
     - type: icon
@@ -1214,7 +1104,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 4
-    align: center
     background_color: rgba(150,150,150,0.08)
     elements:
     - type: icon
@@ -1230,7 +1119,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 5
-    align: center
     background_color: rgba(150,150,150,0.08)
     elements:
     - type: icon
@@ -1246,7 +1134,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 6
-    align: center
     background_color: rgba(150,150,150,0.08)
     elements:
     - type: icon
@@ -1262,7 +1149,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 7
-    align: center
     background_color: rgba(150,150,150,0.08)
     elements:
     - type: icon
@@ -1278,7 +1164,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 8
-    align: center
     background_color: rgba(150,150,150,0.08)
     elements:
     - type: icon
@@ -1294,7 +1179,6 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 9
-    align: center
     background_color: rgba(150,150,150,0.08)
     elements:
     - type: icon
@@ -1307,13 +1191,10 @@ button_containers:
       weight: '700'
       attribute: temperature
       format: °
-- padding: '0'
-  margin: 66px 0 8px 0
+- margin: 66px 0 8px 0
   buttons:
   - entity: weather.home
     forecast: daily
-    background: false
-    padding: '0'
     width: 100%
     elements:
     - type: bar
@@ -1329,12 +1210,9 @@ button_containers:
       - attribute: temperature
 - padding: 0 4px
   margin: 12px 0 0 0
-  align: start
   button_text_size: 16px
   buttons:
   - entity: weather.home
-    background: false
-    padding: '0'
     align: spread
     elements:
     - type: icon
@@ -1345,8 +1223,6 @@ button_containers:
       margin: 0 auto 0 0
   - entity: weather.home
     forecast: daily
-    background: false
-    padding: '0'
     align: spread
     elements:
     - type: icon
@@ -1356,9 +1232,6 @@ button_containers:
       attribute: precipitation_probability
       format: ' %'
       weight: '400'
-grid_options:
-  rows: auto
-  columns: 12
 ```
 
 </details>
@@ -1387,16 +1260,13 @@ button_containers:
   position_y: 10cqh
   buttons:
   - entity: sun.sun
-    elements:
-    - type: text
-      text: ' '
+    elements: []
     visibility:
     - condition: state
       entity: sun.sun
       state: above_horizon
     type: ring
     width: 68cqmin
-    background: false
     ring_min: sensor.sun_next_rising
     ring_max: sensor.sun_next_setting
     ring_start: 240
@@ -1422,16 +1292,13 @@ button_containers:
       marker_icon: mdi:white-balance-sunny
       marker_icon_color: '#2c2c2e'
   - entity: sun.sun
-    elements:
-    - type: text
-      text: ' '
+    elements: []
     visibility:
     - condition: state
       entity: sun.sun
       state: below_horizon
     type: ring
     width: 68cqmin
-    background: false
     ring_min: sensor.sun_next_setting
     ring_max: sensor.sun_next_rising
     ring_start: 240
@@ -1460,13 +1327,11 @@ button_containers:
   position_anchor: bottom-left
   position_x: 7cqw
   position_y: 7cqh
-  padding: '0'
   button_style: vertical
-  button_padding: '0'
   button_gap: 8px
+  button_text_size: clamp(13px, 3.5cqmin, 16px)
   buttons:
   - entity: weather.home
-    background: false
     elements:
     - type: text
       attribute: temperature
@@ -1475,17 +1340,15 @@ button_containers:
       size: clamp(24px, 8cqmin, 36px)
       weight: '700'
     - type: text
-      size: clamp(13px, 3.5cqmin, 16px)
       weight: '500'
 - position: custom
   position_anchor: bottom-right
   position_x: 7cqw
   position_y: 7cqh
   align: end
-  padding: '0'
   button_style: vertical
-  button_padding: '0'
   button_gap: 8px
+  button_text_size: clamp(13px, 3.5cqmin, 16px)
   buttons:
   - entity: sun.sun
     elements:
@@ -1495,13 +1358,11 @@ button_containers:
       weight: '700'
     - type: text
       text: Sunset
-      size: clamp(13px, 3.5cqmin, 16px)
       weight: '500'
     visibility:
     - condition: state
       entity: sun.sun
       state: above_horizon
-    background: false
   - entity: sun.sun
     elements:
     - type: text
@@ -1510,15 +1371,12 @@ button_containers:
       weight: '700'
     - type: text
       text: Sunrise
-      size: clamp(13px, 3.5cqmin, 16px)
       weight: '500'
     visibility:
     - condition: state
       entity: sun.sun
       state: below_horizon
-    background: false
 grid_options:
-  columns: 12
   rows: 6
 ```
 
@@ -1557,11 +1415,13 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Cards keep their settings when the card is updated. A layout only changes when it's picked again in the layout picker.
 
-Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Classic is now Daily Forecast and Slim has a new form in the layout picker, and Classic and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Classic is now Daily Forecast and Slim is now Hourly & Daily, and Classic and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
 
 Button backgrounds are now rounded by at most 10px, so small buttons don't turn into capsules on themes with very round cards. `--origami-bottom-bg-radius` still sets any radius.
+
+The card's border now lies on top of the card's own background. A see-through border color from the theme no longer lets the dashboard show through around the edge, and the content can reach the very edge of the card.
 
 Containers can sit between the weather layers with `layer`. Custom CSS that set a `z-index` on `#free-layer` or `#content-layer` to put a picture behind the rain no longer does that, `layer: middle` on the picture's container does it now.
 

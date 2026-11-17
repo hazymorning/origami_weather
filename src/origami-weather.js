@@ -2496,7 +2496,7 @@ class WeatherCard extends HTMLElement {
     static _buildStyles() {
         return `
             :host { display: block; width: 100%; position: relative; background: transparent !important; --_dash-bg: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); }
-            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); --_button-radius: min(calc(var(--_radius) - 5px), 10px); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; border-width: var(--origami-card-border-width, var(--ha-card-border-width, 0px)); border-style: solid; border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0)); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--_dash-bg); --_button-no-bg-shadow: none; }
+            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); --_button-radius: min(calc(var(--_radius) - 5px), 10px); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; outline: var(--origami-card-border-width, var(--ha-card-border-width, 0px)) solid var(--ha-card-border-color, var(--divider-color, #e0e0e0)); outline-offset: calc(-1 * var(--origami-card-border-width, var(--ha-card-border-width, 0px))); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--_dash-bg); --_button-no-bg-shadow: none; }
             #card-root.clickable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
             #card-root.clickable:active { transform: scale(0.98); transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1); }
             #card-root.clickable:not(:active) { transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
@@ -2505,7 +2505,7 @@ class WeatherCard extends HTMLElement {
             #card-root.theme-mismatch { --_text-bg: var(--_scheme-bg); --ha-card-background: var(--_text-bg); --primary-text-color: var(--origami-text-color); --secondary-text-color: color-mix(in srgb, var(--origami-text-color) 70%, transparent); }
             #card-root.has-custom-shadow { --_origami-shadow: var(--origami-shadow, var(--_origami-shadow-preset)); }
             #card-root:not(.has-custom-shadow) { --_origami-shadow: var(--origami-shadow, none); }
-            #card-root.no-card-frame { border-radius: 0; box-shadow: none; border-width: 0; }
+            #card-root.no-card-frame { border-radius: 0; box-shadow: none; outline: none; }
             #card-root.bg-ha-card { background-color: var(--_text-bg); }
             #card-root.bg-custom-color { background-color: var(--origami-card-bg-color, var(--_text-bg)); }
             :host(.full-width) { --origami-fw-gap: var(--origami-full-width-margin, var(--ha-view-sections-column-gap, var(--column-gap, 32px))); width: calc(100% + 2 * var(--origami-fw-gap)); max-width: none; }

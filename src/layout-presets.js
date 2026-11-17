@@ -34,16 +34,9 @@ const dioramaDay = (offset) => ({
     forecast: 'daily',
     forecast_offset: offset,
     tap_action: DIORAMA_SWITCH.tap,
-    background: true,
-    blurred_background: true,
-    background_color: CARD_TINT(76),
-    style: 'vertical',
-    align: 'center',
-    padding: '16px 0',
-    inner_gap: '5px',
     elements: [
-        text({ attribute: 'datetime', format: '%a', size: '12px', weight: '500' }),
-        icon('weather', { icon_size: '28px', icon_background: false, margin: '1px 0 0' }),
+        text({ attribute: 'datetime', format: '%a', weight: '500' }),
+        icon('weather', { margin: '1px 0 0' }),
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700' }),
         text({ attribute: 'templow', format: '\u00b0', size: '13px', weight: '500' })
     ]
@@ -73,14 +66,12 @@ const DIORAMA_CONFIG = Object.freeze({
                 {
                     name: 'Temperature and condition',
                     entity: PRESET_ENTITY_TOKEN,
-                    attribute: 'temperature',
                     tap_action: DIORAMA_SWITCH.tap,
                     style: 'vertical',
-                    align: 'start',
                     inner_gap: '6px',
                     elements: [
-                        text({ size: '40px', weight: '700', precision: 0, format: '\u00b0' }),
-                        text({ entity: PRESET_ENTITY_TOKEN, size: '12px', weight: '500', overflow: 'wrap' })
+                        text({ attribute: 'temperature', size: '40px', weight: '700', precision: 0, format: '\u00b0' }),
+                        text({ size: '12px', weight: '500', overflow: 'wrap' })
                     ]
                 }
             ]
@@ -96,14 +87,20 @@ const DIORAMA_CONFIG = Object.freeze({
             scroll_count: 5,
             row_height: '100%',
             gap: '8px',
+            align: 'center',
+            background: true,
+            button_style: 'vertical',
+            button_padding: '16px 0',
+            button_gap: '5px',
+            button_text_size: '12px',
+            button_icon_size: '28px',
+            button_background_color: CARD_TINT(76),
+            button_blurred_background: true,
             visibility: DIORAMA_SWITCH.shown('on'),
             buttons: days(0, dioramaDay)
         }
     ],
-    grid_options: {
-        rows: 'auto',
-        columns: 'full'
-    }
+    grid_options: { columns: 'full' }
 });
 
 const DAILY_COLORS = [
@@ -134,8 +131,8 @@ const dailyColumn = (offset) => ({
     forecast: 'daily',
     forecast_offset: offset,
     elements: [
-        text({ attribute: 'datetime', size: '12px', weight: '500', color: WHITE_72 }),
-        icon('weather', { icon_size: '26px', color: WHITE, margin: '2px 0' }),
+        text({ attribute: 'datetime', weight: '500', color: WHITE_72 }),
+        icon('weather', { color: WHITE, margin: '2px 0' }),
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: WHITE }),
         text({ attribute: 'templow', format: '\u00b0', size: '14px', weight: '500', color: WHITE_60 }),
         { type: 'bar', bar_height: '4px', bar_width: '26px', bar_color: '#9fd2ff', margin: '3px 0 0', bar_values: [{ attribute: 'precipitation_probability' }] },
@@ -143,7 +140,7 @@ const dailyColumn = (offset) => ({
     ]
 });
 
-const dailyStat = (iconName, extra) => [icon(iconName, { icon_size: '14px', color: WHITE_72 }), text({ size: '14px', weight: '500', color: WHITE, ...extra })];
+const dailyStat = (iconName, extra) => [icon(iconName, { color: WHITE_72 }), text({ size: '14px', weight: '500', color: WHITE, ...extra })];
 
 const DAILY_CONFIG = Object.freeze({
     color_mode: 'dark',
@@ -159,11 +156,9 @@ const DAILY_CONFIG = Object.freeze({
     background_color: '#5687b8',
     background_color_dark: '#273449',
     background_thresholds: thresholds(DAILY_COLORS),
-    background_haze: false,
     shadow_color: 'inset 0 1px 3px rgba(0, 0, 0, 0.14)',
     card_tap_action: { action: 'more-info' },
     gradient: true,
-    gradient_type: 'linear',
     gradient_color_1: 'rgba(255, 255, 255, 0.08)',
     gradient_color_2: 'rgba(255, 255, 255, 0)',
     gradient_stop_2: 70,
@@ -175,13 +170,14 @@ const DAILY_CONFIG = Object.freeze({
         {
             name: 'Today',
             gap: '12px',
-            padding: '4px 8px 0',
+            padding: '5px 8px 0',
+            button_gap: '2px',
+            button_icon_size: '14px',
             buttons: [
                 {
                     name: 'Day',
                     entity: PRESET_ENTITY_TOKEN,
                     style: 'vertical',
-                    align: 'start',
                     width: '100%',
                     inner_gap: '7px',
                     elements: [
@@ -193,27 +189,25 @@ const DAILY_CONFIG = Object.freeze({
                     name: 'High and low',
                     entity: PRESET_ENTITY_TOKEN,
                     forecast: 'daily',
-                    inner_gap: '2px',
                     elements: [...dailyStat('mdi:arrow-up', { attribute: 'temperature', format: '\u00b0', margin: '0 10px 0 0' }), ...dailyStat('mdi:arrow-down', { attribute: 'templow', format: '\u00b0' })]
                 },
-                { name: 'Humidity', entity: PRESET_ENTITY_TOKEN, attribute: 'humidity', inner_gap: '2px', elements: dailyStat('mdi:water-outline') }
+                { name: 'Humidity', entity: PRESET_ENTITY_TOKEN, attribute: 'humidity', elements: dailyStat('mdi:water-outline') }
             ]
         },
         {
             name: 'Now',
             custom_width: 'auto',
-            padding: '4px 8px 2.5px',
+            padding: '5px 8px 2.5px',
             buttons: [
                 {
                     name: 'Temperature and condition',
                     entity: PRESET_ENTITY_TOKEN,
-                    attribute: 'temperature',
                     style: 'vertical',
                     align: 'end',
                     inner_gap: '10px',
                     elements: [
-                        text({ size: '50px', weight: '600', precision: 0, format: '\u00b0', color: WHITE, margin: '-0.165em -0.06em -0.1em 0' }),
-                        text({ entity: PRESET_ENTITY_TOKEN, size: '14px', weight: '500', color: WHITE })
+                        text({ attribute: 'temperature', size: '50px', weight: '600', precision: 0, format: '\u00b0', color: WHITE, margin: '-0.165em -0.06em -0.1em 0' }),
+                        text({ size: '14px', weight: '500', color: WHITE })
                     ]
                 }
             ]
@@ -233,17 +227,15 @@ const DAILY_CONFIG = Object.freeze({
             blurred_background: true,
             background_blur: 20,
             background_color: 'rgba(0, 0, 0, 0.14)',
-            button_style: 'vertical',
-            button_gap: '5px',
-            button_padding: '14px 0',
             align: 'center',
+            button_style: 'vertical',
+            button_padding: '14px 0',
+            button_gap: '5px',
+            button_text_size: '12px',
+            button_icon_size: '26px',
             buttons: days(1, dailyColumn)
         }
-    ],
-    grid_options: {
-        rows: 'auto',
-        columns: 12
-    }
+    ]
 });
 
 const HOME_SKY = [
@@ -264,17 +256,17 @@ const HOME_SKY = [
     ['exceptional', '#ded8d2', '#2c1b17']
 ];
 
-const homeText = (extra, size = '12px', weight = '500') => text({ size, weight, color: 'var(--primary-text-color)', ...extra });
+const homeText = (extra) => text({ weight: '500', color: 'var(--primary-text-color)', ...extra });
 
-const homeLabel = (extra, size = '12px') => homeText({ ...extra, color: 'var(--secondary-text-color)' }, size);
+const homeLabel = (extra) => homeText({ color: 'var(--secondary-text-color)', ...extra });
 
-const homeTemp = (size, weight) => homeText({ precision: 0, format: '\u00b0' }, size, weight);
+const homeTemp = (extra) => homeText({ precision: 0, format: '\u00b0', weight: '700', ...extra });
 
 const sunTime = (rising) => ({
     name: rising ? 'Sunrise (at night)' : 'Sunset (by day)',
     ...nextSun(rising),
     inner_gap: '6px',
-    elements: [homeLabel({ text: rising ? 'Sunrise' : 'Sunset' }), homeText({}, '12px', '700')]
+    elements: [homeLabel({ text: rising ? 'Sunrise' : 'Sunset' }), homeText({ weight: '700' })]
 });
 
 const room = (label) => ({
@@ -283,7 +275,7 @@ const room = (label) => ({
     attribute: 'temperature',
     style: 'vertical',
     align: 'start',
-    elements: [homeLabel({ text: label }), homeTemp('16px', '700')]
+    elements: [homeLabel({ text: label }), homeTemp({ size: '16px' })]
 });
 
 const windCompass = () => ({
@@ -301,11 +293,10 @@ const windCompass = () => ({
         { value: 0, marker_size: 14, marker_gap: true, marker_icon: 'mdi:alpha-n', marker_icon_color: 'var(--secondary-text-color)' },
         { attribute: 'wind_bearing', marker_size: 7, marker_color: 'var(--primary-text-color)' }
     ],
-    background: false,
     width: '54px',
     padding: '0',
     inner_gap: '4px',
-    elements: [homeText({ attribute: 'wind_speed', precision: 0, format: ' ' }, '15px', '700'), homeLabel({ attribute: 'wind_speed_unit' }, '8px')]
+    elements: [homeText({ attribute: 'wind_speed', precision: 0, format: ' ', size: '15px', weight: '700' }), homeLabel({ attribute: 'wind_speed_unit', size: '8px' })]
 });
 
 const HOME_CONFIG = Object.freeze({
@@ -315,7 +306,6 @@ const HOME_CONFIG = Object.freeze({
     mist_effects: true,
     mist_density: 0.7,
     night_sky_effects: false,
-    bird_effects: true,
     balloon_effects: false,
     plane_effects: false,
     background_mode: 'color',
@@ -328,6 +318,7 @@ const HOME_CONFIG = Object.freeze({
             name: 'Sun and wind',
             justify_content: 'between',
             align_items: 'start',
+            button_text_size: '12px',
             buttons: [sunTime(false), sunTime(true), windCompass()]
         },
         {
@@ -346,55 +337,43 @@ const HOME_CONFIG = Object.freeze({
             align_items: 'end',
             gap: 'clamp(14px, 6cqw, 22px)',
             button_gap: '4px',
+            button_text_size: '12px',
             buttons: [
                 {
                     name: 'Outside',
                     entity: PRESET_ENTITY_TOKEN,
-                    attribute: 'temperature',
                     style: 'split',
-                    elements: [homeTemp('clamp(40px, 17cqw, 52px)', '700'), homeLabel({ entity: PRESET_ENTITY_TOKEN, overflow: 'wrap' })]
+                    elements: [homeTemp({ attribute: 'temperature', size: 'clamp(40px, 17cqw, 52px)' }), homeLabel({ overflow: 'wrap' })]
                 },
                 room('Living'),
                 room('Office'),
                 room('Bath')
             ]
         }
-    ],
-    grid_options: {
-        rows: 'auto',
-        columns: 12
-    }
-});
-
-const SLIM_VIEW = cardSwitch('view');
-const slimTab = (name, view, elements, extra) => ({ name, entity: PRESET_ENTITY_TOKEN, tap_action: SLIM_VIEW.tab(view), ...extra, elements });
-const slimColumn = (name, view, extra, when) => ({
-    name,
-    entity: PRESET_ENTITY_TOKEN,
-    tap_action: SLIM_VIEW.tab(view),
-    style: 'vertical',
-    align: 'center',
-    inner_gap: '2px',
-    ...extra,
-    elements: [
-        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', bar_marker_icon_size: '30px', margin: '0 0 8px', bar_values: [{ attribute: 'temperature', marker_size: '36px', marker_gap: true, marker_icon: 'weather' }] },
-        text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
-        text({ attribute: 'datetime', size: '12px', weight: '500', ...when })
     ]
 });
-const slimView = (name, view, buttons) => ({
+
+const VIEW = cardSwitch('view');
+const viewButton = (name, view, extra, elements) => ({ name, entity: PRESET_ENTITY_TOKEN, tap_action: VIEW.tab(view), ...extra, elements });
+const viewColumn = (name, view, extra, when) => viewButton(name, view, extra, [
+    { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', bar_marker_icon_size: '30px', margin: '0 0 5px', bar_values: [{ attribute: 'temperature', marker_size: '36px', marker_gap: true, marker_icon: 'weather' }] },
+    text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
+    text({ attribute: 'datetime', weight: '500', ...when })
+]);
+const forecastView = (name, view, buttons) => ({
     name,
     position: 'custom',
     position_anchor: 'top-left',
     position_x: '0',
     position_y: '0',
     custom_width: '100%',
-    padding: '19px 0 20px',
+    padding: 'calc(10cqw - 18.5px) 0 calc(10cqw - 15.5px)',
     layout: 'horizontal-scroll',
     scroll_count: 5,
     row_height: '100%',
     align_items: 'stretch',
     gap: '0',
+    align: 'center',
     scroll_fade: true,
     scroll_fade_size: '48px',
     background: true,
@@ -403,30 +382,32 @@ const slimView = (name, view, buttons) => ({
     blurred_background: true,
     background_blur: 16,
     background_color: CARD_TINT(30),
-    visibility: SLIM_VIEW.shown(view),
+    button_style: 'vertical',
+    button_gap: '5px',
+    button_text_size: '12px',
+    visibility: VIEW.shown(view),
     buttons
 });
 
-const SLIM_CONFIG = Object.freeze({
-    card_height: '160px',
+const HOURLY_DAILY_CONFIG = Object.freeze({
+    card_height: '188px',
     card_padding: '0',
     content_align: 'between',
     sun_moon_x: 'dynamic',
     sun_size: 40,
     moon_size: 40,
     visibility_fade: true,
-    card_tap_action: SLIM_VIEW.tab('off'),
+    card_tap_action: VIEW.tab('off'),
     button_containers: [
         {
             name: 'Now',
             padding: '18px 18px 0',
-            visibility: SLIM_VIEW.shown('off'),
+            visibility: VIEW.shown('off'),
             buttons: [
                 {
                     name: 'Condition and temperature',
                     entity: PRESET_ENTITY_TOKEN,
                     style: 'vertical',
-                    align: 'start',
                     inner_gap: '8px',
                     elements: [
                         text({ size: '14px', weight: '500' }),
@@ -443,50 +424,50 @@ const SLIM_CONFIG = Object.freeze({
             columns: 2,
             gap: '8px',
             background: true,
-            button_text_size: '13px',
-            button_padding: '9px 12px',
+            button_style: 'split',
+            button_padding: '12px',
+            button_gap: '8px',
+            button_text_size: '16px',
+            button_icon_size: '22px',
             button_background_color: CARD_TINT(55),
-            visibility: SLIM_VIEW.shown('off'),
+            button_blurred_background: true,
+            visibility: VIEW.shown('off'),
             buttons: [
-                slimTab('Next 2 hours', 'hours', [text({ text: 'Next 2 hours', weight: '500', margin: '0 auto 0 0' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' })], { forecast: 'hourly', forecast_offset: 1 }),
-                slimTab('Today', 'days', [text({ text: 'Today', weight: '500', margin: '0 auto 0 0' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' }), text({ attribute: 'templow', format: '\u00b0', weight: '500', color: 'var(--secondary-text-color)' })], { forecast: 'daily' })
+                viewButton('Next 2 hours', 'hours', { forecast: 'hourly', forecast_offset: 1 }, [icon('weather'), text({ text: 'Next 2 hours', weight: '500' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' })]),
+                viewButton('Today', 'days', { forecast: 'daily' }, [icon('weather'), text({ text: 'Today', weight: '500' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' })])
             ]
         },
-        slimView('Hours', 'hours', Array.from({ length: 12 }, (_, i) => slimColumn(i ? `In ${i * 2 + 1} hours` : 'Next hour', 'hours', { forecast: 'hourly', forecast_offset: i * 2 }))),
-        slimView('Days', 'days', days(0, (i) => slimColumn(dayName(i), 'days', { forecast: 'daily', forecast_offset: i }, { format: '%a' })))
-    ],
-    grid_options: {
-        rows: 'auto',
-        columns: 12
-    }
+        forecastView('Hours', 'hours', Array.from({ length: 12 }, (_, i) => viewColumn(i ? `In ${i * 2 + 1} hours` : 'Next hour', 'hours', { forecast: 'hourly', forecast_offset: i * 2 }))),
+        forecastView('Days', 'days', days(0, (i) => viewColumn(dayName(i), 'days', { forecast: 'daily', forecast_offset: i }, { format: '%a' })))
+    ]
 });
 
 export const LAYOUT_PRESETS = Object.freeze([
     {
         id: 'diorama',
         name: 'Diorama',
-        description: 'Illustrated landscape',
+        description: 'A paper landscape for every weather',
         icon: 'mdi:image-filter-hdr',
         config: DIORAMA_CONFIG
     },
     {
         id: 'daily-forecast',
         name: 'Daily Forecast',
-        description: 'Weather colors, next six days',
+        description: 'Today at a glance, the days ahead below',
         icon: 'mdi:view-dashboard-variant-outline',
         config: DAILY_CONFIG
     },
     {
-        id: 'slim',
-        name: 'Slim',
-        description: 'The sky with a sliding row, tap for the hours',
+        id: 'hourly-daily',
+        name: 'Hourly & Daily',
+        description: 'The live sky, hours and days a tap away',
         icon: 'mdi:view-compact-outline',
-        config: SLIM_CONFIG
+        config: HOURLY_DAILY_CONFIG
     },
     {
         id: 'home',
         name: 'Home',
-        description: 'Inside & outside, wind',
+        description: 'A house in its weather, room by room',
         icon: 'mdi:home-outline',
         config: HOME_CONFIG
     }

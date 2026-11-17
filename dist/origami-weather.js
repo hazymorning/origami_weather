@@ -223,15 +223,13 @@ var BUILTIN_ICONS = Object.freeze({
 });
 var WeatherEffects = (() => {
   const RAIN = Object.freeze({
-    drizzle: { perContainer: 3.4, min: 10, max: 42, vy: [220, 400], width: [0.6, 1.15], lean: 0.1, alpha: [0.25, 0.55], lenBase: [5.5, 13] },
-    rain: { perContainer: 10.5, min: 26, max: 118, vy: [380, 700], width: [0.66, 1.65], lean: 0.17, alpha: [0.45, 0.75], lenBase: [7.5, 19.5] },
-    pour: { perContainer: 14, min: 34, max: 150, vy: [440, 800], width: [0.72, 1.8], lean: 0.2, alpha: [0.5, 0.82], lenBase: [8.5, 21.5] },
-    storm: { perContainer: 12, min: 30, max: 135, vy: [420, 760], width: [0.68, 1.7], lean: 0.22, alpha: [0.48, 0.78], lenBase: [8.5, 20.5] }
+    rain: { perContainer: 10.5, min: 26, max: 118, rate: 4, dia: [0.5, 3.2], lean: 0.15, alpha: 0.85 },
+    pour: { perContainer: 14, min: 34, max: 150, rate: 25, dia: [0.6, 4.5], lean: 0.18, alpha: 0.9 },
+    storm: { perContainer: 12, min: 30, max: 135, rate: 15, dia: [0.6, 4.5], lean: 0.22, alpha: 0.9 }
   });
   const SNOW = Object.freeze({ perContainer: 15, min: 40, max: 150, vy: [12, 55], dia: [1.2, 22], alpha: [0.25, 0.75] });
   const HAIL = Object.freeze({ perContainer: 4.5, min: 12, max: 45, vy: [450, 1050], dia: [1.5, 14], alpha: [0.45, 0.9] });
   const COLORS = Object.freeze({
-    rain: { light: { core: [48, 66, 98], head: [92, 116, 156] }, dark: { core: [150, 178, 224], head: [240, 246, 255] } },
     flake: { light: { core: [255, 255, 255], edge: [230, 240, 255] }, dark: { core: [255, 255, 255], edge: [208, 224, 250] } },
     hail: { light: { hi: [255, 255, 255], body: [230, 240, 255] }, dark: { hi: [244, 248, 255], body: [198, 214, 242] } }
   });
@@ -244,47 +242,7 @@ var WeatherEffects = (() => {
     if (c) return c;
     c = document.createElement("canvas");
     const ctx = c.getContext("2d");
-    if (kind === "streak") {
-      const W = 16, H = 128;
-      c.width = W;
-      c.height = H;
-      const col = schemeDark ? COLORS.rain.dark : COLORS.rain.light;
-      const mid = _mix(col.core, col.head, 0.55);
-      const g = ctx.createLinearGradient(0, 0, 0, H);
-      if (schemeDark) {
-        g.addColorStop(0, _rgba(col.core, 0));
-        g.addColorStop(0.3, _rgba(col.core, 0.16));
-        g.addColorStop(0.62, _rgba(col.core, 0.42));
-        g.addColorStop(0.86, _rgba(mid, 0.7));
-        g.addColorStop(0.965, _rgba(col.head, 1));
-        g.addColorStop(1, _rgba(col.head, 0));
-      } else {
-        g.addColorStop(0, _rgba(col.core, 0));
-        g.addColorStop(0.42, _rgba(col.core, 0.14));
-        g.addColorStop(0.7, _rgba(col.core, 0.4));
-        g.addColorStop(0.88, _rgba(mid, 0.72));
-        g.addColorStop(0.965, _rgba(col.head, 0.98));
-        g.addColorStop(1, _rgba(col.head, 0));
-      }
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-      const hx = ctx.createLinearGradient(0, 0, W, 0);
-      hx.addColorStop(0, "rgba(0,0,0,0)");
-      hx.addColorStop(0.42, "rgba(0,0,0,0.55)");
-      hx.addColorStop(0.5, "rgba(0,0,0,1)");
-      hx.addColorStop(0.58, "rgba(0,0,0,0.55)");
-      hx.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.globalCompositeOperation = "destination-in";
-      ctx.fillStyle = hx;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = "lighter";
-      const spec = ctx.createRadialGradient(W / 2, H * 0.95, 0, W / 2, H * 0.95, W * 0.5);
-      spec.addColorStop(0, _rgba(col.head, 0.9));
-      spec.addColorStop(0.6, _rgba(col.head, 0.28));
-      spec.addColorStop(1, _rgba(col.head, 0));
-      ctx.fillStyle = spec;
-      ctx.fillRect(0, H * 0.86, W, H * 0.14);
-    } else if (kind === "flake") {
+    if (kind === "flake") {
       const S = 32;
       c.width = S;
       c.height = S;
@@ -1052,6 +1010,33 @@ var WeatherEffects = (() => {
     const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
     return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s].map(_enc);
   }
+  function _rainTone(bg) {
+    const [L, a, b] = _toOklab(bg), lift = L < 0.6;
+    return _fromOklab([lift ? Math.min(0.97, L + 0.34) : Math.max(0.2, L - 0.4), a * 0.3, b * 0.3 - 0.02]);
+  }
+  function _rainSprite(inst, bg) {
+    if (inst.rainBg !== bg) {
+      inst.rainBg = bg;
+      inst.rainSprite = _streakSprite(_rainTone(bg));
+    }
+    return inst.rainSprite;
+  }
+  function _streakSprite(rgb) {
+    const key = `streak|${rgb}`;
+    let c = _sprites.get(key);
+    if (c) return c;
+    c = Object.assign(document.createElement("canvas"), { width: 8, height: 64 });
+    const x = c.getContext("2d"), g = x.createLinearGradient(0, 0, 0, 64), hx = x.createLinearGradient(0, 0, 8, 0);
+    for (const [at, v] of [[0, 0], [0.25, 0.4], [0.6, 0.78], [0.86, 1], [1, 0]]) g.addColorStop(at, _rgba(rgb, v));
+    for (const [at, v] of [[0, 0], [0.3, 0.45], [0.5, 1], [0.7, 0.45], [1, 0]]) hx.addColorStop(at, `rgba(0,0,0,${v})`);
+    x.fillStyle = g;
+    x.fillRect(0, 0, 8, 64);
+    x.globalCompositeOperation = "destination-in";
+    x.fillStyle = hx;
+    x.fillRect(0, 0, 8, 64);
+    _sprites.set(key, c);
+    return c;
+  }
   function _mistLayers(sprite, bg, ceiling) {
     const T = MIST_TONE, base = _toOklab(bg), [L, a, b] = base, i = L < T.at[1] ? 0 : 1, u = Math.max(0, Math.min(1, (L - T.at[i]) / (T.at[i + 1] - T.at[i]))), lighter = L + T.room <= T.top;
     const at = (k) => k[i] + (k[i + 1] - k[i]) * u, keep = lighter ? at(T.keep) : T.keep[2], tint = [0, 1].map((c) => at(T.tint.map((v) => v[c])));
@@ -1122,11 +1107,13 @@ var WeatherEffects = (() => {
   const _lerp = (a, b, t) => a + (b - a) * t;
   const _count = (t, area) => Math.max(t.min, Math.min(t.max, Math.round(area / 1e4 * t.perContainer)));
   function _buildRain(t, area, scale) {
-    const n = Math.max(4, Math.round(_count(t, area) * scale));
+    const n = Math.max(4, Math.round(_count(t, area) * scale)), lam = 4.1 * Math.pow(t.rate, -0.21);
     const arr = new Array(n);
     for (let i = 0; i < n; i++) {
-      const z = Math.pow(Math.random(), 1.35);
-      arr[i] = { z, x: Math.random(), y: Math.random(), vy: _lerp(t.vy[0], t.vy[1], z * z) * (0.92 + Math.random() * 0.16), sd: Math.random() };
+      const z = Math.random(), k = 0.4 + 0.6 * z, near = z > 0.95 ? 2.4 : 1;
+      const d = Math.min(t.dia[1], Math.max(t.dia[0], -Math.log(Math.random() * Math.random() * Math.random() + 1e-9) / lam));
+      const v = Math.max(1, 9.65 - 10.3 * Math.exp(-0.6 * d));
+      arr[i] = { z, x: Math.random(), y: Math.random(), sd: Math.random(), vy: v * k * 120, lean: Math.sqrt(5.5 / v), w: Math.max(1, d * 0.7 * k) * near, a: t.alpha * (0.75 + 0.25 * k) / (near > 1 ? 2 : 1) };
     }
     arr.sort((a, b) => a.z - b.z);
     return arr;
@@ -1663,18 +1650,13 @@ var WeatherEffects = (() => {
     if (inst.birds) _birdsFrame(inst, ctx, w, h, s, dt, t, env, gust);
     const fall = dt * inst.speed;
     if (inst.rain && inst.rain.length) {
-      const recipe = RAIN[inst.rainKey];
-      const sp = _sprite("streak", env.schemeDark);
-      const lean = recipe.lean * gust;
-      const stretch = Math.min(dt, 1 / 24) * inst.speed;
-      const maxLen = h * 0.22;
-      ctx.setTransform(s, 0, s * lean, s, 0, 0);
-      const dark = env.schemeDark;
-      ctx.globalCompositeOperation = dark ? "lighter" : "source-over";
-      const aCap = dark ? 0.62 : 0.95;
+      const recipe = RAIN[inst.rainKey], sp = _rainSprite(inst, env.backgroundRGB);
+      const wind2 = (inst.wind != null ? Math.min(0.4, 0.05 + 0.03 * inst.wind) : recipe.lean) * gust;
+      const shutter = Math.max(dt, 1 / 16) * inst.speed, maxLen = h * 0.24;
       for (const p of inst.rain) {
+        const lean = wind2 * p.lean;
         p.y += p.vy * fall / h;
-        p.x += p.vy * lean * 0.9 * fall / span;
+        p.x += p.vy * lean * fall / span;
         let y = p.y * (h + 40) - 20;
         if (y > h + 24) {
           p.y = Math.random() * -0.22;
@@ -1685,28 +1667,21 @@ var WeatherEffects = (() => {
         if (p.x > 1) p.x -= 1;
         else if (p.x < 0) p.x += 1;
         const x = sx + p.x * span;
-        let a;
-        if (dark) {
-          const focus = 0.3 + 0.7 * p.z;
-          const glint = 0.55 + 0.9 * (p.sd * p.sd);
-          a = _lerp(recipe.alpha[0], recipe.alpha[1], p.z) * focus * glint;
-        } else {
-          a = (0.55 + 0.45 * p.z) * (0.85 + 0.3 * p.sd);
-        }
+        let a = p.a * (0.8 + 0.4 * p.sd * p.sd);
         if (y < topF) a *= Math.max(0, y / topF);
         else if (y > botY - botF) a *= Math.max(0, (botY - y) / botF);
         if (a <= 4e-3) continue;
         a *= boost(x, y);
-        const len = Math.min(maxLen, (_lerp(recipe.lenBase[0], recipe.lenBase[1], p.z) + p.vy * stretch) * (0.72 + 0.55 * p.z));
-        const dw = _lerp(recipe.width[0], recipe.width[1], p.z) * (0.7 + 0.85 * p.z);
-        ctx.globalAlpha = Math.min(aCap, a);
-        ctx.drawImage(sp, x - lean * y - dw / 2, y - len, dw, len);
+        const len = Math.min(maxLen, p.vy * shutter + p.w * 2);
+        ctx.globalAlpha = Math.min(0.9, a);
+        ctx.setTransform(s, 0, s * lean, s, s * (x - lean * y), 0);
+        ctx.drawImage(sp, -p.w / 2, y - len, p.w, len);
       }
-      ctx.globalCompositeOperation = "source-over";
+      ctx.setTransform(s, 0, 0, s, 0, 0);
     }
     if (inst.hail && inst.hail.length) {
       const sp = _sprite("hail", env.schemeDark);
-      const tr = _sprite("streak", env.schemeDark);
+      const tr = _rainSprite(inst, env.backgroundRGB);
       const stretch = Math.min(dt, 1 / 24) * inst.speed;
       const lean = 0.07 * gust;
       ctx.setTransform(s, 0, s * lean, s, 0, 0);
@@ -2272,12 +2247,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-GVLN3CLJ.js");
+      await import("./origami-weather-editor-7LXS73QG.js");
     }
     return Object.assign(document.createElement("origami-weather-editor"), { migrate: _WeatherCard._migrateConfig });
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-QCFS7KUO.js");
+    const { buildStubConfig } = await import("./layout-presets-GFOEKNQK.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {

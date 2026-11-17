@@ -26,21 +26,6 @@ var DIORAMA_PAPER = [
   ["clear-night", "#e0e3ed", "#161924"],
   ["exceptional", "#eadad3", "#271a15"]
 ];
-var DIORAMA_SWITCH = cardSwitch("forecast");
-var dioramaDay = (offset) => ({
-  name: dayName(offset),
-  entity: PRESET_ENTITY_TOKEN,
-  forecast: "daily",
-  forecast_offset: offset,
-  tap_action: DIORAMA_SWITCH.tap,
-  elements: [
-    text({ attribute: "datetime", format: "%a", weight: "500" }),
-    icon("weather", { margin: "5px 0 4px" }),
-    text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "700" }),
-    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500" }),
-    { type: "bar", bar_shape: "curve", bar_height: "2px", bar_color: "color-mix(in srgb, currentColor 22%, transparent)", margin: "-75px 0 0", bar_values: [{ attribute: "temperature", marker_size: "28px", marker_gap: true }] }
-  ]
-});
 var DIORAMA_CONFIG = Object.freeze({
   card_height: "160px",
   card_padding: "0",
@@ -54,19 +39,16 @@ var DIORAMA_CONFIG = Object.freeze({
   weather_image_type: "webp",
   weather_image_front: true,
   background_thresholds: thresholds(DIORAMA_PAPER),
-  visibility_fade: true,
-  card_tap_action: DIORAMA_SWITCH.tap,
+  card_tap_action: { action: "more-info" },
   css: "#weather-bg > img { object-position: right bottom; }",
   button_containers: [
     {
       name: "Now",
       padding: "var(--ha-space-4, 16px) var(--ha-space-4, 16px) var(--ha-space-4, 16px) calc(var(--ha-space-4, 16px) + 4px)",
-      visibility: DIORAMA_SWITCH.shown("off"),
       buttons: [
         {
           name: "Temperature and condition",
           entity: PRESET_ENTITY_TOKEN,
-          tap_action: DIORAMA_SWITCH.tap,
           style: "vertical",
           inner_gap: "6px",
           elements: [
@@ -75,35 +57,6 @@ var DIORAMA_CONFIG = Object.freeze({
           ]
         }
       ]
-    },
-    {
-      name: "Forecast",
-      position: "custom",
-      position_anchor: "top-left",
-      position_x: "0",
-      position_y: "0",
-      custom_width: "100%",
-      padding: "34px max(0px, calc(58.5px - 12.5cqw))",
-      layout: "horizontal-scroll",
-      scroll_count: 5,
-      row_height: "100%",
-      align_items: "stretch",
-      gap: "0",
-      align: "center",
-      scroll_fade: true,
-      scroll_fade_size: "48px",
-      background: true,
-      grouped: true,
-      border: "none",
-      blurred_background: true,
-      background_blur: 16,
-      background_color: CARD_TINT(30),
-      button_style: "vertical",
-      button_gap: "5px",
-      button_text_size: "12px",
-      button_icon_size: "28px",
-      visibility: DIORAMA_SWITCH.shown("on"),
-      buttons: days(0, dioramaDay)
     }
   ],
   grid_options: { columns: "full" }
@@ -354,10 +307,11 @@ var skyDay = (offset) => ({
   forecast_offset: offset,
   tap_action: SKY_SWITCH.tap,
   elements: [
-    { type: "bar", bar_shape: "curve", bar_height: "2px", bar_color: "currentColor", bar_marker_icon_size: "30px", margin: "0 0 5px", bar_values: [{ attribute: "temperature", marker_size: "36px", marker_gap: true, marker_icon: "weather" }] },
-    text({ attribute: "datetime", format: "%a", weight: "500", margin: "-0.1em -0.06em 2.5px" }),
-    text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "700", color: "currentColor" }),
-    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500", margin: "-3px -0.06em -0.1em" })
+    text({ attribute: "datetime", format: "%a", weight: "500" }),
+    icon("weather", { margin: "5px 0 4px" }),
+    text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "700" }),
+    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500" }),
+    { type: "bar", bar_shape: "curve", bar_height: "2px", bar_color: "color-mix(in srgb, currentColor 22%, transparent)", margin: "-75px 0 0", bar_values: [{ attribute: "temperature", marker_size: "28px", marker_gap: true }] }
   ]
 });
 var SKY_CONFIG = Object.freeze({
@@ -395,7 +349,7 @@ var SKY_CONFIG = Object.freeze({
       background: true,
       button_padding: "10px 12px",
       button_gap: "8px",
-      button_text_size: "16px",
+      button_text_size: "14px",
       button_icon_size: "20px",
       button_background_color: CARD_TINT(45),
       button_blurred_background: true,
@@ -422,7 +376,7 @@ var SKY_CONFIG = Object.freeze({
       position_x: "0",
       position_y: "0",
       custom_width: "100%",
-      padding: "calc(10cqw - 18.5px) 0 calc(10cqw - 15.5px)",
+      padding: "38px max(0px, calc(63.5px - 12.5cqw))",
       layout: "horizontal-scroll",
       scroll_count: 5,
       row_height: "100%",
@@ -440,8 +394,153 @@ var SKY_CONFIG = Object.freeze({
       button_style: "vertical",
       button_gap: "5px",
       button_text_size: "12px",
+      button_icon_size: "28px",
       visibility: SKY_SWITCH.shown("on"),
       buttons: days(0, skyDay)
+    }
+  ]
+});
+var PRIMARY = "var(--primary-text-color)";
+var SECONDARY = "var(--secondary-text-color)";
+var PANEL_BG = "var(--ha-card-background, var(--card-background-color, #fff))";
+var PANEL_TINTS = [
+  ["sunny", "255 184 77", 20, 10],
+  ["clear-night", "108 128 204", 16, 12],
+  ["exceptional", "255 140 90", 20, 10],
+  ["partlycloudy", "120 172 224", 20, 10],
+  ["cloudy", "146 158 174", 20, 10],
+  ["fog", "170 176 182", 24, 10],
+  ["windy", "108 180 176", 20, 10],
+  ["windy-variant", "116 168 190", 20, 10],
+  ["rainy", "96 140 196", 22, 12],
+  ["pouring", "76 112 170", 26, 14],
+  ["lightning", "132 108 180", 22, 12],
+  ["lightning-rainy", "116 98 168", 26, 14],
+  ["hail", "110 160 180", 22, 12],
+  ["snowy", "176 200 228", 26, 10],
+  ["snowy-rainy", "150 176 204", 24, 10]
+];
+var panelTint = (rgb, percent) => `color-mix(in srgb, rgb(${rgb}) ${percent}%, ${PANEL_BG})`;
+var panelTile = (name, iconName, label, value, top) => ({
+  name,
+  custom_width: "calc(50% - 4px)",
+  margin: `${top}px 0 0`,
+  padding: "12px",
+  gap: "8px",
+  grouped: true,
+  background: true,
+  blurred_background: true,
+  background_color: `color-mix(in srgb, ${PRIMARY} 5%, transparent)`,
+  shadow: false,
+  buttons: [
+    { name: "Label", entity: PRESET_ENTITY_TOKEN, width: "100%", inner_gap: "6px", elements: [icon(iconName, { icon_size: "18px", color: SECONDARY }), text({ text: label, size: "12px", weight: "500", color: SECONDARY })] },
+    { name: "Value", entity: PRESET_ENTITY_TOKEN, ...value.forecast ? { forecast: value.forecast } : {}, elements: [text({ size: "17px", weight: "600", color: PRIMARY, ...value.text })] }
+  ]
+});
+var panelHour = (offset) => ({
+  name: offset === 0 ? "Next hour" : `In ${offset + 1} hours`,
+  entity: PRESET_ENTITY_TOKEN,
+  forecast: "hourly",
+  forecast_offset: offset,
+  elements: [
+    text({ attribute: "datetime", weight: "500", color: SECONDARY }),
+    icon("weather", { color: PRIMARY }),
+    { type: "bar", bar_shape: "curve", bar_height: "2px", bar_color: "color-mix(in srgb, currentColor 22%, transparent)", margin: "-44px 0 -8px", bar_values: [{ attribute: "temperature", marker_size: "28px", marker_gap: true }] },
+    text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "600", color: PRIMARY })
+  ]
+});
+var PANEL_CONFIG = Object.freeze({
+  color_mode: "theme",
+  card_height: "content",
+  card_padding: "20px",
+  content_direction: "row",
+  content_align: "between",
+  sun_enabled: false,
+  moon_enabled: false,
+  cloud_effects: false,
+  mist_effects: true,
+  mist_density: 0.5,
+  night_sky_effects: false,
+  bird_effects: false,
+  balloon_effects: false,
+  plane_effects: false,
+  background_mode: "color",
+  background_color: PANEL_BG,
+  background_thresholds: PANEL_TINTS.map(([value, rgb, light, dark]) => ({ value, color: panelTint(rgb, light), color_dark: panelTint(rgb, dark) })),
+  card_tap_action: { action: "more-info" },
+  button_containers: [
+    {
+      name: "Now",
+      custom_width: "calc(100% - 64px)",
+      gap: "6px",
+      buttons: [
+        {
+          name: "Temperature and condition",
+          entity: PRESET_ENTITY_TOKEN,
+          width: "100%",
+          inner_gap: "8px",
+          elements: [
+            text({ attribute: "temperature", precision: 0, format: "\xB0", size: "24px", weight: "700", color: PRIMARY }),
+            text({ text: "\xB7", size: "24px", weight: "600", color: SECONDARY }),
+            text({ size: "24px", weight: "600", color: PRIMARY, overflow: "wrap" })
+          ]
+        },
+        {
+          name: "High and low",
+          entity: PRESET_ENTITY_TOKEN,
+          forecast: "daily",
+          inner_gap: "2px",
+          icon_size: "16px",
+          elements: [
+            icon("mdi:arrow-up", { color: SECONDARY }),
+            text({ attribute: "temperature", format: "\xB0", weight: "500", color: PRIMARY, margin: "0 12px 0 0" }),
+            icon("mdi:arrow-down", { color: SECONDARY }),
+            text({ attribute: "templow", format: "\xB0", weight: "500", color: PRIMARY })
+          ]
+        }
+      ]
+    },
+    {
+      name: "Weather and UV index",
+      custom_width: "56px",
+      margin: "1px 0 0",
+      justify_content: "end",
+      buttons: [
+        {
+          name: "Weather and UV index",
+          entity: PRESET_ENTITY_TOKEN,
+          attribute: "uv_index",
+          type: "ring",
+          style: "vertical",
+          ring_min: 0,
+          ring_max: 11,
+          ring_width: 2,
+          ring_color: PRIMARY,
+          width: "40px",
+          padding: "0",
+          elements: [icon("weather", { icon_size: "26px", color: PRIMARY })]
+        }
+      ]
+    },
+    panelTile("Wind", "mdi:weather-windy", "Wind", { text: { attribute: "wind_speed", precision: 0 } }, 18),
+    panelTile("Humidity", "mdi:water-percent", "Humidity", { text: { attribute: "humidity" } }, 18),
+    panelTile("UV index", "mdi:sun-wireless-outline", "UV index", { text: { attribute: "uv_index" } }, 8),
+    panelTile("Rain", "mdi:umbrella-outline", "Rain", { forecast: "daily", text: { attribute: "precipitation_probability", format: "%" } }, 8),
+    panelTile("Feels like", "mdi:thermometer", "Feels like", { text: { attribute: "apparent_temperature", precision: 0, format: "\xB0" } }, 8),
+    panelTile("Pressure", "mdi:gauge", "Pressure", { text: { attribute: "pressure", precision: 0 } }, 8),
+    {
+      name: "Forecast",
+      custom_width: "100%",
+      layout: "horizontal-scroll",
+      scroll_count: 5,
+      margin: "18px 0 0",
+      padding: "4px 0",
+      button_style: "vertical",
+      button_gap: "12px",
+      button_text_size: "12px",
+      button_icon_size: "24px",
+      align: "center",
+      buttons: Array.from({ length: 24 }, (_, i) => panelHour(i))
     }
   ]
 });
@@ -449,7 +548,7 @@ var LAYOUT_PRESETS = Object.freeze([
   {
     id: "diorama",
     name: "Diorama",
-    description: "A landscape that changes with the weather, tap shows a forecast",
+    description: "A landscape that changes with the weather and the time of day",
     icon: "mdi:image-filter-hdr",
     config: DIORAMA_CONFIG
   },
@@ -473,6 +572,13 @@ var LAYOUT_PRESETS = Object.freeze([
     description: "A house with the weather outside, room temperatures and wind",
     icon: "mdi:home-outline",
     config: HOME_CONFIG
+  },
+  {
+    id: "panel",
+    name: "Panel",
+    description: "Current weather with wind, rain and UV in tiles, and the next hours",
+    icon: "mdi:view-grid-outline",
+    config: PANEL_CONFIG
   }
 ]);
 var deepClone = (value) => {

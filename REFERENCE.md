@@ -128,7 +128,7 @@ tap_action:
   state: hours
 ```
 
-Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. Remembered switches are kept by name, so cards that use the same name share them. The Diorama layout is built like that: a tap shows the next days over the whole card.
+Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. Remembered switches are kept by name, so cards that use the same name share them. The Sky layout is built like that: a tap shows the next days over the whole card.
 
 **Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is. Only forecast entries past the last one the service sends are left out, see [Forecasts](#forecasts).
 
@@ -288,11 +288,11 @@ A ring doesn't have to be a full circle. `ring_start` rotates where it begins, i
 
 `ring_needle: true` turns the markers into needles that point from the center, like a compass or a clock hand. A value can also be a fixed number with `value` instead of reading an entity, which is handy for a mark that never moves. The compass in the Home layout is built like that.
 
-Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset. The Arc layout is built exactly like that.
+Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset.
 
 A gauge on the sun entity without an attribute shows where the sun is in its day, from 0 at midnight over 50 at noon to 100 at the next midnight.
 
-`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun unless `bar_marker` is `false`, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Classic and Diorama layouts. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the days of the Sky layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
+`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun unless `bar_marker` is `false`, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Classic and Sky layouts. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the days of the Sky layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
 
 ```yaml
 buttons:
@@ -614,7 +614,7 @@ These run on top of every background, including `images` and `none`.
 | `plane_effects` | `boolean` | `true` | Planes crossing the sky, trailing contrails, with lights at night. Fewer of them in bad weather, none in thunderstorms, hail, fog or pouring rain. |
 | `plane_density` | `number` | `1` | How many planes, between `0.25` and `4`. |
 
-The clouds and the mist drift with the wind speed of the weather entity. They move slowly on a calm day and faster in a storm, but never stand quite still. Without a wind speed they drift as fast as the weather suggests.
+The clouds and the mist drift with the wind speed of the weather entity. They move slowly on a calm day and faster in a storm, but never stand quite still. The rain follows the same wind: it falls almost straight down on a calm day and slants more the stronger the wind. Without a wind speed, everything moves as fast as the weather suggests.
 
 The sun and moon sit in this group too. Their options are under [Sun and moon](#sun-and-moon). Containers can sit between these layers, as [Containers](#containers) explains.
 

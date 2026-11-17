@@ -156,14 +156,18 @@ class WeatherCardEditor extends LitElement {
                 font-size: var(--origami-e-f-header); font-weight: 500; color: var(--primary-text-color);
                 & ha-icon { --mdc-icon-size: 20px; color: var(--secondary-text-color); }}
             .preset-grid {
-                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--origami-e-s2);}
+                display: flex; flex-direction: column; gap: var(--origami-e-s2);}
             .preset-card {
-                display: flex; flex-direction: column; align-items: flex-start; gap: var(--origami-e-s1);
-                padding: var(--origami-e-s3) var(--origami-e-s4); border: 1px solid transparent;
+                display: flex; align-items: center; gap: var(--origami-e-s3); width: 100%; box-sizing: border-box;
+                padding: var(--origami-e-s3) var(--origami-e-s4) var(--origami-e-s3) var(--origami-e-s3); border: 1px solid transparent;
                 background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.07); border-radius: var(--origami-e-r-box);
-                cursor: pointer; text-align: left; transition: border-color var(--origami-e-t), background var(--origami-e-t);
+                cursor: pointer; text-align: left; font: inherit; transition: border-color var(--origami-e-t), background var(--origami-e-t);
                 &:hover { border-color: var(--primary-color); background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.1); }
-                & ha-icon { --mdc-icon-size: 24px; color: var(--primary-color); }
+                & .preset-icon {
+                    flex: none; display: grid; place-items: center; width: 40px; height: 40px;
+                    border-radius: var(--origami-e-r-ctrl); background: rgba(var(--rgb-primary-color, 0, 120, 212), 0.12);
+                    & ha-icon { --mdc-icon-size: 22px; color: var(--primary-color); }}
+                & .preset-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
                 & .preset-name { font-size: var(--origami-e-f-body); font-weight: 500; color: var(--primary-text-color); }
                 & .preset-desc { font-size: var(--origami-e-f-meta); color: var(--secondary-text-color); line-height: 1.35; }}
             /* Shared backgrounds */
@@ -688,9 +692,8 @@ class WeatherCardEditor extends LitElement {
             <div class="preset-grid">
                 ${LAYOUT_PRESETS.map((preset) => html`
                     <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>
-                        <ha-icon icon=${preset.icon}></ha-icon>
-                        <span class="preset-name">${preset.name}</span>
-                        <span class="preset-desc">${preset.description}</span>
+                        <span class="preset-icon"><ha-icon icon=${preset.icon}></ha-icon></span>
+                        <span class="preset-text"><span class="preset-name">${preset.name}</span><span class="preset-desc">${preset.description}</span></span>
                     </button>`)}
             </div>
             <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span><b>None of the layouts fits?</b> The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts use the same containers, buttons and elements, so single parts can also be copied from one layout to another.</span></div></div>`;}

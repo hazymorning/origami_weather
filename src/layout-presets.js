@@ -2,6 +2,7 @@ export const PRESET_ENTITY_TOKEN = '__WEATHER__';
 
 const text = (extra) => ({ type: 'text', ...extra });
 const icon = (name, extra) => ({ type: 'icon', icon: name, ...extra });
+const CARD_TINT = (percent) => `color-mix(in srgb, var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color, #fff))) ${percent}%, transparent)`;
 const thresholds = (rows) => rows.map(([value, color, color_dark]) => ({ value, color, color_dark }));
 
 const DIORAMA_PAPER = [
@@ -31,8 +32,7 @@ const dioramaDay = (offset) => ({
     forecast_offset: offset,
     tap_action: DIORAMA_SWITCH,
     background: true,
-    background_color: 'color-mix(in srgb, var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color, #fff))) 72%, transparent)',
-    blurred_background: true,
+    background_color: CARD_TINT(86),
     style: 'vertical',
     align: 'center',
     padding: '24px 0',
@@ -70,10 +70,11 @@ const DIORAMA_CONFIG = Object.freeze({
             position_y: '0',
             custom_width: '100%',
             layout: 'horizontal-scroll',
-            scroll_count: 4,
+            scroll_count: 5,
             row_height: '128px',
             gap: '8px',
             padding: '0',
+            scroll_fade: true,
             visibility: dioramaShown('on'),
             buttons: [0, 1, 2, 3, 4, 5, 6].map(dioramaDay)
         },
@@ -138,7 +139,7 @@ const dailyColumn = (offset) => ({
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: WHITE }),
         text({ attribute: 'templow', format: '\u00b0', size: '14px', weight: '500', color: WHITE_60 }),
         { type: 'bar', bar_height: '4px', bar_width: '26px', bar_color: '#9fd2ff', margin: '3px 0 0', bar_values: [{ attribute: 'precipitation_probability' }] },
-        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'rgba(255, 255, 255, 0.16)', bar_marker: false, margin: '-84px 0 0', bar_values: [{ attribute: 'temperature' }] }
+        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'rgba(255, 255, 255, 0.22)', margin: '-84px 0 0', bar_values: [{ attribute: 'temperature', marker_size: '28px', marker_gap: true }] }
     ]
 });
 
@@ -504,39 +505,71 @@ const HOME_CONFIG = Object.freeze({
     }
 });
 
-const skyHour = (offset) => ({
+const SLIM_SWITCH = { action: 'toggle', entity: 'origami.hours' };
+const slimShown = (state) => [{ condition: 'state', entity: 'origami.hours', state }];
+const slimChip = (name, elements, extra) => ({ name, entity: PRESET_ENTITY_TOKEN, tap_action: SLIM_SWITCH, ...extra, elements });
+const slimSun = (rising) => slimChip(rising ? 'Sunrise' : 'Sunset', [
+    icon(rising ? 'mdi:weather-sunset-up' : 'mdi:weather-sunset-down'),
+    text({ attribute: rising ? 'next_rising' : 'next_setting', weight: '600' })
+], { entity: 'sun.sun', visibility: [{ condition: 'state', entity: 'sun.sun', state: rising ? 'below_horizon' : 'above_horizon' }] });
+const slimHour = (offset) => ({
     name: offset ? `In ${offset + 1} hours` : 'Next hour',
     entity: PRESET_ENTITY_TOKEN,
     forecast: 'hourly',
     forecast_offset: offset,
+    tap_action: SLIM_SWITCH,
     background: false,
     padding: '0',
     style: 'vertical',
     align: 'center',
     inner_gap: '2px',
     elements: [
-        text({ attribute: 'datetime', size: '12px', weight: '500' }),
-        text({ attribute: 'temperature', precision: 0, format: '\u00b0', size: '14px', weight: '700', color: 'currentColor' }),
-        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', margin: '2px 0 0', bar_values: [{ attribute: 'temperature', marker_size: '24px', marker_gap: true, marker_icon: 'weather', marker_icon_size: '20px' }] }
+        text({ attribute: 'temperature', precision: 0, format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
+        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', margin: '2px 0', bar_values: [{ attribute: 'temperature', marker_size: '32px', marker_gap: true, marker_icon: 'weather', marker_icon_size: '28px' }] },
+        text({ attribute: 'datetime', size: '12px', weight: '500' })
     ]
 });
 
-const SKY_CONFIG = Object.freeze({
-    card_height: '220px',
-    card_padding: '18px',
+const SLIM_CONFIG = Object.freeze({
+    card_height: '144px',
+    card_padding: '0',
     content_align: 'between',
     sun_moon_x: 'dynamic',
-    sun_size: 44,
-    moon_size: 44,
-    card_tap_action: { action: 'more-info' },
+    sun_size: 40,
+    moon_size: 40,
+    visibility_fade: true,
+    card_tap_action: SLIM_SWITCH,
     button_containers: [
         {
+            name: 'Hours',
+            position: 'custom',
+            position_anchor: 'top-left',
+            position_x: '0',
+            position_y: '0',
+            custom_width: '100%',
+            padding: '12px 8px',
+            layout: 'horizontal-scroll',
+            scroll_count: 5,
+            row_height: '144px',
+            align_items: 'stretch',
+            gap: '0',
+            background: true,
+            grouped: true,
+            blurred_background: true,
+            background_blur: 16,
+            background_color: CARD_TINT(30),
+            visibility: slimShown('on'),
+            buttons: Array.from({ length: 12 }, (_, i) => slimHour(i * 2))
+        },
+        {
             name: 'Now',
-            padding: '0',
+            padding: '14px 18px 0',
+            visibility: slimShown('off'),
             buttons: [
                 {
                     name: 'Temperature and condition',
                     entity: PRESET_ENTITY_TOKEN,
+                    tap_action: SLIM_SWITCH,
                     background: false,
                     padding: '0',
                     style: 'vertical',
@@ -550,15 +583,28 @@ const SKY_CONFIG = Object.freeze({
             ]
         },
         {
-            name: 'Hours',
+            name: 'Details',
             custom_width: '100%',
+            padding: '0 18px 14px',
+            background: true,
             layout: 'horizontal-scroll',
-            scroll_count: 5,
-            row_height: '104px',
-            align_items: 'stretch',
-            padding: '0',
-            gap: '0',
-            buttons: Array.from({ length: 12 }, (_, i) => skyHour(i * 2))
+            scroll_fade: true,
+            gap: '6px',
+            button_gap: '5px',
+            button_icon_size: '15px',
+            button_text_size: '13px',
+            button_padding: '7px 11px 7px 9px',
+            button_background_color: CARD_TINT(55),
+            visibility: slimShown('off'),
+            buttons: [
+                slimChip('High and low', [icon('mdi:arrow-up', { margin: '0 -2px 0 0' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600', margin: '0 4px 0 0' }), icon('mdi:arrow-down', { margin: '0 -2px 0 0' }), text({ attribute: 'templow', format: '\u00b0', weight: '600' })], { forecast: 'daily' }),
+                slimChip('Rain', [icon('mdi:umbrella-outline'), text({ attribute: 'precipitation_probability', format: '%', weight: '600' })], { forecast: 'daily' }),
+                slimChip('Wind', [icon('mdi:weather-windy'), text({ attribute: 'wind_speed', precision: 0, weight: '600' })]),
+                slimSun(false),
+                slimSun(true),
+                slimChip('Humidity', [icon('mdi:water-percent'), text({ attribute: 'humidity', weight: '600' })]),
+                slimChip('UV index', [icon('mdi:sun-wireless-outline'), text({ text: 'UV', weight: '500' }), text({ attribute: 'uv_index', weight: '600' })], { forecast: 'daily' })
+            ]
         }
     ],
     grid_options: {
@@ -590,11 +636,11 @@ export const LAYOUT_PRESETS = Object.freeze([
         config: PANEL_CONFIG
     },
     {
-        id: 'sky',
-        name: 'Sky',
-        description: 'Live sky, tap for details',
-        icon: 'mdi:weather-partly-cloudy',
-        config: SKY_CONFIG
+        id: 'slim',
+        name: 'Slim',
+        description: 'The sky with a sliding row, tap for the hours',
+        icon: 'mdi:view-compact-outline',
+        config: SLIM_CONFIG
     },
     {
         id: 'home',

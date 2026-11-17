@@ -1250,7 +1250,7 @@ class WeatherCardEditor extends LitElement {
         const elTypeIcon = (k) => k === "icon" ? "mdi:image-outline" : k === "bar" ? "mdi:chart-bar" : "mdi:text-short";
         const elTitle = (el) => {
             if (el.type === "icon") return (el.icon || "").toString().trim().toLowerCase() === "weather" ? "Weather icon" : (el.attribute || el.icon || "Icon");
-            if (el.type === "bar") { const n = Array.isArray(el.bar_values) ? el.bar_values.length : 0; return n > 1 ? `Bar (${n} values)` : "Bar"; }
+            if (el.type === "bar") { const n = Array.isArray(el.bar_values) ? el.bar_values.length : 0, t = { curve: "Curve", sun: "Sun path" }[el.bar_shape] || "Bar"; return n > 1 ? `${t} (${n} values)` : t; }
             return this._textTitle(button, el);
         };
         const typePicker = html`<div class="button-type-picker">

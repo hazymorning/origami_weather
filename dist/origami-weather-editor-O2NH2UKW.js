@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-57O3WUXN.js";
+} from "./chunk-HVDLI7EC.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -2276,8 +2276,8 @@ var WeatherCardEditor = class extends i4 {
     const elTitle = (el) => {
       if (el.type === "icon") return (el.icon || "").toString().trim().toLowerCase() === "weather" ? "Weather icon" : el.attribute || el.icon || "Icon";
       if (el.type === "bar") {
-        const n4 = Array.isArray(el.bar_values) ? el.bar_values.length : 0;
-        return n4 > 1 ? `Bar (${n4} values)` : "Bar";
+        const n4 = Array.isArray(el.bar_values) ? el.bar_values.length : 0, t3 = { curve: "Curve", sun: "Sun path" }[el.bar_shape] || "Bar";
+        return n4 > 1 ? `${t3} (${n4} values)` : t3;
       }
       return this._textTitle(button, el);
     };

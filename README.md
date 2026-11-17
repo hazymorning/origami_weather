@@ -62,11 +62,11 @@ A little paper landscape for each kind of weather, made for the [Origami](https:
 
 The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. Below them are the next six days, with the chance of rain under each day and a faint curve of the temperatures behind them.
 
-### Sky
+### Slim
 
-<img width="800" alt="The Sky layout, the live sky with the temperature and the next hours as a curve with the weather on it, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
+<img width="800" alt="The Slim layout, the live sky with the temperature and a sliding row of small chips, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The temperature and the current weather sit in the corner, and below them the next hours as a curve, with the time, the temperature and the weather on it.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes, on a card a little lower than Diorama. The temperature and the current weather sit in the corner, with a sliding row below for today's high and low, the chance of rain, the wind, the next sunset or sunrise, the humidity and the UV index. A tap lays a soft blur over the card and shows the next hours as a curve, with the weather of each hour on it.
 
 ### Home
 
@@ -174,7 +174,7 @@ The current weather and the temperature on a soft color that follows the weather
 
 <br>
 
-Centered, Slim, Comparison and Arc are no longer in the layout picker, but they still work. Paste one into the code editor and change each `weather.home` in it to the home's weather entity.
+Centered, Comparison and Arc are no longer in the layout picker, but they still work. Paste one into the code editor and change each `weather.home` in it to the home's weather entity.
 
 <details>
 <summary><b>Centered</b></summary>
@@ -276,127 +276,6 @@ button_containers:
       weight: '700'
       attribute: wind_speed
       precision: 0
-grid_options:
-  rows: auto
-  columns: 12
-```
-
-</details>
-
-<details>
-<summary><b>Slim</b></summary>
-
-<br>
-
-<img width="800" alt="The Slim layout: the temperature with a row of small chips, over clouds and birds by day and over the moon and stars at night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
-
-The current weather with a row of small chips for today's high, the wind, the next sunset or sunrise, the humidity and the UV index.
-
-```yaml
-type: custom:origami-weather
-weather_entity: weather.home
-sun_moon_x: dynamic
-card_height: content
-card_padding: 16px
-content_align: between
-content_align_items: start
-button_containers:
-- buttons:
-  - entity: weather.home
-    elements:
-    - type: icon
-      icon: weather
-      icon_background: false
-      margin: 0 2px 0 0
-    - type: text
-      precision: 0
-      entity: weather.home
-      attribute: temperature
-      weight: '800'
-      fancy_unit: true
-    style: inline
-  padding: 4px
-  button_text_size: 26px
-  margin: 0 0 32px 0
-  button_gap: 6px
-  button_style: vertical
-- background: true
-  gap: 8px
-  button_gap: 6px
-  button_icon_size: 14px
-  button_padding: 8px 12px 8px 10px
-  align: center
-  button_text_size: 12px
-  background_color: rgba(255,255,255,0.1)
-  blurred_background: true
-  buttons:
-  - entity: weather.home
-    elements:
-    - type: text
-      text: Today
-      weight: '500'
-    - type: icon
-      icon: weather
-    - type: text
-      format: °
-      weight: '700'
-      attribute: temperature
-    style: inline
-    forecast: daily
-  - entity: weather.home
-    elements:
-    - type: icon
-      icon: mdi:weather-windy
-    - type: text
-      attribute: wind_speed
-      format: ' km/h'
-      weight: '700'
-    style: inline
-  - entity: sun.sun
-    elements:
-    - type: icon
-      icon: mdi:weather-sunset-up
-    - type: text
-      attribute: next_rising
-      weight: '700'
-    visibility:
-    - condition: state
-      entity: sun.sun
-      state: below_horizon
-  - entity: sun.sun
-    elements:
-    - type: icon
-      icon: mdi:weather-sunset-down
-    - type: text
-      attribute: next_setting
-      weight: '700'
-    visibility:
-    - condition: state
-      entity: sun.sun
-      state: above_horizon
-  - entity: weather.home
-    elements:
-    - type: icon
-      icon: mdi:water-percent
-    - type: text
-      weight: '700'
-      attribute: humidity
-      format: ' %'
-    style: inline
-  - entity: weather.home
-    elements:
-    - type: icon
-      icon: mdi:sun-wireless-outline
-    - type: text
-      text: UV-Index
-      weight: '500'
-    - type: text
-      attribute: uv_index
-      weight: '700'
-    forecast: daily
-  button_background_color: rgba(189,189,189,0.2)
-  layout: horizontal-scroll
-  scroll_fade: true
 grid_options:
   rows: auto
   columns: 12
@@ -806,7 +685,7 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Cards keep their settings when the card is updated. A layout only changes when it's picked again in the layout picker.
 
-Slim, Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Slim is in the layout picker in a new form, and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
 

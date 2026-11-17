@@ -3260,7 +3260,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (queue.length) requestAnimationFrame(() => requestAnimationFrame(() => { for (const [el, t] of queue) el.style.setProperty('--origami-gauge-pos', t); }));
     }
     _drawCurves(row) {
-        const bars = [...row.querySelectorAll('.shape-curve')].filter(b => b.offsetWidth), box = row.getBoundingClientRect(), lines = [], holes = [];
+        const all = [...row.querySelectorAll('.shape-curve')], bars = all.filter(b => b.offsetWidth), box = row.getBoundingClientRect(), lines = [], holes = [];
+        if (all.length && !bars.length) return;
         const vs = bars.flatMap(b => [...b.children].map(m => +m.dataset.v)), lo = +(bars[0]?.dataset.min ?? Math.min(...vs)), hi = +(bars[0]?.dataset.max ?? Math.max(...vs));
         for (const b of bars) {
             const r = b.getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue('--_in')), x = r.left + r.width / 2 - box.left + row.scrollLeft;
@@ -3282,6 +3283,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         row.classList.toggle('has-curve', !!html);
         if (!html) return svg?.remove();
         if (!svg) { row.insertAdjacentHTML('afterbegin', '<svg class="gauge-curve"></svg>'); svg = row.firstElementChild; }
+        svg.setAttribute('width', 0);
+        svg.setAttribute('height', 0);
         svg.setAttribute('width', row.scrollWidth);
         svg.setAttribute('height', row.scrollHeight);
         svg.style.setProperty('--_holes', holes.join(', ') || 'none');

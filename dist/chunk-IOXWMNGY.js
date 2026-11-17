@@ -35,7 +35,7 @@ var dioramaDay = (offset) => ({
   tap_action: DIORAMA_SWITCH.tap,
   elements: [
     text({ attribute: "datetime", format: "%a", weight: "500" }),
-    icon("weather", { margin: "1px 0 0" }),
+    icon("weather", { margin: "5px 0 0" }),
     text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "700" }),
     text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500" })
   ]
@@ -342,9 +342,9 @@ var skyDay = (offset) => ({
   tap_action: SKY_SWITCH.tap,
   elements: [
     { type: "bar", bar_shape: "curve", bar_height: "2px", bar_color: "currentColor", bar_marker_icon_size: "30px", margin: "0 0 5px", bar_values: [{ attribute: "temperature", marker_size: "36px", marker_gap: true, marker_icon: "weather" }] },
+    text({ attribute: "datetime", format: "%a", weight: "500", margin: "-0.1em -0.06em 2.5px" }),
     text({ attribute: "temperature", format: "\xB0", size: "15px", weight: "700", color: "currentColor" }),
-    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500" }),
-    text({ attribute: "datetime", format: "%a", weight: "500" })
+    text({ attribute: "templow", format: "\xB0", size: "13px", weight: "500", margin: "-6px -0.06em -0.1em" })
   ]
 });
 var SKY_CONFIG = Object.freeze({
@@ -385,6 +385,7 @@ var SKY_CONFIG = Object.freeze({
       button_icon_size: "20px",
       button_background_color: CARD_TINT(45),
       button_blurred_background: true,
+      button_shadow: false,
       visibility: SKY_SWITCH.shown("off"),
       buttons: [
         {

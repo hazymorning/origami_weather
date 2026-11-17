@@ -12,7 +12,7 @@
 
 Origami Weather is a weather card for Home Assistant with an animated sky behind its content. Every layout is built from single parts that can be combined freely, so a classic forecast is just as possible as something completely different. The built-in layouts are ready to use and a good starting point for new ones.
 
-[Get started](#get-started) · [Layouts](#layouts) · [More](#more)
+[Get started](#get-started) · [Layouts](#layouts) · [Reference](REFERENCE.md) · [More](#more)
 
 ## Get started
 
@@ -48,118 +48,33 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 ## Layouts
 
-<sub>The screenshots use the Montserrat font. The [Origami](https://github.com/hazymorning/origami#get-started) repository explains how to add it to Home Assistant.</sub>
-
 ### Diorama
 
-<img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
+<img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, on a partly cloudy day with the sun and on a clear night with the moon and stars" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
 A small paper landscape for every kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in the top left corner. The sun and the moon move across the sky and set behind the hills. A tap on the card shows the next days on frosted tiles.
 
 ### Daily Forecast
 
-<img width="800" alt="The Daily Forecast layout, the temperature on a color that changes with the weather, with the next days and a faint temperature line below, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daily-forecast.webp">
+<img width="800" alt="The Daily Forecast layout, the temperature on a color that changes with the weather, with the next days and a faint temperature line below, on a snowy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daily-forecast.webp">
 
 A classic forecast on a background color that changes with the weather. The top shows the day and the date, the temperature, today's high and low, the humidity and the current weather, with the sun or the moon between them. Below, a scrollable row on a frosted panel shows the next days, each with its weather, high, low and chance of rain, and a faint line traces the highs across the days.
 
 ### The Sky
 
-<img width="800" alt="The Sky layout, the animated sky with the current weather, the temperature and a button with today's high and low, and after a tap the next days as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
+<img width="800" alt="The Sky layout, the animated sky of a partly cloudy afternoon with the current weather, the temperature and a button with today's high and low, and at night after a tap the next days as a curve on a soft blur" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
 
 The animated sky on its own, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the top left corner, and a button below them shows today's weather, high and low. A tap anywhere on the card lays a soft blur over it and shows the next days as a curve, with each day's weather on the line and its high and low below.
 
 ### Home
 
-<img width="800" alt="The Home layout, a drawn house with a garden, the temperature of each room and a wind compass, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
+<img width="800" alt="The Home layout, a drawn house with a garden, the temperature of each room and a wind compass, on a rainy day and a snowy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
 A drawn house with a garden, where light and shadows match the real position of the sun. It shows the temperature outside and in each room, the wind on a compass and the time of the next sunrise or sunset. Birds, rain and snow pass in front of the house, and a light mist drifts around it.
 
-## More
-
-<a name="backgrounds"></a>
-<details>
-<summary><b>The sky and its effects</b></summary>
-
-<br>
-
-Behind the content, the card draws an animated sky that matches the weather and the time of day. Its colors change from day to night, the sun and the moon rise and set, and at night the stars come out, with the occasional shooting star. Clouds, mist, rain and snow follow the current weather, the clouds and the mist drift with the wind, and birds, balloons and planes cross the sky now and then.
-
-The sky and every effect can be turned off one by one, rain and snow with a single switch. The effects also work on the other backgrounds that `background_mode` offers: a picture for each kind of weather, a color, the plain card background or none at all. Without any of it, the card looks like a plain Home Assistant card with just its content.
-
-With `background_mode: none` and `card_frame: false`, the card drops its own frame and blends into the dashboard, and `full_width: true` stretches it across the full width. This is mainly useful in special places like a dashboard header. The [reference](REFERENCE.md#background) lists every option.
-
-</details>
-
-<a name="pictures"></a>
-<details>
-<summary><b>Pictures for each kind of weather</b></summary>
-
-<br>
-
-The Diorama's pictures come with the card, so Home Assistant serves them itself and nothing is loaded from the internet. Any layout can show its own picture for each kind of weather, and the Diorama can use other pictures too.
-
-1. Name the pictures after the weather conditions, like the Diorama's own pictures in [`dist/diorama`](https://github.com/hazymorning/origami_weather/tree/main/dist/diorama): `sunny.webp`, `partlycloudy.webp`, `clear-night.webp` and so on.
-2. Copy them into a folder in `/config/www`, such as `/config/www/weather`. Pictures for dark mode go into a second folder.
-3. Under **Background**, set the background to **Custom images**, the light mode folder to `/local/weather/` and the dark mode folder to the second folder, or leave it empty if there is none. In YAML, these are `background_mode: images`, `weather_image_path` and `weather_image_path_dark`.
-
-For a Diorama card, also set the **File type** to the type of the pictures, or to **Automatic**, and turn off **In front of the sun, the moon and the stars** unless the pictures have a transparent sky.
-
-Updates replace everything in the card's own folder, so keep other pictures in a folder outside of it.
-
-</details>
-
-<details>
-<summary><b>The house in the Home layout</b></summary>
-
-<br>
-
-The card draws the house itself. Sunlight falls on the walls, the tree and the shrubs from the sun's real direction, and their shadows move across the lawn during the day. When it snows, the roofs, the tree and the lawn turn white and smoke rises from the chimney. In dark mode, the windows light up and cast their light onto the lawn. Each room shows the weather entity's temperature until it gets a room sensor.
-
-The simpler house from earlier versions is still available: `image: old-home` on the container brings it back.
-
-</details>
-
-<details>
-<summary><b>Draw a real home with AI</b></summary>
-
-<br>
-
-An AI can draw a real home and build the card around it, in any style and with as much of the surroundings as fits, from a bit of lawn to the whole garden or the hills behind it. Use the most capable model available: it has to understand photos, draw clean pictures and read the card's source code, which together with the README and the reference is well over 300 KB of text. A model that can run code does better, because it can check its pictures before handing them over.
-
-A drawn home is a normal picture file, and the card can't change anything inside it. Everything that should change, like the night, a room's light, the sunlight or snow, therefore becomes a separate picture that lies exactly on top of the house, and the card shows or fades these pictures as needed. A day picture and a night picture are enough to start with.
-
-1. Download [`README.md`](README.md), [`REFERENCE.md`](REFERENCE.md) and the card itself, [`src/origami-weather.js`](src/origami-weather.js), from this repository.
-2. Take photos of the home from the front, the back and two corners, and of anything around it that should be in the picture.
-3. Find out which way the front of the house faces, on a map for example.
-4. Look up the entity IDs of the room sensors and of the lights that should light up windows, under **Settings → Devices & services → Entities**.
-5. Copy the YAML of a card with the Home layout from the code editor.
-6. Give it all to the AI with this text and fill in the brackets. They hold examples, so a pixel art style, the hills behind the house or a picture across the whole card work just as well.
-
-```text
-I'm using the Origami Weather card for Home Assistant and want my own home in its Home layout. Attached are the card's README and REFERENCE, its source code (origami-weather.js), my card YAML and photos of my home.
-
-Draw my home as it really is, in a [watercolor] style, with [our garden with the apple tree and the hedge] around it. Put it [where the layout's picture is], in front of [the card's own sky with the sun, the moon, clouds and stars]. The front of the house faces [south-west]. The rooms are [the living room with sensor.living_room_temperature and the two big windows on the garden side] and [...]. [light.living_room] should light up the windows of [the living room], and [...]. Besides day and night, the picture should change with [the lights, the sun and snow].
-
-Read everything before you start. Work out from origami-weather.js how containers show image and image_dark, how free-positioned containers stack, and how visibility and the css option work. For css, the card sets the classes scheme-light or scheme-dark and weather-<condition> on #card-root. It also sets --origami-sun-x and --origami-sun-y for the direction of the sun (x is 1 in the east and -1 in the west, y is 1 in the north and -1 in the south), --origami-sun-light for the strength of the sunlight from 0 to 1, and --origami-sun-shadow for the length of a shadow compared to the height of what casts it.
-
-My pictures are image files, so the card can't change anything inside them. Every change needs a picture of its own, in its own container with exactly the same position and width as the house, stacked in the right order. Draw all pictures on the same canvas so they line up, and let an overlay hold only what changes and only what can be seen. SVG makes this easiest. If the style needs painted pictures, use PNG or WebP with transparency and keep the framing exactly the same.
-
-Show lit windows and the light they throw outside while their light is on, and snow while the weather is snowy or snowy-rainy. Fade and move the sunlight and the shadows with the sun through the css option, with fallbacks for missing values, and pick each picture by its file name, like img.group-image[src*="sun-east"]. Keep the house recognizable, but simple enough to read at the size it gets in the card, and leave the background transparent where the card should show through. Use my sensors for the rooms. If the temperatures sit on the picture, place them as free-positioned buttons with offsets in %.
-
-Show me your plan and my home in daylight first, and wait for my OK before you make the rest. If you can run code, check every picture in light and dark mode, in the morning, at noon and in the evening, and with each light on and off. Then give me the files, where they go (/config/www/home/, used as /local/home/...) and the complete card YAML.
-```
-
-The pictures go into `/config/www/home`, for example with the File editor add-on or a Samba share. If the `www` folder is new, Home Assistant has to be restarted once before it serves it. After pasting the YAML into the card's code editor, a hard refresh shows the new pictures. Browsers cache pictures for a while, so a changed picture needs a hard refresh as well.
-
-It rarely works out on the first try. Screenshots of the card with one or two concrete requests at a time work best, like a flatter roof or a taller tree. Error messages can be passed to the AI as they are.
-
-Once it works, it's worth playing with the settings. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, which leaves birds, rain, snow and a light mist. The house sits in the middle of the weather: birds, rain and snow pass in front of it, while the sun, the moon, the stars and most of the mist stay behind it, as do the clouds, balloons and planes when they're turned on. Turning effects back on or trying another background can change the whole look, and almost everything in the README and the reference can be used, so let the AI experiment.
-
-</details>
-
 <a name="more-layouts"></a>
 <details>
-<summary><b>Other layouts</b></summary>
+<summary><b>More layouts</b></summary>
 
 <br>
 
@@ -1384,16 +1299,94 @@ grid_options:
 
 </details>
 
+<sub>The screenshots use the Montserrat font. The [Origami](https://github.com/hazymorning/origami#get-started) repository explains how to add it to Home Assistant.</sub>
+
+## More
+
+<a name="backgrounds"></a>
+<a name="pictures"></a>
 <details>
-<summary><b>Building blocks</b></summary>
+<summary><b>Backgrounds and effects</b></summary>
 
 <br>
+
+Behind the content, the card draws an animated sky that matches the weather and the time of day. Its colors change from day to night, the sun and the moon rise and set, and at night the stars come out, with the occasional shooting star. Clouds, mist, rain and snow follow the current weather, the clouds and the mist drift with the wind, and birds, balloons and planes cross the sky now and then.
+
+The sky and every effect can be turned off one by one, rain and snow with a single switch. The effects also work on the other backgrounds that `background_mode` offers: a picture for each kind of weather, a color, the plain card background or none at all. Without any of it, the card looks like a plain Home Assistant card with just its content.
+
+With `background_mode: none` and `card_frame: false`, the card drops its own frame and blends into the dashboard, and `full_width: true` stretches it across the full width. This is mainly useful in special places like a dashboard header. The [reference](REFERENCE.md#background) lists every option.
+
+#### Pictures for each kind of weather
+
+The Diorama's pictures come with the card, so Home Assistant serves them itself and nothing is loaded from the internet. Any layout can show its own picture for each kind of weather, and the Diorama can use other pictures too.
+
+1. Name the pictures after the weather conditions, like the Diorama's own pictures in [`dist/diorama`](https://github.com/hazymorning/origami_weather/tree/main/dist/diorama): `sunny.webp`, `partlycloudy.webp`, `clear-night.webp` and so on.
+2. Copy them into a folder in `/config/www`, such as `/config/www/weather`. Pictures for dark mode go into a second folder.
+3. Under **Background**, set the background to **Custom images**, the light mode folder to `/local/weather/` and the dark mode folder to the second folder, or leave it empty if there is none. In YAML, these are `background_mode: images`, `weather_image_path` and `weather_image_path_dark`.
+
+For a Diorama card, also set the **File type** to the type of the pictures, or to **Automatic**, and turn off **In front of the sun, the moon and the stars** unless the pictures have a transparent sky.
+
+Updates replace everything in the card's own folder, so keep other pictures in a folder outside of it.
+
+</details>
+
+<details>
+<summary><b>The house in the Home layout</b></summary>
+
+<br>
+
+The card draws the house itself. Sunlight falls on the walls, the tree and the shrubs from the sun's real direction, and their shadows move across the lawn during the day. When it snows, the roofs, the tree and the lawn turn white and smoke rises from the chimney. In dark mode, the windows light up and cast their light onto the lawn. Each room shows the weather entity's temperature until it gets a room sensor.
+
+The house from previous versions is still available: `image: old-home` on the container brings it back.
+
+#### Draw a real home with AI
+
+An AI can draw a real home and build the card around it, in any style and with as much of the surroundings as fits, from a bit of lawn to the whole garden or the hills behind it. Use the most capable model available: it has to understand photos, draw clean pictures and read the card's source code, which together with the README and the reference is well over 300 KB of text. A model that can run code does better, because it can check its pictures before handing them over.
+
+A drawn home is a normal picture file, and the card can't change anything inside it. Everything that should change, like the night, a room's light, the sunlight or snow, therefore becomes a separate picture that lies exactly on top of the house, and the card shows or fades these pictures as needed. A day picture and a night picture are enough to start with.
+
+1. Download [`README.md`](README.md), [`REFERENCE.md`](REFERENCE.md) and the card itself, [`src/origami-weather.js`](src/origami-weather.js), from this repository.
+2. Take photos of the home from the front, the back and two corners, and of anything around it that should be in the picture.
+3. Find out which way the front of the house faces, on a map for example.
+4. Look up the entity IDs of the room sensors and of the lights that should light up windows, under **Settings → Devices & services → Entities**.
+5. Copy the YAML of a card with the Home layout from the code editor.
+6. Give it all to the AI with this text and fill in the brackets. They hold examples, so a pixel art style, the hills behind the house or a picture across the whole card work just as well.
+
+```text
+I'm using the Origami Weather card for Home Assistant and want my own home in its Home layout. Attached are the card's README and REFERENCE, its source code (origami-weather.js), my card YAML and photos of my home.
+
+Draw my home as it really is, in a [watercolor] style, with [our garden with the apple tree and the hedge] around it. Put it [where the layout's picture is], in front of [the card's own sky with the sun, the moon, clouds and stars]. The front of the house faces [south-west]. The rooms are [the living room with sensor.living_room_temperature and the two big windows on the garden side] and [...]. [light.living_room] should light up the windows of [the living room], and [...]. Besides day and night, the picture should change with [the lights, the sun and snow].
+
+Read everything before you start. Work out from origami-weather.js how containers show image and image_dark, how free-positioned containers stack, and how visibility and the css option work. For css, the card sets the classes scheme-light or scheme-dark and weather-<condition> on #card-root. It also sets --origami-sun-x and --origami-sun-y for the direction of the sun (x is 1 in the east and -1 in the west, y is 1 in the north and -1 in the south), --origami-sun-light for the strength of the sunlight from 0 to 1, and --origami-sun-shadow for the length of a shadow compared to the height of what casts it.
+
+My pictures are image files, so the card can't change anything inside them. Every change needs a picture of its own, in its own container with exactly the same position and width as the house, stacked in the right order. Draw all pictures on the same canvas so they line up, and let an overlay hold only what changes and only what can be seen. SVG makes this easiest. If the style needs painted pictures, use PNG or WebP with transparency and keep the framing exactly the same.
+
+Show lit windows and the light they throw outside while their light is on, and snow while the weather is snowy or snowy-rainy. Fade and move the sunlight and the shadows with the sun through the css option, with fallbacks for missing values, and pick each picture by its file name, like img.group-image[src*="sun-east"]. Keep the house recognizable, but simple enough to read at the size it gets in the card, and leave the background transparent where the card should show through. Use my sensors for the rooms. If the temperatures sit on the picture, place them as free-positioned buttons with offsets in %.
+
+Show me your plan and my home in daylight first, and wait for my OK before you make the rest. If you can run code, check every picture in light and dark mode, in the morning, at noon and in the evening, and with each light on and off. Then give me the files, where they go (/config/www/home/, used as /local/home/...) and the complete card YAML.
+```
+
+The pictures go into `/config/www/home`, for example with the File editor add-on or a Samba share. If the `www` folder is new, Home Assistant has to be restarted once before it serves it. After pasting the YAML into the card's code editor, a hard refresh shows the new pictures. Browsers cache pictures for a while, so a changed picture needs a hard refresh as well.
+
+It rarely works out on the first try. Screenshots of the card with one or two concrete requests at a time work best, like a flatter roof or a taller tree. Error messages can be passed to the AI as they are.
+
+Once it works, it's worth playing with the settings. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, which leaves birds, rain, snow and a light mist. The house sits in the middle of the weather: birds, rain and snow pass in front of it, while the sun, the moon, the stars and most of the mist stay behind it, as do the clouds, balloons and planes when they're turned on. Turning effects back on or trying another background can change the whole look, and almost everything in the README and the reference can be used, so let the AI experiment.
+
+</details>
+
+<a name="reference"></a>
+<details>
+<summary><b>Reference</b></summary>
+
+<br>
+
+The [reference](REFERENCE.md) describes every block and option of the card.
 
 All layouts are built from the same blocks. Containers hold buttons, and each button shows an entity with texts, icons, bars or a ring. A container can also show a picture, such as a floor plan with each room's temperature on it, or hold other Home Assistant cards. Containers can sit in front of the sky and the weather or further back, so rain and birds can pass in front of a picture of a house.
 
 A tap on a button or on the card can show and hide parts of the card through the card's own switches, without helpers in Home Assistant. Containers and buttons can also have a name, which only the visual editor shows, so the parts of a bigger layout are easy to tell apart.
 
-The [reference](REFERENCE.md) explains every block and option. For a new layout, the YAML of an existing one is a good starting point.
+For a new layout, the YAML of an existing one is a good starting point.
 
 </details>
 
@@ -1415,7 +1408,7 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Updating the card keeps the settings of every card. A layout only changes when it's picked again in the layout picker.
 
-Centered, Comparison and Arc are no longer in the layout picker. Cards made with them keep working, and their YAML is under **Other layouts**. Classic is now called Daily Forecast and Slim is now The Sky, and cards made with Classic or Slim keep working as they are. Cards with `image: demo-home-image` keep the plain house, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker. Cards made with them keep working, and their YAML is under **More layouts**. Classic is now called Daily Forecast and Slim is now The Sky, and cards made with Classic or Slim keep working as they are. Cards with `image: demo-home-image` keep the house from previous versions, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
 

@@ -22,6 +22,29 @@ const DIORAMA_PAPER = [
     ['exceptional', '#eadad3', '#271a15']
 ];
 
+const DIORAMA_SWITCH = { action: 'toggle', entity: 'origami.forecast' };
+const dioramaShown = (state) => [{ condition: 'state', entity: 'origami.forecast', state }];
+const dioramaDay = (offset) => ({
+    name: offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : `In ${offset} days`,
+    entity: PRESET_ENTITY_TOKEN,
+    forecast: 'daily',
+    forecast_offset: offset,
+    tap_action: DIORAMA_SWITCH,
+    background: true,
+    background_color: 'color-mix(in srgb, var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color, #fff))) 72%, transparent)',
+    blurred_background: true,
+    style: 'vertical',
+    align: 'center',
+    padding: '24px 0',
+    inner_gap: '4px',
+    elements: [
+        text({ attribute: 'datetime', format: '%a', size: '12px', weight: '500' }),
+        icon('weather', { icon_size: '28px', icon_background: false, margin: '2px 0' }),
+        text({ attribute: 'temperature', precision: 0, format: '\u00b0', size: '15px', weight: '700' }),
+        text({ attribute: 'templow', precision: 0, format: '\u00b0', size: '13px', weight: '500' })
+    ]
+});
+
 const DIORAMA_CONFIG = Object.freeze({
     card_height: '160px',
     card_padding: 'var(--ha-space-4, 16px)',
@@ -35,16 +58,34 @@ const DIORAMA_CONFIG = Object.freeze({
     weather_image_type: 'webp',
     weather_image_front: true,
     background_thresholds: thresholds(DIORAMA_PAPER),
-    card_tap_action: { action: 'more-info' },
+    visibility_fade: true,
+    card_tap_action: DIORAMA_SWITCH,
     css: '#weather-bg > img { object-position: right bottom; }',
     button_containers: [
         {
+            name: 'Forecast',
+            position: 'custom',
+            position_anchor: 'top-left',
+            position_x: '0',
+            position_y: '0',
+            custom_width: '100%',
+            layout: 'horizontal-scroll',
+            scroll_count: 4,
+            row_height: '128px',
+            gap: '8px',
+            padding: '0',
+            visibility: dioramaShown('on'),
+            buttons: [0, 1, 2, 3, 4, 5, 6].map(dioramaDay)
+        },
+        {
             name: 'Now',
+            visibility: dioramaShown('off'),
             buttons: [
                 {
                     name: 'Temperature and condition',
                     entity: PRESET_ENTITY_TOKEN,
                     attribute: 'temperature',
+                    tap_action: DIORAMA_SWITCH,
                     style: 'vertical',
                     align: 'start',
                     inner_gap: '6px',
@@ -96,7 +137,8 @@ const dailyColumn = (offset) => ({
         icon('weather', { icon_size: '26px', color: WHITE, margin: '2px 0' }),
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: WHITE }),
         text({ attribute: 'templow', format: '\u00b0', size: '14px', weight: '500', color: WHITE_60 }),
-        { type: 'bar', bar_height: '4px', bar_width: '26px', bar_color: '#9fd2ff', margin: '3px 0 0', bar_values: [{ attribute: 'precipitation_probability' }] }
+        { type: 'bar', bar_height: '4px', bar_width: '26px', bar_color: '#9fd2ff', margin: '3px 0 0', bar_values: [{ attribute: 'precipitation_probability' }] },
+        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'rgba(255, 255, 255, 0.16)', bar_marker: false, margin: '-84px 0 0', bar_values: [{ attribute: 'temperature' }] }
     ]
 });
 
@@ -462,82 +504,61 @@ const HOME_CONFIG = Object.freeze({
     }
 });
 
-const SKY_SWITCH = 'origami.details';
-const skyShown = (state) => [{ condition: 'state', entity: SKY_SWITCH, state }];
-const SKY_TAP = { action: 'toggle', entity: SKY_SWITCH };
-
-const skyTile = (name, value, extra) => ({
-    name,
+const skyHour = (offset) => ({
+    name: offset ? `In ${offset + 1} hours` : 'Next hour',
     entity: PRESET_ENTITY_TOKEN,
-    ...extra,
-    tap_action: SKY_TAP,
+    forecast: 'hourly',
+    forecast_offset: offset,
+    background: false,
+    padding: '0',
     style: 'vertical',
-    align: 'start',
-    background: true,
-    background_color: 'rgba(255, 255, 255, 0.24)',
-    blurred_background: true,
-    shadow: false,
-    padding: '12px 14px',
-    inner_gap: '6px',
+    align: 'center',
+    inner_gap: '2px',
     elements: [
-        text({ text: name, size: '12px', weight: '500' }),
-        text({ size: '18px', weight: '700', color: 'currentColor', ...value })
+        text({ attribute: 'datetime', size: '12px', weight: '500' }),
+        text({ attribute: 'temperature', precision: 0, format: '\u00b0', size: '14px', weight: '700', color: 'currentColor' }),
+        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', margin: '2px 0 0', bar_values: [{ attribute: 'temperature', marker_size: '24px', marker_gap: true, marker_icon: 'weather', marker_icon_size: '20px' }] }
     ]
 });
 
 const SKY_CONFIG = Object.freeze({
-    card_height: '184px',
+    card_height: '220px',
     card_padding: '18px',
-    content_align: 'end',
+    content_align: 'between',
     sun_moon_x: 'dynamic',
-    sun_moon_y: '160px 42px',
-    sun_size: 52,
-    moon_size: 52,
-    visibility_fade: true,
-    card_tap_action: SKY_TAP,
+    sun_size: 44,
+    moon_size: 44,
+    card_tap_action: { action: 'more-info' },
     button_containers: [
         {
-            name: 'Details',
-            position: 'custom',
-            position_anchor: 'top-left',
-            position_x: '0',
-            position_y: '0',
-            custom_width: '100%',
-            layout: 'grid',
-            columns: 2,
-            gap: '8px',
-            visibility: skyShown('on'),
-            buttons: [
-                skyTile('Wind', { attribute: 'wind_speed', precision: 0 }),
-                skyTile('Humidity', { attribute: 'humidity' }),
-                skyTile('UV index', { attribute: 'uv_index' }),
-                skyTile('Rain', { attribute: 'precipitation_probability', format: '%' }, { forecast: 'daily' })
-            ]
-        },
-        {
             name: 'Now',
-            justify_content: 'between',
-            align_items: 'baseline',
-            visibility: skyShown('off'),
-            buttons: [
-                { name: 'Temperature', entity: PRESET_ENTITY_TOKEN, attribute: 'temperature', tap_action: SKY_TAP, background: false, padding: '0', elements: [text({ size: '40px', weight: '700', precision: 0, format: '\u00b0', color: 'currentColor', margin: '-0.2em -0.06em -0.12em -0.04em' })] },
-                { name: 'Condition', entity: PRESET_ENTITY_TOKEN, tap_action: SKY_TAP, background: false, padding: '0', elements: [text({ size: '13px', weight: '500' })] }
-            ]
-        },
-        {
-            name: 'Day',
-            margin: '12px 0 0',
+            padding: '0',
             buttons: [
                 {
-                    name: 'Sun',
-                    entity: 'sun.sun',
-                    tap_action: SKY_TAP,
-                    width: '100%',
+                    name: 'Temperature and condition',
+                    entity: PRESET_ENTITY_TOKEN,
                     background: false,
                     padding: '0',
-                    elements: [{ type: 'bar', bar_height: '2px', bar_fill: false, bar_range_from: 0, bar_range_to: 100, bar_range_color: 'color-mix(in srgb, currentColor 40%, transparent)', bar_marker: true, bar_marker_size: '9px', bar_values: [{ marker_color: 'currentColor' }] }]
+                    style: 'vertical',
+                    align: 'start',
+                    inner_gap: '2px',
+                    elements: [
+                        text({ attribute: 'temperature', precision: 0, format: '\u00b0', size: '52px', weight: '700', color: 'currentColor', margin: '-0.2em -0.06em -0.1em -0.05em' }),
+                        text({ size: '14px', weight: '500' })
+                    ]
                 }
             ]
+        },
+        {
+            name: 'Hours',
+            custom_width: '100%',
+            layout: 'horizontal-scroll',
+            scroll_count: 5,
+            row_height: '104px',
+            align_items: 'stretch',
+            padding: '0',
+            gap: '0',
+            buttons: Array.from({ length: 12 }, (_, i) => skyHour(i * 2))
         }
     ],
     grid_options: {

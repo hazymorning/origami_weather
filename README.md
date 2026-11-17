@@ -54,19 +54,19 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills, and a tap shows the next days over the whole card.
 
 ### Daily Forecast
 
-<img width="800" alt="The Daily Forecast layout, the temperature on a color that changes with the weather, with the next six days below, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daily-forecast.webp">
+<img width="800" alt="The Daily Forecast layout, the temperature on a color that changes with the weather, with the next six days and a faint temperature curve below, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/daily-forecast.webp">
 
-The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. Below them are the next six days, with the chance of rain under each day.
+The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. Below them are the next six days, with the chance of rain under each day and a faint curve of the temperatures behind them.
 
 ### Sky
 
-<img width="800" alt="The Sky layout, the live sky with the temperature above a thin line for the sun's day, and the frosted tiles that a tap shows, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
+<img width="800" alt="The Sky layout, the live sky with the temperature and the next hours as a curve with the weather on it, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes, and only the temperature and the current weather above a thin line. The dot on the line shows where the sun is between sunrise and sunset, and at night where the night is. A tap shows the wind, the humidity, the UV index and the chance of rain on frosted tiles.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The temperature and the current weather sit in the corner, and below them the next hours as a curve, with the time, the temperature and the weather on it.
 
 ### Home
 

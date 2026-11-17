@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-2NTRLFYW.js";
+} from "./chunk-57O3WUXN.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -1496,7 +1496,7 @@ var WeatherCardEditor = class extends i4 {
   }
   _renderLayoutsPanel() {
     return b2`<div class="settings-group">
-            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML.</span></div>
+            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts are made of the same containers, buttons and elements, so their parts can be mixed freely.</span></div>
             <div class="preset-grid">
                 ${LAYOUT_PRESETS.map((preset) => b2`
                     <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>
@@ -2479,7 +2479,11 @@ var WeatherCardEditor = class extends i4 {
       };
       const cssFor = (key, text, placeholder) => this._cssTextField({ value: obj[key], label: text, placeholder, trim: true, onCommit: (v2) => write(key, v2) });
       const hasRange = [obj[p3 + "range_from"], obj[p3 + "range_to"]].some((v2) => v2 !== void 0 && v2 !== null && String(v2) !== "");
-      return b2`<div class="vcb-grid">${cssFor(p3 + "min", "Min", "0")}${cssFor(p3 + "max", "Max", "100")}</div>
+      const shape = prefix === "bar" ? obj.bar_shape || "" : "";
+      return b2`${prefix === "bar" ? b2`<div class="field-group"><div class="field-group-label">Shape</div>
+                <div class="segmented">${[{ v: "", l: "Straight" }, { v: "curve", l: "Curve" }, { v: "sun", l: "Sun path" }].map((o5) => b2`<button type="button" class=${shape === o5.v ? "active" : ""} @click=${() => write("bar_shape", o5.v)}>${o5.l}</button>`)}</div>
+                ${shape ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${shape === "curve" ? "Curve bars in neighboring buttons join into one line. Each value is a point, and the row shares one scale unless Min and Max are set." : "The day of a sun entity from midnight to midnight, with the horizon. The marker is the sun."}</span></div>` : ""}</div>` : ""}
+                <div class="vcb-grid">${cssFor(p3 + "min", "Min", "0")}${cssFor(p3 + "max", "Max", "100")}</div>
                 <div class="vcb-grid">${prefix === "ring" ? b2`${cssFor("ring_width", "Thickness", "4")}${cssFor("ring_gap", "Gap", "3")}${cssFor("ring_start", "Start angle", "0")}${cssFor("ring_arc", "Arc", "360")}` : b2`${cssFor("bar_height", "Thickness", "4")}${cssFor("bar_width", "Length", "Full width")}`}</div>
                 ${extra || ""}
                 ${this._renderColorPicker(`${label} color`, obj[p3 + "color"] || "", (h3, o5) => {

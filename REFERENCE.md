@@ -119,7 +119,7 @@ button_containers:
         state: "on"
 ```
 
-Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. The Sky layout is built like that.
+Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. The Diorama layout is built like that: a tap shows the next days over the whole card.
 
 **Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is.
 
@@ -281,7 +281,29 @@ A ring doesn't have to be a full circle. `ring_start` rotates where it begins, i
 
 Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset. The Arc layout is built exactly like that.
 
-A gauge on the sun entity without an attribute shows how far the day has come from sunrise to sunset, from 0 to 100, and at night how far the night has come from sunset to sunrise. The line at the bottom of the Sky layout is a bar like that.
+A gauge on the sun entity without an attribute shows where the sun is in its day, from 0 at midnight over 50 at noon to 100 at the next midnight.
+
+`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Daily Forecast layout. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the hours of the Sky layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
+
+```yaml
+buttons:
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 0
+    style: vertical
+    elements:
+      - type: text
+        attribute: datetime
+        format: "%a"
+      - type: bar
+        bar_shape: curve
+        bar_height: 2px
+        bar_values:
+          - attribute: temperature
+            marker_size: 28px
+            marker_icon: weather
+  # the same button again with forecast_offset 1, 2, 3 ...
+```
 
 Any button or icon element can also use `color_thresholds` to tint itself based on a value, with no gauge involved. An icon reads its own entity or attribute if it has one, otherwise the button's value. The value doesn't have to be a number here, a state like `on` or `home` works too.
 
@@ -486,13 +508,14 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | :--- | :--- | :--- | :--- |
 | `bar_min` | `number` | `0` | Minimum of the range. This and `bar_max` can also be a time or an entity ID, see [Gauges](#gauges). |
 | `bar_max` | `number` | `100` | Maximum of the range. |
-| `bar_height` | `string` | `4px` | Height of the bar. |
+| `bar_shape` | `string` | `straight` | `straight`, `curve` or `sun`, see [Gauges](#gauges). |
+| `bar_height` | `string` | `4px` | Height of the bar, or the thickness of its line when it is curved. |
 | `bar_width` | `string` | *full width* | Length of the bar, never wider than the button. A bar with its own length lines up like the other elements. |
 | `bar_color` | `string` | — | Color of the filled part. |
 | `bar_threshold_mode` | `string` | `solid` | `solid`, `segments`, or `gradient`. |
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
 | `bar_values` | `list` | — | The values shown on the bar. Without it the bar uses the button's own value. |
-| `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. |
+| `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. A curve has markers unless this is `false`. |
 | `bar_fill` | `boolean` | `true` | Set to `false` to draw only the track and the markers, no fill. |
 | `bar_marker_size` | `string` | *bar height* | Size of the markers. Anything larger than the bar sticks out on both sides. |
 | `bar_marker_icon_size` | `string` | *two thirds of the marker* | Size of the icon inside a marker. |
@@ -511,9 +534,9 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `value` | `number` | — | A fixed value instead of reading one. |
 | `marker_size` | `string` | *gauge marker size* | Size of this marker. `0` hides it. |
 | `marker_color` | `string` | — | Color of the marker. |
-| `marker_icon` | `string` | — | Icon drawn inside the marker. |
+| `marker_icon` | `string` | — | Icon drawn inside the marker. `weather` draws the current weather, or the forecast of that day or hour. |
 | `marker_icon_color` | `string` | — | Color of that icon. |
-| `marker_gap` | `boolean` | `false` | Leaves a gap in the ring under the marker, so its icon sits on the background, like the N of a compass. Only in `ring_values`. |
+| `marker_gap` | `boolean` | `false` | Leaves a gap in a ring or a curve around the marker, so its icon sits on the background, like the N of a compass. |
 
 ### Ring gauge
 

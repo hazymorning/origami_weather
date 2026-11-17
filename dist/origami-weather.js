@@ -1861,6 +1861,7 @@ function gaugeDefs(o, p) {
   const arr = Array.isArray(o[p + "values"]) ? o[p + "values"].filter((v) => v && typeof v === "object") : [];
   return arr.length ? arr : [{}];
 }
+var SUN_PATH = "M0,1C.042,1,.083,.946,.125,.854C.167,.761,.208,.631,.25,.5C.292,.369,.333,.239,.375,.146C.417,.054,.458,0,.5,0C.542,0,.583,.054,.625,.146C.667,.239,.708,.369,.75,.5C.792,.631,.833,.761,.875,.854C.917,.946,.958,1,1,1";
 var GAUGE_REF = /^[a-z_]+\.[a-z0-9_]+$/;
 var GAUGE_NUMS = ["min", "max", "width", "height", "arc", "start", "marker_size", "marker_icon_size", "range_from", "range_to"];
 function gaugeRefs(o, p) {
@@ -2282,12 +2283,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-7YXAXEZ4.js");
+      await import("./origami-weather-editor-S3WFIEA3.js");
     }
     return document.createElement("origami-weather-editor");
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-G66MAB3X.js");
+    const { buildStubConfig } = await import("./layout-presets-LG6QYMW5.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2379,7 +2380,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const lat = Number(this._hass?.config?.latitude) * D, dec = -23.44 * D * Math.cos(2 * Math.PI * ((now - new Date(now.getFullYear(), 0, 1)) / 864e5 + 10) / 365);
     const rise = Math.acos(Math.max(-1, Math.min(1, Math.sin(dec) / Math.cos(lat)))) / D, south = lat > dec;
     const light = up ? Math.max(0, Math.min(1, (tuning.sunVisibility - 0.45) / 0.55)) * Math.min(1, elev / 4) : 0;
-    for (const [k, v] of [["x", Math.sin(az)], ["y", Math.cos(az)], ["shadow", up ? Math.min(3, 1 / Math.tan(elev * D)) : 0], ["light", light], ["path-start", south ? rise : 360 - rise], ["path", south ? 360 - 2 * rise : 2 * rise]]) this._cssVar(els.root, `--origami-sun-${k}`, Number.isFinite(v) ? v.toFixed(3) : "", `sun-${k}`);
+    for (const [k, v] of [["x", Math.sin(az)], ["y", Math.cos(az)], ["shadow", up ? Math.min(3, 1 / Math.tan(elev * D)) : 0], ["light", light], ["path-start", south ? rise : 360 - rise], ["path", south ? 360 - 2 * rise : 2 * rise], ["day", sunValid ? _WeatherCard._sunDay(sun.attributes, up)[1] : NaN]]) this._cssVar(els.root, `--origami-sun-${k}`, Number.isFinite(v) ? v.toFixed(3) : "", `sun-${k}`);
     this._sunsetF = sunValid && !isAstroNight && Number.isFinite(elev) ? Math.max(0, Math.min(1, 1 - Math.abs(elev - 6) / 16)) : 0;
     if (!sunValid || (isAstroNight ? cfg.moon_enabled : cfg.sun_enabled) === false) {
       this._sunMoonSig = null;
@@ -2450,6 +2451,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     if (vis <= 0) return 0;
     const low = 0.48 + 0.38 * (1 - Math.max(0, Math.min(1, t)));
     return Math.round(Math.min(1, vis * low) * 100) / 100;
+  }
+  static _sunDay(a, up) {
+    const day = 864e5, now = Date.now(), set = Date.parse(a.next_setting);
+    let noon = Date.parse(a.next_noon);
+    if (noon - now > day / 2) noon -= day;
+    return [0.5 + (now - noon) / day, set - now > day ? +!!up : 2 * ((set - noon) % day) / day];
   }
   static _pathProgress(attrs, isAstroNight) {
     const now = Date.now(), end = Date.parse(isAstroNight ? attrs.next_rising : attrs.next_setting);
@@ -3131,13 +3138,13 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .gauge-range { background: color-mix(in srgb, currentColor 18%, transparent); }
             .gauge-marker { width: var(--origami-marker-size); height: var(--origami-marker-size); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.10); transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 2; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
             @keyframes gauge-marker-in { from { opacity: 0; } }
-            .gauge-marker ha-icon { --mdc-icon-size: var(--origami-marker-icon-size, calc(var(--origami-marker-size) * 0.66)); display: flex; }
+            .gauge-marker > * { --mdc-icon-size: var(--origami-marker-icon-size, calc(var(--origami-marker-size) * 0.66)); width: var(--mdc-icon-size); height: var(--mdc-icon-size); display: flex; object-fit: contain; }
             .button-ring-gauge { --_ring: radial-gradient(farthest-side, transparent calc(100% - var(--origami-gauge-w) - 0.5px), #000 calc(100% - var(--origami-gauge-w))); --_from: from var(--origami-gauge-start, 0deg); --_arc: var(--origami-gauge-arc, 1turn); position: absolute; inset: 0; pointer-events: none; }
             .button-ring-gauge > :not(.gauge-marker) { --_seg: #000 var(--_arc), transparent 0; inset: 0; border-radius: 50%; -webkit-mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring), var(--_gaps, linear-gradient(#000 0 0)); mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring), var(--_gaps, linear-gradient(#000 0 0)); -webkit-mask-composite: source-in; mask-composite: intersect; }
             .button-ring-gauge > .gauge-fill { --_seg: #000 calc(var(--origami-gauge-pos) * var(--_arc)), transparent 0; background-image: conic-gradient(var(--_from), var(--origami-gauge-stops)); }
             .button-ring-gauge > .gauge-range { --_seg: transparent calc(var(--origami-range-from) * var(--_arc)), #000 0 calc(var(--origami-range-to) * var(--_arc)), transparent 0; }
             .button-ring-gauge > .gauge-marker { --_a: calc(var(--origami-gauge-pos) * var(--_arc) + var(--origami-gauge-start, 0deg)); left: 50%; top: 0; width: 0; height: 50%; box-shadow: none; transform: rotate(var(--_a)); transform-origin: bottom; }
-            .button-ring-gauge > .gauge-marker::before, .button-ring-gauge > .gauge-marker ha-icon { position: absolute; left: 0; top: calc(var(--origami-gauge-w) / 2); transform: translate(-50%, -50%) rotate(calc(-1 * var(--_a))); }
+            .button-ring-gauge > .gauge-marker::before, .button-ring-gauge > .gauge-marker > * { position: absolute; left: 0; top: calc(var(--origami-gauge-w) / 2); transform: translate(-50%, -50%) rotate(calc(-1 * var(--_a))); }
             .button-ring-gauge > .gauge-marker::before { content: ''; width: var(--origami-marker-size); height: var(--origami-marker-size); border-radius: 50%; background: var(--origami-gauge-color); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.10); }
             .button-ring-gauge > .gauge-marker.gap::before { background: none; box-shadow: none; }
             .button-ring-gauge > .gauge-marker.needle::before { top: calc((var(--origami-gauge-w) + var(--origami-marker-size)) / 2); bottom: 0; width: 1px; height: auto; border-radius: 0; box-shadow: none; transform: translateX(-50%); }
@@ -3150,6 +3157,16 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .button-bar > .gauge-fill { background-image: linear-gradient(to right, var(--origami-gauge-stops)); clip-path: inset(0 calc(100% - var(--origami-gauge-pos) * 100%) 0 0 round var(--_r)); }
             .button-bar > .gauge-range { left: calc(var(--origami-range-from) * 100%); right: calc(100% - var(--origami-range-to) * 100%); }
             .button-bar > .gauge-marker { top: 50%; left: calc(var(--origami-gauge-pos) * (100% - var(--origami-marker-size)) + var(--origami-marker-size) / 2); }
+            .button-bar.shape-sun, .button-bar.shape-curve { flex: 1 1 auto; min-height: 40px; border-radius: 0; }
+            .button-bar.shape-sun > :not(.gauge-marker, .gauge-horizon) { inset: calc(3 * var(--_in) - 100%) var(--_in); height: auto; transform: none; border-radius: 0; -webkit-mask: var(--_curve) 0 0 / 100% 100% no-repeat; mask: var(--_curve) 0 0 / 100% 100% no-repeat; }
+            .button-bar.shape-sun > .gauge-track { opacity: 0.35; }
+            .button-bar > .gauge-horizon { position: absolute; top: calc(var(--_in) + (1 - cos(var(--origami-sun-day, 0.5) * 0.5turn)) / 2 * (100% - 2 * var(--_in))); height: 0; transform: none; border-radius: 0; border-top: 1px dashed currentColor; opacity: 0.35; pointer-events: none; }
+            .button-bar.shape-sun > .gauge-marker { left: calc(var(--_in) + var(--origami-gauge-pos) * (100% - 2 * var(--_in))); top: calc(var(--_in) + (1 + cos(var(--origami-gauge-pos) * 1turn)) / 2 * (100% - 2 * var(--_in))); }
+            .button-bar.shape-curve > .gauge-marker { left: 50%; top: calc(var(--_in) + (1 - var(--origami-gauge-pos)) * (100% - 2 * var(--_in))); transition: none; }
+            .button-bar.shape-curve > .gauge-marker.gap { background: none; box-shadow: none; }
+            .button-bar.shape-curve > .gauge-marker.bare { visibility: hidden; }
+            .buttons-row.has-curve { position: relative; isolation: isolate; }
+            .gauge-curve { position: absolute; left: 0; top: 0; z-index: -1; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
             .button.button-bar-type { flex-wrap: wrap; }
             .button.button-bar-type.format-vertical { flex-wrap: nowrap; }
             .button.button-bar-type.format-vertical .button-bar { align-self: stretch; width: auto; }
@@ -3606,6 +3623,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         ac.lastLocStr = rowSig;
         bt.innerHTML = rendered.map((r) => r.html).join("");
         this._animateGauges(bt, `a${ai}`);
+        bt.querySelectorAll(".shape-curve").forEach((b) => (this._curveObserver ||= new ResizeObserver((es) => new Set(es.map((e) => e.target.isConnected ? e.target.closest(".buttons-row") : (this._curveObserver.unobserve(e.target), null))).forEach((r) => r && this._drawCurves(r)))).observe(b));
         if (hasVis && rowLayout === "vertical-scroll") this._scheduleVerticalMeasure(ai);
         anyRowRebuilt = true;
       }
@@ -3636,7 +3654,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
   }
   _animateGauges(root, prefix) {
     const prev = this._gaugePrev || (this._gaugePrev = /* @__PURE__ */ new Map()), queue = [];
-    for (const g of root.querySelectorAll("[data-gauge]")) g.querySelectorAll(".gauge-fill, .gauge-marker").forEach((el, i) => {
+    for (const g of root.querySelectorAll("[data-gauge]:not(.shape-curve)")) g.querySelectorAll(".gauge-fill, .gauge-marker").forEach((el, i) => {
       const key = `${prefix}${g.dataset.gauge}:${i}`, from = prev.get(key), target = el.style.getPropertyValue("--origami-gauge-pos");
       if (from !== void 0) el.style.animation = "none";
       el.style.setProperty("--origami-gauge-pos", from || "0");
@@ -3647,17 +3665,51 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       for (const [el, t] of queue) el.style.setProperty("--origami-gauge-pos", t);
     }));
   }
-  _buildGauge(o, p, valueOf) {
+  _drawCurves(row) {
+    const bars = [...row.querySelectorAll(".shape-curve")].filter((b) => b.offsetWidth), box = row.getBoundingClientRect(), lines = [], holes = [];
+    const vs = bars.flatMap((b) => [...b.children].map((m) => +m.dataset.v)), lo = +(bars[0]?.dataset.min ?? Math.min(...vs)), hi = +(bars[0]?.dataset.max ?? Math.max(...vs));
+    for (const b of bars) {
+      const r = b.getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue("--_in")), x = r.left + r.width / 2 - box.left + row.scrollLeft;
+      for (const m of b.children) {
+        const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5;
+        const y = r.top - box.top + row.scrollTop + pad + (1 - t) * (r.height - 2 * pad), hole = m.offsetWidth / 2 + 1.5;
+        m.style.setProperty("--origami-gauge-pos", t.toFixed(4));
+        (lines[m.dataset.line] ||= []).push([x, y]);
+        if (m.classList.contains("gap")) holes.push(`radial-gradient(circle at ${x.toFixed(1)}px ${y.toFixed(1)}px, transparent ${hole}px, #000 ${hole + 0.5}px)`);
+      }
+    }
+    const path = (p) => {
+      const h = p.slice(1).map((q, i) => q[0] - p[i][0]), s = h.map((d, i) => (p[i + 1][1] - p[i][1]) / d), f = (v) => Math.round(v * 10) / 10;
+      const m = p.map((_, i) => {
+        const a = s[i - 1] ?? s[i], b = s[i] ?? a, ha = h[i - 1] ?? h[i], hb = h[i] ?? ha;
+        return (Math.sign(a) + Math.sign(b)) * Math.min(Math.abs(a), Math.abs(b), Math.abs(a * hb + b * ha) / (ha + hb) / 2);
+      });
+      return p.map(([x, y], i) => i ? `C${f(p[i - 1][0] + h[i - 1] / 3)},${f(p[i - 1][1] + m[i - 1] * h[i - 1] / 3)} ${f(x - h[i - 1] / 3)},${f(y - m[i] * h[i - 1] / 3)} ${f(x)},${f(y)}` : `M${f(x)},${f(y)}`).join("");
+    };
+    const cs = bars.length && getComputedStyle(bars[0]), html = lines.filter(Boolean).map((pts) => `<path d="${path(pts)}" style="stroke:${cs.getPropertyValue("--origami-gauge-color")};stroke-width:${cs.getPropertyValue("--origami-gauge-w")}"/>`).join("");
+    let svg = row.querySelector(":scope > .gauge-curve");
+    row.classList.toggle("has-curve", !!html);
+    if (!html) return svg?.remove();
+    if (!svg) {
+      row.insertAdjacentHTML("afterbegin", '<svg class="gauge-curve"></svg>');
+      svg = row.firstElementChild;
+    }
+    svg.setAttribute("width", row.scrollWidth);
+    svg.setAttribute("height", row.scrollHeight);
+    svg.style.setProperty("--_holes", holes.join(", ") || "none");
+    svg.innerHTML = html;
+  }
+  _buildGauge(o, p, valueOf, iconOf) {
     const num = (v) => gaugeNum(v, this._hass), raw = Object.fromEntries(GAUGE_NUMS.map((k) => [k, GAUGE_REF.test(o[p + k]) ? valueOf({ entity: o[p + k] }) : o[p + k]]));
     const n = Object.fromEntries(GAUGE_NUMS.map((k) => [k, num(raw[k])])), defs = gaugeDefs(o, p), raws = defs.map(valueOf), clock = [raw.min, raw.max, ...raws].some(isTime);
     const arc = n.arc > 0 && n.arc < 360 ? n.arc : 360, w = n[p === "ring_" ? "width" : "height"] || 4, ms = n.marker_size > 0 ? n.marker_size : w;
     const min = n.min || 0, span = clock ? (n.max - min + 24) % 24 || 24 : (n.max || 100) - min || 1, max = min + span, near = (x) => clock ? x - 24 * Math.round((x - min - span / 2) / 24) : x;
-    const values = defs.map((def, i) => ({ def, value: near(num(raws[i])), size: parseFloat(def.marker_size ?? ms) })), v0 = values[0].value;
+    const values = defs.map((def, i) => ({ def, i, value: near(num(raws[i])), size: parseFloat(def.marker_size ?? ms) })), v0 = values[0].value;
     const at = (v) => isNaN(v) ? 0 : Math.max(0, Math.min(1, (v - min) / span)), pct = (v) => `${(at(v) * arc / 360 * 100).toFixed(1)}%`;
     const mode = o[p + "threshold_mode"] || "solid", ts = (Array.isArray(o[p + "thresholds"]) ? o[p + "thresholds"] : []).filter((t) => t.color).map((t) => [near(num(t.value)), t.color]).filter((t) => !isNaN(t[0])).sort((a, b) => a[0] - b[0]);
     const stops = mode === "solid" ? "" : ts.map(([v, c], i) => `${cssValue(c)} ${pct(v)}${mode === "segments" ? ` ${pct(ts[i + 1] ? ts[i + 1][0] : max)}` : ""}`).join(", ");
     const color = mode === "solid" && ts.filter((t) => t[0] <= v0).pop()?.[1] || o[p + "color"] && o[p + "color"] !== "auto" && o[p + "color"] || "var(--primary-color, #03a9f4)";
-    const needle = o[p + "needle"] === true, marked = needle || values.length > 1 || o[p + "marker"] === true || o[p + "fill"] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
+    const shape = p === "bar_" && ["curve", "sun"].includes(o.bar_shape) ? o.bar_shape : "", needle = o[p + "needle"] === true, marked = shape === "curve" || needle || values.length > 1 || o[p + "marker"] === true || o[p + "fill"] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
     const style = [`--origami-gauge-w:${w}px`, `--origami-gauge-color:${cssValue(color)}`];
     if (n.marker_icon_size > 0) style.push(`--origami-marker-icon-size:${n.marker_icon_size}px`);
     if (n.start) style.push(`--origami-gauge-start:${n.start}deg`);
@@ -3669,11 +3721,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     if (gaps.length) style.push(`--_gaps:${gaps.join(", ")}`);
     const len = p === "bar_" && parseFloat(o.bar_width) > 0 ? cssLength(o.bar_width) : "";
     if (len) style.push(`--origami-bar-len:${len}`);
-    let html = '<div class="gauge-track"></div>';
-    if (o[p + "fill"] !== false) html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ""}"></div>`;
-    if (rb > ra) html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + "range_color"] ? `;background:${cssValue(o[p + "range_color"])}` : ""}"></div>`;
-    if (marked) html += values.filter((v) => v.size && !isNaN(v.value)).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? " needle" : ""}${d.marker_gap === true && p === "ring_" ? " gap" : ""}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ""}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ""}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ""}</div>`).join("");
-    return { style: style.join(";"), html, len, overflow: marked && values.some((v) => v.size > w) };
+    if (shape) style.push(`--_in:${Math.max(w, ...values.map((v) => v.size || 0)) / 2}px`);
+    if (shape === "sun") style.push(`--_curve:url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -1 1 3" preserveAspectRatio="none"><path d="${SUN_PATH}" fill="none" stroke="#000" stroke-width="${w}" vector-effect="non-scaling-stroke"/></svg>`)}')`);
+    let html = shape === "curve" ? "" : shape === "sun" ? '<div class="gauge-horizon"></div><div class="gauge-track"></div>' : '<div class="gauge-track"></div>';
+    if (o[p + "fill"] !== false && shape !== "curve") html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ""}"></div>`;
+    if (rb > ra && shape !== "curve") html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + "range_color"] ? `;background:${cssValue(o[p + "range_color"])}` : ""}"></div>`;
+    if (marked) html += values.filter((v) => v.size && !isNaN(v.value)).map(({ def: d, i, value, size }) => `<div class="gauge-marker${needle ? " needle" : ""}${d.marker_gap === true && (p === "ring_" || shape === "curve") ? " gap" : ""}${shape === "curve" && o.bar_marker === false ? " bare" : ""}"${shape === "curve" ? ` data-v="${value}" data-line="${i}"` : ""} style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ""}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ""}">${d.marker_icon ? iconOf(d.marker_icon) : ""}</div>`).join("");
+    const data = shape === "curve" ? ["min", "max"].filter((k) => !isNaN(n[k])).map((k) => ` data-${k}="${n[k]}"`).join("") : "";
+    return { style: style.join(";"), html, len, shape, data, overflow: !shape && marked && values.some((v) => v.size > w) };
   }
   _buildIconElement(el, resolved, color) {
     const styleParts = color ? [`color:${cssValue(color)}`] : [];
@@ -3835,7 +3890,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const textCtx = { isForecast, forecastEntry, forecastDatetime, forecastTextAttr, formatted, primaryResolved };
     const gauge = (o, p) => this._buildGauge(o, p, (def) => {
       const id = def.entity || button.entity, sun = def.value == null && !(def.entity || def.attribute ? def.attribute : button.attribute) && String(id).startsWith("sun.") && hass.states[id];
-      return sun ? _WeatherCard._pathProgress(sun.attributes, sun.state === "below_horizon") * 100 : this._resolveGaugeValue(hass, button, def, textCtx);
+      return sun ? _WeatherCard._sunDay(sun.attributes)[0] * 100 : this._resolveGaugeValue(hass, button, def, textCtx);
+    }, (icon) => {
+      const r = resolveIconEl({ icon });
+      return this._buttonIconInner(r.strategy, r.value);
     });
     const threshold = (o, def) => Array.isArray(o.color_thresholds) && o.color_thresholds.length ? pickThreshold(o.color_thresholds, this._resolveGaugeValue(hass, button, def, textCtx)) : "";
     const parts = [];
@@ -3859,7 +3917,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         push(this._buildIconElement(el, r, threshold(el, el) || el.color), true);
       } else if (el.type === "bar") {
         const g = gauge(el, "bar_");
-        push(`<div class="button-bar${g.len ? " has-len" : ""}" data-gauge="${idx}-${barCount++}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
+        push(`<div class="button-bar${g.len ? " has-len" : ""}${g.shape ? ` shape-${g.shape}` : ""}" data-gauge="${idx}-${barCount++}"${g.data} style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
         barOverflow = barOverflow || g.overflow;
       }
     }

@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-NFQGEQGY.js";
+} from "./chunk-7R4FFSUV.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -724,11 +724,11 @@ var DISPLAY_DEFAULTS = Object.freeze({
   weather_image_type: ""
 });
 var LAYER_STOPS = Object.freeze([
-  { value: "sky", label: "In the sky. The sun, the moon, the stars and the weather are in front of it." },
-  { value: "back", label: "Behind the weather. Clouds, mist, rain, snow, birds and planes pass in front of it." },
-  { value: "middle", label: "In the weather. Planes, mist and clouds pass behind it, birds, rain and snow in front of it." },
-  { value: "base", label: "In front of the weather, behind the other containers." },
-  { value: "front", label: "In front of everything, like the text." }
+  { value: "sky", label: "Behind the sun, the moon, the stars and the weather" },
+  { value: "back", label: "Behind clouds, mist, rain, snow, birds and planes" },
+  { value: "middle", label: "In front of planes, mist and clouds, behind birds, rain and snow" },
+  { value: "base", label: "In front of the weather, behind other containers" },
+  { value: "front", label: "In front of everything" }
 ]);
 var OPT = Object.freeze({
   visual_mode: [
@@ -1478,12 +1478,12 @@ var WeatherCardEditor = class extends i4 {
   }
   _imagesHint(c4) {
     const path = `${c4.weather_image_path || ""} ${c4.weather_image_path_dark || ""}`;
-    const text = /hazymorning\/origami@/.test(path) ? "These pictures load from the internet. Picking Diorama under Layouts switches to the ones that come with the card." : /(^|\s)diorama\//.test(path) ? "These pictures come with the card, so they also work offline." : b2`Put the pictures in a folder in <code>/config/www</code> and enter it here as <code>/local/…/</code>. <a href="https://github.com/hazymorning/origami_weather#pictures" target="_blank" rel="noreferrer">More</a>`;
+    const text = /hazymorning\/origami@/.test(path) ? "These pictures are loaded from the internet. Picking the Diorama layout switches to the copies that come with the card." : /(^|\s)diorama\//.test(path) ? "These pictures come with the card and work without internet." : b2`Put the pictures in a folder in <code>/config/www</code> and enter it here as <code>/local/…/</code>. <a href="https://github.com/hazymorning/origami_weather#pictures" target="_blank" rel="noreferrer">More</a>`;
     return b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${text}</span></div>`;
   }
   _renderLayoutsPanel() {
     return b2`<div class="settings-group">
-            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Picking a layout replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts are made of the same containers, buttons and elements, so their parts can be mixed freely.</span></div>
+            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Picking a layout replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts use the same containers, buttons and elements, so parts can be copied from one to another.</span></div>
             <div class="preset-grid">
                 ${LAYOUT_PRESETS.map((preset) => b2`
                     <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>
@@ -1505,7 +1505,7 @@ var WeatherCardEditor = class extends i4 {
             ${name ? b2`<div class="compact-field"><span class="compact-field-label">Value</span>
                 <input type="text" placeholder="on" .value=${value}
                     @change=${(e4) => set(toggle(name, e4.target.value.trim()))}></div>` : ""}</div>
-            ${name ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${!value ? "A tap flips this switch between on and off." : value === "off" ? "A tap sets this switch back to off." : `A tap sets this switch to ${value}, or back to off when it already is.`} Containers and buttons with a Switch condition named ${name} show or hide.</span></div>` : ""}`;
+            ${name ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${!value ? "A tap turns this switch on or off." : value === "off" ? "A tap turns this switch off." : `A tap sets this switch to ${value}, or to off when it is already ${value}.`} Containers and buttons with a Switch condition for ${name} show or hide with it.</span></div>` : ""}`;
   }
   _renderSunMoonPanel() {
     const c4 = this._formData || {};
@@ -2474,7 +2474,7 @@ var WeatherCardEditor = class extends i4 {
       const shape = prefix === "bar" ? obj.bar_shape || "" : "";
       return b2`${prefix === "bar" ? b2`<div class="field-group"><div class="field-group-label">Shape</div>
                 <div class="segmented">${[{ v: "", l: "Straight" }, { v: "curve", l: "Curve" }, { v: "sun", l: "Sun path" }].map((o5) => b2`<button type="button" class=${shape === o5.v ? "active" : ""} @click=${() => write("bar_shape", o5.v)}>${o5.l}</button>`)}</div>
-                ${shape ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${shape === "curve" ? "Curve bars in neighboring buttons join into one line. Each value is a point, and the row shares one scale unless Min and Max are set." : "The day of a sun entity from midnight to midnight, with the horizon. The marker is the sun."}</span></div>` : ""}</div>` : ""}
+                ${shape ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${shape === "curve" ? "Curve bars in neighboring buttons are joined into one line, with each value as a point. All curves in a row share one scale unless Min and Max are set." : "For the sun entity: its path from midnight to midnight, with the horizon as a dashed line. The marker is the sun, and the fill is the part of the day that has passed."}</span></div>` : ""}</div>` : ""}
                 <div class="vcb-grid">${cssFor(p3 + "min", "Min", "0")}${cssFor(p3 + "max", "Max", "100")}</div>
                 <div class="vcb-grid">${prefix === "ring" ? b2`${cssFor("ring_width", "Thickness", "4")}${cssFor("ring_gap", "Gap", "3")}${cssFor("ring_start", "Start angle", "0")}${cssFor("ring_arc", "Arc", "360")}` : b2`${cssFor("bar_height", "Thickness", "4")}${cssFor("bar_width", "Length", "Full width")}`}</div>
                 ${extra || ""}
@@ -2976,7 +2976,7 @@ var WeatherCardEditor = class extends i4 {
       label: "Layer",
       noNumber: true,
       statusFn: (n4) => LAYER_STOPS[n4 - 1].label,
-      helper: "Left is further back. On the same layer, a container further down the list sits in front, and one with a free position in front of the others.",
+      helper: "Further left is further back. On the same layer, containers lower in the list are in front, and containers with a free position are in front of the rest.",
       onCommit: (n4) => this._updateContainerField(containerIdx, "layer", n4 === LAYER_STOPS.length ? "" : LAYER_STOPS[n4 - 1].value)
     });
   }
@@ -3130,7 +3130,7 @@ var WeatherCardEditor = class extends i4 {
             ${this._renderSubDisclosure("Background image", b2`<div class="vcb">
                 ${sf("image", "Image path", "/local/floorplan.png, home or old-home")}
                 ${sf("image_dark", "Dark mode image", "/local/home-dark.png")}
-                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Sized by the container width. Free-positioned buttons sit on top. To let the weather pass in front of the picture, move its Layer back.</span></div></div>`)}
+                <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>The picture is as wide as the container, and buttons with a free position sit on top of it. For weather in front of the picture, move the container's Layer further back.</span></div></div>`)}
             ${this._renderSubDisclosure("Position and layer", b2`${this._renderPosition(container, (n4) => this._updateContainerAt(containerIdx, n4))}${this._renderLayer(container, containerIdx)}`)}
             ${this._renderSubDisclosure("Spacing", b2`<div class="vcb">
                 <div class="vcb-grid">
@@ -3447,7 +3447,7 @@ var WeatherCardEditor = class extends i4 {
                     ${this._renderClearableText("weather_image_path_dark")}
                     ${this._imagesHint(c4)}
                     ${this._renderForm([{ name: "weather_image_type", selector: { select: { mode: "dropdown", options: OPT.weather_image_type } } }])}
-                    <div class="toggle-group">${fx("weather_image_front", "In front of sun, moon and stars", null, false)}</div>
+                    <div class="toggle-group">${fx("weather_image_front", "In front of the sun, the moon and the stars", null, false)}</div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:var(--origami-e-s2);margin-top:var(--origami-e-s3)">
                     ${this._renderSlider("bg_blur", LABELS.bg_blur, 0, 20, 1, null, blurStatus)}

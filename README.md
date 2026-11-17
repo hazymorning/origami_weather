@@ -64,9 +64,9 @@ The temperature and the current weather on a color that changes with the weather
 
 ### Hourly & Daily
 
-<img width="800" alt="The Hourly &amp; Daily layout, the live sky with the current weather, the temperature and two buttons for the next two hours and today, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hourly-daily.webp">
+<img width="800" alt="The Hourly &amp; Daily layout, the live sky with the current weather, the temperature and two buttons for a coming hour and for today, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hourly-daily.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with two buttons below for the weather in the next two hours and today. A tap on either lays a soft blur over the card and shows its forecast as a curve, the next day in steps of two hours or the next days, with the weather on it and the temperature below.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with two buttons below for the weather at a coming hour and for today. A tap on either lays a soft blur over the card and shows its forecast as a curve, the next day in steps of two hours or the next days, with the weather on it and the temperature below.
 
 ### Home
 

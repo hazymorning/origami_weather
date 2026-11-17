@@ -2,7 +2,8 @@ export const PRESET_ENTITY_TOKEN = '__WEATHER__';
 
 const text = (extra) => ({ type: 'text', ...extra });
 const icon = (name, extra) => ({ type: 'icon', icon: name, ...extra });
-const CARD_TINT = (percent) => `color-mix(in srgb, var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color, #fff))) ${percent}%, transparent)`;
+const CARD_COLOR = 'var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color, #fff)))';
+const CARD_TINT = (percent, color = CARD_COLOR) => `color-mix(in srgb, ${color} ${percent}%, transparent)`;
 const dayName = (offset) => offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : `In ${offset} days`;
 const days = (first, build) => Array.from({ length: 10 - first }, (_, i) => build(first + i));
 const cardSwitch = (name) => ({ tap: { action: 'toggle', entity: `origami.${name}` }, tab: (state) => ({ action: 'toggle', entity: `origami.${name}`, state }), shown: (state) => [{ condition: 'state', entity: `origami.${name}`, state }] });
@@ -94,7 +95,7 @@ const DIORAMA_CONFIG = Object.freeze({
             button_gap: '5px',
             button_text_size: '12px',
             button_icon_size: '28px',
-            button_background_color: CARD_TINT(76),
+            button_background_color: CARD_TINT(76, `color-mix(in srgb, ${CARD_COLOR}, black 5%)`),
             button_blurred_background: true,
             visibility: DIORAMA_SWITCH.shown('on'),
             buttons: days(0, dioramaDay)
@@ -140,7 +141,7 @@ const dailyColumn = (offset) => ({
     ]
 });
 
-const dailyStat = (iconName, extra) => [icon(iconName, { color: WHITE_72 }), text({ size: '14px', weight: '500', color: WHITE, ...extra })];
+const dailyStat = (iconName, extra) => [icon(iconName, { color: WHITE_72 }), text({ weight: '500', color: WHITE, ...extra })];
 
 const DAILY_CONFIG = Object.freeze({
     color_mode: 'dark',
@@ -164,21 +165,16 @@ const DAILY_CONFIG = Object.freeze({
     gradient_stop_2: 70,
     card_height: 'content',
     card_padding: 'var(--ha-space-4, 16px)',
-    content_direction: 'row',
-    content_align_items: 'end',
     button_containers: [
         {
             name: 'Today',
-            gap: '12px',
-            padding: '5px 8px 0',
-            button_gap: '2px',
-            button_icon_size: '14px',
+            padding: '3.5px 8px 0',
+            justify_content: 'between',
             buttons: [
                 {
                     name: 'Day',
                     entity: PRESET_ENTITY_TOKEN,
                     style: 'vertical',
-                    width: '100%',
                     inner_gap: '7px',
                     elements: [
                         text({ attribute: 'datetime', format: '%A', size: '20px', weight: '600', color: WHITE }),
@@ -186,35 +182,36 @@ const DAILY_CONFIG = Object.freeze({
                     ]
                 },
                 {
-                    name: 'High and low',
+                    name: 'Temperature',
                     entity: PRESET_ENTITY_TOKEN,
-                    forecast: 'daily',
-                    elements: [...dailyStat('mdi:arrow-up', { attribute: 'temperature', format: '\u00b0', margin: '0 10px 0 0' }), ...dailyStat('mdi:arrow-down', { attribute: 'templow', format: '\u00b0' })]
-                },
-                { name: 'Humidity', entity: PRESET_ENTITY_TOKEN, attribute: 'humidity', elements: dailyStat('mdi:water-outline') }
-            ]
-        },
-        {
-            name: 'Now',
-            custom_width: 'auto',
-            padding: '5px 8px 2.5px',
-            buttons: [
-                {
-                    name: 'Temperature and condition',
-                    entity: PRESET_ENTITY_TOKEN,
-                    style: 'vertical',
-                    align: 'end',
-                    inner_gap: '10px',
-                    elements: [
-                        text({ attribute: 'temperature', size: '50px', weight: '600', precision: 0, format: '\u00b0', color: WHITE, margin: '-0.165em -0.06em -0.1em 0' }),
-                        text({ size: '14px', weight: '500', color: WHITE })
-                    ]
+                    elements: [text({ attribute: 'temperature', size: '46px', weight: '600', precision: 0, format: '\u00b0', color: WHITE })]
                 }
             ]
         },
         {
+            name: 'Details',
+            padding: '0 8px',
+            margin: '10px 0 0',
+            justify_content: 'between',
+            button_gap: '2px',
+            button_text_size: '14px',
+            button_icon_size: '14px',
+            buttons: [
+                {
+                    name: 'High, low and humidity',
+                    entity: PRESET_ENTITY_TOKEN,
+                    forecast: 'daily',
+                    elements: [
+                        ...dailyStat('mdi:arrow-up', { attribute: 'temperature', format: '\u00b0', margin: '0 12px 0 0' }),
+                        ...dailyStat('mdi:arrow-down', { attribute: 'templow', format: '\u00b0', margin: '0 12px 0 0' }),
+                        ...dailyStat('mdi:water-outline', { entity: PRESET_ENTITY_TOKEN, attribute: 'humidity' })
+                    ]
+                },
+                { name: 'Condition', entity: PRESET_ENTITY_TOKEN, elements: [text({ weight: '500', color: WHITE })] }
+            ]
+        },
+        {
             name: 'Forecast',
-            custom_width: '100%',
             layout: 'horizontal-scroll',
             scroll_count: 6,
             row_height: '134px',
@@ -360,6 +357,7 @@ const viewColumn = (name, view, extra, when) => viewButton(name, view, extra, [
     text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
     text({ attribute: 'datetime', weight: '500', ...when })
 ]);
+const viewTile = (name, view, extra, label) => viewButton(name, view, extra, [icon('weather'), text({ weight: '500', ...label }), text({ attribute: 'temperature', format: '\u00b0', weight: '700', color: 'currentColor' })]);
 const forecastView = (name, view, buttons) => ({
     name,
     position: 'custom',
@@ -390,10 +388,11 @@ const forecastView = (name, view, buttons) => ({
 });
 
 const HOURLY_DAILY_CONFIG = Object.freeze({
-    card_height: '188px',
+    card_height: '168px',
     card_padding: '0',
     content_align: 'between',
-    sun_moon_x: 'dynamic',
+    sun_moon_x: '75%',
+    sun_moon_y: '50% 18%',
     sun_size: 40,
     moon_size: 40,
     visibility_fade: true,
@@ -418,23 +417,22 @@ const HOURLY_DAILY_CONFIG = Object.freeze({
         },
         {
             name: 'Forecast',
-            custom_width: '100%',
             padding: '0 18px 18px',
             layout: 'grid',
             columns: 2,
             gap: '8px',
+            align: 'spread',
             background: true,
-            button_style: 'split',
-            button_padding: '12px',
+            button_padding: '12px 14px',
             button_gap: '8px',
             button_text_size: '16px',
-            button_icon_size: '22px',
-            button_background_color: CARD_TINT(55),
+            button_icon_size: '20px',
+            button_background_color: CARD_TINT(45),
             button_blurred_background: true,
             visibility: VIEW.shown('off'),
             buttons: [
-                viewButton('Next 2 hours', 'hours', { forecast: 'hourly', forecast_offset: 1 }, [icon('weather'), text({ text: 'Next 2 hours', weight: '500' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' })]),
-                viewButton('Today', 'days', { forecast: 'daily' }, [icon('weather'), text({ text: 'Today', weight: '500' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' })])
+                viewTile('Next hours', 'hours', { forecast: 'hourly', forecast_offset: 1 }, { attribute: 'datetime' }),
+                viewTile('Today', 'days', { forecast: 'daily' }, { text: 'Today' })
             ]
         },
         forecastView('Hours', 'hours', Array.from({ length: 12 }, (_, i) => viewColumn(i ? `In ${i * 2 + 1} hours` : 'Next hour', 'hours', { forecast: 'hourly', forecast_offset: i * 2 }))),
@@ -446,28 +444,28 @@ export const LAYOUT_PRESETS = Object.freeze([
     {
         id: 'diorama',
         name: 'Diorama',
-        description: 'A paper landscape for every weather',
+        description: 'Landscape pictures that change with the weather',
         icon: 'mdi:image-filter-hdr',
         config: DIORAMA_CONFIG
     },
     {
         id: 'daily-forecast',
         name: 'Daily Forecast',
-        description: 'Today at a glance, the days ahead below',
+        description: 'Current weather and a daily forecast',
         icon: 'mdi:view-dashboard-variant-outline',
         config: DAILY_CONFIG
     },
     {
         id: 'hourly-daily',
         name: 'Hourly & Daily',
-        description: 'The live sky, hours and days a tap away',
+        description: 'Animated sky with hourly and daily forecasts',
         icon: 'mdi:view-compact-outline',
         config: HOURLY_DAILY_CONFIG
     },
     {
         id: 'home',
         name: 'Home',
-        description: 'A house in its weather, room by room',
+        description: 'A house with room temperatures and wind',
         icon: 'mdi:home-outline',
         config: HOME_CONFIG
     }

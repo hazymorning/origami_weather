@@ -50,27 +50,27 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 ### Diorama
 
-<img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, on a partly cloudy day with the sun and on a clear night with the moon and stars" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
+<img width="800" alt="The Diorama layout on a partly cloudy day and a clear night, and below after a tap with the next days, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A small paper landscape for every kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in the top left corner. The sun and the moon move across the sky and set behind the hills. A tap on the card shows the next days on a frosted panel, joined by a faint line through their highs.
+A cozy landscape for every kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. By default it stays simple and only shows the current weather. A tap shows a daily forecast that scrolls sideways.
 
-### Forecast
+### Classic
 
-<img width="800" alt="The Forecast layout, the temperature on a color that changes with the weather, with the next days and a faint temperature line below, on a snowy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/forecast.webp">
+<img width="800" alt="The Classic layout, today's weather and the next days on a rich blue on a sunny day and on a deep indigo on a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-A classic forecast on a background color that changes with the weather. The top shows the day and the date, the temperature, today's high and low, the humidity and the current weather, with the sun or the moon between them. Below, a scrollable row on a frosted panel shows the next days, each with its weather, high, low and chance of rain, and a faint line traces the highs across the days.
+The classic weather card in a modern form, with today's weather and the next days at a glance. Every kind of weather has its own rich color, and the colors turn deeper at night.
 
 ### Sky
 
-<img width="800" alt="The Sky layout, the animated sky of a partly cloudy afternoon with clouds drifting over the current weather and the temperature, a button with today's high and low, and at night after a tap the next days as a curve on a soft blur" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
+<img width="800" alt="The Sky layout on a partly cloudy afternoon and a clear night, and below after a tap with the next days as a curve, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
 
-The animated sky on its own, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the top left corner, behind the clouds that drift past, and a button below them shows today's weather, high and low. A tap anywhere on the card lays a soft blur over it and shows the next days as a curve, with each day's weather on the line and its high and low below.
+The animated sky fills the whole card, with only the current weather and today's high and low on it. Birds, rain and snow pass in front of the temperature. A tap anywhere shows a daily forecast as a curve.
 
 ### Home
 
 <img width="800" alt="The Home layout, a drawn house with a garden, the temperature of each room and a wind compass, on a rainy day and a snowy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-A drawn house with a garden, where light and shadows match the real position of the sun. It shows the temperature outside and in each room, the wind on a compass and the time of the next sunrise or sunset. Birds, rain and snow pass in front of the house, and a light mist drifts around it.
+Made for dashboards about the home: a drawn house with the temperature outside and in each room, and the wind on a compass. The house reacts to what happens around it, with sunlight from the real direction of the sun, snow on the roofs and lit windows at night.
 
 <a name="more-layouts"></a>
 <details>
@@ -87,7 +87,7 @@ These layouts aren't in the layout picker. To use one, paste its YAML into the c
 
 <img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
-The current weather and the temperature on a soft background color based on the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below. Mist, rain and snow pass behind the tiles.
+A detailed overview for a bigger spot on the dashboard. Next to the current weather, tiles show the numbers that matter during the day, like the wind and the chance of rain, and the next hours follow below.
 
 ```yaml
 type: custom:origami-weather
@@ -798,7 +798,7 @@ button_containers:
 
 <img width="800" alt="The Centered layout: the temperature in the middle with the high, the low and the wind, on a partly cloudy day and a snowy night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/centered.webp">
 
-The temperature and the current weather in the center, with today's high and low and the wind below. The clouds drift over soft layers of mist, which fill the whole sky in fog.
+A calm card for a quick look, with the temperature in the middle and only today's high and low and the wind below it. Clouds and mist drift slowly behind it.
 
 ```yaml
 type: custom:origami-weather
@@ -880,7 +880,7 @@ button_containers:
 
 <img width="800" alt="The Comparison layout: the temperature outside beside tiles for today and the next days, with a bar that compares it with today's high and today's chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/comparison.webp">
 
-The outside temperature next to tiles for today and the next days. Below, a bar compares the current temperature with today's high, followed by the current weather and today's chance of rain.
+For a quick look at how the day develops. The temperature outside sits next to the coming days, and a bar shows how close it is to today's high, with the current weather and the chance of rain below.
 
 ```yaml
 type: custom:origami-weather
@@ -1156,7 +1156,7 @@ button_containers:
 
 <br>
 
-The sun travels along an arc from sunrise to sunset and the moon along one from sunset to sunrise, with the temperature and the time of the next sunset or sunrise below. The arcs use `sensor.sun_next_rising` and `sensor.sun_next_setting` from the Sun integration, and the position on them comes from `sensor.time` of the Time & Date integration.
+A card about the course of the day: the sun moves along an arc from sunrise to sunset and the moon along one through the night, with the temperature and the next sunrise or sunset below. The arcs use `sensor.sun_next_rising` and `sensor.sun_next_setting` from the Sun integration, and the position on them comes from `sensor.time` of the Time & Date integration.
 
 ```yaml
 type: custom:origami-weather
@@ -1335,7 +1335,7 @@ Updates replace everything in the card's own folder, so keep other pictures in a
 
 <br>
 
-The card draws the house itself. Sunlight falls on the walls, the tree and the shrubs from the sun's real direction, and their shadows move across the lawn during the day. When it snows, the roofs, the tree and the lawn turn white and smoke rises from the chimney. In dark mode, the windows light up and cast their light onto the lawn. Each room shows the weather entity's temperature until it gets a room sensor.
+Because the card draws the house itself, the house can react to what happens around it. Sunlight comes from the sun's real direction and the shadows move across the lawn during the day, the roofs and the lawn turn white while it snows, and in dark mode the windows light up. Each room shows the weather entity's temperature until it gets a room sensor.
 
 The house from previous versions is still available: `image: old-home` on the container brings it back.
 
@@ -1408,7 +1408,7 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Updating the card keeps the settings of every card. A layout only changes when it's picked again in the layout picker.
 
-Centered, Comparison and Arc are no longer in the layout picker. Cards made with them keep working, and their YAML is under **More layouts**. Classic is now called Forecast and Slim is now Sky, and cards made with Classic or Slim keep working as they are. Cards with `image: demo-home-image` keep the house from previous versions, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker. Cards made with them keep working, and their YAML is under **More layouts**. Slim is now called Sky, and cards made with Slim keep working as they are. Cards with `image: demo-home-image` keep the house from previous versions, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
 

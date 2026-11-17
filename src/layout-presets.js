@@ -37,10 +37,10 @@ const dioramaDay = (offset) => ({
     tap_action: DIORAMA_SWITCH.tap,
     elements: [
         text({ attribute: 'datetime', format: '%a', weight: '500' }),
-        icon('weather', { margin: '5px 0 0' }),
+        icon('weather', { margin: '5px 0 4px' }),
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700' }),
         text({ attribute: 'templow', format: '\u00b0', size: '13px', weight: '500' }),
-        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'color-mix(in srgb, currentColor 22%, transparent)', margin: '-71px 0 0', bar_values: [{ attribute: 'temperature', marker_size: '28px', marker_gap: true }] }
+        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'color-mix(in srgb, currentColor 22%, transparent)', margin: '-75px 0 0', bar_values: [{ attribute: 'temperature', marker_size: '28px', marker_gap: true }] }
     ]
 });
 
@@ -86,7 +86,7 @@ const DIORAMA_CONFIG = Object.freeze({
             position_x: '0',
             position_y: '0',
             custom_width: '100%',
-            padding: '36px 0',
+            padding: '34px 0',
             layout: 'horizontal-scroll',
             scroll_count: 5,
             row_height: '100%',
@@ -112,29 +112,29 @@ const DIORAMA_CONFIG = Object.freeze({
     grid_options: { columns: 'full' }
 });
 
-const DAILY_COLORS = [
-    ['sunny', '#4f93d5', '#172541'],
-    ['clear-night', '#172541', '#172541'],
-    ['partlycloudy', '#5c8fc2', '#222e41'],
-    ['cloudy', '#75899e', '#2a3139'],
-    ['fog', '#879197', '#2f3437'],
-    ['windy', '#539298', '#1e3437'],
-    ['windy-variant', '#5c8ea5', '#22333d'],
-    ['rainy', '#5c7188', '#212933'],
-    ['pouring', '#4c5d71', '#191f28'],
-    ['lightning', '#5e5a78', '#22202f'],
-    ['lightning-rainy', '#53506d', '#1b1926'],
-    ['hail', '#608090', '#233036'],
-    ['snowy', '#7f98af', '#2b3642'],
-    ['snowy-rainy', '#6e8599', '#273139'],
-    ['exceptional', '#2c8ce0', '#132545']
+const CLASSIC_COLORS = [
+    ['sunny', '#2894e2', '#162048'],
+    ['clear-night', '#162048', '#162048'],
+    ['partlycloudy', '#5793ca', '#1b2745'],
+    ['cloudy', '#738ba2', '#242e3e'],
+    ['fog', '#8596a4', '#2a343e'],
+    ['windy', '#488da0', '#12313d'],
+    ['windy-variant', '#5c8ca6', '#1c303f'],
+    ['rainy', '#577391', '#1b2739'],
+    ['pouring', '#486082', '#161f31'],
+    ['lightning', '#53507d', '#231e39'],
+    ['lightning-rainy', '#4a4972', '#1c1931'],
+    ['hail', '#587d8f', '#1c2e39'],
+    ['snowy', '#789cb6', '#27384a'],
+    ['snowy-rainy', '#68869e', '#23303f'],
+    ['exceptional', '#3283e3', '#142152']
 ];
 
 const WHITE = '#ffffff';
 const WHITE_72 = 'rgba(255, 255, 255, 0.72)';
 const WHITE_60 = 'rgba(255, 255, 255, 0.6)';
 
-const dailyColumn = (offset) => ({
+const classicDay = (offset) => ({
     name: dayName(offset),
     entity: PRESET_ENTITY_TOKEN,
     forecast: 'daily',
@@ -149,24 +149,28 @@ const dailyColumn = (offset) => ({
     ]
 });
 
-const dailyStat = (iconName, extra) => [icon(iconName, { color: WHITE_72 }), text({ weight: '500', color: WHITE, ...extra })];
+const classicStat = (iconName, extra) => [icon(iconName, { color: WHITE_72 }), text({ weight: '500', color: WHITE, ...extra })];
 
-const DAILY_CONFIG = Object.freeze({
+const CLASSIC_CONFIG = Object.freeze({
     color_mode: 'dark',
-    sun_size: 56,
-    moon_size: 56,
-    sun_moon_y: '111px 34px',
+    sun_enabled: false,
+    moon_enabled: false,
     cloud_effects: false,
-    mist_effects: true,
+    mist_effects: false,
     bird_effects: false,
     balloon_effects: false,
     plane_effects: false,
     background_mode: 'color',
-    background_color: '#5c8fc2',
-    background_color_dark: '#222e41',
-    background_thresholds: thresholds(DAILY_COLORS),
+    background_color: '#5793ca',
+    background_color_dark: '#1b2745',
+    background_thresholds: thresholds(CLASSIC_COLORS),
     shadow_color: 'inset 0 1px 3px rgba(0, 0, 0, 0.14)',
     card_tap_action: { action: 'more-info' },
+    gradient: true,
+    gradient_angle: 160,
+    gradient_color_1: 'color-mix(in srgb, white 12%, transparent)',
+    gradient_color_2: 'transparent',
+    gradient_stop_2: 75,
     card_height: 'content',
     card_padding: 'var(--ha-space-4, 16px)',
     button_containers: [
@@ -186,9 +190,13 @@ const DAILY_CONFIG = Object.freeze({
                     ]
                 },
                 {
-                    name: 'Temperature',
+                    name: 'Weather and temperature',
                     entity: PRESET_ENTITY_TOKEN,
-                    elements: [text({ attribute: 'temperature', size: '46px', weight: '600', precision: 0, format: '\u00b0', color: WHITE })]
+                    inner_gap: '10px',
+                    elements: [
+                        icon('weather', { icon_size: '44px', color: WHITE }),
+                        text({ attribute: 'temperature', size: '46px', weight: '600', precision: 0, format: '\u00b0', color: WHITE })
+                    ]
                 }
             ]
         },
@@ -206,9 +214,9 @@ const DAILY_CONFIG = Object.freeze({
                     entity: PRESET_ENTITY_TOKEN,
                     forecast: 'daily',
                     elements: [
-                        ...dailyStat('mdi:arrow-up', { attribute: 'temperature', format: '\u00b0', margin: '0 12px 0 0' }),
-                        ...dailyStat('mdi:arrow-down', { attribute: 'templow', format: '\u00b0', margin: '0 12px 0 0' }),
-                        ...dailyStat('mdi:water-outline', { entity: PRESET_ENTITY_TOKEN, attribute: 'humidity' })
+                        ...classicStat('mdi:arrow-up', { attribute: 'temperature', format: '\u00b0', margin: '0 12px 0 0' }),
+                        ...classicStat('mdi:arrow-down', { attribute: 'templow', format: '\u00b0', margin: '0 12px 0 0' }),
+                        ...classicStat('mdi:water-outline', { entity: PRESET_ENTITY_TOKEN, attribute: 'humidity' })
                     ]
                 },
                 { name: 'Condition', entity: PRESET_ENTITY_TOKEN, elements: [text({ weight: '500', color: WHITE })] }
@@ -234,7 +242,7 @@ const DAILY_CONFIG = Object.freeze({
             button_gap: '5px',
             button_text_size: '12px',
             button_icon_size: '26px',
-            buttons: days(1, dailyColumn)
+            buttons: days(1, classicDay)
         }
     ]
 });
@@ -382,7 +390,7 @@ const SKY_CONFIG = Object.freeze({
     button_containers: [
         {
             name: 'Now',
-            layer: 'back',
+            layer: 'middle',
             padding: '22px 22px 0',
             visibility: SKY_SWITCH.shown('off'),
             buttons: [
@@ -465,11 +473,11 @@ export const LAYOUT_PRESETS = Object.freeze([
         config: DIORAMA_CONFIG
     },
     {
-        id: 'forecast',
-        name: 'Forecast',
+        id: 'classic',
+        name: 'Classic',
         description: 'Today\'s weather with high, low and humidity, and the next days',
         icon: 'mdi:view-dashboard-variant-outline',
-        config: DAILY_CONFIG
+        config: CLASSIC_CONFIG
     },
     {
         id: 'sky',

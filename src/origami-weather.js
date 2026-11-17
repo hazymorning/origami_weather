@@ -2449,7 +2449,7 @@ class WeatherCard extends HTMLElement {
     _flipSwitch(action) {
         const id = action && action.action === 'toggle' ? String(action.entity || '') : '';
         if (!id.startsWith('origami.')) return false;
-        const next = this._entityState(this._hass, id).state === 'on' ? 'off' : 'on';
+        const on = String(action.state || 'on'), next = this._entityState(this._hass, id).state === on ? 'off' : on;
         this._switches[id] = next;
         if (this._config.remember_switches === true) { try { localStorage.setItem(`origami-weather:${id}`, next); } catch (_e) { } }
         this._lastSnapshot = null;
@@ -2731,7 +2731,7 @@ class WeatherCard extends HTMLElement {
             .button.has-tint { position: relative; }
             .button.has-tint::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--origami-button-tint); opacity: 0.18; pointer-events: none; z-index: 0; }
             .button.has-tint > * { position: relative; z-index: 1; }
-            .button.format-vertical { flex-direction: column; align-items: center; text-align: center; row-gap: var(--origami-button-gap, 6px); flex-wrap: nowrap; }
+            .button.format-vertical { flex-direction: column; align-items: center; justify-content: center; text-align: center; row-gap: var(--origami-button-gap, 6px); flex-wrap: nowrap; }
             .button.format-split > .button-stack { display: flex; flex-direction: column; row-gap: var(--origami-button-gap, 6px); flex: 1 1 0; min-width: 0; }
             .button.format-vertical .button-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, var(--_button-radius)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); }
             .button.format-vertical .button-icon ha-icon,

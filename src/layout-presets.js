@@ -4,7 +4,8 @@ const text = (extra) => ({ type: 'text', ...extra });
 const icon = (name, extra) => ({ type: 'icon', icon: name, ...extra });
 const CARD_TINT = (percent) => `color-mix(in srgb, var(--origami-card-bg-color, var(--ha-card-background, var(--card-background-color, #fff))) ${percent}%, transparent)`;
 const dayName = (offset) => offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : `In ${offset} days`;
-const cardSwitch = (name) => ({ tap: { action: 'toggle', entity: `origami.${name}` }, shown: (state) => [{ condition: 'state', entity: `origami.${name}`, state }] });
+const days = (first, build) => Array.from({ length: 10 - first }, (_, i) => build(first + i));
+const cardSwitch = (name) => ({ tap: { action: 'toggle', entity: `origami.${name}` }, tab: (state) => ({ action: 'toggle', entity: `origami.${name}`, state }), shown: (state) => [{ condition: 'state', entity: `origami.${name}`, state }] });
 const nextSun = (rising) => ({ entity: 'sun.sun', attribute: rising ? 'next_rising' : 'next_setting', visibility: [{ condition: 'state', entity: 'sun.sun', state: rising ? 'below_horizon' : 'above_horizon' }] });
 const thresholds = (rows) => rows.map(([value, color, color_dark]) => ({ value, color, color_dark }));
 
@@ -34,16 +35,17 @@ const dioramaDay = (offset) => ({
     forecast_offset: offset,
     tap_action: DIORAMA_SWITCH.tap,
     background: true,
-    background_color: CARD_TINT(86),
+    blurred_background: true,
+    background_color: CARD_TINT(76),
     style: 'vertical',
     align: 'center',
-    padding: '24px 0',
-    inner_gap: '4px',
+    padding: '16px 0',
+    inner_gap: '5px',
     elements: [
         text({ attribute: 'datetime', format: '%a', size: '12px', weight: '500' }),
-        icon('weather', { icon_size: '28px', icon_background: false, margin: '2px 0' }),
+        icon('weather', { icon_size: '28px', icon_background: false, margin: '1px 0 0' }),
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700' }),
-        text({ attribute: 'templow', format: '\u00b0', size: '13px', weight: '500', margin: '2px 0 0' })
+        text({ attribute: 'templow', format: '\u00b0', size: '13px', weight: '500' })
     ]
 });
 
@@ -95,7 +97,7 @@ const DIORAMA_CONFIG = Object.freeze({
             row_height: '100%',
             gap: '8px',
             visibility: DIORAMA_SWITCH.shown('on'),
-            buttons: [0, 1, 2, 3, 4, 5, 6].map(dioramaDay)
+            buttons: days(0, dioramaDay)
         }
     ],
     grid_options: {
@@ -235,7 +237,7 @@ const DAILY_CONFIG = Object.freeze({
             button_gap: '5px',
             button_padding: '14px 0',
             align: 'center',
-            buttons: [1, 2, 3, 4, 5, 6].map(dailyColumn)
+            buttons: days(1, dailyColumn)
         }
     ],
     grid_options: {
@@ -364,23 +366,45 @@ const HOME_CONFIG = Object.freeze({
     }
 });
 
-const SLIM_SWITCH = cardSwitch('hours');
-const slimChip = (name, elements, extra) => ({ name, entity: PRESET_ENTITY_TOKEN, tap_action: SLIM_SWITCH.tap, ...extra, elements });
-const slimSun = (rising) => slimChip(rising ? 'Sunrise' : 'Sunset', [icon(rising ? 'mdi:weather-sunset-up' : 'mdi:weather-sunset-down'), text({ weight: '600' })], nextSun(rising));
-const slimHour = (offset) => ({
-    name: offset ? `In ${offset + 1} hours` : 'Next hour',
+const SLIM_VIEW = cardSwitch('view');
+const slimTab = (name, view, elements, extra) => ({ name, entity: PRESET_ENTITY_TOKEN, tap_action: SLIM_VIEW.tab(view), ...extra, elements });
+const slimColumn = (name, view, extra, when) => ({
+    name,
     entity: PRESET_ENTITY_TOKEN,
-    forecast: 'hourly',
-    forecast_offset: offset,
-    tap_action: SLIM_SWITCH.tap,
+    tap_action: SLIM_VIEW.tab(view),
     style: 'vertical',
     align: 'center',
     inner_gap: '2px',
+    ...extra,
     elements: [
         { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', bar_marker_icon_size: '30px', margin: '0 0 8px', bar_values: [{ attribute: 'temperature', marker_size: '36px', marker_gap: true, marker_icon: 'weather' }] },
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
-        text({ attribute: 'datetime', size: '12px', weight: '500' })
+        text({ attribute: 'datetime', size: '12px', weight: '500', ...when })
     ]
+});
+const slimView = (name, view, buttons) => ({
+    name,
+    position: 'custom',
+    position_anchor: 'top-left',
+    position_x: '0',
+    position_y: '0',
+    custom_width: '100%',
+    padding: '19px 0 20px',
+    layout: 'horizontal-scroll',
+    scroll_count: 5,
+    row_height: '100%',
+    align_items: 'stretch',
+    gap: '0',
+    scroll_fade: true,
+    scroll_fade_size: '48px',
+    background: true,
+    grouped: true,
+    border: 'none',
+    blurred_background: true,
+    background_blur: 16,
+    background_color: CARD_TINT(30),
+    visibility: SLIM_VIEW.shown(view),
+    buttons
 });
 
 const SLIM_CONFIG = Object.freeze({
@@ -391,17 +415,16 @@ const SLIM_CONFIG = Object.freeze({
     sun_size: 40,
     moon_size: 40,
     visibility_fade: true,
-    card_tap_action: SLIM_SWITCH.tap,
+    card_tap_action: SLIM_VIEW.tab('off'),
     button_containers: [
         {
             name: 'Now',
             padding: '18px 18px 0',
-            visibility: SLIM_SWITCH.shown('off'),
+            visibility: SLIM_VIEW.shown('off'),
             buttons: [
                 {
                     name: 'Condition and temperature',
                     entity: PRESET_ENTITY_TOKEN,
-                    tap_action: SLIM_SWITCH.tap,
                     style: 'vertical',
                     align: 'start',
                     inner_gap: '8px',
@@ -413,54 +436,24 @@ const SLIM_CONFIG = Object.freeze({
             ]
         },
         {
-            name: 'Details',
+            name: 'Forecast',
             custom_width: '100%',
             padding: '0 18px 18px',
+            layout: 'grid',
+            columns: 2,
+            gap: '8px',
             background: true,
-            layout: 'horizontal-scroll',
-            scroll_fade: true,
-            gap: '6px',
-            button_gap: '5px',
-            button_icon_size: '15px',
             button_text_size: '13px',
-            button_padding: '7px 11px 7px 9px',
+            button_padding: '9px 12px',
             button_background_color: CARD_TINT(55),
-            visibility: SLIM_SWITCH.shown('off'),
+            visibility: SLIM_VIEW.shown('off'),
             buttons: [
-                slimChip('High', [icon('mdi:arrow-up'), text({ attribute: 'temperature', format: '\u00b0', weight: '600' })], { forecast: 'daily' }),
-                slimChip('Low', [icon('mdi:arrow-down'), text({ attribute: 'templow', format: '\u00b0', weight: '600' })], { forecast: 'daily' }),
-                slimChip('Rain', [icon('mdi:umbrella-outline'), text({ attribute: 'precipitation_probability', format: '%', weight: '600' })], { forecast: 'daily' }),
-                slimChip('Wind', [icon('mdi:weather-windy'), text({ attribute: 'wind_speed', precision: 0, weight: '600' })]),
-                slimSun(false),
-                slimSun(true),
-                slimChip('Humidity', [icon('mdi:water-percent'), text({ attribute: 'humidity', weight: '600' })]),
-                slimChip('UV index', [icon('mdi:sun-wireless-outline'), text({ text: 'UV', weight: '500' }), text({ attribute: 'uv_index', weight: '600' })], { forecast: 'daily' })
+                slimTab('Next 2 hours', 'hours', [text({ text: 'Next 2 hours', weight: '500', margin: '0 auto 0 0' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' })], { forecast: 'hourly', forecast_offset: 1 }),
+                slimTab('Today', 'days', [text({ text: 'Today', weight: '500', margin: '0 auto 0 0' }), text({ attribute: 'temperature', format: '\u00b0', weight: '600' }), text({ attribute: 'templow', format: '\u00b0', weight: '500', color: 'var(--secondary-text-color)' })], { forecast: 'daily' })
             ]
         },
-        {
-            name: 'Hours',
-            position: 'custom',
-            position_anchor: 'top-left',
-            position_x: '0',
-            position_y: '0',
-            custom_width: '100%',
-            padding: '14px 8px 16px',
-            layout: 'horizontal-scroll',
-            scroll_count: 5,
-            row_height: '100%',
-            align_items: 'stretch',
-            gap: '0',
-            scroll_fade: true,
-            scroll_fade_size: '48px',
-            background: true,
-            grouped: true,
-            border: 'none',
-            blurred_background: true,
-            background_blur: 16,
-            background_color: CARD_TINT(30),
-            visibility: SLIM_SWITCH.shown('on'),
-            buttons: Array.from({ length: 12 }, (_, i) => slimHour(i * 2))
-        }
+        slimView('Hours', 'hours', Array.from({ length: 12 }, (_, i) => slimColumn(i ? `In ${i * 2 + 1} hours` : 'Next hour', 'hours', { forecast: 'hourly', forecast_offset: i * 2 }))),
+        slimView('Days', 'days', days(0, (i) => slimColumn(dayName(i), 'days', { forecast: 'daily', forecast_offset: i }, { format: '%a' })))
     ],
     grid_options: {
         rows: 'auto',

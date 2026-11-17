@@ -694,11 +694,15 @@ class WeatherCardEditor extends LitElement {
                     </button>`)}
             </div></div>`;}
     _renderSwitchTap(action, set) {
-        const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "";
+        const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "", value = name && action.state ? String(action.state) : "";
+        const toggle = (n, v) => ({ action: "toggle", entity: `origami.${n}`, ...(v ? { state: v } : {}) });
         return html`<div class="compact-fields"><div class="compact-field"><span class="compact-field-label">Switch</span>
                 <input type="text" placeholder="none" .value=${name}
-                    @change=${(e) => { const v = e.target.value.trim(); if (v || name) set(v ? { action: "toggle", entity: `origami.${v}` } : null); }}></div></div>
-            ${name ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>A tap flips this switch. Containers and buttons with a Switch condition named ${name} show or hide.</span></div>` : ""}`;}
+                    @change=${(e) => { const v = e.target.value.trim(); if (v || name) set(v ? toggle(v, value) : null); }}></div>
+            ${name ? html`<div class="compact-field"><span class="compact-field-label">Value</span>
+                <input type="text" placeholder="on" .value=${value}
+                    @change=${(e) => set(toggle(name, e.target.value.trim()))}></div>` : ""}</div>
+            ${name ? html`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${!value ? "A tap flips this switch between on and off." : value === "off" ? "A tap sets this switch back to off." : `A tap sets this switch to ${value}, or back to off when it already is.`} Containers and buttons with a Switch condition named ${name} show or hide.</span></div>` : ""}`;}
     _renderSunMoonPanel() {
         const c = this._formData || {};
         const sunEnabled = c.sun_enabled !== false, moonEnabled = c.moon_enabled !== false;
@@ -1943,8 +1947,8 @@ class WeatherCardEditor extends LitElement {
                                     @change=${(e) => updateCondition(ci, { entity: `origami.${e.target.value.trim() || "details"}` })}></div>
                             <div class="css-field">
                                 <span class="css-field-label">Visible when</span>
-                                <div class="segmented segmented-compact">${["on", "off"].map((v) => html`<button type="button" class=${(c.state != null ? String(c.state) : c.state_not != null ? (String(c.state_not) === "on" ? "off" : "on") : "") === v ? "active" : ""}
-                                    @click=${() => { const arr = [...conditions]; const entry = { ...arr[ci], state: v }; delete entry.state_not; arr[ci] = entry; commitList(arr); }}>${v === "on" ? "On" : "Off"}</button>`)}</div></div></div>` : ""}
+                                <input type="text" placeholder="on" .value=${c.state != null ? String(c.state) : ({ on: "off", off: "on" })[c.state_not] || ""}
+                                    @change=${(e) => { const arr = [...conditions]; const entry = { ...arr[ci], state: e.target.value.trim() || "on" }; delete entry.state_not; arr[ci] = entry; commitList(arr); }}></div></div>` : ""}
                     ${cType === "user" ? html`<div class="css-field">
                             <span class="css-field-label">User IDs (comma-separated)</span>
                             <input type="text" placeholder="abc123, def456"

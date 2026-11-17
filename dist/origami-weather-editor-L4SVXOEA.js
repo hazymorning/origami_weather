@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-OUVQQU4H.js";
+} from "./chunk-G3SZPKIQ.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -1494,14 +1494,18 @@ var WeatherCardEditor = class extends i4 {
             </div></div>`;
   }
   _renderSwitchTap(action, set) {
-    const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "";
+    const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "", value = name && action.state ? String(action.state) : "";
+    const toggle = (n4, v2) => ({ action: "toggle", entity: `origami.${n4}`, ...v2 ? { state: v2 } : {} });
     return b2`<div class="compact-fields"><div class="compact-field"><span class="compact-field-label">Switch</span>
                 <input type="text" placeholder="none" .value=${name}
                     @change=${(e4) => {
       const v2 = e4.target.value.trim();
-      if (v2 || name) set(v2 ? { action: "toggle", entity: `origami.${v2}` } : null);
-    }}></div></div>
-            ${name ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>A tap flips this switch. Containers and buttons with a Switch condition named ${name} show or hide.</span></div>` : ""}`;
+      if (v2 || name) set(v2 ? toggle(v2, value) : null);
+    }}></div>
+            ${name ? b2`<div class="compact-field"><span class="compact-field-label">Value</span>
+                <input type="text" placeholder="on" .value=${value}
+                    @change=${(e4) => set(toggle(name, e4.target.value.trim()))}></div>` : ""}</div>
+            ${name ? b2`<div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>${!value ? "A tap flips this switch between on and off." : value === "off" ? "A tap sets this switch back to off." : `A tap sets this switch to ${value}, or back to off when it already is.`} Containers and buttons with a Switch condition named ${name} show or hide.</span></div>` : ""}`;
   }
   _renderSunMoonPanel() {
     const c4 = this._formData || {};
@@ -3314,14 +3318,14 @@ var WeatherCardEditor = class extends i4 {
                                     @change=${(e4) => updateCondition(ci, { entity: `origami.${e4.target.value.trim() || "details"}` })}></div>
                             <div class="css-field">
                                 <span class="css-field-label">Visible when</span>
-                                <div class="segmented segmented-compact">${["on", "off"].map((v2) => b2`<button type="button" class=${(c4.state != null ? String(c4.state) : c4.state_not != null ? String(c4.state_not) === "on" ? "off" : "on" : "") === v2 ? "active" : ""}
-                                    @click=${() => {
+                                <input type="text" placeholder="on" .value=${c4.state != null ? String(c4.state) : { on: "off", off: "on" }[c4.state_not] || ""}
+                                    @change=${(e4) => {
         const arr = [...conditions];
-        const entry = { ...arr[ci], state: v2 };
+        const entry = { ...arr[ci], state: e4.target.value.trim() || "on" };
         delete entry.state_not;
         arr[ci] = entry;
         commitList(arr);
-      }}>${v2 === "on" ? "On" : "Off"}</button>`)}</div></div></div>` : ""}
+      }}></div></div>` : ""}
                     ${cType === "user" ? b2`<div class="css-field">
                             <span class="css-field-label">User IDs (comma-separated)</span>
                             <input type="text" placeholder="abc123, def456"

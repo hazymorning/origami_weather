@@ -54,7 +54,7 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills, and a tap shows the next days over the whole card.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills, and a tap shows the next days on frosted tiles over the whole card.
 
 ### Daily Forecast
 
@@ -64,9 +64,9 @@ The temperature and the current weather on a color that changes with the weather
 
 ### Slim
 
-<img width="800" alt="The Slim layout, the live sky with the current weather, the temperature and a sliding row of small buttons, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
+<img width="800" alt="The Slim layout, the live sky with the current weather, the temperature and two buttons for the next two hours and today, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with a sliding row below for today's high and low, the chance of rain, the wind, the next sunset or sunrise, the humidity and the UV index. A tap lays a soft blur over the card and shows the next day as a curve, every second hour, with the weather of each hour on it and the temperature and the time below.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with two buttons below, one for the next two hours and one for today. Each one lays a soft blur over the card and shows its forecast as a curve, the next day in steps of two hours or the next days, with the weather on it and the temperature below.
 
 ### Home
 
@@ -1198,6 +1198,102 @@ button_containers:
   - entity: weather.home
     forecast: daily
     forecast_offset: 3
+    align: center
+    background_color: rgba(150,150,150,0.08)
+    elements:
+    - type: icon
+      icon: weather
+    - type: text
+      size: 12px
+      weight: '500'
+      attribute: datetime
+    - type: text
+      weight: '700'
+      attribute: temperature
+      format: °
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 4
+    align: center
+    background_color: rgba(150,150,150,0.08)
+    elements:
+    - type: icon
+      icon: weather
+    - type: text
+      size: 12px
+      weight: '500'
+      attribute: datetime
+    - type: text
+      weight: '700'
+      attribute: temperature
+      format: °
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 5
+    align: center
+    background_color: rgba(150,150,150,0.08)
+    elements:
+    - type: icon
+      icon: weather
+    - type: text
+      size: 12px
+      weight: '500'
+      attribute: datetime
+    - type: text
+      weight: '700'
+      attribute: temperature
+      format: °
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 6
+    align: center
+    background_color: rgba(150,150,150,0.08)
+    elements:
+    - type: icon
+      icon: weather
+    - type: text
+      size: 12px
+      weight: '500'
+      attribute: datetime
+    - type: text
+      weight: '700'
+      attribute: temperature
+      format: °
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 7
+    align: center
+    background_color: rgba(150,150,150,0.08)
+    elements:
+    - type: icon
+      icon: weather
+    - type: text
+      size: 12px
+      weight: '500'
+      attribute: datetime
+    - type: text
+      weight: '700'
+      attribute: temperature
+      format: °
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 8
+    align: center
+    background_color: rgba(150,150,150,0.08)
+    elements:
+    - type: icon
+      icon: weather
+    - type: text
+      size: 12px
+      weight: '500'
+      attribute: datetime
+    - type: text
+      weight: '700'
+      attribute: temperature
+      format: °
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 9
     align: center
     background_color: rgba(150,150,150,0.08)
     elements:

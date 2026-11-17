@@ -119,6 +119,15 @@ button_containers:
         state: "on"
 ```
 
+A switch can also hold a name instead of on and off, like tabs. With `state: hours` on the `toggle`, a tap sets the switch to `hours`, or back to `off` when it already is, and containers that check `state: hours` show only then. Buttons that share one switch open one view at a time. The Slim layout works like that: one button opens the next hours, the other one the next days.
+
+```yaml
+tap_action:
+  action: toggle
+  entity: origami.view
+  state: hours
+```
+
 Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. Remembered switches are kept by name, so cards that use the same name share them. The Diorama layout is built like that: a tap shows the next days over the whole card.
 
 **Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is. Only forecast entries past the last one the service sends are left out, see [Forecasts](#forecasts).
@@ -341,7 +350,7 @@ icon_path: /local/weather-icons/
 | `content_direction` | `string` | `column` | Set to `row` to lay out containers horizontally instead of vertically. |
 | `content_align` | `string` | — | How containers are spread along the card: `start`, `center`, `end`, `between`, `around`, `evenly`. |
 | `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
-| `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons). |
+| `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons), or sets it to its `state`. |
 | `visibility_fade` | `boolean` | `false` | Containers fade in and out when their visibility changes. |
 | `remember_switches` | `boolean` | `false` | The card's switches keep their state on this device after a reload. Cards that use the same switch name share it. |
 | `icon_path` | `string` | — | Folder of custom SVG weather icons, used by every `icon: weather` element that doesn't set its own path. |
@@ -433,7 +442,7 @@ The old `sun_moon_enabled` and `sun_moon_size` are converted to the separate tog
 | `attribute` | `string` | — | Read a specific attribute instead of the state. |
 | `elements` | `list` | — | What the button contains. See [Elements](#elements). |
 | `type` | `string` | — | Set to `ring` for a circular gauge around the button. |
-| `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`, `split`). |
+| `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`, `split`). A `vertical` button that is taller than its content keeps the content in the middle. |
 | `text_size` | `string` | — | Text size for this button. |
 | `text_shadow` | `boolean` | `false` | Keep the text shadow even when the button has no background. |
 | `inner_gap` | `string` | — | Gap between icon and text. |
@@ -458,7 +467,7 @@ The old `sun_moon_enabled` and `sun_moon_size` are converted to the separate tog
 | `color_threshold_attribute` | `string` | — | Attribute to read for the tint value. |
 | `marquee_speed` | `number` | `30` | Scroll speed in px/s for text elements using `overflow: marquee`. |
 | `marquee_rtl` | `boolean` | `false` | Reverse the scroll direction. |
-| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons). |
+| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons), or sets it to its `state`. |
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
 | `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` is today or the next hour, `1` the one after, and so on. Past the last entry the weather service sends, the button is not drawn. |

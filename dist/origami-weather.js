@@ -2264,12 +2264,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-SPBZUSPL.js");
+      await import("./origami-weather-editor-5PXTXG7U.js");
     }
     return Object.assign(document.createElement("origami-weather-editor"), { migrate: _WeatherCard._migrateConfig });
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-WOWXL3YE.js");
+    const { buildStubConfig } = await import("./layout-presets-2BJXZ6SG.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2850,7 +2850,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   static _buildStyles() {
     return `
             :host { display: block; width: 100%; position: relative; background: transparent !important; --_dash-bg: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); }
-            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; border-width: var(--origami-card-border-width, var(--ha-card-border-width, 0px)); border-style: solid; border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0)); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--_dash-bg); --_button-no-bg-shadow: none; }
+            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); --_button-radius: min(calc(var(--_radius) - 5px), 10px); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; border-width: var(--origami-card-border-width, var(--ha-card-border-width, 0px)); border-style: solid; border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0)); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--_dash-bg); --_button-no-bg-shadow: none; }
             #card-root.clickable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
             #card-root.clickable:active { transform: scale(0.98); transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1); }
             #card-root.clickable:not(:active) { transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
@@ -3071,10 +3071,10 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .button .button-text.marquee-host { flex: 1 1 auto; }
             .button .button-text .fancy-unit { font-size: 0.55em; font-weight: 500; opacity: 0.7; vertical-align: baseline; position: relative; top: -0.45em; margin-left: 3px; }
             .button.icon-only { column-gap: 0; row-gap: 0; }
-            .button.with-bg { --_bg: var(--origami-bottom-bg-color, var(--_text-bg)); background: var(--_bg); padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
+            .button.with-bg { --_bg: var(--origami-bottom-bg-color, var(--_text-bg)); background: var(--_bg); padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, var(--_button-radius)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
             .button.with-bg.blurred { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .button:is(.with-bg, .has-bg-image) .button-text { text-shadow: none; }
-            .button.has-bg-image { padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); overflow: hidden; background-image: var(--origami-button-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; }
+            .button.has-bg-image { padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, var(--_button-radius)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); overflow: hidden; background-image: var(--origami-button-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; }
             .button.button-round.has-bg-image { border-radius: 999px; }
             #weather-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.weather}; display: none; }
             #weather-near { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.near}; display: none; }
@@ -3087,7 +3087,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .button.has-tint > * { position: relative; z-index: 1; }
             .button.format-vertical { flex-direction: column; align-items: center; text-align: center; row-gap: var(--origami-button-gap, 6px); flex-wrap: nowrap; }
             .button.format-split > .button-stack { display: flex; flex-direction: column; row-gap: var(--origami-button-gap, 6px); flex: 1 1 0; min-width: 0; }
-            .button.format-vertical .button-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); }
+            .button.format-vertical .button-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, var(--_button-radius)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); }
             .button.format-vertical .button-icon ha-icon,
             .button.format-vertical .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.6em); }
             .button.format-vertical .button-icon img.custom-bottom-icon { height: var(--weather-icon-size, 1.6em); width: var(--weather-icon-size, 1.6em); }
@@ -3101,7 +3101,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .button.align-center.format-vertical { align-items: center; text-align: center; }
             .button.align-end.format-vertical { align-items: flex-end; text-align: end; }
             .button.no-icon-bg .button-icon, .button .button-icon.el-no-icon-bg { background: none !important; border: none !important; box-shadow: none !important; aspect-ratio: unset !important; border-radius: 0 !important; overflow: visible !important; padding: var(--weather-icon-padding, 0) !important; }
-            .button.has-icon-bg .button-icon, .button .button-icon.el-icon-bg { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); align-self: stretch; }
+            .button.has-icon-bg .button-icon, .button .button-icon.el-icon-bg { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, var(--_button-radius)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); align-self: stretch; }
             .button.has-icon-bg:not(.with-bg) .button-icon, .button:not(.with-bg) .button-icon.el-icon-bg { background: var(--_bg, var(--origami-bottom-bg-color, var(--_text-bg))); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
             .button.has-icon-bg:not(.with-bg).blurred .button-icon { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .button.has-icon-bg.with-bg .button-icon, .button.with-bg .button-icon.el-icon-bg { background: var(--origami-icon-bg-color, color-mix(in srgb, var(--ha-card-background, var(--card-background-color, var(--primary-background-color))) 20%, transparent)); border: none; box-shadow: var(--_origami-button-shadow); }
@@ -3147,7 +3147,8 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .button-bar.shape-curve > .gauge-marker.gap { background: none; box-shadow: none; }
             .button-bar.shape-curve > .gauge-marker.bare { visibility: hidden; }
             .buttons-row.has-curve { position: relative; isolation: isolate; }
-            .gauge-curve { position: absolute; inset-inline-start: 0; top: 0; z-index: -1; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
+            .buttons-row.has-curve > .button > *, .buttons-row.has-curve > .button:is(:active, .blurred) { z-index: 1; }
+            .gauge-curve { position: absolute; inset-inline-start: 0; top: 0; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
             .button.button-bar-type { flex-wrap: wrap; }
             .button.button-bar-type.format-vertical { flex-wrap: nowrap; }
             .button.button-bar-type.format-vertical .button-bar { align-self: stretch; width: auto; }
@@ -3668,11 +3669,11 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       const group = bars.filter((b) => b.dataset.gauge.split("-")[1] === el), vs = group.flatMap((b) => [...b.children].map((m) => +m.dataset.v)), cs = getComputedStyle(group[0]);
       const lo = +(group[0].dataset.min ?? Math.min(...vs)), hi = +(group[0].dataset.max ?? Math.max(...vs)), stroke = `stroke:${cs.getPropertyValue("--origami-gauge-color")};stroke-width:${cs.getPropertyValue("--origami-gauge-w")}`;
       for (const b of group) {
-        const r = b.getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue("--_in")), x = (r.left + r.width / 2 - box.left) * k, top = (r.top - box.top) * k, h = r.height * k;
+        const r = b.getBoundingClientRect(), c = b.closest(".button").getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue("--_in")), x = (r.left + r.width / 2 - box.left) * k, top = (r.top - box.top) * k, h = r.height * k;
         for (const m of b.children) {
-          const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5, y = top + pad + (1 - t) * (h - 2 * pad), key = `${el}:${m.dataset.line}`, runs = lines.get(key) || [], run = runs.at(-1);
-          if (run && Math.abs(top - run.top) < h / 2) run.pts.push([x, y]);
-          else lines.set(key, [...runs, { top, stroke, pts: [[x, y]] }]);
+          const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5, y = top + pad + (1 - t) * (h - 2 * pad), key = `${el}:${m.dataset.line}`, runs = lines.get(key) || [], run = runs.at(-1), pt = [x, y, (c.left - box.left) * k, (c.right - box.left) * k];
+          if (run && Math.abs(top - run.top) < h / 2) run.pts.push(pt);
+          else lines.set(key, [...runs, { top, stroke, pts: [pt] }]);
           if (m.classList.contains("gap")) holes.push([x, y, m.offsetWidth / 2 + 1.5]);
           pos.push([m, t]);
         }
@@ -3684,7 +3685,19 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const a = s[i - 1] ?? s[i], b = s[i] ?? a, ha = h[i - 1] ?? h[i], hb = h[i] ?? ha;
         return (Math.sign(a) + Math.sign(b)) * Math.min(Math.abs(a), Math.abs(b), Math.abs(a * hb + b * ha) / (ha + hb) / 2);
       });
-      return p.map(([x, y], i) => i ? `C${f(p[i - 1][0] + h[i - 1] / 3)},${f(p[i - 1][1] + m[i - 1] * h[i - 1] / 3)} ${f(x - h[i - 1] / 3)},${f(y - m[i] * h[i - 1] / 3)} ${f(x)},${f(y)}` : `M${f(x)},${f(y)}`).join("");
+      return p.map(([x, y, l, r], i) => {
+        if (!i) return `M${f(x)},${f(y)}`;
+        const [x0, y0, l0, r0] = p[i - 1], w2 = h[i - 1], from = w2 > 0 ? r0 : l0, to = w2 > 0 ? l : r;
+        const at = (u) => {
+          const t = (u - x0) / w2, a = m[i - 1] * w2, b = m[i] * w2;
+          return [y0 + t * (a + t * (3 * (y - y0) - 2 * a - b + t * (2 * (y0 - y) + a + b))), (a + t * (6 * (y - y0) - 4 * a - 2 * b + 3 * t * (2 * (y0 - y) + a + b))) / w2];
+        };
+        const seg = (u, v) => {
+          const [yu, mu] = at(u), [yv, mv] = at(v), q = (v - u) / 3;
+          return `C${f(u + q)},${f(yu + mu * q)} ${f(v - q)},${f(yv - mv * q)} ${f(v)},${f(yv)}`;
+        };
+        return (to - from) * Math.sign(w2) > 0.5 ? `${seg(x0, from)}M${f(to)},${f(at(to)[0])}${seg(to, x)}` : seg(x0, x);
+      }).join("");
     };
     const html = [...lines.values()].flat().filter((r) => r.pts.length > 1).map((r) => `<path d="${path(r.pts)}" style="${r.stroke}"/>`).join("");
     for (const [m, t] of pos) m.style.setProperty("--origami-gauge-pos", t.toFixed(4));

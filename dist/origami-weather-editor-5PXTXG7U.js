@@ -1,7 +1,7 @@
 import {
   LAYOUT_PRESETS,
   instantiatePreset
-} from "./chunk-7BWAJMAG.js";
+} from "./chunk-MLKXIV7L.js";
 
 // node_modules/@lit/reactive-element/css-tag.js
 /**
@@ -1483,7 +1483,7 @@ var WeatherCardEditor = class extends i4 {
   }
   _renderLayoutsPanel() {
     return b2`<div class="settings-group">
-            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts are made of the same containers, buttons and elements, so their parts can be mixed freely.</span></div>
+            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Picking a layout replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts are made of the same containers, buttons and elements, so their parts can be mixed freely.</span></div>
             <div class="preset-grid">
                 ${LAYOUT_PRESETS.map((preset) => b2`
                     <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>

@@ -54,7 +54,7 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 <img width="800" alt="The Diorama layout, a paper landscape for each kind of weather, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
-A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills, and a tap shows the next days over the whole card.
+A little paper landscape for each kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard, with the temperature and the current weather in a corner of the sky. The sun and the moon cross the sky and set behind the hills, and a tap shows the next days over the whole card, with a faint curve of the temperatures through them.
 
 ### Daily Forecast
 
@@ -64,9 +64,9 @@ The temperature and the current weather on a color that changes with the weather
 
 ### Slim
 
-<img width="800" alt="The Slim layout, the live sky with the temperature and a sliding row of small chips, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
+<img width="800" alt="The Slim layout, the live sky with the current weather, the temperature and a sliding row of small buttons, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes, on a card a little lower than Diorama. The temperature and the current weather sit in the corner, with a sliding row below for today's high and low, the chance of rain, the wind, the next sunset or sunrise, the humidity and the UV index. A tap lays a soft blur over the card and shows the next day as a curve, every second hour, with the weather of each one on it.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with a sliding row below for today's high and low, the chance of rain, the wind, the next sunset or sunrise, the humidity and the UV index. A tap lays a soft blur over the card and shows the next day as a curve, every second hour, with the weather of each hour on it and the temperature and the time below.
 
 ### Home
 
@@ -157,6 +157,14 @@ Once it works, play around with the settings to find a look that fits. The Home 
 
 </details>
 
+<a name="more-layouts"></a>
+<details>
+<summary><b>Other layouts</b></summary>
+
+<br>
+
+These layouts aren't in the layout picker. Paste one into the code editor and change each `weather.home` in it to the home's weather entity.
+
 <details>
 <summary><b>Panel</b></summary>
 
@@ -164,17 +172,785 @@ Once it works, play around with the settings to find a look that fits. The Home 
 
 <img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
-The current weather and the temperature on a soft color that follows the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below. Mist, rain and snow pass behind the tiles. Panel is in the layout picker.
+The current weather and the temperature on a soft color that follows the weather and the theme, with frosted tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below. Mist, rain and snow pass behind the tiles.
+
+```yaml
+type: custom:origami-weather
+weather_entity: weather.home
+color_mode: theme
+card_height: content
+card_padding: 20px
+content_direction: row
+content_align: between
+sun_enabled: false
+moon_enabled: false
+cloud_effects: false
+mist_effects: true
+mist_density: 0.5
+night_sky_effects: false
+bird_effects: false
+balloon_effects: false
+plane_effects: false
+background_mode: color
+background_color: 'var(--ha-card-background, var(--card-background-color, #fff))'
+background_thresholds:
+- value: sunny
+  color: 'color-mix(in srgb, rgb(255 184 77) 20%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(255 184 77) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: clear-night
+  color: 'color-mix(in srgb, rgb(108 128 204) 16%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(108 128 204) 12%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: exceptional
+  color: 'color-mix(in srgb, rgb(255 140 90) 20%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(255 140 90) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: partlycloudy
+  color: 'color-mix(in srgb, rgb(120 172 224) 20%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(120 172 224) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: cloudy
+  color: 'color-mix(in srgb, rgb(146 158 174) 20%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(146 158 174) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: fog
+  color: 'color-mix(in srgb, rgb(170 176 182) 24%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(170 176 182) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: windy
+  color: 'color-mix(in srgb, rgb(108 180 176) 20%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(108 180 176) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: windy-variant
+  color: 'color-mix(in srgb, rgb(116 168 190) 20%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(116 168 190) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: rainy
+  color: 'color-mix(in srgb, rgb(96 140 196) 22%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(96 140 196) 12%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: pouring
+  color: 'color-mix(in srgb, rgb(76 112 170) 26%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(76 112 170) 14%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: lightning
+  color: 'color-mix(in srgb, rgb(132 108 180) 22%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(132 108 180) 12%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: lightning-rainy
+  color: 'color-mix(in srgb, rgb(116 98 168) 26%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(116 98 168) 14%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: hail
+  color: 'color-mix(in srgb, rgb(110 160 180) 22%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(110 160 180) 12%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: snowy
+  color: 'color-mix(in srgb, rgb(176 200 228) 26%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(176 200 228) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+- value: snowy-rainy
+  color: 'color-mix(in srgb, rgb(150 176 204) 24%, var(--ha-card-background, var(--card-background-color, #fff)))'
+  color_dark: 'color-mix(in srgb, rgb(150 176 204) 10%, var(--ha-card-background, var(--card-background-color, #fff)))'
+background_haze: false
+card_tap_action:
+  action: more-info
+button_containers:
+- name: Now
+  custom_width: 60%
+  gap: 6px
+  buttons:
+  - name: Condition
+    entity: weather.home
+    width: 100%
+    elements:
+    - type: text
+      size: 24px
+      weight: '600'
+      color: var(--primary-text-color)
+      overflow: wrap
+  - name: High and low
+    entity: weather.home
+    forecast: daily
+    inner_gap: 2px
+    elements:
+    - type: icon
+      icon: mdi:arrow-up
+      icon_size: 16px
+      color: var(--secondary-text-color)
+    - type: text
+      attribute: temperature
+      format: °
+      size: 16px
+      weight: '500'
+      color: var(--primary-text-color)
+      margin: 0 12px 0 0
+    - type: icon
+      icon: mdi:arrow-down
+      icon_size: 16px
+      color: var(--secondary-text-color)
+    - type: text
+      attribute: templow
+      format: °
+      size: 16px
+      weight: '500'
+      color: var(--primary-text-color)
+- name: Temperature
+  custom_width: 40%
+  justify_content: end
+  buttons:
+  - name: Temperature
+    entity: weather.home
+    attribute: temperature
+    elements:
+    - type: text
+      size: 60px
+      weight: '600'
+      precision: 0
+      format: °
+      color: var(--primary-text-color)
+      margin: -0.2em -0.06em -0.18em 0
+- name: Wind
+  custom_width: calc(50% - 4px)
+  margin: 18px 0 0
+  padding: 12px
+  gap: 8px
+  grouped: true
+  background: true
+  blurred_background: true
+  background_color: color-mix(in srgb, var(--primary-text-color) 5%, transparent)
+  shadow: false
+  buttons:
+  - name: Label
+    entity: weather.home
+    width: 100%
+    inner_gap: 6px
+    elements:
+    - type: icon
+      icon: mdi:weather-windy
+      icon_size: 18px
+      color: var(--secondary-text-color)
+    - type: text
+      text: Wind
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+  - name: Value
+    entity: weather.home
+    elements:
+    - type: text
+      size: 17px
+      weight: '600'
+      color: var(--primary-text-color)
+      attribute: wind_speed
+      precision: 0
+- name: Humidity
+  custom_width: calc(50% - 4px)
+  margin: 18px 0 0
+  padding: 12px
+  gap: 8px
+  grouped: true
+  background: true
+  blurred_background: true
+  background_color: color-mix(in srgb, var(--primary-text-color) 5%, transparent)
+  shadow: false
+  buttons:
+  - name: Label
+    entity: weather.home
+    width: 100%
+    inner_gap: 6px
+    elements:
+    - type: icon
+      icon: mdi:water-percent
+      icon_size: 18px
+      color: var(--secondary-text-color)
+    - type: text
+      text: Humidity
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+  - name: Value
+    entity: weather.home
+    elements:
+    - type: text
+      size: 17px
+      weight: '600'
+      color: var(--primary-text-color)
+      attribute: humidity
+- name: UV index
+  custom_width: calc(50% - 4px)
+  margin: 8px 0 0
+  padding: 12px
+  gap: 8px
+  grouped: true
+  background: true
+  blurred_background: true
+  background_color: color-mix(in srgb, var(--primary-text-color) 5%, transparent)
+  shadow: false
+  buttons:
+  - name: Label
+    entity: weather.home
+    width: 100%
+    inner_gap: 6px
+    elements:
+    - type: icon
+      icon: mdi:sun-wireless-outline
+      icon_size: 18px
+      color: var(--secondary-text-color)
+    - type: text
+      text: UV index
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+  - name: Value
+    entity: weather.home
+    elements:
+    - type: text
+      size: 17px
+      weight: '600'
+      color: var(--primary-text-color)
+      attribute: uv_index
+- name: Rain
+  custom_width: calc(50% - 4px)
+  margin: 8px 0 0
+  padding: 12px
+  gap: 8px
+  grouped: true
+  background: true
+  blurred_background: true
+  background_color: color-mix(in srgb, var(--primary-text-color) 5%, transparent)
+  shadow: false
+  buttons:
+  - name: Label
+    entity: weather.home
+    width: 100%
+    inner_gap: 6px
+    elements:
+    - type: icon
+      icon: mdi:umbrella-outline
+      icon_size: 18px
+      color: var(--secondary-text-color)
+    - type: text
+      text: Rain
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+  - name: Value
+    entity: weather.home
+    forecast: daily
+    elements:
+    - type: text
+      size: 17px
+      weight: '600'
+      color: var(--primary-text-color)
+      attribute: precipitation_probability
+      format: '%'
+- name: Forecast
+  custom_width: 100%
+  layout: horizontal-scroll
+  scroll_count: 5
+  margin: 18px 0 0
+  padding: 4px 0
+  button_style: vertical
+  align: center
+  buttons:
+  - name: Next hour
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 0
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 2 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 1
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 3 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 2
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 4 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 3
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 5 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 4
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 6 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 5
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 7 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 6
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 8 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 7
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 9 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 8
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 10 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 9
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 11 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 10
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 12 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 11
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 13 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 12
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 14 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 13
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 15 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 14
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 16 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 15
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 17 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 16
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 18 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 17
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 19 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 18
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 20 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 19
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 21 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 20
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 22 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 21
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 23 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 22
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+  - name: In 24 hours
+    entity: weather.home
+    forecast: hourly
+    forecast_offset: 23
+    elements:
+    - type: text
+      attribute: datetime
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+    - type: icon
+      icon: weather
+      icon_size: 24px
+      color: var(--primary-text-color)
+      margin: 6px 0
+    - type: text
+      attribute: temperature
+      format: °
+      size: 15px
+      weight: '600'
+      color: var(--primary-text-color)
+grid_options:
+  rows: auto
+  columns: 12
+```
 
 </details>
-
-<a name="more-layouts"></a>
-<details>
-<summary><b>Other layouts</b></summary>
-
-<br>
-
-Centered, Comparison and Arc are no longer in the layout picker, but they still work. Paste one into the code editor and change each `weather.home` in it to the home's weather entity.
 
 <details>
 <summary><b>Centered</b></summary>
@@ -209,7 +985,7 @@ button_containers:
     padding: '0'
     elements:
     - type: text
-      weight: '800'
+      weight: '700'
       attribute: temperature
       precision: 0
       fancy_unit: true
@@ -357,7 +1133,7 @@ button_containers:
       precision: 0
       format: °
       size: 42px
-      weight: '800'
+      weight: '700'
 - position: custom
   position_anchor: top-right
   layout: horizontal-scroll
@@ -601,7 +1377,7 @@ button_containers:
       precision: 0
       format: °
       size: clamp(24px, 8cqmin, 36px)
-      weight: '800'
+      weight: '700'
     - type: text
       size: clamp(13px, 3.5cqmin, 16px)
       weight: '500'
@@ -620,7 +1396,7 @@ button_containers:
     - type: text
       attribute: next_setting
       size: clamp(24px, 8cqmin, 36px)
-      weight: '800'
+      weight: '700'
     - type: text
       text: Sunset
       size: clamp(13px, 3.5cqmin, 16px)
@@ -635,7 +1411,7 @@ button_containers:
     - type: text
       attribute: next_rising
       size: clamp(24px, 8cqmin, 36px)
-      weight: '800'
+      weight: '700'
     - type: text
       text: Sunrise
       size: clamp(13px, 3.5cqmin, 16px)
@@ -688,6 +1464,8 @@ Cards keep their settings when the card is updated. A layout only changes when i
 Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Classic is now Daily Forecast and Slim has a new form in the layout picker, and Classic and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
+
+Button backgrounds are now rounded by at most 10px, so small buttons don't turn into capsules on themes with very round cards. `--origami-bottom-bg-radius` still sets any radius.
 
 Containers can sit between the weather layers with `layer`. Custom CSS that set a `z-index` on `#free-layer` or `#content-layer` to put a picture behind the rain no longer does that, `layer: middle` on the picture's container does it now.
 

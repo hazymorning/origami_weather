@@ -2793,8 +2793,7 @@ class WeatherCard extends HTMLElement {
             .button-bar.shape-curve > .gauge-marker.gap { background: none; box-shadow: none; }
             .button-bar.shape-curve > .gauge-marker.bare { visibility: hidden; }
             .buttons-row.has-curve { position: relative; isolation: isolate; }
-            .buttons-row.has-curve > .button > *, .buttons-row.has-curve > .button:is(:active, .blurred) { z-index: 1; }
-            .gauge-curve { position: absolute; inset-inline-start: 0; top: 0; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
+            .gauge-curve { position: absolute; inset-inline-start: 0; top: 0; z-index: -1; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
             .button.button-bar-type { flex-wrap: wrap; }
             .button.button-bar-type.format-vertical { flex-wrap: nowrap; }
             .button.button-bar-type.format-vertical .button-bar { align-self: stretch; width: auto; }
@@ -3266,10 +3265,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             const group = bars.filter(b => b.dataset.gauge.split('-')[1] === el), vs = group.flatMap(b => [...b.children].map(m => +m.dataset.v)), cs = getComputedStyle(group[0]);
             const lo = +(group[0].dataset.min ?? Math.min(...vs)), hi = +(group[0].dataset.max ?? Math.max(...vs)), stroke = `stroke:${cs.getPropertyValue('--origami-gauge-color')};stroke-width:${cs.getPropertyValue('--origami-gauge-w')}`;
             for (const b of group) {
-                const r = b.getBoundingClientRect(), c = b.closest('.button').getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue('--_in')), x = (r.left + r.width / 2 - box.left) * k, top = (r.top - box.top) * k, h = r.height * k;
+                const r = b.getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue('--_in')), x = (r.left + r.width / 2 - box.left) * k, top = (r.top - box.top) * k, h = r.height * k;
                 for (const m of b.children) {
-                    const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5, y = top + pad + (1 - t) * (h - 2 * pad), key = `${el}:${m.dataset.line}`, runs = lines.get(key) || [], run = runs.at(-1), pt = [x, y, (c.left - box.left) * k, (c.right - box.left) * k];
-                    if (run && Math.abs(top - run.top) < h / 2) run.pts.push(pt); else lines.set(key, [...runs, { top, stroke, pts: [pt] }]);
+                    const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5, y = top + pad + (1 - t) * (h - 2 * pad), key = `${el}:${m.dataset.line}`, runs = lines.get(key) || [], run = runs.at(-1);
+                    if (run && Math.abs(top - run.top) < h / 2) run.pts.push([x, y]); else lines.set(key, [...runs, { top, stroke, pts: [[x, y]] }]);
                     if (m.classList.contains('gap')) holes.push([x, y, m.offsetWidth / 2 + 1.5]);
                     pos.push([m, t]);
                 }
@@ -3278,13 +3277,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const path = (p) => {
             const h = p.slice(1).map((q, i) => q[0] - p[i][0]), s = h.map((d, i) => (p[i + 1][1] - p[i][1]) / d), f = v => Math.round(v * 10) / 10;
             const m = p.map((_, i) => { const a = s[i - 1] ?? s[i], b = s[i] ?? a, ha = h[i - 1] ?? h[i], hb = h[i] ?? ha; return (Math.sign(a) + Math.sign(b)) * Math.min(Math.abs(a), Math.abs(b), Math.abs(a * hb + b * ha) / (ha + hb) / 2); });
-            return p.map(([x, y, l, r], i) => {
-                if (!i) return `M${f(x)},${f(y)}`;
-                const [x0, y0, l0, r0] = p[i - 1], w = h[i - 1], from = w > 0 ? r0 : l0, to = w > 0 ? l : r;
-                const at = (u) => { const t = (u - x0) / w, a = m[i - 1] * w, b = m[i] * w; return [y0 + t * (a + t * (3 * (y - y0) - 2 * a - b + t * (2 * (y0 - y) + a + b))), (a + t * (6 * (y - y0) - 4 * a - 2 * b + 3 * t * (2 * (y0 - y) + a + b))) / w]; };
-                const seg = (u, v) => { const [yu, mu] = at(u), [yv, mv] = at(v), q = (v - u) / 3; return `C${f(u + q)},${f(yu + mu * q)} ${f(v - q)},${f(yv - mv * q)} ${f(v)},${f(yv)}`; };
-                return (to - from) * Math.sign(w) > 0.5 ? `${seg(x0, from)}M${f(to)},${f(at(to)[0])}${seg(to, x)}` : seg(x0, x);
-            }).join('');
+            return p.map(([x, y], i) => i ? `C${f(p[i - 1][0] + h[i - 1] / 3)},${f(p[i - 1][1] + m[i - 1] * h[i - 1] / 3)} ${f(x - h[i - 1] / 3)},${f(y - m[i] * h[i - 1] / 3)} ${f(x)},${f(y)}` : `M${f(x)},${f(y)}`).join('');
         };
         const html = [...lines.values()].flat().filter(r => r.pts.length > 1).map(r => `<path d="${path(r.pts)}" style="${r.stroke}"/>`).join('');
         for (const [m, t] of pos) m.style.setProperty('--origami-gauge-pos', t.toFixed(4));

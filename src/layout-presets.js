@@ -37,14 +37,13 @@ const dioramaDay = (offset) => ({
     background_color: CARD_TINT(86),
     style: 'vertical',
     align: 'center',
-    padding: '20px 0',
+    padding: '24px 0',
     inner_gap: '4px',
     elements: [
         text({ attribute: 'datetime', format: '%a', size: '12px', weight: '500' }),
         icon('weather', { icon_size: '28px', icon_background: false, margin: '2px 0' }),
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700' }),
-        text({ attribute: 'templow', format: '\u00b0', size: '13px', weight: '500', margin: '2px 0 0' }),
-        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'color-mix(in srgb, currentColor 25%, transparent)', margin: '-74px 0 0', bar_values: [{ attribute: 'temperature', marker_size: '36px', marker_gap: true }] }
+        text({ attribute: 'templow', format: '\u00b0', size: '13px', weight: '500', margin: '2px 0 0' })
     ]
 });
 
@@ -95,7 +94,6 @@ const DIORAMA_CONFIG = Object.freeze({
             scroll_count: 5,
             row_height: '100%',
             gap: '8px',
-            scroll_fade: true,
             visibility: DIORAMA_SWITCH.shown('on'),
             buttons: [0, 1, 2, 3, 4, 5, 6].map(dioramaDay)
         }

@@ -66,13 +66,13 @@ The temperature and the current weather on a color that changes with the weather
 
 <img width="800" alt="The Slim layout, the live sky with the temperature and a sliding row of small chips, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/slim.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes, on a card a little lower than Diorama. The temperature and the current weather sit in the corner, with a sliding row below for today's high and low, the chance of rain, the wind, the next sunset or sunrise, the humidity and the UV index. A tap lays a soft blur over the card and shows the next hours as a curve, with the weather of each hour on it.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes, on a card a little lower than Diorama. The temperature and the current weather sit in the corner, with a sliding row below for today's high and low, the chance of rain, the wind, the next sunset or sunrise, the humidity and the UV index. A tap lays a soft blur over the card and shows the next day as a curve, every second hour, with the weather of each one on it.
 
 ### Home
 
 <img width="800" alt="The Home layout, a house in its garden with the temperature of each room and a wind compass, by day and by night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Birds, rain and snow pass in front of it, and a light mist drifts behind it.
+A house in its garden that follows the sun, with the temperature of each room and a compass for the wind. Birds, rain and snow pass in front of it, and a light mist drifts around it.
 
 ## More
 
@@ -124,7 +124,7 @@ The plain house of earlier versions is still there: `image: old-home` on the con
 
 <br>
 
-An AI can draw a real home and build the card around it, in any style and with as much around the house as fits, from a bit of lawn to the whole garden or the hills behind it. Use the most capable model available. It has to understand photos, draw clean pictures and read the card's source code, which comes to about 300 KB of text together with the README and the reference. A model that can run code does better, because it can look at its pictures before handing them over.
+An AI can draw a real home and build the card around it, in any style and with as much around the house as fits, from a bit of lawn to the whole garden or the hills behind it. Use the most capable model available. It has to understand photos, draw clean pictures and read the card's source code, which comes to well over 300 KB of text together with the README and the reference. A model that can run code does better, because it can look at its pictures before handing them over.
 
 A drawn home is a normal picture file, and the card can't change anything inside it. So everything that should change, like the night, a room's light, the sunlight or snow, becomes a picture of its own that lies exactly on top of the house. The card shows or fades these pictures as needed. A day and a night picture are enough to start with.
 
@@ -153,7 +153,7 @@ The pictures go into `/config/www/home`, for example with the File editor or a S
 
 It rarely comes out right on the first try. Screenshots of the card and one or two concrete wishes at a time work best, like a flatter roof or a taller tree. Error messages can go to the AI as they are.
 
-Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, so only birds, rain, snow and a light mist are left. The house sits in the middle of the weather, so birds, rain and snow pass in front of it, while the mist, the sun, the moon and the stars stay behind it, and so do the clouds, balloons and planes once they're back on. Turning some of them back on or trying another background can change the whole feel, and almost anything in the README and the reference can go into it, so let the AI try things.
+Once it works, play around with the settings to find a look that fits. The Home layout turns off the sun, the moon, the clouds, the stars, the balloons and the planes, so only birds, rain, snow and a light mist are left. The house sits in the middle of the weather, so birds, rain and snow pass in front of it, while most of the mist, the sun, the moon and the stars stay behind it, and so do the clouds, balloons and planes once they're back on. Turning some of them back on or trying another background can change the whole feel, and almost anything in the README and the reference can go into it, so let the AI try things.
 
 </details>
 
@@ -685,9 +685,11 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Cards keep their settings when the card is updated. A layout only changes when it's picked again in the layout picker.
 
-Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Slim is in the layout picker in a new form, and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Classic is now Daily Forecast and Slim has a new form in the layout picker, and Classic and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
+
+Containers can sit between the weather layers with `layer`. Custom CSS that set a `z-index` on `#free-layer` or `#content-layer` to put a picture behind the rain no longer does that, `layer: middle` on the picture's container does it now.
 
 Without HACS, the card now comes as several files, and they all belong in one folder. Copy everything in `dist`, the `diorama` folder included, next to `origami-weather.js`, or into a folder of its own as **Install the card** describes.
 

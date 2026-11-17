@@ -56,7 +56,7 @@ Containers sit in front of the sky and everything that moves in it. `layer` move
 
 - `layer: base` keeps it in front of the weather, but behind the containers without a `layer`.
 - `layer: back` puts it behind the weather, so clouds, mist, rain, snow, birds and planes pass in front of it.
-- `layer: middle` puts it into the weather, with planes, mist and clouds behind it and birds, rain and snow in front of it. The house of the Home layout sits there.
+- `layer: middle` puts it into the weather, with planes, clouds and most of the mist behind it, and birds, rain, snow and the nearest layer of mist in front of it. The house of the Home layout sits there.
 - `layer: sky` puts it behind the sun, the moon and the stars as well, right in front of the sky and its pictures. Pictures with `weather_image_front` are in front of it too.
 
 ```yaml
@@ -73,7 +73,7 @@ On the same layer, a container further down the list sits in front of the ones a
 4. containers with `layer: back`
 5. planes, balloons, mist and clouds
 6. containers with `layer: middle`
-7. birds, rain, hail and snow
+7. birds, rain, hail and snow, and the nearest layer of mist while a container with `layer: middle` is shown
 8. the `gradient`, `bg_blend` and `edge_fade`
 9. containers with `layer: base`
 10. all other containers
@@ -119,9 +119,9 @@ button_containers:
         state: "on"
 ```
 
-Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. The Diorama layout is built like that: a tap shows the next days over the whole card.
+Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. Remembered switches are kept by name, so cards that use the same name share them. The Diorama layout is built like that: a tap shows the next days over the whole card.
 
-**Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is.
+**Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is. Only forecast entries past the last one the service sends are left out, see [Forecasts](#forecasts).
 
 **Free positioning.** Any button can be taken out of the normal flow and placed freely inside its container:
 
@@ -283,7 +283,7 @@ Values don't have to be numbers either. Times work too, both a plain `06:32` and
 
 A gauge on the sun entity without an attribute shows where the sun is in its day, from 0 at midnight over 50 at noon to 100 at the next midnight.
 
-`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Daily Forecast layout. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the hours of the Slim layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
+`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun unless `bar_marker` is `false`, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Daily Forecast layout. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the hours of the Slim layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
 
 ```yaml
 buttons:
@@ -343,7 +343,7 @@ icon_path: /local/weather-icons/
 | `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
 | `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons). |
 | `visibility_fade` | `boolean` | `false` | Containers fade in and out when their visibility changes. |
-| `remember_switches` | `boolean` | `false` | The card's switches keep their state on this device after a reload. |
+| `remember_switches` | `boolean` | `false` | The card's switches keep their state on this device after a reload. Cards that use the same switch name share it. |
 | `icon_path` | `string` | — | Folder of custom SVG weather icons, used by every `icon: weather` element that doesn't set its own path. |
 | `css` | `string` | — | Custom CSS, applied inside the card, for small changes without card-mod. |
 
@@ -351,7 +351,7 @@ icon_path: /local/weather-icons/
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows `sun_entity`, `theme` follows the HA theme, and `dark` or `light` keep the card in one of them. With `dark` and `light`, `background_color_dark` is used at night. When the card doesn't match the theme, embedded cards and theme colors inside the card follow the card. |
+| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows `sun_entity`, `theme` follows the HA theme, and `dark` or `light` keep the card in one of them. With `dark` and `light`, `background_color_dark` and `color_dark` are used at night. When the card doesn't match the theme, embedded cards and theme colors inside the card follow the card. |
 | `dark_theme_adaptation` | `boolean` | `true` | Darkens and saturates the sky, background images, sun and effects a bit while the HA theme is dark but the card is in light mode. Only used with `background_mode: default` or `images`, and does nothing with `color_mode: theme` since the card is dark then anyway. |
 | `card_frame` | `boolean` | `true` | Set to `false` to drop the rounded corners and border of the card itself. |
 | `edge_fade` | `boolean` | `false` | Fades the top and bottom edge of the card into the dashboard background. |
@@ -387,13 +387,14 @@ The old `sun_moon_enabled` and `sun_moon_size` are converted to the separate tog
 | `scroll_count` | `number` | — | Buttons visible at once in a scroll layout. Enables snap scrolling. |
 | `scroll_fade` | `boolean` | `false` | Soft fade at both ends of a scroll layout. The fade at an end disappears once the scroll reaches that end. Doesn't combine with `button_blurred_background`. |
 | `scroll_fade_size` | `string` | `24px` | How far that fade reaches in. |
-| `row_height` | `string` | — | Fixed height for a container using `horizontal-scroll` or `vertical-scroll`. |
+| `row_height` | `string` | — | Fixed height for a container using `horizontal-scroll` or `vertical-scroll`, padding included. `100%` fills the card, for a container with `position: custom`. |
 | `align` | `string` | `start` | Button alignment: `start`, `center`, `end`, `spread`. |
 | `justify_content` | `string` | — | How buttons spread along the row: `start`, `center`, `end`, `between`, `around`, `evenly`. These are short keys, not raw CSS values. |
 | `align_items` | `string` | — | How buttons line up across the row: `start`, `center`, `end`, `stretch`, `baseline`. Short keys again. |
 | `gap` | `string` | — | Space between buttons. |
 | `padding` | `string` | — | Inner padding of the container. |
 | `margin` | `string` | — | Outer margin of the container. |
+| `border` | `string` | — | Border of the container's background and of its buttons, like `none` or `1px solid white`. |
 | `custom_width` | `string` | — | Fixed width for this container. Useful in `content_direction: row` layouts. |
 | `image` | `string` | — | Image shown in the container, as wide as the container, with the buttons on top. `home` shows the house from the Home layout, `old-home` the plain house of earlier versions. |
 | `image_dark` | `string` | — | Image shown instead while the card is in dark mode. Only used with `image`. |
@@ -515,7 +516,7 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `bar_threshold_mode` | `string` | `solid` | `solid`, `segments`, or `gradient`. |
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
 | `bar_values` | `list` | — | The values shown on the bar. Without it the bar uses the button's own value. |
-| `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. A curve has markers unless this is `false`. |
+| `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. A curve or a sun path has markers unless this is `false`. |
 | `bar_fill` | `boolean` | `true` | Set to `false` to draw only the track and the markers, no fill. |
 | `bar_marker_size` | `string` | *bar height* | Size of the markers. Anything larger than the bar sticks out on both sides. |
 | `bar_marker_icon_size` | `string` | *two thirds of the marker* | Size of the icon inside a marker. |
@@ -573,8 +574,8 @@ The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` en
 | :--- | :--- | :--- | :--- |
 | `background_mode` | `string` | `default` | `default` for the animated sky, `images` for custom background pictures or videos, `card` for the plain Home Assistant card background, `color` for a custom color, `none` for a transparent card. |
 | `background_color` | `string` | — | The color of the card. Used with `background_mode: color`, and around the pictures with `images`. |
-| `background_color_dark` | `string` | — | Color used instead while the card is in dark mode. |
-| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. Add `color_dark` to an entry for dark mode. |
+| `background_color_dark` | `string` | — | Color used instead while the card is in dark mode, or at night with `color_mode: dark` or `light`. |
+| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. Add `color_dark` to an entry for dark mode, or for the night with `color_mode: dark` or `light`. |
 | `background_threshold_entity` | `string` | — | Entity the thresholds read from. Without it, they follow the card's weather, so each `value` can be a condition like `rainy`. |
 | `background_threshold_attribute` | `string` | — | Attribute to read for the threshold value. |
 | `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. On by default with the `default` sky. In the other modes it is off unless set to `true`. |
@@ -593,7 +594,7 @@ These run on top of every background, including `images` and `none`.
 | `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
 | `cloud_effects` | `boolean` | `true` | The drifting clouds, in three layers of different size and speed. There are none on clear days and in fog, where the mist takes over. |
 | `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the clouds are drawn with instead of the built-in one. A PNG or WebP with a transparent background works best. |
-| `mist_effects` | `boolean` | same as `cloud_effects` | Three layers of mist that drift behind the clouds with the wind. The far layer is small and slow and the near one large and quicker, with gaps between the patches where the sky shows through. There is mist whenever there are clouds, rain or snow, denser in fog, and none on clear days. The mist takes its color from the background behind it: a lighter shade of a dark sky, a paler version of a light sky, and a soft shade on a white card. It thins out around the sun and the moon, so they still shine through, though less so in fog. It works with or without the clouds. |
+| `mist_effects` | `boolean` | same as `cloud_effects` | Three layers of mist that drift behind the clouds with the wind. While a container with `layer: middle` is shown, the near layer drifts in front of it. The far layer is small and slow and the near one large and quicker, with gaps between the patches where the sky shows through. There is mist whenever there are clouds, rain or snow, denser in fog, and none on clear days. The mist takes its color from the background behind it: a lighter shade of a dark sky, a paler version of a light sky, and a soft shade on a white card. It thins out around the sun and the moon, so they still shine through, though less so in fog. It works with or without the clouds. |
 | `mist_density` | `number` | `1` | How thick the mist is, between `0.25` and `2`. |
 | `mist_size` | `number` | `1` | How big the patches of mist and the gaps between them are, between `0.25` and `2`. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |

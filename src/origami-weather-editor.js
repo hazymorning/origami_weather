@@ -38,7 +38,7 @@ const DISPLAY_DEFAULTS = Object.freeze({
     color_mode: "sun", sun_entity: "sun.sun", background_mode: "default",
     sun_size: 80, moon_size: 80, sun_moon_x: 50,
     bg_brightness: 1.0, bg_saturation: 1.0, bg_blur: 0, bg_blend: 0, gradient_angle: 180, gradient_x: 50, gradient_y: 50, gradient_stop_1: 0, gradient_stop_2: 100,
-    precipitation_speed: 1, mist_density: 1, mist_size: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
+    precipitation_speed: 1, mist_density: 1, mist_size: 1, bird_density: 1, balloon_density: 1, plane_density: 1, weather_image_type: ""});
 const LAYER_STOPS = Object.freeze([
     { value: "sky", label: "In the sky. The sun, the moon, the stars and the weather are in front of it." },
     { value: "back", label: "Behind the weather. Clouds, mist, rain, snow, birds and planes pass in front of it." },
@@ -484,22 +484,11 @@ class WeatherCardEditor extends LitElement {
             .vcb-add-el .add-card-btn { margin-top: 0; }
         `;}
     setConfig(config) {
-        const c = { ...(config || {}) };
-        let autofilled = false;
+        const migrated = this.migrate ? this.migrate(config || {}) : (config || {}), c = { ...migrated };
+        let autofilled = migrated !== config;
         if (!c.weather_entity && this.hass && this.hass.states) {
             const firstWeather = Object.keys(this.hass.states).find((id) => id.startsWith("weather."));
             if (firstWeather) { c.weather_entity = firstWeather; autofilled = true; }}
-        if ("sun_moon_enabled" in c) {
-            if (c.sun_moon_enabled === false) {
-                if (c.sun_enabled === undefined) c.sun_enabled = false;
-                if (c.moon_enabled === undefined) c.moon_enabled = false;}
-            delete c.sun_moon_enabled;
-            autofilled = true;}
-        if ("sun_moon_size" in c) {
-            if (c.sun_size === undefined) c.sun_size = c.sun_moon_size;
-            if (c.moon_size === undefined) c.moon_size = c.sun_moon_size;
-            delete c.sun_moon_size;
-            autofilled = true;}
         if ("moon_phase_entity" in c) {
             delete c.moon_phase_entity;
             autofilled = true;}
@@ -927,7 +916,7 @@ class WeatherCardEditor extends LitElement {
             if (k === "type") continue;
             const v = out[k];
             if (type === "text" && k === 'precision') { if (v === '' || v === null || v === undefined) delete out[k]; continue; }
-            if (v === "" || v === null || v === undefined || (v === false && k !== 'icon_background' && k !== 'bar_fill')) delete out[k];
+            if (v === "" || v === null || v === undefined || (v === false && k !== 'icon_background' && k !== 'bar_fill' && !(k === 'bar_marker' && out.bar_shape))) delete out[k];
         }
         return out;}
     _cleanGauge(out, p) {
@@ -935,8 +924,9 @@ class WeatherCardEditor extends LitElement {
             .filter(v => v && typeof v === "object")
             .map(v => { const o = { ...v }; for (const k of Object.keys(o)) { const val = o[k]; if (val === "" || val === null || val === undefined || val === false) delete o[k]; } return o; });
         if (values.length > 1 || Object.keys(values[0] || {}).length) out[p + "values"] = values; else delete out[p + "values"];
-        if (values.length > 1 || out[p + "fill"] === false || out[p + "needle"] === true) delete out[p + "marker"];
-        else if (out[p + "marker"] !== true) { delete out[p + "marker_size"]; delete out[p + "marker_icon_size"]; }
+        const shaped = p === "bar_" && (out.bar_shape === "curve" || out.bar_shape === "sun");
+        if (shaped ? out.bar_marker === true : values.length > 1 || out[p + "fill"] === false || out[p + "needle"] === true) delete out[p + "marker"];
+        else if (!shaped && out[p + "marker"] !== true) { delete out[p + "marker_size"]; delete out[p + "marker_icon_size"]; }
         if (![out[p + "range_from"], out[p + "range_to"]].some(v => v !== undefined && v !== null && String(v) !== "")) delete out[p + "range_color"];}
     _cleanContainer(container) {
         const out = { ...(container || {}) };
@@ -1069,7 +1059,7 @@ class WeatherCardEditor extends LitElement {
         const buttonForm = (schema) => html`<ha-form .hass=${this.hass} .data=${button}
                 .schema=${schema} .computeLabel=${this._buttonLabel}
                 @value-changed=${(e) => { e.stopPropagation(); const n = { ...((e.detail && e.detail.value) || {}) };
-                    const st = !n.forecast && n.entity !== button.entity && this.hass.states[n.entity], gone = (a) => st && a && !(a in st.attributes);
+                    const st = !n.forecast && String(n.entity).split(".")[0] !== String(button.entity).split(".")[0] && this.hass.states[n.entity], gone = (a) => st && a && !(a in st.attributes);
                     if (gone(n.attribute)) delete n.attribute;
                     if (Array.isArray(n.elements)) n.elements = n.elements.map(el => el && !el.entity && gone(el.attribute) ? { ...el, attribute: undefined } : el);
                     update(n); }}></ha-form>`;
@@ -1354,7 +1344,8 @@ class WeatherCardEditor extends LitElement {
             const values = Array.isArray(obj[p+"values"]) && obj[p+"values"].length
                 ? obj[p+"values"].map(v => (v && typeof v === "object") ? v : {})
                 : [{}];
-            const fill = obj[p+"fill"] !== false, needle = obj[p+"needle"] === true, markersOn = needle || values.length > 1 || obj[p+"marker"] === true || !fill;
+            const fill = obj[p+"fill"] !== false, needle = obj[p+"needle"] === true, shape = p === "bar_" ? obj.bar_shape : "";
+            const markersOn = shape === "curve" || (shape === "sun" ? obj.bar_marker !== false : needle || values.length > 1 || obj[p+"marker"] === true || !fill);
             const commitValues = (arr) => write(p+"values", arr);
             const setValue = (vi, patch) => commitValues(values.map((v, i) => i === vi ? { ...v, ...patch } : v));
             const addValue = () => commitValues([...values, {}]);
@@ -1399,12 +1390,14 @@ class WeatherCardEditor extends LitElement {
                             ${this._cssTextField({ value: v.marker_size, label: "Marker size", placeholder: obj[p+"marker_size"] || "thickness", trim: true, onCommit: (s) => setValue(vi, { marker_size: s }) })}
                             ${valueForm(v, vi, "marker_icon", [{ name: "marker_icon", selector: { icon: {} } }], "Marker icon")}
                             ${v.marker_icon ? this._renderColorPicker("Icon color", v.marker_icon_color || "", (h, o) => setValue(vi, { marker_icon_color: h ? this._serializeColor(h, o) : "" })) : ""}
-                            ${p === "ring_" ? html`<div class="toggle-group"><label class="toggle-row"><span>Gap in the ring</span>
+                            ${p === "ring_" || shape === "curve" ? html`<div class="toggle-group"><label class="toggle-row"><span>${p === "ring_" ? "Gap in the ring" : "Gap in the line"}</span>
                                 <ha-switch .checked=${v.marker_gap === true} @change=${(e) => setValue(vi, { marker_gap: e.target.checked })}></ha-switch></label></div>` : ""}` : ""}</div></details>`)}
                 <button type="button" class="ring-threshold-add" @click=${addValue}><ha-icon icon="mdi:plus" style="--mdc-icon-size:14px"></ha-icon> Add value</button>
-                <div class="toggle-group"><label class="toggle-row"><span>Fill</span>
-                    <ha-switch .checked=${fill} @change=${(e) => write(p+"fill", e.target.checked ? "" : false)}></ha-switch></label>
-                    ${fill && values.length < 2 && !needle ? html`<label class="toggle-row"><span>Marker</span>
+                <div class="toggle-group">${shape === "curve" ? "" : html`<label class="toggle-row"><span>Fill</span>
+                    <ha-switch .checked=${fill} @change=${(e) => write(p+"fill", e.target.checked ? "" : false)}></ha-switch></label>`}
+                    ${shape ? html`<label class="toggle-row"><span>Marker</span>
+                    <ha-switch .checked=${obj.bar_marker !== false} @change=${(e) => write("bar_marker", e.target.checked ? "" : false)}></ha-switch></label>`
+                    : fill && values.length < 2 && !needle ? html`<label class="toggle-row"><span>Marker</span>
                     <ha-switch .checked=${obj[p+"marker"] === true} @change=${(e) => write(p+"marker", e.target.checked || "")}></ha-switch></label>` : ""}
                     ${p === "ring_" ? html`<label class="toggle-row"><span>Needle</span>
                     <ha-switch .checked=${needle} @change=${(e) => write(p+"needle", e.target.checked || "")}></ha-switch></label>` : ""}</div>
@@ -1811,7 +1804,7 @@ class WeatherCardEditor extends LitElement {
                     <label class="toggle-row"> <span>${LABELS.button_container_separator}</span> <ha-switch .checked=${container.separator === true}
                             @change=${(e) => uf("separator", e.target.checked || "")}></ha-switch></label></div>
                 ${container.grouped === true && container.blurred_background === true ? this._slider({ value: container.background_blur, fallback: 10, min: 0, max: 40, step: 1, int: true, label: "Blur",
-                    onCommit: (v) => uf("background_blur", v) }) : ""}
+                    onCommit: (v) => uf("background_blur", v === 10 ? "" : v) }) : ""}
                 ${container.grouped === true ? this._renderContainerColorPicker(containerIdx, "background_color", "Group color") : ""}</div>`)}
             ${this._renderSubDisclosure("Background image", html`<div class="vcb">
                 ${sf("image", "Image path", "/local/floorplan.png, home or old-home")}
@@ -1950,7 +1943,7 @@ class WeatherCardEditor extends LitElement {
                                     @change=${(e) => updateCondition(ci, { entity: `origami.${e.target.value.trim() || "details"}` })}></div>
                             <div class="css-field">
                                 <span class="css-field-label">Visible when</span>
-                                <div class="segmented segmented-compact">${["on", "off"].map((v) => html`<button type="button" class=${(c.state || "on") === v ? "active" : ""}
+                                <div class="segmented segmented-compact">${["on", "off"].map((v) => html`<button type="button" class=${(c.state != null ? String(c.state) : c.state_not != null ? (String(c.state_not) === "on" ? "off" : "on") : "") === v ? "active" : ""}
                                     @click=${() => { const arr = [...conditions]; const entry = { ...arr[ci], state: v }; delete entry.state_not; arr[ci] = entry; commitList(arr); }}>${v === "on" ? "On" : "Off"}</button>`)}</div></div></div>` : ""}
                     ${cType === "user" ? html`<div class="css-field">
                             <span class="css-field-label">User IDs (comma-separated)</span>
@@ -2085,7 +2078,7 @@ class WeatherCardEditor extends LitElement {
                 ${fx("cloud_effects", "Clouds", this._cssTextField({ value: c.cloud_image_path, label: "Cloud image", placeholder: "/local/cloud.png", onCommit: (v) => this._updateField("cloud_image_path", v) }))}
                 ${fx("mist_effects", "Mist", html`<div style="display:flex;flex-direction:column;gap:var(--origami-e-s2)">${this._renderSlider("mist_density", "Thickness", 0.25, 2, 0.05)}${this._renderSlider("mist_size", "Size", 0.25, 2, 0.05)}</div>`, c.cloud_effects !== false)}
                 ${fx("night_sky_effects", "Stars")}
-                ${fx("bird_effects", "Birds")}
+                ${fx("bird_effects", "Birds", this._renderSlider("bird_density", "Frequency", 0.25, 4, 0.25))}
                 ${fx("balloon_effects", "Balloon", this._renderSlider("balloon_density", "Frequency", 0.25, 4, 0.25))}
                 ${fx("plane_effects", "Planes", this._renderSlider("plane_density", "Frequency", 0.25, 4, 0.25))}</div></div>`)}
             `;}

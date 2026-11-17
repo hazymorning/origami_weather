@@ -4,7 +4,7 @@ import {
   buildStubConfig,
   instantiatePreset,
   rebindPresetEntities
-} from "./chunk-HVDLI7EC.js";
+} from "./chunk-7BWAJMAG.js";
 export {
   LAYOUT_PRESETS,
   PRESET_ENTITY_TOKEN,

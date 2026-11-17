@@ -435,11 +435,10 @@ var WeatherEffects = (() => {
     { size: 250, bright: 1, alpha: 0.92, speed: 0.015, count: 2, stretch: 0.1, res: 1.5 }
   ]);
   const MIST_TONE = Object.freeze({ at: [0.25, 0.36, 0.6], lift: [0.19, 0.13, 0.1], keep: [1, 1, 0.92], tint: [[-5e-3, -0.02], [-5e-3, -0.02], [0, -4e-3]], top: 0.985, room: 0.06, shade: 0.05, dark: 0.6 });
-  const MIST_CEILING = Object.freeze({ scattered: 0.49, overcast: 0.49, fog: 0.53 });
   const MIST = Object.freeze({
-    scattered: { alpha: 0.85, speed: 1, gap: [0.34, 0.7], disc: 0.9 },
-    overcast: { alpha: 1, speed: 1, gap: [0.3, 0.68], disc: 0.8 },
-    fog: { alpha: 1, speed: 1.5, gap: [0.2, 0.62], disc: 0.5 }
+    scattered: { alpha: 0.85, speed: 1, gap: [0.34, 0.7], disc: 0.9, ceiling: 0.49 },
+    overcast: { alpha: 1, speed: 1, gap: [0.3, 0.68], disc: 0.8, ceiling: 0.49 },
+    fog: { alpha: 1, speed: 1.5, gap: [0.2, 0.62], disc: 0.5, ceiling: 0.53 }
   });
   const MIST_LAYERS = Object.freeze([
     { size: 1, count: 3, speed: 5e-3, alpha: 0.7, lift: 0.55, y: [0.2, 0.8] },
@@ -447,7 +446,19 @@ var WeatherEffects = (() => {
     { size: 3.6, count: 2, speed: 0.024, alpha: 0.95, lift: 1, y: [0.3, 0.7] }
   ]);
   const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 4.5) / 7.5));
-  const _cloudAtlas = /* @__PURE__ */ new WeakMap();
+  const _cloudAtlas = /* @__PURE__ */ new WeakMap(), _cloudSources = /* @__PURE__ */ new WeakMap();
+  function _cached(own, atlas, img, key, build) {
+    if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
+    let m = atlas.get(img);
+    if (!m) atlas.set(img, m = /* @__PURE__ */ new Map());
+    let v = m.get(key);
+    if (!v) {
+      if (m.size >= 4) m.clear();
+      m.set(key, v = build());
+    }
+    own.sprites = { img, key, v };
+    return v;
+  }
   function _fit(img, max) {
     const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = max / Math.max(w, h);
     if (k >= 1) return img;
@@ -461,22 +472,17 @@ var WeatherEffects = (() => {
   }
   function _cloudBandSprites(own, img, state, schemeDark, backgroundRGB) {
     if (!(img.naturalWidth || img.width)) return null;
-    const key = `${state}|${schemeDark}|${backgroundRGB}`;
-    if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
-    let a = _cloudAtlas.get(img);
-    if (!a) _cloudAtlas.set(img, a = { srcs: _cloudVariantSources(_fit(img, 512)), bands: /* @__PURE__ */ new Map() });
-    let bands = a.bands.get(key);
-    if (bands) return (own.sprites = { img, key, v: bands }).v;
-    const pal = _cloudPalette(state, schemeDark, backgroundRGB);
-    const cl = (v) => Math.max(0, Math.min(255, Math.round(v)));
-    bands = CLOUD_BANDS.map((d) => {
-      const top = pal.top.map((v) => cl(v * d.bright));
-      const bot = pal.bot.map((v) => cl(v * d.bright));
-      return a.srcs.map((s) => _cloudSprite(s, top, bot, d.res));
+    return _cached(own, _cloudAtlas, img, `${state}|${schemeDark}|${backgroundRGB}`, () => {
+      let srcs = _cloudSources.get(img);
+      if (!srcs) _cloudSources.set(img, srcs = _cloudVariantSources(_fit(img, 512)));
+      const pal = _cloudPalette(state, schemeDark, backgroundRGB);
+      const cl = (v) => Math.max(0, Math.min(255, Math.round(v)));
+      return CLOUD_BANDS.map((d) => {
+        const top = pal.top.map((v) => cl(v * d.bright));
+        const bot = pal.bot.map((v) => cl(v * d.bright));
+        return srcs.map((src) => _cloudSprite(src, top, bot, d.res));
+      });
     });
-    if (a.bands.size >= 4) a.bands.clear();
-    a.bands.set(key, bands);
-    return (own.sprites = { img, key, v: bands }).v;
   }
   const BIRD_SHEET_SPEC = Object.freeze({ cells: 13, flapFrames: 12, glideCell: 12, sub: 3, cell: 176, ax: 0.54, ay: 0.52 });
   const BIRD_ACTIVITY = Object.freeze({
@@ -499,22 +505,17 @@ var WeatherEffects = (() => {
     { px: [26, 38], alpha: 0.95, weight: 0.22, hz: [2, 2.7], glide: [1.4, 3.4] }
   ]);
   const BIRD_MAX_PX = 36;
-  const _birdAtlas = { img: null, cells: /* @__PURE__ */ new Map() };
+  const _birdAtlas = /* @__PURE__ */ new WeakMap();
   function _birdCells(own, img, state, schemeDark, night, backgroundRGB, s) {
     if (!(img.naturalWidth || img.width)) return null;
-    const key = `${state}|${schemeDark}|${night}|${backgroundRGB}|${s}`;
-    if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
-    if (_birdAtlas.img !== img) {
-      _birdAtlas.img = img;
-      _birdAtlas.cells.clear();
-    }
-    let cells = _birdAtlas.cells.get(key);
-    if (cells) return (own.sprites = { img, key, v: cells }).v;
+    return _cached(own, _birdAtlas, img, `${state}|${schemeDark}|${night}|${backgroundRGB}|${s}`, () => _birdSheet(img, state, schemeDark, night, backgroundRGB, s));
+  }
+  function _birdSheet(img, state, schemeDark, night, backgroundRGB, s) {
     const pal = _cloudPalette(state, schemeDark, backgroundRGB);
     const spec = BIRD_SHEET_SPEC, src = spec.cell, cs = Math.min(src, Math.ceil(BIRD_MAX_PX * s));
     const fc = spec.flapFrames * spec.sub;
     const lift = schemeDark || night ? "rgba(150,174,216,0.28)" : `rgba(${pal.top[0]},${pal.top[1]},${pal.top[2]},0.12)`;
-    cells = [];
+    const cells = [];
     for (let i = 0; i <= fc; i++) {
       const c = document.createElement("canvas");
       c.width = cs;
@@ -537,9 +538,7 @@ var WeatherEffects = (() => {
       }
       cells.push(_tintLift(c, pal.top, pal.bot, lift));
     }
-    if (_birdAtlas.cells.size >= 4) _birdAtlas.cells.clear();
-    _birdAtlas.cells.set(key, cells);
-    return (own.sprites = { img, key, v: cells }).v;
+    return cells;
   }
   function _weightedPick(tiers) {
     const r = Math.random();
@@ -818,17 +817,12 @@ var WeatherEffects = (() => {
     return v === void 0 ? 1 : v;
   };
   const PLANE_MAX_PX = 15, PLANE_TRAIL = 1.2, PLANE_VAPOR = [[1, 1.3, 0.16, 0.3], [0.7, 0.55, 0.3, 0.12], [0.4, 0.2, 0.85, 0.03]];
-  const _planeAtlas = { img: null, cells: /* @__PURE__ */ new Map() };
+  const _planeAtlas = /* @__PURE__ */ new WeakMap();
   function _planeCells(own, img, state, schemeDark, backgroundRGB, s) {
     if (!(img.naturalWidth || img.width)) return null;
-    const key = `${state}|${schemeDark}|${backgroundRGB}|${s}`;
-    if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
-    if (_planeAtlas.img !== img) {
-      _planeAtlas.img = img;
-      _planeAtlas.cells.clear();
-    }
-    let cells = _planeAtlas.cells.get(key);
-    if (cells) return (own.sprites = { img, key, v: cells }).v;
+    return _cached(own, _planeAtlas, img, `${state}|${schemeDark}|${backgroundRGB}|${s}`, () => _planeSheet(img, state, schemeDark, backgroundRGB, s));
+  }
+  function _planeSheet(img, state, schemeDark, backgroundRGB, s) {
     const spec = PLANE_SHEET_SPEC, pal = _cloudPalette(state, schemeDark, backgroundRGB);
     const ch = Math.min(spec.cellH, Math.ceil(PLANE_MAX_PX * s)), cw = Math.round(ch * spec.cellW / spec.cellH);
     const cell = (i) => {
@@ -840,7 +834,7 @@ var WeatherEffects = (() => {
       cx.drawImage(img, i * spec.cellW, 0, spec.cellW, spec.cellH, 0, 0, cw, ch);
       return c;
     };
-    cells = {
+    return {
       body: schemeDark ? _tintLift(cell(1), [255, 255, 255], [255, 255, 255], _rgba(pal.top, 0.3)) : _tintLift(cell(0), pal.top, pal.bot, _rgba(pal.top, 0.1)),
       windows: cell(2),
       beacon: cell(3),
@@ -848,9 +842,6 @@ var WeatherEffects = (() => {
       nav: [cell(5), cell(6)],
       trail: pal.top
     };
-    if (_planeAtlas.cells.size >= 4) _planeAtlas.cells.clear();
-    _planeAtlas.cells.set(key, cells);
-    return (own.sprites = { img, key, v: cells }).v;
   }
   function _spawnPlane(st, w, h) {
     const r = Math.random, k = r(), dir = r() < 0.5 ? -1 : 1;
@@ -1007,9 +998,9 @@ var WeatherEffects = (() => {
   function _mistSprite(img, gap) {
     const key = gap.join();
     if (_mistSprites.has(key)) return _mistSprites.get(key);
-    const k = Math.min(1, 512 / img.width), c = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
+    const src = _fit(img, 512), c = Object.assign(document.createElement("canvas"), { width: src.width, height: src.height });
     const x = c.getContext("2d", { willReadFrequently: true });
-    x.drawImage(img, 0, 0, c.width, c.height);
+    x.drawImage(src, 0, 0);
     const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
     for (let i = 0; i < p.length; i += 4) {
       const u = Math.max(0, Math.min(1, (p[i + 3] / 255 - gap[0]) / (gap[1] - gap[0])));
@@ -1057,7 +1048,6 @@ var WeatherEffects = (() => {
   }
   function _mistLayers(sprite, bg, ceiling) {
     const T = MIST_TONE, base = _toOklab(bg), [L, a, b] = base, i = L < T.at[1] ? 0 : 1, u = Math.max(0, Math.min(1, (L - T.at[i]) / (T.at[i + 1] - T.at[i]))), lighter = L + T.room <= T.top;
-    if (!Number.isFinite(L)) return null;
     const at = (k) => k[i] + (k[i + 1] - k[i]) * u, keep = lighter ? at(T.keep) : T.keep[2], tint = [0, 1].map((c) => at(T.tint.map((v) => v[c])));
     const Lm = lighter ? Math.min(L + at(T.lift), T.top, ceiling && L < T.dark ? Math.max(L + T.room / 2, ceiling) : 1) : L - T.shade;
     const top = [Lm, a * keep + tint[0], b * keep + tint[1]];
@@ -1072,12 +1062,11 @@ var WeatherEffects = (() => {
   }
   function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind, nearCtx) {
     const sprite = _mistSprite(img, MIST[inst.mist.key].gap), bg = env.mistRGB || env.backgroundRGB;
-    const ceiling = env.dark ? MIST_CEILING[inst.mist.key] : 0;
+    const ceiling = env.dark ? MIST[inst.mist.key].ceiling : 0;
     if (!inst.mistTone || inst.mistTone.bg !== bg || inst.mistTone.ceiling !== ceiling || inst.mistTone.sprite !== sprite) inst.mistTone = { bg, ceiling, sprite, layers: _mistLayers(sprite, bg, ceiling) };
     const layers = inst.mistTone.layers;
-    if (!layers) return;
     const big = Math.max(w, h) * inst.mistSize, ar = sprite.height / sprite.width, amt = inst.mistDensity;
-    const cw = Math.ceil(ctx.canvas.width / 2), ch = Math.ceil(ctx.canvas.height / 2), ms = s / 2;
+    const cw = Math.ceil(w / 2), ch = Math.ceil(h / 2), ms = 0.5;
     for (const p of inst.mist.puffs) {
       const span = MIST_LAYERS[p.layer].y;
       p.pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph));
@@ -1120,7 +1109,7 @@ var WeatherEffects = (() => {
       }
       target.setTransform(1, 0, 0, 1, 0, 0);
       target.globalAlpha = 1;
-      target.drawImage(mc, 0, 0, cw * 2, ch * 2);
+      target.drawImage(mc, 0, 0, cw * 2 * s, ch * 2 * s);
       target.setTransform(s, 0, 0, s, 0, 0);
     }
   }
@@ -1457,7 +1446,8 @@ var WeatherEffects = (() => {
   function create() {
     return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, mist: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
   }
-  function set(inst, key, w, h, weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState, wind, mistDensity, mistSize) {
+  function set(inst, key, w, h, scene) {
+    const { weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState, wind, mistDensity, mistSize } = scene;
     const area = Math.max(1, w * h);
     inst.wind = Number.isFinite(wind) ? wind : null;
     inst.mistDensity = mistDensity || 1;
@@ -1621,23 +1611,25 @@ var WeatherEffects = (() => {
     const span = w * 1.3, sx = -w * 0.15;
     if (inst.planes) _planesFrame(inst, ctx, w, h, s, dt, t, env);
     if (inst.balloon) _balloonFrame(inst, ctx, w, h, s, dt, t, env);
-    const cloudField = (field, bands, opAmt) => {
+    const wind = (0.9 + 0.4 * gust) * windF, mistImg = inst.mist && _getMistImg();
+    if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, wind, nearCtx);
+    const cloudImg = inst.cloud && inst.cloud.puffs.length && inst.cloudImg(), bands = cloudImg && _cloudBandSprites(inst.cloud, cloudImg, inst.cloud.state, env.schemeDark, env.backgroundRGB);
+    if (bands) {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
-      const wind = (0.9 + 0.4 * gust) * windF;
       const scale = Math.max(1, Math.min(2.4, Math.sqrt(w * h) / 300));
       const drawPuff = (p, alpha) => {
         const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
         const ph = p.size * scale, pw = ph * ar * p.stretch;
         const cx = p.x * w;
         const cy = p.y * h + Math.sin(t * p.bobF + p.bobPh) * p.bobAmp * h;
-        ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * opAmt * boost(cx, cy));
+        ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * (env.schemeDark ? 1.08 : 1) * boost(cx, cy));
         ctx.setTransform(s, 0, 0, s, cx * s, cy * s);
         if (p.rot) ctx.rotate(p.rot);
         if (p.flip) ctx.scale(-1, 1);
         ctx.drawImage(sp, -pw / 2, -ph / 2, pw, ph);
       };
-      for (const p of field.puffs) {
+      for (const p of inst.cloud.puffs) {
         const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
         const pw = p.size * scale * ar * p.stretch;
         p.x += p.speed * wind * dt;
@@ -1648,18 +1640,12 @@ var WeatherEffects = (() => {
       const flash = _advanceFlash(inst, t, dt);
       if (flash) {
         ctx.globalCompositeOperation = "lighter";
-        for (const p of field.puffs) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
+        for (const p of inst.cloud.puffs) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
         for (const fp of flash.puffs) drawPuff(fp, flash.brightness * 0.55);
         ctx.globalCompositeOperation = "source-over";
       }
       ctx.setTransform(s, 0, 0, s, 0, 0);
       ctx.globalAlpha = 1;
-    };
-    const mistImg = inst.mist && _getMistImg();
-    if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, (0.9 + 0.4 * gust) * windF, nearCtx);
-    if (inst.cloud && inst.cloud.puffs.length) {
-      const img = inst.cloudImg(), bands = img && _cloudBandSprites(inst.cloud, img, inst.cloud.state, env.schemeDark, env.backgroundRGB);
-      if (bands) cloudField(inst.cloud, bands, env.schemeDark ? 1.08 : 1);
     }
     if (nearCtx) {
       ctx.setTransform(s, 0, 0, s, 0, 0);
@@ -1748,10 +1734,10 @@ var WeatherEffects = (() => {
     if (inst.snow && inst.snow.length) {
       const sp = _sprite("flake", env.schemeDark);
       ctx.setTransform(s, 0, 0, s, 0, 0);
-      const wind = drift * 7;
+      const wind2 = drift * 7;
       for (const p of inst.snow) {
         p.y += p.vy * fall / h;
-        p.x += wind * (0.4 + p.z * 0.6) * fall / span;
+        p.x += wind2 * (0.4 + p.z * 0.6) * fall / span;
         let y = p.y * (h + 24) - 12;
         if (y > h + 14) {
           p.y = Math.random() * -0.12;
@@ -1921,16 +1907,10 @@ function serverZone(hass) {
   }
   return ZONES.get(zone);
 }
-var DAY_FORMAT = [];
+var wallParts = (hass, t) => Object.fromEntries(dateFormat(hass, { hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }, "en").formatToParts(t).map((p) => [p.type, p.value]));
 function dayKey(hass, t) {
-  const zone = hass.locale.time_zone === "server" && serverZone(hass);
-  if (!zone) {
-    const d = new Date(t);
-    return d.getFullYear() * 1e4 + (d.getMonth() + 1) * 100 + d.getDate();
-  }
-  if (DAY_FORMAT[0] !== zone) DAY_FORMAT = [zone, dateFormat(hass, { year: "numeric", month: "2-digit", day: "2-digit" }, "en")];
-  const n = Object.fromEntries(DAY_FORMAT[1].formatToParts(t).map((p) => [p.type, p.value]));
-  return n.year * 1e4 + n.month * 100 + +n.day;
+  const n = wallParts(hass, t);
+  return Date.UTC(n.year, n.month - 1, n.day);
 }
 function forecastFilterPast(raw, daily, hass) {
   const now = Date.now(), today = daily ? dayKey(hass, now) : "";
@@ -1972,7 +1952,7 @@ var DATE_NAMES = { a: { weekday: "short" }, A: { weekday: "long" }, b: { month: 
 var isDatePattern = (v) => typeof v === "string" && v.search(DATE_CODE) >= 0;
 function strftime(hass, dt, format) {
   if (!dt || !isDatePattern(format)) return "";
-  const date = new Date(dt), n = Object.fromEntries(dateFormat(hass, { hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }, "en").formatToParts(date).map((p) => [p.type, p.value]));
+  const date = new Date(dt), n = wallParts(hass, date);
   const numbers = { d: n.day, m: n.month, y: n.year.slice(-2), Y: n.year, H: n.hour, I: String(n.hour % 12 || 12).padStart(2, "0"), M: n.minute, S: n.second, p: n.hour < 12 ? "AM" : "PM" };
   return format.replace(DATE_CODE, (_, flag, c) => DATE_NAMES[c] ? dateFormat(hass, { calendar: "gregory", ...DATE_NAMES[c] }).format(date) : flag ? numbers[c].replace(/^0/, "") : numbers[c]);
 }
@@ -2059,6 +2039,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       this._intersectionObserver = new IntersectionObserver(this._boundVisibilityChange, { threshold: 0.01, rootMargin: "0px" });
     }
     this._observeRoot();
+    this._observeCurves(this.shadowRoot);
     document.addEventListener("visibilitychange", this._boundDocVisibility);
     this._scheduleClockTick();
     if (this._hasReceivedFirstHass) {
@@ -2283,12 +2264,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-O2NH2UKW.js");
+      await import("./origami-weather-editor-SPBZUSPL.js");
     }
-    return document.createElement("origami-weather-editor");
+    return Object.assign(document.createElement("origami-weather-editor"), { migrate: _WeatherCard._migrateConfig });
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-BGLUUDT6.js");
+    const { buildStubConfig } = await import("./layout-presets-WOWXL3YE.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2456,7 +2437,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const day = 864e5, now = Date.now(), set = Date.parse(a.next_setting);
     let noon = Date.parse(a.next_noon);
     if (noon - now > day / 2) noon -= day;
-    return [0.5 + (now - noon) / day, set - now > day ? +!!up : 2 * ((set - noon) % day) / day];
+    return [0.5 + (now - noon) / day, set - noon > 1.5 * day ? +!!up : 2 * ((set - noon) % day) / day];
   }
   static _pathProgress(attrs, isAstroNight) {
     const now = Date.now(), end = Date.parse(isAstroNight ? attrs.next_rising : attrs.next_setting);
@@ -2497,7 +2478,8 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     _moonPhoto().then((photo) => {
       if (!photo || this._moonKey !== key) return;
       cv.width = cv.height = size;
-      cv.getContext("2d").putImageData(_moonImageData(photo, size, p), 0, 0);
+      const last = _moonImageData.last;
+      cv.getContext("2d").putImageData(last && last.key === key ? last.data : (_moonImageData.last = { key, data: _moonImageData(photo, size, p) }).data, 0, 0);
     });
   }
   static _moonPhase() {
@@ -2545,11 +2527,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       const d = new Date(rawNumeric);
       if (!isNaN(d)) {
         date = d;
-        const now = /* @__PURE__ */ new Date(), day = 864e5, utcDay = (t) => {
-          const k = dayKey(hass, t);
-          return Date.UTC(Math.floor(k / 1e4), Math.floor(k / 100) % 100 - 1, k % 100);
-        };
-        const dayDiff = Math.round((utcDay(d) - utcDay(now)) / day);
+        const now = /* @__PURE__ */ new Date(), day = 864e5, dayDiff = Math.round((dayKey(hass, d) - dayKey(hass, now)) / day);
         const timePart = dateFormat(hass, { hour: "numeric", minute: "2-digit" }).format(d);
         if (dayDiff === 0 || d > now && d - now < day) {
           formatted = timePart;
@@ -2629,7 +2607,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   _forecastList(hass, entity, type) {
     const cached = this._forecastData.get(`${entity}|${type}`), minute = Math.floor(Date.now() / 6e4);
-    if (cached && (cached.pastAt !== minute || cached.pastOf !== cached.list)) Object.assign(cached, { pastAt: minute, pastOf: cached.list, past: forecastFilterPast(cached.list, type === "daily", hass) });
+    if (cached && cached.pastAt !== minute) Object.assign(cached, { pastAt: minute, past: forecastFilterPast(cached.list, type === "daily", hass) });
     return cached && cached.past;
   }
   _resolveForecastValue(hass, button) {
@@ -2654,14 +2632,14 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     let value = r.formatted, unit = hasFormat ? txt.format : "";
     if (r.date) return { value, unit };
     if (isDatePattern(txt.format) && (r.rawNumeric === "unknown" || r.rawNumeric === "unavailable")) return { value, unit: "" };
-    const numeric = r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric));
+    const numeric = isFinite(parseFloat(r.rawNumeric));
     if (txt.precision !== void 0 && numeric) {
       value = this._formatNumber(r.rawNumeric, this._getForecastFormat(hass.locale, txt.precision));
       if (!hasFormat && r.haFormatted) unit = this._extractUnit(hass, unitEntity, unitAttr);
-    } else if (txt.fancy_unit === true && r.haFormatted && r.rawNumeric != null) {
+    } else if (txt.fancy_unit === true && r.haFormatted) {
       value = this._formatNumber(r.rawNumeric);
       if (!hasFormat) unit = this._extractUnit(hass, unitEntity, unitAttr);
-    } else if (hasFormat && r.haFormatted && r.rawNumeric != null) {
+    } else if (hasFormat && r.haFormatted) {
       value = this._formatNumber(r.rawNumeric);
     }
     return { value, unit };
@@ -2859,6 +2837,9 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     }
     return parseFloat(spec.attribute ? stateObj.attributes[spec.attribute] : stateObj.state);
   }
+  _containerShown(container, hass) {
+    return container.hide !== true && this._checkButtonVisibility(container, hass);
+  }
   _checkButtonVisibility(button, hass) {
     return !Array.isArray(button.visibility) || !button.visibility.length || button.visibility.every((c) => this._evaluateCondition(c, hass));
   }
@@ -3018,7 +2999,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             #card-root.fixed-height { --_origami-vscroll-fill: calc(100% - var(--_origami-pad-v, var(--origami-card-padding, 16px)) * 2); }
             #free-layer { position: absolute; inset: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); pointer-events: none; box-sizing: border-box; overflow: visible; container-type: size; }
             #free-layer > .buttons-group.free-positioned { position: absolute; max-width: 100%; }
-            #free-layer > .buttons-group:not(.layer-sky, .layer-back, .layer-middle, .layer-base) { z-index: ${Z.free}; }
+            #free-layer > .buttons-group { z-index: ${Z.free}; }
             #free-layer > .buttons-group.free-positioned.has-custom-width { width: var(--origami-container-width); }
             .buttons-group { pointer-events: none; min-width: 0; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
             .buttons-group.has-image { display: grid; }
@@ -3166,7 +3147,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .button-bar.shape-curve > .gauge-marker.gap { background: none; box-shadow: none; }
             .button-bar.shape-curve > .gauge-marker.bare { visibility: hidden; }
             .buttons-row.has-curve { position: relative; isolation: isolate; }
-            .gauge-curve { position: absolute; left: 0; top: 0; z-index: -1; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
+            .gauge-curve { position: absolute; inset-inline-start: 0; top: 0; z-index: -1; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
             .button.button-bar-type { flex-wrap: wrap; }
             .button.button-bar-type.format-vertical { flex-wrap: nowrap; }
             .button.button-bar-type.format-vertical .button-bar { align-self: stretch; width: auto; }
@@ -3194,10 +3175,6 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
             .marquee-host.marquee-rtl .marquee-track { animation-direction: reverse; }
             @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
             .cards-group { pointer-events: none; align-self: stretch; box-sizing: border-box; }
-            :is(.buttons-group, .cards-group).layer-sky { z-index: ${Z["layer-sky"]}; }
-            :is(.buttons-group, .cards-group).layer-back { z-index: ${Z["layer-back"]}; }
-            :is(.buttons-group, .cards-group).layer-middle { z-index: ${Z["layer-middle"]}; }
-            :is(.buttons-group, .cards-group).layer-base { z-index: ${Z["layer-base"]}; }
             .cards-row { display: flex; flex-wrap: wrap; gap: 8px; pointer-events: none; }
             .cards-row > * { pointer-events: auto; }
             #card-root.is-offscreen :is(.marquee-track, .haze-layer, .sun-glow, .moon-glow), #card-root.is-offscreen .sun-disc::before, #card-root.is-offscreen .sun-disc::after, #card-root.is-offscreen #sun-moon-layer::before { animation-play-state: paused; }
@@ -3414,23 +3391,16 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     const els = this._elements.buttonContainerEls[ai];
     if (!els) return;
     const layer = containerLayer(container);
-    for (const name of ["sky", "back", "middle", "base"]) els.group.classList.toggle(`layer-${name}`, layer === name);
+    els.group.style.zIndex = layer === "front" ? "" : Z[`layer-${layer}`];
     if (container.custom_cards) return;
     const bt = els.row, cg = els.group;
     if (!this._containerStyleCache[ai]) this._containerStyleCache[ai] = {};
     const cache = this._containerStyleCache[ai];
-    const showBottom = container.hide !== true;
     const showBottomBg = container.background === true;
     const rowLayout = (container.layout || "wrap").toString().toLowerCase();
     const isScrollLayout = rowLayout === "horizontal-scroll" || rowLayout === "vertical-scroll";
     const scrollFadeOn = container.scroll_fade === true && isScrollLayout;
     const blurred = container.blurred_background === true;
-    const configSig = `${showBottom}|${blurred}`;
-    if (cache.configSig !== configSig) {
-      cache.configSig = configSig;
-      bt.style.display = showBottom ? "" : "none";
-      cg.style.display = showBottom ? "" : "none";
-    }
     const cssVarContainer = (el, prop, val, cacheKey) => {
       if (cache[cacheKey] !== val) {
         cache[cacheKey] = val;
@@ -3443,6 +3413,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
       ["--origami-container-padding", "padding", "containerPad"],
       ["--origami-container-margin", "margin", "containerMargin"],
       ["--origami-container-bg-color", "background_color", "containerBgColor"],
+      ["--origami-bg-border", "border", "containerBorder"],
       ["--origami-bottom-gap", "gap", "buttonsGap"],
       ["--origami-button-gap", "button_gap", "buttonGap"],
       ["--weather-icon-size", "button_icon_size", "buttonIconWidth"],
@@ -3601,7 +3572,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       const els = this._elements.buttonContainerEls[ai];
       if (!els) continue;
       this._placeContainer(container, els.group, placed);
-      const containerVisible = this._checkButtonVisibility(container, hass);
+      const containerVisible = this._containerShown(container, hass);
       this._showGroup(els.group, containerVisible);
       if (!containerVisible || container.custom_cards) continue;
       const bt = els.row;
@@ -3623,7 +3594,8 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         ac.lastLocStr = rowSig;
         bt.innerHTML = rendered.map((r) => r.html).join("");
         this._animateGauges(bt, `a${ai}`);
-        bt.querySelectorAll(".shape-curve").forEach((b) => (this._curveObserver ||= new ResizeObserver((es) => new Set(es.map((e) => e.target.isConnected ? e.target.closest(".buttons-row") : (this._curveObserver.unobserve(e.target), null))).forEach((r) => r && this._drawCurves(r)))).observe(b));
+        bt.classList.remove("has-curve");
+        this._observeCurves(bt);
         if (hasVis && rowLayout === "vertical-scroll") this._scheduleVerticalMeasure(ai);
         anyRowRebuilt = true;
       }
@@ -3665,18 +3637,45 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       for (const [el, t] of queue) el.style.setProperty("--origami-gauge-pos", t);
     }));
   }
+  _observeCurves(root) {
+    const obs = this._curveObserver ||= new ResizeObserver((es) => {
+      const rows = /* @__PURE__ */ new Set();
+      for (const e of es) {
+        const r = e.target.closest(".buttons-row");
+        if (!r) obs.unobserve(e.target);
+        else if (r.isConnected) rows.add(r);
+      }
+      for (const r of rows) this._drawCurves(r);
+    });
+    for (const b of root.querySelectorAll(".shape-curve")) obs.observe(b);
+  }
   _drawCurves(row) {
-    const all = [...row.querySelectorAll(".shape-curve")], bars = all.filter((b) => b.offsetWidth), box = row.getBoundingClientRect(), lines = [], holes = [];
-    if (all.length && !bars.length) return;
-    const vs = bars.flatMap((b) => [...b.children].map((m) => +m.dataset.v)), lo = +(bars[0]?.dataset.min ?? Math.min(...vs)), hi = +(bars[0]?.dataset.max ?? Math.max(...vs));
-    for (const b of bars) {
-      const r = b.getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue("--_in")), x = r.left + r.width / 2 - box.left + row.scrollLeft;
-      for (const m of b.children) {
-        const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5;
-        const y = r.top - box.top + row.scrollTop + pad + (1 - t) * (r.height - 2 * pad), hole = m.offsetWidth / 2 + 1.5;
-        m.style.setProperty("--origami-gauge-pos", t.toFixed(4));
-        (lines[m.dataset.line] ||= []).push([x, y]);
-        if (m.classList.contains("gap")) holes.push(`radial-gradient(circle at ${x.toFixed(1)}px ${y.toFixed(1)}px, transparent ${hole}px, #000 ${hole + 0.5}px)`);
+    const bars = [...row.querySelectorAll(".shape-curve")].filter((b) => b.offsetWidth), lines = /* @__PURE__ */ new Map(), holes = [], pos = [];
+    if (!bars.length) return;
+    let svg = row.querySelector(":scope > .gauge-curve");
+    if (!svg) {
+      row.insertAdjacentHTML("beforeend", '<svg class="gauge-curve"></svg>');
+      svg = row.lastElementChild;
+    }
+    row.classList.add("has-curve");
+    svg.setAttribute("width", 0);
+    svg.setAttribute("height", 0);
+    const w = row.scrollWidth;
+    svg.setAttribute("width", w);
+    svg.setAttribute("height", row.scrollHeight);
+    const box = svg.getBoundingClientRect(), k = box.width ? w / box.width : 1;
+    for (const el of new Set(bars.map((b) => b.dataset.gauge.split("-")[1]))) {
+      const group = bars.filter((b) => b.dataset.gauge.split("-")[1] === el), vs = group.flatMap((b) => [...b.children].map((m) => +m.dataset.v)), cs = getComputedStyle(group[0]);
+      const lo = +(group[0].dataset.min ?? Math.min(...vs)), hi = +(group[0].dataset.max ?? Math.max(...vs)), stroke = `stroke:${cs.getPropertyValue("--origami-gauge-color")};stroke-width:${cs.getPropertyValue("--origami-gauge-w")}`;
+      for (const b of group) {
+        const r = b.getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue("--_in")), x = (r.left + r.width / 2 - box.left) * k, top = (r.top - box.top) * k, h = r.height * k;
+        for (const m of b.children) {
+          const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5, y = top + pad + (1 - t) * (h - 2 * pad), key = `${el}:${m.dataset.line}`, runs = lines.get(key) || [], run = runs.at(-1);
+          if (run && Math.abs(top - run.top) < h / 2) run.pts.push([x, y]);
+          else lines.set(key, [...runs, { top, stroke, pts: [[x, y]] }]);
+          if (m.classList.contains("gap")) holes.push([x, y, m.offsetWidth / 2 + 1.5]);
+          pos.push([m, t]);
+        }
       }
     }
     const path = (p) => {
@@ -3687,19 +3686,13 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
       });
       return p.map(([x, y], i) => i ? `C${f(p[i - 1][0] + h[i - 1] / 3)},${f(p[i - 1][1] + m[i - 1] * h[i - 1] / 3)} ${f(x - h[i - 1] / 3)},${f(y - m[i] * h[i - 1] / 3)} ${f(x)},${f(y)}` : `M${f(x)},${f(y)}`).join("");
     };
-    const cs = bars.length && getComputedStyle(bars[0]), html = lines.filter(Boolean).map((pts) => `<path d="${path(pts)}" style="stroke:${cs.getPropertyValue("--origami-gauge-color")};stroke-width:${cs.getPropertyValue("--origami-gauge-w")}"/>`).join("");
-    let svg = row.querySelector(":scope > .gauge-curve");
-    row.classList.toggle("has-curve", !!html);
-    if (!html) return svg?.remove();
-    if (!svg) {
-      row.insertAdjacentHTML("afterbegin", '<svg class="gauge-curve"></svg>');
-      svg = row.firstElementChild;
+    const html = [...lines.values()].flat().filter((r) => r.pts.length > 1).map((r) => `<path d="${path(r.pts)}" style="${r.stroke}"/>`).join("");
+    for (const [m, t] of pos) m.style.setProperty("--origami-gauge-pos", t.toFixed(4));
+    if (!html) {
+      row.classList.remove("has-curve");
+      return svg.remove();
     }
-    svg.setAttribute("width", 0);
-    svg.setAttribute("height", 0);
-    svg.setAttribute("width", row.scrollWidth);
-    svg.setAttribute("height", row.scrollHeight);
-    svg.style.setProperty("--_holes", holes.join(", ") || "none");
+    svg.style.setProperty("--_holes", holes.map(([x, y, r]) => `radial-gradient(circle at ${x.toFixed(1)}px ${y.toFixed(1)}px, transparent ${r}px, #000 ${r + 0.5}px)`).join(", ") || "none");
     svg.innerHTML = html;
   }
   _buildGauge(o, p, valueOf, iconOf) {
@@ -3712,7 +3705,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const mode = o[p + "threshold_mode"] || "solid", ts = (Array.isArray(o[p + "thresholds"]) ? o[p + "thresholds"] : []).filter((t) => t.color).map((t) => [near(num(t.value)), t.color]).filter((t) => !isNaN(t[0])).sort((a, b) => a[0] - b[0]);
     const stops = mode === "solid" ? "" : ts.map(([v, c], i) => `${cssValue(c)} ${pct(v)}${mode === "segments" ? ` ${pct(ts[i + 1] ? ts[i + 1][0] : max)}` : ""}`).join(", ");
     const color = mode === "solid" && ts.filter((t) => t[0] <= v0).pop()?.[1] || o[p + "color"] && o[p + "color"] !== "auto" && o[p + "color"] || "var(--primary-color, #03a9f4)";
-    const shape = p === "bar_" && ["curve", "sun"].includes(o.bar_shape) ? o.bar_shape : "", needle = o[p + "needle"] === true, marked = shape === "curve" || needle || values.length > 1 || o[p + "marker"] === true || o[p + "fill"] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
+    const shape = p === "bar_" && ["curve", "sun"].includes(o.bar_shape) ? o.bar_shape : "", needle = o[p + "needle"] === true, marked = shape === "curve" || shape === "sun" && o[p + "marker"] !== false || needle || values.length > 1 || o[p + "marker"] === true || o[p + "fill"] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
     const style = [`--origami-gauge-w:${w}px`, `--origami-gauge-color:${cssValue(color)}`];
     if (n.marker_icon_size > 0) style.push(`--origami-marker-icon-size:${n.marker_icon_size}px`);
     if (n.start) style.push(`--origami-gauge-start:${n.start}deg`);
@@ -3758,8 +3751,11 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const r = this._resolveSensorValue(hass, entity, attribute);
     return r.rawNumeric != null ? r.rawNumeric : r.formatted;
   }
-  _resolveGaugeValue(hass, button, def, ctx) {
-    return def.value ?? (ctx.isForecast && !def.entity ? (ctx.forecastEntry || {})[def.attribute || ctx.forecastTextAttr] : this._sensorValue(hass, def.entity || button.entity, def.entity || def.attribute ? def.attribute : button.attribute));
+  _resolveGaugeValue(hass, button, def, ctx, gauge) {
+    if (def.value != null) return def.value;
+    if (ctx.isForecast && !def.entity) return (ctx.forecastEntry || {})[def.attribute || ctx.forecastTextAttr];
+    const id = def.entity || button.entity, attr = def.entity || def.attribute ? def.attribute : button.attribute, sun = gauge && !attr && String(id).startsWith("sun.") && hass.states[id];
+    return sun ? Math.round(_WeatherCard._sunDay(sun.attributes)[0] * 1440) / 14.4 : this._sensorValue(hass, id, attr);
   }
   _buttonIconInner(iconStrategy, iconValue) {
     if (iconStrategy === "native") return "<ha-state-icon></ha-state-icon>";
@@ -3891,10 +3887,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const marqueeSpeed = Math.max(5, parseFloat(button.marquee_speed) || 30);
     const marqueeRtl = button.marquee_rtl === true, width = (button.width || "").toString().trim(), height = (button.height || "").toString().trim();
     const textCtx = { isForecast, forecastEntry, forecastDatetime, forecastTextAttr, formatted, primaryResolved };
-    const gauge = (o, p) => this._buildGauge(o, p, (def) => {
-      const id = def.entity || button.entity, sun = def.value == null && !(def.entity || def.attribute ? def.attribute : button.attribute) && String(id).startsWith("sun.") && hass.states[id];
-      return sun ? _WeatherCard._sunDay(sun.attributes)[0] * 100 : this._resolveGaugeValue(hass, button, def, textCtx);
-    }, (icon) => {
+    const gauge = (o, p) => this._buildGauge(o, p, (def) => this._resolveGaugeValue(hass, button, def, textCtx, true), (icon) => {
       const r = resolveIconEl({ icon });
       return this._buttonIconInner(r.strategy, r.value);
     });
@@ -4411,14 +4404,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     const active = !!recipe || !!cloudState || !!mistState || !!stars || !!birds || !!balloon || !!planes;
     const hass = this._hass;
     this._syncEffectColors();
-    this._nearUsed = !!hass && (this._containers || []).some((c) => containerLayer(c) === "middle" && c.hide !== true && this._checkButtonVisibility(c, hass));
+    this._nearUsed = !!hass && (this._containers || []).some((c) => containerLayer(c) === "middle" && this._containerShown(c, hass));
     els.root.classList.toggle("has-near-canvas", this._nearUsed);
     if (active && !this._sizeEffectsCanvas()) {
       this._effectsActive = false;
       els.root.classList.remove("has-weather-effects");
       return;
     }
-    WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes, factor("precipitation_speed"), String(cfg.cloud_image_path || "").trim(), mistState, this._windMs, factor("mist_density", 2), factor("mist_size", 2));
+    WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, { weatherState: cloudState, stars, birds, balloon, planes, speed: factor("precipitation_speed"), cloudImage: String(cfg.cloud_image_path || "").trim(), mistState, wind: this._windMs, mistDensity: factor("mist_density", 2), mistSize: factor("mist_size", 2) });
     this._effectsActive = active;
     els.root.classList.toggle("has-weather-effects", active);
     els.root.classList.toggle("has-star-canvas", !!stars);

@@ -2,7 +2,7 @@
 
 <div>
 <a href="https://github.com/hazymorning/origami_weather/releases/latest"><img alt="Latest release" src="https://img.shields.io/badge/Release-V1.6.1-F6F4F1?labelColor=181715"></a>
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin"><img alt="In the HACS default store" src="https://img.shields.io/badge/HACS-Default-F6F4F1?labelColor=181715"></a>
+<a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=hazymorning&repository=origami_weather"><img alt="Listed in the Marketplace" src="https://img.shields.io/badge/Marketplace-Listed-F6F4F1?labelColor=181715"></a>
 <a href="https://github.com/hazymorning?tab=repositories&q=origami"><img alt="Origami suite" src="https://img.shields.io/badge/Origami-Suite-F6F4F1?labelColor=181715&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiNGNkY0RjEiIHN0cm9rZS13aWR0aD0iMiIvPjxwb2x5Z29uIHBvaW50cz0iMjEsMyAyMSwyMSAzLDIxIiBmaWxsPSIjRjZGNEYxIi8%2BPC9zdmc%2B"></a>
 </div>
 
@@ -21,15 +21,17 @@ Origami Weather is a weather card for Home Assistant with an animated sky behind
 
 <br>
 
-Origami Weather is in the HACS default store.
+Origami Weather is in the Marketplace, which replaced HACS in Home Assistant 2026.11.
 
-1. Open Origami Weather in HACS and select **Download**.
+1. Open Origami Weather in the Marketplace and select **Install**.
 
-   [![Open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hazymorning&repository=origami_weather&category=plugin)
+   [![Open Origami Weather in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=hazymorning&repository=origami_weather)
 
 2. Reload the page.
 
-Without HACS, copy everything in `dist` from the [latest release](https://github.com/hazymorning/origami_weather/releases/latest), including the `diorama` folder, into a folder such as `/config/www/origami-weather`. Then add `/local/origami-weather/origami-weather.js` as a **JavaScript module** under [Resources](https://my.home-assistant.io/redirect/lovelace_resources/) and reload the page with a hard refresh. The card loads its other files and pictures from the same folder when it needs them.
+On earlier versions of Home Assistant, it's in HACS, where **Download** installs it.
+
+Without the Marketplace or HACS, copy everything in `dist` from the [latest release](https://github.com/hazymorning/origami_weather/releases/latest), including the `diorama` folder, into a folder such as `/config/www/origami-weather`. Then add `/local/origami-weather/origami-weather.js` as a **JavaScript module** under [Resources](https://my.home-assistant.io/redirect/lovelace_resources/) and reload the page with a hard refresh. The card loads its other files and pictures from the same folder when it needs them.
 
 </details>
 
@@ -50,7 +52,7 @@ Without HACS, copy everything in `dist` from the [latest release](https://github
 
 ### Diorama
 
-<img width="800" alt="The Diorama layout on a partly cloudy day and a clear night, and below after a tap with the next days, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
+<img width="800" alt="The Diorama layout on a partly cloudy day and a rainy night, and below after a tap with the next days, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
 A cozy landscape for every kind of weather, made for the [Origami](https://github.com/hazymorning/origami) dashboard. By default it stays simple and only shows the current weather. A tap shows a daily forecast that scrolls sideways.
 
@@ -58,19 +60,19 @@ A cozy landscape for every kind of weather, made for the [Origami](https://githu
 
 <img width="800" alt="The Classic layout, today's weather and the next days on a rich blue on a sunny day and on a deep indigo on a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
-The classic weather card in a modern form, with today's weather and the next days at a glance. Every kind of weather has its own rich color, and the colors turn deeper at night.
+The classic weather card in a modern form: today's weather on a rich color for each kind of weather, and a forecast that scrolls sideways. Almost all effects are off for a more conventional look, and each one can be turned back on.
 
 ### Sky
 
-<img width="800" alt="The Sky layout on a partly cloudy afternoon and a clear night, and below after a tap with the next days as a curve, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
+<img width="800" alt="The Sky layout on a partly cloudy afternoon and a partly cloudy night with the moon, and below after a tap with the next days as a curve, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
 
-The animated sky fills the whole card, with only the current weather and today's high and low on it. Birds, rain and snow pass in front of the temperature. A tap anywhere shows a daily forecast as a curve.
+The animated sky fills the whole card, with only the current weather and today's high on it. Birds, rain and snow pass in front of the temperature. A tap anywhere shows a daily forecast as a curve.
 
 ### Home
 
-<img width="800" alt="The Home layout, a drawn house with a garden, the temperature of each room and a wind compass, on a rainy day and a snowy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
+<img width="800" alt="The Home layout, a drawn house with a garden, the temperature of each room and a wind compass, on a sunny day and a snowy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/home.webp">
 
-Made for dashboards about the home: a drawn house with the temperature outside and in each room, and the wind on a compass. The house reacts to what happens around it, with sunlight from the real direction of the sun, snow on the roofs and lit windows at night.
+Made for dashboards about the home: a drawn house with the temperature outside and in each room, and the wind on a compass. The house reacts to what happens around it, with sunlight from the real direction of the sun, snow on the roofs and lit windows at night. An AI can also [draw the real home](#house) in its place.
 
 <a name="more-layouts"></a>
 <details>
@@ -85,7 +87,7 @@ These layouts aren't in the layout picker. To use one, paste its YAML into the c
 
 <br>
 
-<img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index and the chance of rain, and the next hours below, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
+<img width="800" alt="The Panel layout, the current weather and the temperature with tiles for the wind, the humidity, the UV index, the chance of rain, the apparent temperature and the pressure, and the next hours below with a line through their temperatures, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
 A detailed overview for a bigger spot on the dashboard. Next to the current weather, tiles show the numbers that matter during the day, like the wind and the chance of rain, and the next hours follow below.
 
@@ -202,7 +204,7 @@ button_containers:
     attribute: temperature
     elements:
     - type: text
-      size: 60px
+      size: 56px
       weight: '600'
       precision: 0
       format: °
@@ -343,6 +345,75 @@ button_containers:
       color: var(--primary-text-color)
       attribute: precipitation_probability
       format: '%'
+- name: Feels like
+  custom_width: calc(50% - 4px)
+  margin: 8px 0 0
+  padding: 12px
+  gap: 8px
+  grouped: true
+  background: true
+  blurred_background: true
+  background_color: color-mix(in srgb, var(--primary-text-color) 5%, transparent)
+  shadow: false
+  buttons:
+  - name: Label
+    entity: weather.home
+    width: 100%
+    inner_gap: 6px
+    elements:
+    - type: icon
+      icon: mdi:thermometer
+      icon_size: 18px
+      color: var(--secondary-text-color)
+    - type: text
+      text: Feels like
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+  - name: Value
+    entity: weather.home
+    elements:
+    - type: text
+      size: 17px
+      weight: '600'
+      color: var(--primary-text-color)
+      attribute: apparent_temperature
+      precision: 0
+      format: °
+- name: Pressure
+  custom_width: calc(50% - 4px)
+  margin: 8px 0 0
+  padding: 12px
+  gap: 8px
+  grouped: true
+  background: true
+  blurred_background: true
+  background_color: color-mix(in srgb, var(--primary-text-color) 5%, transparent)
+  shadow: false
+  buttons:
+  - name: Label
+    entity: weather.home
+    width: 100%
+    inner_gap: 6px
+    elements:
+    - type: icon
+      icon: mdi:gauge
+      icon_size: 18px
+      color: var(--secondary-text-color)
+    - type: text
+      text: Pressure
+      size: 12px
+      weight: '500'
+      color: var(--secondary-text-color)
+  - name: Value
+    entity: weather.home
+    elements:
+    - type: text
+      size: 17px
+      weight: '600'
+      color: var(--primary-text-color)
+      attribute: pressure
+      precision: 0
 - name: Forecast
   custom_width: 100%
   layout: horizontal-scroll
@@ -367,6 +438,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -385,6 +465,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -403,6 +492,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -421,6 +519,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -439,6 +546,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -457,6 +573,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -475,6 +600,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -493,6 +627,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -511,6 +654,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -529,6 +681,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -547,6 +708,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -565,6 +735,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -583,6 +762,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -601,6 +789,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -619,6 +816,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -637,6 +843,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -655,6 +870,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -673,6 +897,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -691,6 +924,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -709,6 +951,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -727,6 +978,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -745,6 +1005,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -763,6 +1032,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -781,6 +1059,15 @@ button_containers:
     - type: icon
       icon: weather
       color: var(--primary-text-color)
+    - type: bar
+      bar_shape: curve
+      bar_height: 2px
+      bar_color: color-mix(in srgb, currentColor 22%, transparent)
+      margin: -44px 0 -8px
+      bar_values:
+      - attribute: temperature
+        marker_size: 28px
+        marker_gap: true
     - type: text
       attribute: temperature
       format: °
@@ -874,11 +1161,11 @@ button_containers:
 </details>
 
 <details>
-<summary><b>Comparison</b></summary>
+<summary><b>Outlook</b></summary>
 
 <br>
 
-<img width="800" alt="The Comparison layout: the temperature outside beside tiles for today and the next days, with a bar that compares it with today's high and today's chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/comparison.webp">
+<img width="800" alt="The Outlook layout: the temperature outside beside tiles for today and the next days, with a bar that compares it with today's high and today's chance of rain, on a rainy day and a clear night, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/outlook.webp">
 
 For a quick look at how the day develops. The temperature outside sits next to the coming days, and a bar shows how close it is to today's high, with the current weather and the chance of rain below.
 
@@ -1151,152 +1438,6 @@ button_containers:
 
 </details>
 
-<details>
-<summary><b>Arc</b></summary>
-
-<br>
-
-A card about the course of the day: the sun moves along an arc from sunrise to sunset and the moon along one through the night, with the temperature and the next sunrise or sunset below. The arcs use `sensor.sun_next_rising` and `sensor.sun_next_setting` from the Sun integration, and the position on them comes from `sensor.time` of the Time & Date integration.
-
-```yaml
-type: custom:origami-weather
-weather_entity: weather.home
-sun_size: 100
-moon_size: 100
-sun_moon_y: 44
-card_height: auto
-card_padding: '0'
-bird_effects: false
-balloon_effects: false
-plane_effects: false
-button_containers:
-- position: custom
-  position_anchor: top
-  position_y: 10cqh
-  buttons:
-  - entity: sun.sun
-    elements: []
-    visibility:
-    - condition: state
-      entity: sun.sun
-      state: above_horizon
-    type: ring
-    width: 68cqmin
-    ring_min: sensor.sun_next_rising
-    ring_max: sensor.sun_next_setting
-    ring_start: 240
-    ring_arc: 240
-    ring_width: '4'
-    ring_color: color-mix(in srgb, currentColor 40%, transparent)
-    ring_values:
-    - entity: sensor.time
-      marker_size: 0
-    - entity: sensor.sun_next_rising
-      marker_size: '26'
-      marker_color: rgba(0,0,0,0.8)
-      marker_icon: mdi:weather-sunset-up
-      marker_icon_color: '#ffffff'
-    - entity: sensor.sun_next_setting
-      marker_size: '26'
-      marker_color: rgba(0,0,0,0.8)
-      marker_icon: mdi:weather-sunset-down
-      marker_icon_color: '#ffffff'
-    - entity: sensor.time
-      marker_size: '40'
-      marker_color: '#ffffff'
-      marker_icon: mdi:white-balance-sunny
-      marker_icon_color: '#2c2c2e'
-  - entity: sun.sun
-    elements: []
-    visibility:
-    - condition: state
-      entity: sun.sun
-      state: below_horizon
-    type: ring
-    width: 68cqmin
-    ring_min: sensor.sun_next_setting
-    ring_max: sensor.sun_next_rising
-    ring_start: 240
-    ring_arc: 240
-    ring_width: '4'
-    ring_color: color-mix(in srgb, currentColor 40%, transparent)
-    ring_values:
-    - entity: sensor.time
-      marker_size: 0
-    - entity: sensor.sun_next_setting
-      marker_size: '26'
-      marker_color: rgba(0,0,0,0.8)
-      marker_icon: mdi:weather-sunset-down
-      marker_icon_color: '#ffffff'
-    - entity: sensor.sun_next_rising
-      marker_size: '26'
-      marker_color: rgba(0,0,0,0.8)
-      marker_icon: mdi:weather-sunset-up
-      marker_icon_color: '#ffffff'
-    - entity: sensor.time
-      marker_size: '40'
-      marker_color: '#ffffff'
-      marker_icon: mdi:weather-night
-      marker_icon_color: '#2c2c2e'
-- position: custom
-  position_anchor: bottom-left
-  position_x: 7cqw
-  position_y: 7cqh
-  button_style: vertical
-  button_gap: 8px
-  button_text_size: clamp(13px, 3.5cqmin, 16px)
-  buttons:
-  - entity: weather.home
-    elements:
-    - type: text
-      attribute: temperature
-      precision: 0
-      format: °
-      size: clamp(24px, 8cqmin, 36px)
-      weight: '700'
-    - type: text
-      weight: '500'
-- position: custom
-  position_anchor: bottom-right
-  position_x: 7cqw
-  position_y: 7cqh
-  align: end
-  button_style: vertical
-  button_gap: 8px
-  button_text_size: clamp(13px, 3.5cqmin, 16px)
-  buttons:
-  - entity: sun.sun
-    elements:
-    - type: text
-      attribute: next_setting
-      size: clamp(24px, 8cqmin, 36px)
-      weight: '700'
-    - type: text
-      text: Sunset
-      weight: '500'
-    visibility:
-    - condition: state
-      entity: sun.sun
-      state: above_horizon
-  - entity: sun.sun
-    elements:
-    - type: text
-      attribute: next_rising
-      size: clamp(24px, 8cqmin, 36px)
-      weight: '700'
-    - type: text
-      text: Sunrise
-      weight: '500'
-    visibility:
-    - condition: state
-      entity: sun.sun
-      state: below_horizon
-grid_options:
-  rows: 6
-```
-
-</details>
-
 </details>
 
 <sub>The screenshots use the Montserrat font. The [Origami](https://github.com/hazymorning/origami#get-started) repository explains how to add it to Home Assistant.</sub>
@@ -1330,6 +1471,7 @@ Updates replace everything in the card's own folder, so keep other pictures in a
 
 </details>
 
+<a name="house"></a>
 <details>
 <summary><b>The house in the Home layout</b></summary>
 
@@ -1408,7 +1550,7 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Updating the card keeps the settings of every card. A layout only changes when it's picked again in the layout picker.
 
-Centered, Comparison and Arc are no longer in the layout picker. Cards made with them keep working, and their YAML is under **More layouts**. Slim is now called Sky, and cards made with Slim keep working as they are. Cards with `image: demo-home-image` keep the house from previous versions, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker, and cards made with them keep working. **More layouts** has the YAML of Centered and of Comparison, which is now called Outlook. Slim is now called Sky, and cards made with Slim keep working as they are. Cards with `image: demo-home-image` keep the house from previous versions, while the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
 
@@ -1418,7 +1560,7 @@ The card's border is now drawn on top of the card's background. A see-through bo
 
 Containers can now sit between the weather layers with `layer`. Custom CSS that set a `z-index` on `#free-layer` or `#content-layer` to put a picture behind the rain no longer works for that, and `layer: middle` on the picture's container does it now.
 
-Without HACS, the card now comes as several files that all belong in one folder. Copy everything in `dist`, including the `diorama` folder, as **Install the card** describes.
+Without the Marketplace or HACS, the card now comes as several files that all belong in one folder. Copy everything in `dist`, including the `diorama` folder, as **Install the card** describes.
 
 </details>
 

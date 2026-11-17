@@ -60,7 +60,7 @@ var DIORAMA_CONFIG = Object.freeze({
   button_containers: [
     {
       name: "Now",
-      padding: "var(--ha-space-4, 16px)",
+      padding: "var(--ha-space-4, 16px) var(--ha-space-4, 16px) var(--ha-space-4, 16px) calc(var(--ha-space-4, 16px) + 4px)",
       visibility: DIORAMA_SWITCH.shown("off"),
       buttons: [
         {
@@ -83,7 +83,7 @@ var DIORAMA_CONFIG = Object.freeze({
       position_x: "0",
       position_y: "0",
       custom_width: "100%",
-      padding: "34px 0",
+      padding: "34px max(0px, calc(58.5px - 12.5cqw))",
       layout: "horizontal-scroll",
       scroll_count: 5,
       row_height: "100%",
@@ -147,6 +147,7 @@ var CLASSIC_CONFIG = Object.freeze({
   color_mode: "dark",
   sun_enabled: false,
   moon_enabled: false,
+  night_sky_effects: false,
   cloud_effects: false,
   mist_effects: false,
   bird_effects: false,
@@ -409,8 +410,7 @@ var SKY_CONFIG = Object.freeze({
           elements: [
             icon("weather"),
             text({ text: "Today", weight: "500" }),
-            text({ attribute: "temperature", format: "\xB0", weight: "700", color: "currentColor" }),
-            text({ attribute: "templow", format: "\xB0", weight: "500" })
+            text({ attribute: "temperature", format: "\xB0", weight: "700", color: "currentColor" })
           ]
         }
       ]
@@ -463,7 +463,7 @@ var LAYOUT_PRESETS = Object.freeze([
   {
     id: "sky",
     name: "Sky",
-    description: "Animated sky with today's high and low, tap shows a forecast",
+    description: "Animated sky with the current weather, tap shows a forecast",
     icon: "mdi:view-compact-outline",
     config: SKY_CONFIG
   },

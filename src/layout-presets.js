@@ -178,7 +178,7 @@ const DAILY_CONFIG = Object.freeze({
                     inner_gap: '7px',
                     elements: [
                         text({ attribute: 'datetime', format: '%A', size: '20px', weight: '600', color: WHITE }),
-                        text({ attribute: 'datetime', format: '%-d. %B', size: '14px', weight: '500', color: WHITE_72 })
+                        text({ attribute: 'datetime', format: '%-d %B', size: '14px', weight: '500', color: WHITE_72 })
                     ]
                 },
                 {
@@ -350,21 +350,22 @@ const HOME_CONFIG = Object.freeze({
     ]
 });
 
-const HOURS = cardSwitch('hours');
-const hourColumn = (offset) => ({
-    name: offset ? `In ${offset + 1} hours` : 'Next hour',
+const SKY_SWITCH = cardSwitch('forecast');
+const skyDay = (offset) => ({
+    name: dayName(offset),
     entity: PRESET_ENTITY_TOKEN,
-    forecast: 'hourly',
+    forecast: 'daily',
     forecast_offset: offset,
-    tap_action: HOURS.tap,
+    tap_action: SKY_SWITCH.tap,
     elements: [
         { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', bar_marker_icon_size: '30px', margin: '0 0 5px', bar_values: [{ attribute: 'temperature', marker_size: '36px', marker_gap: true, marker_icon: 'weather' }] },
         text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
-        text({ attribute: 'datetime', weight: '500' })
+        text({ attribute: 'templow', format: '\u00b0', size: '13px', weight: '500' }),
+        text({ attribute: 'datetime', format: '%a', weight: '500' })
     ]
 });
 
-const HOURLY_CONFIG = Object.freeze({
+const SKY_CONFIG = Object.freeze({
     card_height: '168px',
     card_padding: '0',
     content_align: 'between',
@@ -373,12 +374,12 @@ const HOURLY_CONFIG = Object.freeze({
     sun_size: 40,
     moon_size: 40,
     visibility_fade: true,
-    card_tap_action: HOURS.tab('off'),
+    card_tap_action: SKY_SWITCH.tap,
     button_containers: [
         {
             name: 'Now',
             padding: '18px 18px 0',
-            visibility: HOURS.shown('off'),
+            visibility: SKY_SWITCH.shown('off'),
             buttons: [
                 {
                     name: 'Condition and temperature',
@@ -396,19 +397,19 @@ const HOURLY_CONFIG = Object.freeze({
             name: 'Today',
             padding: '0 18px 18px',
             background: true,
-            button_padding: '12px 14px',
+            button_padding: '10px 12px',
             button_gap: '8px',
             button_text_size: '16px',
             button_icon_size: '20px',
             button_background_color: CARD_TINT(45),
             button_blurred_background: true,
-            visibility: HOURS.shown('off'),
+            visibility: SKY_SWITCH.shown('off'),
             buttons: [
                 {
                     name: 'Today',
                     entity: PRESET_ENTITY_TOKEN,
                     forecast: 'daily',
-                    tap_action: HOURS.tap,
+                    tap_action: SKY_SWITCH.tap,
                     elements: [
                         icon('weather'),
                         text({ text: 'Today', weight: '500' }),
@@ -419,7 +420,7 @@ const HOURLY_CONFIG = Object.freeze({
             ]
         },
         {
-            name: 'Hours',
+            name: 'Days',
             position: 'custom',
             position_anchor: 'top-left',
             position_x: '0',
@@ -443,8 +444,8 @@ const HOURLY_CONFIG = Object.freeze({
             button_style: 'vertical',
             button_gap: '5px',
             button_text_size: '12px',
-            visibility: HOURS.shown('on'),
-            buttons: Array.from({ length: 12 }, (_, i) => hourColumn(i * 2))
+            visibility: SKY_SWITCH.shown('on'),
+            buttons: days(0, skyDay)
         }
     ]
 });
@@ -465,11 +466,11 @@ export const LAYOUT_PRESETS = Object.freeze([
         config: DAILY_CONFIG
     },
     {
-        id: 'hourly-forecast',
-        name: 'Hourly Forecast',
-        description: 'Animated sky with today\'s high and low, tap for the next hours',
+        id: 'sky',
+        name: 'The Sky',
+        description: 'Animated sky with today\'s high and low, tap for the next days',
         icon: 'mdi:view-compact-outline',
-        config: HOURLY_CONFIG
+        config: SKY_CONFIG
     },
     {
         id: 'home',

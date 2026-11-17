@@ -350,44 +350,21 @@ const HOME_CONFIG = Object.freeze({
     ]
 });
 
-const VIEW = cardSwitch('view');
-const viewButton = (name, view, extra, elements) => ({ name, entity: PRESET_ENTITY_TOKEN, tap_action: VIEW.tab(view), ...extra, elements });
-const viewColumn = (name, view, extra, when) => viewButton(name, view, extra, [
-    { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', bar_marker_icon_size: '30px', margin: '0 0 5px', bar_values: [{ attribute: 'temperature', marker_size: '36px', marker_gap: true, marker_icon: 'weather' }] },
-    text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
-    text({ attribute: 'datetime', weight: '500', ...when })
-]);
-const viewTile = (name, view, extra, label) => viewButton(name, view, extra, [icon('weather'), text({ weight: '500', ...label }), text({ attribute: 'temperature', format: '\u00b0', weight: '700', color: 'currentColor' })]);
-const forecastView = (name, view, buttons) => ({
-    name,
-    position: 'custom',
-    position_anchor: 'top-left',
-    position_x: '0',
-    position_y: '0',
-    custom_width: '100%',
-    padding: 'calc(10cqw - 18.5px) 0 calc(10cqw - 15.5px)',
-    layout: 'horizontal-scroll',
-    scroll_count: 5,
-    row_height: '100%',
-    align_items: 'stretch',
-    gap: '0',
-    align: 'center',
-    scroll_fade: true,
-    scroll_fade_size: '48px',
-    background: true,
-    grouped: true,
-    border: 'none',
-    blurred_background: true,
-    background_blur: 16,
-    background_color: CARD_TINT(30),
-    button_style: 'vertical',
-    button_gap: '5px',
-    button_text_size: '12px',
-    visibility: VIEW.shown(view),
-    buttons
+const HOURS = cardSwitch('hours');
+const hourColumn = (offset) => ({
+    name: offset ? `In ${offset + 1} hours` : 'Next hour',
+    entity: PRESET_ENTITY_TOKEN,
+    forecast: 'hourly',
+    forecast_offset: offset,
+    tap_action: HOURS.tap,
+    elements: [
+        { type: 'bar', bar_shape: 'curve', bar_height: '2px', bar_color: 'currentColor', bar_marker_icon_size: '30px', margin: '0 0 5px', bar_values: [{ attribute: 'temperature', marker_size: '36px', marker_gap: true, marker_icon: 'weather' }] },
+        text({ attribute: 'temperature', format: '\u00b0', size: '15px', weight: '700', color: 'currentColor' }),
+        text({ attribute: 'datetime', weight: '500' })
+    ]
 });
 
-const HOURLY_DAILY_CONFIG = Object.freeze({
+const HOURLY_CONFIG = Object.freeze({
     card_height: '168px',
     card_padding: '0',
     content_align: 'between',
@@ -396,12 +373,12 @@ const HOURLY_DAILY_CONFIG = Object.freeze({
     sun_size: 40,
     moon_size: 40,
     visibility_fade: true,
-    card_tap_action: VIEW.tab('off'),
+    card_tap_action: HOURS.tab('off'),
     button_containers: [
         {
             name: 'Now',
             padding: '18px 18px 0',
-            visibility: VIEW.shown('off'),
+            visibility: HOURS.shown('off'),
             buttons: [
                 {
                     name: 'Condition and temperature',
@@ -416,12 +393,8 @@ const HOURLY_DAILY_CONFIG = Object.freeze({
             ]
         },
         {
-            name: 'Forecast',
+            name: 'Today',
             padding: '0 18px 18px',
-            layout: 'grid',
-            columns: 2,
-            gap: '8px',
-            align: 'spread',
             background: true,
             button_padding: '12px 14px',
             button_gap: '8px',
@@ -429,14 +402,50 @@ const HOURLY_DAILY_CONFIG = Object.freeze({
             button_icon_size: '20px',
             button_background_color: CARD_TINT(45),
             button_blurred_background: true,
-            visibility: VIEW.shown('off'),
+            visibility: HOURS.shown('off'),
             buttons: [
-                viewTile('Next hours', 'hours', { forecast: 'hourly', forecast_offset: 1 }, { attribute: 'datetime' }),
-                viewTile('Today', 'days', { forecast: 'daily' }, { text: 'Today' })
+                {
+                    name: 'Today',
+                    entity: PRESET_ENTITY_TOKEN,
+                    forecast: 'daily',
+                    tap_action: HOURS.tap,
+                    elements: [
+                        icon('weather'),
+                        text({ text: 'Today', weight: '500' }),
+                        text({ attribute: 'temperature', format: '\u00b0', weight: '700', color: 'currentColor' }),
+                        text({ attribute: 'templow', format: '\u00b0', weight: '500' })
+                    ]
+                }
             ]
         },
-        forecastView('Hours', 'hours', Array.from({ length: 12 }, (_, i) => viewColumn(i ? `In ${i * 2 + 1} hours` : 'Next hour', 'hours', { forecast: 'hourly', forecast_offset: i * 2 }))),
-        forecastView('Days', 'days', days(0, (i) => viewColumn(dayName(i), 'days', { forecast: 'daily', forecast_offset: i }, { format: '%a' })))
+        {
+            name: 'Hours',
+            position: 'custom',
+            position_anchor: 'top-left',
+            position_x: '0',
+            position_y: '0',
+            custom_width: '100%',
+            padding: 'calc(10cqw - 18.5px) 0 calc(10cqw - 15.5px)',
+            layout: 'horizontal-scroll',
+            scroll_count: 5,
+            row_height: '100%',
+            align_items: 'stretch',
+            gap: '0',
+            align: 'center',
+            scroll_fade: true,
+            scroll_fade_size: '48px',
+            background: true,
+            grouped: true,
+            border: 'none',
+            blurred_background: true,
+            background_blur: 16,
+            background_color: CARD_TINT(30),
+            button_style: 'vertical',
+            button_gap: '5px',
+            button_text_size: '12px',
+            visibility: HOURS.shown('on'),
+            buttons: Array.from({ length: 12 }, (_, i) => hourColumn(i * 2))
+        }
     ]
 });
 
@@ -444,28 +453,28 @@ export const LAYOUT_PRESETS = Object.freeze([
     {
         id: 'diorama',
         name: 'Diorama',
-        description: 'Landscape pictures that change with the weather',
+        description: 'A landscape that changes with the weather, tap for the next days',
         icon: 'mdi:image-filter-hdr',
         config: DIORAMA_CONFIG
     },
     {
         id: 'daily-forecast',
         name: 'Daily Forecast',
-        description: 'Current weather and a daily forecast',
+        description: 'Today\'s weather with high, low and humidity, and the next days',
         icon: 'mdi:view-dashboard-variant-outline',
         config: DAILY_CONFIG
     },
     {
-        id: 'hourly-daily',
-        name: 'Hourly & Daily',
-        description: 'Animated sky with hourly and daily forecasts',
+        id: 'hourly-forecast',
+        name: 'Hourly Forecast',
+        description: 'Animated sky with today\'s high and low, tap for the next hours',
         icon: 'mdi:view-compact-outline',
-        config: HOURLY_DAILY_CONFIG
+        config: HOURLY_CONFIG
     },
     {
         id: 'home',
         name: 'Home',
-        description: 'A house with room temperatures and wind',
+        description: 'A house with the weather outside, room temperatures and wind',
         icon: 'mdi:home-outline',
         config: HOME_CONFIG
     }

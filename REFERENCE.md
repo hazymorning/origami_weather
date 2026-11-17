@@ -119,7 +119,7 @@ button_containers:
         state: "on"
 ```
 
-A switch can also hold a name instead of on and off, like tabs. With `state: hours` on the `toggle`, a tap sets the switch to `hours`, or back to `off` when it already is, and containers that check `state: hours` show only then. Buttons that share one switch open one view at a time. The Hourly & Daily layout works like that: one button opens the next hours, the other one the next days.
+A switch can also hold a name instead of on and off, like tabs. With `state: hours` on the `toggle`, a tap sets the switch to `hours`, or back to `off` when it already is, and containers that check `state: hours` show only then. Buttons that share one switch open one view at a time.
 
 ```yaml
 tap_action:
@@ -292,7 +292,7 @@ Values don't have to be numbers either. Times work too, both a plain `06:32` and
 
 A gauge on the sun entity without an attribute shows where the sun is in its day, from 0 at midnight over 50 at noon to 100 at the next midnight.
 
-`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun unless `bar_marker` is `false`, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Daily Forecast layout. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the hours of the Hourly & Daily layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
+`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun unless `bar_marker` is `false`, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Daily Forecast layout. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the hours of the Hourly Forecast layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
 
 ```yaml
 buttons:

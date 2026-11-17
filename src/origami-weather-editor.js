@@ -684,7 +684,7 @@ class WeatherCardEditor extends LitElement {
     }
     _renderLayoutsPanel() {
         return html`<div class="settings-group">
-            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Picking a layout replaces all current settings. The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts use the same containers, buttons and elements, so parts can be copied from one to another.</span></div>
+            <div class="button-nudge info"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>Picking a layout replaces all current settings, so pick a layout first and then edit it.</span></div>
             <div class="preset-grid">
                 ${LAYOUT_PRESETS.map((preset) => html`
                     <button type="button" class="preset-card" @click=${() => this._applyPreset(preset)}>
@@ -692,7 +692,8 @@ class WeatherCardEditor extends LitElement {
                         <span class="preset-name">${preset.name}</span>
                         <span class="preset-desc">${preset.description}</span>
                     </button>`)}
-            </div></div>`;}
+            </div>
+            <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span>None of the layouts fits? The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts use the same containers, buttons and elements, so single parts can also be copied from one layout to another.</span></div></div>`;}
     _renderSwitchTap(action, set) {
         const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "", value = name && action.state ? String(action.state) : "";
         const toggle = (n, v) => ({ action: "toggle", entity: `origami.${n}`, ...(v ? { state: v } : {}) });

@@ -62,11 +62,11 @@ A little paper landscape for each kind of weather, made for the [Origami](https:
 
 The temperature and the current weather on a color that changes with the weather, with the day, today's high and low and the humidity beside them and the sun or the moon in between. Below them are the next six days, with the chance of rain under each day and a faint curve of the temperatures behind them.
 
-### Hourly & Daily
+### Hourly Forecast
 
-<img width="800" alt="The Hourly &amp; Daily layout, the live sky with the current weather, the temperature and two buttons for a coming hour and for today, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hourly-daily.webp">
+<img width="800" alt="The Hourly Forecast layout, the live sky with the current weather, the temperature and a button with today's high and low, and after a tap the next hours as a curve on a soft blur, by day and by night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hourly-forecast.webp">
 
-The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with two buttons below for the weather at a coming hour and for today. A tap on either lays a soft blur over the card and shows its forecast as a curve, the next day in steps of two hours or the next days, with the weather on it and the temperature below.
+The sky itself, with the sun, the moon, the stars, clouds, mist, rain, snow, birds, balloons and planes. The current weather and the temperature sit in the corner, with a button below for today's weather, high and low. A tap on it lays a soft blur over the card and shows the next day in steps of two hours as a curve, with the weather on it and the temperature below.
 
 ### Home
 
@@ -1415,7 +1415,7 @@ If it still feels too heavy on a device, most features can be turned off one by 
 
 Cards keep their settings when the card is updated. A layout only changes when it's picked again in the layout picker.
 
-Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Classic is now Daily Forecast and Slim is now Hourly & Daily, and Classic and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
+Centered, Comparison and Arc are no longer in the layout picker, but cards made with them keep working, and their YAML is under **Other layouts**. Classic is now Daily Forecast and Slim is now Hourly Forecast, and Classic and Slim cards made earlier keep working as they are. Cards with `image: demo-home-image` keep the plain house, and the Home layout now uses the new one with `image: home`. A Diorama card made from Origami's `diorama.yaml` keeps loading its pictures from jsDelivr until Diorama is picked in the layout picker.
 
 Mist now drifts behind the clouds, and `mist_effects: false` turns it off.
 

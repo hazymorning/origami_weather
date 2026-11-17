@@ -2264,12 +2264,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-R6BBRKZA.js");
+      await import("./origami-weather-editor-3PO5TWFU.js");
     }
     return Object.assign(document.createElement("origami-weather-editor"), { migrate: _WeatherCard._migrateConfig });
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-EZY6YKKP.js");
+    const { buildStubConfig } = await import("./layout-presets-ZV36YFGW.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {

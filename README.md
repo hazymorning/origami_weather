@@ -6,6 +6,8 @@
 <a href="https://github.com/hazymorning?tab=repositories&q=origami"><img alt="Origami suite" src="https://img.shields.io/badge/Origami-Suite-F6F4F1?labelColor=181715&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiNGNkY0RjEiIHN0cm9rZS13aWR0aD0iMiIvPjxwb2x5Z29uIHBvaW50cz0iMjEsMyAyMSwyMSAzLDIxIiBmaWxsPSIjRjZGNEYxIi8%2BPC9zdmc%2B"></a>
 </div>
 
+<br>
+
 Origami Weather is a weather card for Home Assistant with a builder approach. It can be a visual, animated weather card, a classic info-rich one, or something completely different. It comes with several ready-made layouts, but every part can be changed or mixed and matched freely.
 
 [![Open Origami Weather in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=hazymorning&repository=origami_weather)
@@ -42,19 +44,19 @@ Without the Marketplace or HACS, copy everything in `dist` from the [latest rele
 
 ### Diorama
 
-<img width="800" alt="The Diorama layout on a partly cloudy day and a snowy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
+<img width="800" alt="The Diorama layout on a partly cloudy day and a partly cloudy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
 A chill little paper landscape that changes with the weather and the time of day, made for the [Origami](https://github.com/hazymorning/origami) dashboard.
 
 ### Classic
 
-<img width="800" alt="The Classic layout on a partly cloudy day and a clear night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
+<img width="800" alt="The Classic layout on a partly cloudy day and a rainy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/classic.webp">
 
 A familiar weather card with the current conditions at the top and the forecast for the next days in a row that scrolls sideways.
 
 ### Sky
 
-<img width="800" alt="The Sky layout on a partly cloudy day and night, and below with the forecast view after a tap" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
+<img width="800" alt="The Sky layout on a partly cloudy day, and its forecast view at night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/sky.webp">
 
 This layout gives room to the various weather effects. A tap on the card opens a forecast view.
 
@@ -66,7 +68,7 @@ A little house that reacts to the sun and the weather, made for dashboards about
 
 ### Panel
 
-<img width="800" alt="The Panel layout on a cloudy day and a cloudy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
+<img width="800" alt="The Panel layout on a partly cloudy day and a cloudy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
 A detailed weather overview for a larger spot on the dashboard.
 

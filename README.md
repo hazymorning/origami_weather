@@ -51,7 +51,7 @@ Without the Marketplace or HACS, copy everything in `dist` from the [latest rele
 
 ### Diorama
 
-<img width="800" alt="The Diorama layout on a partly cloudy day and a partly cloudy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
+<img width="800" alt="The Diorama layout on a partly cloudy day and a windy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
 
 A chill little paper landscape that changes with the weather and the time of day, made for the [Origami](https://github.com/hazymorning/origami) dashboard.
 
@@ -75,7 +75,7 @@ A little house that reacts to the sun and the weather, made for dashboards about
 
 ### Panel
 
-<img width="800" alt="The Panel layout on a partly cloudy day and a cloudy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
+<img width="800" alt="The Panel layout on a sunny day and a foggy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
 A detailed weather overview for a larger spot on the dashboard.
 

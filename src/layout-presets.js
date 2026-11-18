@@ -420,26 +420,6 @@ const SKY_CONFIG = Object.freeze({
 
 const PRIMARY = 'var(--primary-text-color)';
 const SECONDARY = 'var(--secondary-text-color)';
-const PANEL_BG = 'var(--ha-card-background, var(--card-background-color, #fff))';
-const PANEL_TINTS = [
-    ['sunny', '255 184 77', 20, 10],
-    ['clear-night', '108 128 204', 16, 12],
-    ['exceptional', '255 140 90', 20, 10],
-    ['partlycloudy', '120 172 224', 20, 10],
-    ['cloudy', '146 158 174', 20, 10],
-    ['fog', '170 176 182', 24, 10],
-    ['windy', '108 180 176', 20, 10],
-    ['windy-variant', '116 168 190', 20, 10],
-    ['rainy', '96 140 196', 22, 12],
-    ['pouring', '76 112 170', 26, 14],
-    ['lightning', '132 108 180', 22, 12],
-    ['lightning-rainy', '116 98 168', 26, 14],
-    ['hail', '110 160 180', 22, 12],
-    ['snowy', '176 200 228', 26, 10],
-    ['snowy-rainy', '150 176 204', 24, 10]
-];
-const panelTint = (rgb, percent) => `color-mix(in srgb, rgb(${rgb}) ${percent}%, ${PANEL_BG})`;
-
 const panelTile = (name, iconName, label, value, top) => ({
     name,
     custom_width: 'calc(50% - 4px)',
@@ -476,8 +456,9 @@ const PANEL_CONFIG = Object.freeze({
     card_padding: '20px',
     content_direction: 'row',
     content_align: 'between',
-    sun_enabled: false,
-    moon_enabled: false,
+    sun_size: 32,
+    moon_size: 32,
+    sun_moon_y: '78px 66px',
     cloud_effects: false,
     mist_effects: true,
     mist_density: 0.5,
@@ -485,26 +466,18 @@ const PANEL_CONFIG = Object.freeze({
     bird_effects: false,
     balloon_effects: false,
     plane_effects: false,
-    background_mode: 'color',
-    background_color: PANEL_BG,
-    background_thresholds: PANEL_TINTS.map(([value, rgb, light, dark]) => ({ value, color: panelTint(rgb, light), color_dark: panelTint(rgb, dark) })),
     card_tap_action: { action: 'more-info' },
     button_containers: [
         {
             name: 'Now',
-            custom_width: 'calc(100% - 64px)',
+            custom_width: '60%',
             gap: '6px',
             buttons: [
                 {
-                    name: 'Temperature and condition',
+                    name: 'Condition',
                     entity: PRESET_ENTITY_TOKEN,
                     width: '100%',
-                    inner_gap: '8px',
-                    elements: [
-                        text({ attribute: 'temperature', precision: 0, format: '\u00b0', size: '24px', weight: '700', color: PRIMARY }),
-                        text({ text: '\u00b7', size: '24px', weight: '600', color: SECONDARY }),
-                        text({ size: '24px', weight: '600', color: PRIMARY, overflow: 'wrap' })
-                    ]
+                    elements: [text({ size: '24px', weight: '600', color: PRIMARY, overflow: 'wrap' })]
                 },
                 {
                     name: 'High and low',
@@ -522,40 +495,30 @@ const PANEL_CONFIG = Object.freeze({
             ]
         },
         {
-            name: 'Weather and UV index',
-            custom_width: '56px',
-            margin: '1px 0 0',
+            name: 'Temperature',
+            custom_width: '40%',
             justify_content: 'end',
             buttons: [
                 {
-                    name: 'Weather and UV index',
+                    name: 'Temperature',
                     entity: PRESET_ENTITY_TOKEN,
-                    attribute: 'uv_index',
-                    type: 'ring',
-                    style: 'vertical',
-                    ring_min: 0,
-                    ring_max: 11,
-                    ring_width: 2,
-                    ring_color: PRIMARY,
-                    width: '40px',
-                    padding: '0',
-                    elements: [icon('weather', { icon_size: '26px', color: PRIMARY })]
+                    attribute: 'temperature',
+                    elements: [text({ size: '62px', weight: '700', precision: 0, format: '\u00b0', color: PRIMARY, margin: '-0.216em -0.09em -0.164em 0' })]
                 }
             ]
         },
-        panelTile('Wind', 'mdi:weather-windy', 'Wind', { text: { attribute: 'wind_speed', precision: 0 } }, 18),
-        panelTile('Humidity', 'mdi:water-percent', 'Humidity', { text: { attribute: 'humidity' } }, 18),
+        panelTile('Wind', 'mdi:weather-windy', 'Wind', { text: { attribute: 'wind_speed', precision: 0 } }, 23),
+        panelTile('Humidity', 'mdi:water-percent', 'Humidity', { text: { attribute: 'humidity' } }, 23),
         panelTile('UV index', 'mdi:sun-wireless-outline', 'UV index', { text: { attribute: 'uv_index' } }, 8),
         panelTile('Rain', 'mdi:umbrella-outline', 'Rain', { forecast: 'daily', text: { attribute: 'precipitation_probability', format: '%' } }, 8),
-        panelTile('Feels like', 'mdi:thermometer', 'Feels like', { text: { attribute: 'apparent_temperature', precision: 0, format: '\u00b0' } }, 8),
         panelTile('Pressure', 'mdi:gauge', 'Pressure', { text: { attribute: 'pressure', precision: 0 } }, 8),
+        panelTile('Updated', 'mdi:update', 'Updated', { text: { attribute: 'last_updated' } }, 8),
         {
             name: 'Forecast',
             custom_width: '100%',
             layout: 'horizontal-scroll',
             scroll_count: 5,
-            margin: '18px 0 0',
-            padding: '4px 0',
+            margin: '26px 0 0',
             button_style: 'vertical',
             button_gap: '12px',
             button_text_size: '12px',

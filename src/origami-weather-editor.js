@@ -696,7 +696,7 @@ class WeatherCardEditor extends LitElement {
                         <span class="preset-text"><span class="preset-name">${preset.name}</span><span class="preset-desc">${preset.description}</span></span>
                     </button>`)}
             </div>
-            <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span><b>None of the layouts fits?</b> The README has <a href="https://github.com/hazymorning/origami_weather#more-layouts" target="_blank" rel="noreferrer">more layouts</a> to paste as YAML. All layouts use the same containers, buttons and elements, so single parts can also be copied from one layout to another.</span></div></div>`;}
+            <div class="button-nudge info"><ha-icon icon="mdi:information-outline" style="--mdc-icon-size:14px;flex-shrink:0"></ha-icon><span><b>Tip:</b> All layouts use the same containers, buttons and elements, so parts can be copied from one layout to another in the code editor. Containers and buttons can also show up only when needed, with visibility conditions or with a <a href="https://github.com/hazymorning/origami_weather/blob/main/REFERENCE.md#buttons" target="_blank" rel="noreferrer">card switch</a> that a tap turns on, like the next days in Sky.</span></div></div>`;}
     _renderSwitchTap(action, set) {
         const name = action && action.action === "toggle" && String(action.entity || "").startsWith("origami.") ? action.entity.slice(8) : "", value = name && action.state ? String(action.state) : "";
         const toggle = (n, v) => ({ action: "toggle", entity: `origami.${n}`, ...(v ? { state: v } : {}) });

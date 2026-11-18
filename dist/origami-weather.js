@@ -2247,12 +2247,12 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
   }
   static async getConfigElement() {
     if (!customElements.get("origami-weather-editor")) {
-      await import("./origami-weather-editor-7LXS73QG.js");
+      await import("./origami-weather-editor-TJIIX24Q.js");
     }
     return Object.assign(document.createElement("origami-weather-editor"), { migrate: _WeatherCard._migrateConfig });
   }
   static async getStubConfig(hass) {
-    const { buildStubConfig } = await import("./layout-presets-GFOEKNQK.js");
+    const { buildStubConfig } = await import("./layout-presets-XFIHNBMA.js");
     return buildStubConfig(hass);
   }
   static _migrateConfig(config) {
@@ -2502,10 +2502,10 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     let formatted = "N/A", haFormatted = false, rawNumeric = null, date;
     const sensor = hass.states[entityId];
     if (sensor && attribute) {
-      const raw = sensor.attributes[attribute];
+      const own = attribute === "last_changed" || attribute === "last_updated", raw = own ? sensor[attribute] : sensor.attributes[attribute];
       if (raw !== void 0 && raw !== null) {
-        formatted = hass.formatEntityAttributeValue(sensor, attribute);
-        haFormatted = true;
+        formatted = own ? raw : hass.formatEntityAttributeValue(sensor, attribute);
+        haFormatted = !own;
         rawNumeric = raw;
       }
     } else if (sensor) {
@@ -3300,7 +3300,7 @@ var WeatherCard = class _WeatherCard extends HTMLElement {
     return pickThreshold(dark ? thresholds.map((t) => ({ ...t, color: t.color_dark || t.color })) : thresholds, value) || base;
   }
   _applyConfigStyles() {
-    if (!this._elements || !this._elements.buttonContainerEls.length) return;
+    if (!this._elements) return;
     const cfg = this._config;
     const root = this._elements.root;
     this._cssVar(root, "--origami-card-padding", normalizeLength(cfg.card_padding || ""), "_prevCardPadding");
@@ -3549,9 +3549,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     cssVarContainer(cg, "--origami-row-align", aiVal, "alignItems");
   }
   _updateTextElements(hass, weatherState = "default") {
-    if (!this._elements || !this._elements.buttonContainerEls.length) return;
+    if (!this._elements) return;
     this._syncButtonContainerDOM();
     this._applyConfigStyles();
+    if (!this._elements.buttonContainerEls.length) return;
     const numKey = `${hass.locale.language}|${hass.locale.number_format}`;
     if (this._numFmtLang !== numKey) {
       this._numFmtLang = numKey;

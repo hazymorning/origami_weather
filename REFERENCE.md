@@ -439,7 +439,7 @@ The old `sun_moon_enabled` and `sun_moon_size` are converted to the separate tog
 | :--- | :--- | :--- | :--- |
 | `name` | `string` | — | A name for the button in the visual editor's list. The card doesn't show it. |
 | `entity` | `string` | — | **Required.** Any sensor, binary_sensor, or weather entity. |
-| `attribute` | `string` | — | Read a specific attribute instead of the state. |
+| `attribute` | `string` | — | Read a specific attribute instead of the state. `last_updated` and `last_changed` give the time the entity last updated or changed. |
 | `elements` | `list` | — | What the button contains. See [Elements](#elements). |
 | `type` | `string` | — | Set to `ring` for a circular gauge around the button. |
 | `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`, `split`). A `vertical` button that is taller than its content keeps the content in the middle. |
@@ -485,7 +485,7 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `entity` | `string` | — | Read from a different entity than the button. |
-| `attribute` | `string` | — | Read a specific attribute. |
+| `attribute` | `string` | — | Read a specific attribute. `last_updated` and `last_changed` show the time the entity last updated or changed. |
 | `text` | `string` | — | A fixed string instead of a value. |
 | `format` | `string` | — | Glued to the end of the value, usually a unit. On a date it can be a pattern with [date codes](#dates). |
 | `precision` | `number` | — | Decimal places. |

@@ -872,17 +872,17 @@ const WeatherEffects = (() => {
         return _fromOklab([lift ? Math.min(0.97, L + 0.34) : Math.max(0.2, L - 0.4), a * 0.3, b * 0.3 - 0.02]);
     }
     function _rainSprite(inst, bg) {
-        if (inst.rainBg !== bg) { inst.rainBg = bg; inst.rainSprite = _streakSprite(_rainTone(bg)); }
+        if (inst.rainBg !== bg) { const rgb = _rainTone(bg); inst.rainBg = bg; inst.rainSprite = [_streakSprite(rgb, false), _streakSprite(rgb, true)]; }
         return inst.rainSprite;
     }
-    function _streakSprite(rgb) {
-        const key = `streak|${rgb}`;
+    function _streakSprite(rgb, soft) {
+        const key = `streak|${rgb}|${soft ? 'soft' : 'sharp'}`;
         let c = _sprites.get(key);
         if (c) return c;
         c = Object.assign(document.createElement('canvas'), { width: 8, height: 64 });
         const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 64), hx = x.createLinearGradient(0, 0, 8, 0);
-        for (const [at, v] of [[0, 0], [0.25, 0.4], [0.6, 0.78], [0.86, 1], [1, 0]]) g.addColorStop(at, _rgba(rgb, v));
-        for (const [at, v] of [[0, 0], [0.3, 0.45], [0.5, 1], [0.7, 0.45], [1, 0]]) hx.addColorStop(at, `rgba(0,0,0,${v})`);
+        for (const [at, v] of [[0, 0], [0.18, 0.55], [0.5, 0.85], [0.88, 1], [1, 0]]) g.addColorStop(at, _rgba(rgb, v));
+        for (const [at, v] of soft ? [[0, 0], [0.3, 0.45], [0.5, 1], [0.7, 0.45], [1, 0]] : [[0, 0.2], [0.25, 0.9], [0.5, 1], [0.75, 0.9], [1, 0.2]]) hx.addColorStop(at, `rgba(0,0,0,${v})`);
         x.fillStyle = g; x.fillRect(0, 0, 8, 64);
         x.globalCompositeOperation = 'destination-in'; x.fillStyle = hx; x.fillRect(0, 0, 8, 64);
         _sprites.set(key, c);
@@ -957,7 +957,7 @@ const WeatherEffects = (() => {
             const z = Math.random(), k = 0.4 + 0.6 * z, near = z > 0.95 ? 2.4 : 1;
             const d = Math.min(t.dia[1], Math.max(t.dia[0], -Math.log(Math.random() * Math.random() * Math.random() + 1e-9) / lam));
             const v = Math.max(1, 9.65 - 10.3 * Math.exp(-0.6 * d));
-            arr[i] = { z, x: Math.random(), y: Math.random(), sd: Math.random(), vy: v * k * 120, lean: Math.sqrt(5.5 / v), w: Math.max(1, d * 0.7 * k) * near, a: t.alpha * (0.75 + 0.25 * k) / (near > 1 ? 2 : 1) };
+            arr[i] = { z, x: Math.random(), y: Math.random(), sd: Math.random(), vy: v * k * 120, lean: Math.sqrt(5.5 / v), w: Math.max(1, d * 0.7 * k) * near, soft: near > 1 ? 1 : 0, a: t.alpha * (0.75 + 0.25 * k) / (near > 1 ? 2 : 1) };
         }
         arr.sort((a, b) => a.z - b.z);
         return arr;
@@ -1414,13 +1414,13 @@ const WeatherEffects = (() => {
                 const len = Math.min(maxLen, p.vy * shutter + p.w * 2);
                 ctx.globalAlpha = Math.min(0.9, a);
                 ctx.setTransform(s, 0, s * lean, s, s * (x - lean * y), 0);
-                ctx.drawImage(sp, -p.w / 2, y - len, p.w, len);
+                ctx.drawImage(sp[p.soft], -p.w / 2, y - len, p.w, len);
             }
             ctx.setTransform(s, 0, 0, s, 0, 0);
         }
         if (inst.hail && inst.hail.length) {
             const sp = _sprite('hail', env.schemeDark);
-            const tr = _rainSprite(inst, env.backgroundRGB);
+            const tr = _rainSprite(inst, env.backgroundRGB)[1];
             const stretch = Math.min(dt, 1 / 24) * inst.speed;
             const lean = 0.07 * gust;
             ctx.setTransform(s, 0, s * lean, s, 0, 0);

@@ -11,21 +11,21 @@ const nextSun = (rising) => ({ entity: 'sun.sun', attribute: rising ? 'next_risi
 const thresholds = (rows) => rows.map(([value, color, color_dark]) => ({ value, color, color_dark }));
 
 const DIORAMA_PAPER = [
-    ['sunny', '#eee5d7', '#261d13'],
-    ['partlycloudy', '#dee9ef', '#182227'],
-    ['cloudy', '#e2e5e7', '#1b1e20'],
-    ['fog', '#e8e7e5', '#222120'],
-    ['rainy', '#d9e1ea', '#171e26'],
-    ['pouring', '#d7dde4', '#151b21'],
-    ['lightning', '#e5dfe8', '#221d25'],
-    ['lightning-rainy', '#dfdbe2', '#1d1920'],
-    ['hail', '#d3dfdf', '#121c1c'],
-    ['snowy', '#e5eaec', '#1c2426'],
-    ['snowy-rainy', '#dde2e5', '#1e2124'],
-    ['windy', '#dce6e3', '#182220'],
-    ['windy-variant', '#dae1de', '#171d1b'],
-    ['clear-night', '#e0e3ed', '#161924'],
-    ['exceptional', '#eadad3', '#271a15']
+    ['sunny', '#eee5d7', '#453728'],
+    ['partlycloudy', '#dee9ef', '#2f3e46'],
+    ['cloudy', '#e2e5e7', '#35393c'],
+    ['fog', '#e8e7e5', '#312f2e'],
+    ['rainy', '#d9e1ea', '#2f3946'],
+    ['pouring', '#d7dde4', '#2d363f'],
+    ['lightning', '#e5dfe8', '#3f3743'],
+    ['lightning-rainy', '#dfdbe2', '#37313c'],
+    ['hail', '#d3dfdf', '#293838'],
+    ['snowy', '#e5eaec', '#344043'],
+    ['snowy-rainy', '#dde2e5', '#383d41'],
+    ['windy', '#dce6e3', '#2f3f3c'],
+    ['windy-variant', '#dae1de', '#2f3936'],
+    ['clear-night', '#e0e3ed', '#2b2f40'],
+    ['exceptional', '#eadad3', '#47332c']
 ];
 
 const DIORAMA_CONFIG = Object.freeze({
@@ -65,8 +65,8 @@ const DIORAMA_CONFIG = Object.freeze({
 });
 
 const CLASSIC_COLORS = [
-    ['sunny', '#2894e2', '#162048'],
-    ['clear-night', '#162048', '#162048'],
+    ['sunny', '#2894e2', '#1e3352'],
+    ['clear-night', '#1e3352', '#1e3352'],
     ['partlycloudy', '#5793ca', '#1b2745'],
     ['cloudy', '#738ba2', '#242e3e'],
     ['fog', '#8596a4', '#2a343e'],
@@ -364,10 +364,10 @@ const SKY_CONFIG = Object.freeze({
             name: 'Today',
             padding: '0 18px 18px',
             background: true,
-            button_padding: '10px 12px',
+            button_padding: '7px 11px 7px 10px',
             button_gap: '8px',
             button_text_size: '14px',
-            button_icon_size: '20px',
+            button_icon_size: '18px',
             button_background_color: CARD_TINT(45),
             button_blurred_background: true,
             button_shadow: false,

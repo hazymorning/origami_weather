@@ -8,7 +8,7 @@
 
 <br>
 
-<img width="400" alt="The Sky layout through a whole day: a scrolling forecast, clouds, a sunset, rain, fog and a moonlit night with a comet" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.avif">
+<img width="400" alt="The Sky layout through a whole day: a scrolling forecast, clouds, a sunset, rain, fog and a moonlit night with a comet" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero-video.avif">
 
 Origami Weather is a weather card for Home Assistant with a builder approach. It can be a visual, animated weather card, a classic info-rich one, or something completely different. It comes with several ready-made layouts, but every part can be changed or mixed and matched freely.
 

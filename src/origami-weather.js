@@ -1,11 +1,13 @@
-import { CLOUD_SPRITE, CLOUD_SOFT, MOON_SURFACE, BIRD_SHEET, BALLOON_SHEET, PLANE_SHEET, DEMO_HOME } from './image-assets.js';
-import { buildStubConfig } from './layout-presets.js';
+import { MOON_SURFACE, BALLOON_SHEET, OLD_HOME_IMAGE } from './image-assets.js';
 console.info(
     "%c ◪ Origami Weather ",
     "color: #fff; border-radius: 6px; background: linear-gradient(135deg, #888 0%, #000 100%); font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; padding: 4px 8px;"
 );
 for (const _prop of ['--origami-fade-start', '--origami-fade-end', '--origami-gauge-pos']) {
     try { CSS.registerProperty({ name: _prop, syntax: '<number>', inherits: false, initialValue: '0' }); } catch (_e) { }
+}
+for (const [_prop, _initial] of [['--origami-sun-moon-x', '50%'], ['--origami-sun-moon-y', '100%']]) {
+    try { CSS.registerProperty({ name: _prop, syntax: '<length-percentage>', inherits: true, initialValue: _initial }); } catch (_e) { }
 }
 const FALLBACK_WEATHER = Object.freeze({
     state: 'cloudy',
@@ -18,7 +20,7 @@ const _SKY_FILTERS = Object.freeze({
     'cloudy':          { light: 'brightness(0.92) saturate(0.72) contrast(0.96)', dark: 'brightness(0.88) saturate(0.65) contrast(0.95)' },
     'windy':           { light: 'brightness(1.02) saturate(1.05) hue-rotate(-3deg)', dark: 'brightness(0.98) saturate(1.00)' },
     'windy-variant':   { light: 'brightness(1.00) saturate(1.02) hue-rotate(-3deg)', dark: 'brightness(0.96) saturate(0.95)' },
-    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)', dark: 'brightness(1.12) saturate(0.30) contrast(0.80) hue-rotate(-6deg)' },
+    'fog':             { light: 'brightness(1.04) saturate(0.40) contrast(0.85) sepia(0.06)', dark: 'brightness(0.96) saturate(0.30) contrast(0.88) hue-rotate(-6deg)' },
     'rainy':           { light: 'brightness(0.95) saturate(0.80) contrast(0.96) hue-rotate(4deg)', dark: 'brightness(0.85) saturate(0.70) contrast(0.94) hue-rotate(3deg)' },
     'pouring':         { light: 'brightness(0.88) saturate(0.68) contrast(0.93) hue-rotate(5deg)', dark: 'brightness(0.78) saturate(0.55) contrast(0.90) hue-rotate(4deg)' },
     'lightning':       { light: 'brightness(0.89) saturate(0.62) contrast(1.10) hue-rotate(7deg)', dark: 'brightness(0.76) saturate(0.55) contrast(1.15) hue-rotate(6deg)' },
@@ -30,6 +32,72 @@ const _SKY_FILTERS = Object.freeze({
     'default':         { light: 'brightness(1.00) saturate(1.00)', dark: 'brightness(0.95) saturate(0.90)' },
 });
 const _DARK_THEME_FILTER = 'brightness(0.8) saturate(1.3)';
+function _filterMatrix(fn, k) {
+    if (fn === 'sepia') return [[0.393, 0.769, 0.189], [0.349, 0.686, 0.168], [0.272, 0.534, 0.131]].map((row, i) => row.map((v, j) => v * k + (i === j ? 1 - k : 0)));
+    const a = k * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
+    return [
+        [0.213 + co * 0.787 - si * 0.213, 0.715 - co * 0.715 - si * 0.715, 0.072 - co * 0.072 + si * 0.928],
+        [0.213 - co * 0.213 + si * 0.143, 0.715 + co * 0.285 + si * 0.14, 0.072 - co * 0.072 - si * 0.283],
+        [0.213 - co * 0.213 - si * 0.787, 0.715 - co * 0.715 + si * 0.715, 0.072 + co * 0.928 + si * 0.072],
+    ];
+}
+function _filterRGB(rgb, filter) {
+    let c = rgb.map((v) => v / 255);
+    for (const [, fn, arg, unit] of String(filter || '').matchAll(/(brightness|contrast|saturate|sepia|hue-rotate)\((-?[\d.]+)(%|deg)?\)/g)) {
+        const k = parseFloat(arg) / (unit === '%' ? 100 : 1), y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+        if (!Number.isFinite(k)) continue;
+        const m = fn === 'sepia' || fn === 'hue-rotate' ? _filterMatrix(fn, fn === 'sepia' ? Math.min(1, k) : k) : null;
+        c = (m ? m.map((row) => row[0] * c[0] + row[1] * c[1] + row[2] * c[2]) : c.map((v) => fn === 'brightness' ? v * k : fn === 'contrast' ? (v - 0.5) * k + 0.5 : y + (v - y) * k)).map((v) => Math.max(0, Math.min(1, v)));
+    }
+    return c.map((v) => Math.round(v * 255));
+}
+let _moonPhotoReady = null;
+function _moonPhoto() {
+    if (!_moonPhotoReady) _moonPhotoReady = new Promise((done) => { const img = new Image(); img.onload = () => done(img); img.onerror = () => done(null); img.src = MOON_SURFACE; });
+    return _moonPhotoReady;
+}
+function _soften(v, n) {
+    const a = new Float32Array(v.length), b = new Float32Array(v.length);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const i = y * n + x; a[i] = (v[i - (x > 0)] + 2 * v[i] + v[i + (x < n - 1)]) / 4; }
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const i = y * n + x; b[i] = (a[i - (y > 0) * n] + 2 * a[i] + a[i + (y < n - 1) * n]) / 4; }
+    return b;
+}
+function _moonImageData(photo, size, phase) {
+    const c = Object.assign(document.createElement('canvas'), { width: size, height: size }), x = c.getContext('2d', { willReadFrequently: true });
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(photo, 0, 0, size, size);
+    const d = x.getImageData(0, 0, size, size).data, n = size * size, lum = new Float32Array(n), seen = [];
+    for (let i = 0; i < n; i++) {
+        lum[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255;
+        if (d[i * 4 + 3] > 230) seen.push(lum[i]);
+    }
+    seen.sort((a, b) => a - b);
+    const lo = seen[Math.floor(seen.length * 0.02)] || 0, hi = seen[Math.floor(seen.length * 0.995)] || 1;
+    const alb = lum.map((v) => Math.pow(Math.max(0, Math.min(1, (v - lo) / (hi - lo || 1))), 1.2) * 0.72 + 0.28), h = _soften(alb, size);
+    const R = size / 2 * 0.98, phi = 2 * Math.PI * phase, lx = Math.sin(phi), lz = -Math.cos(phi), bump = 1.4 * size / 300, k = 1 - Math.exp(-2.1);
+    const out = x.createImageData(size, size), o = out.data;
+    for (let py = 0; py < size; py++) for (let px = 0; px < size; px++) {
+        const u = (px + 0.5 - size / 2) / R, v = (py + 0.5 - size / 2) / R, r2 = u * u + v * v, i = py * size + px;
+        if (r2 >= 1) continue;
+        const z = Math.sqrt(1 - r2), gx = (h[i + (px < size - 1)] - h[i - (px > 0)]) / 2, gy = (h[i + (py < size - 1) * size] - h[i - (py > 0) * size]) / 2;
+        const nx = u - bump * gx, ny = -v + bump * gy, len = Math.hypot(nx, ny, z), mu0 = Math.max(0, (nx * lx + z * lz) / len);
+        const t = Math.min(1, (1 - Math.exp(-2.1 * Math.min(1.4, 2 * mu0 / (mu0 + Math.max(z, 1e-3))) * alb[i])) / k);
+        o[i * 4] = 255 * t;
+        o[i * 4 + 1] = 252 * t;
+        o[i * 4 + 2] = 247 * t;
+        o[i * 4 + 3] = 255 * Math.min(1, t * 2.6) * Math.min(1, (1 - Math.sqrt(r2)) * R / 0.9);
+    }
+    return out;
+}
+function _cssRGBA(css) {
+    const x = _cssRGBA.ctx || (_cssRGBA.ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true }));
+    x.clearRect(0, 0, 1, 1);
+    x.fillStyle = 'transparent';
+    x.fillStyle = String(css || '');
+    x.fillRect(0, 0, 1, 1);
+    const d = x.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2], d[3] / 255];
+}
 const _HAZE_PALETTE = Object.freeze({
     light: [{ c: [88, 176, 220, 0.62] }, { core: [255, 255, 250, 0.98], c: [214, 234, 250, 0.80] }, { c: [96, 140, 214, 0.60] }],
     dark:  [{ c: [58, 150, 190, 0.70] }, { core: [224, 236, 255, 0.60], c: [130, 168, 224, 0.50] }, { c: [46, 82, 168, 0.72] }],
@@ -41,7 +109,7 @@ const _HAZE_TUNING = Object.freeze({
     'cloudy':          { light: { tone: [222, 224, 230], mix: 0.34, alpha: 0.66, core: 0.82, scale: 1.10 }, dark: { tone: [66, 80, 108],   mix: 0.38, alpha: 0.76, core: 0.55, scale: 1.10 } },
     'windy':           { light: { tone: [232, 240, 240], mix: 0.18, alpha: 0.70, core: 1.00, scale: 1.05 }, dark: { tone: [58, 90, 138],   mix: 0.24, alpha: 0.80, core: 0.75, scale: 1.05 } },
     'windy-variant':   { light: { tone: [232, 240, 240], mix: 0.18, alpha: 0.70, core: 1.00, scale: 1.05 }, dark: { tone: [58, 90, 138],   mix: 0.24, alpha: 0.80, core: 0.75, scale: 1.05 } },
-    'fog':             { light: { tone: [236, 236, 234], mix: 0.52, alpha: 0.60, core: 0.88, scale: 1.35 }, dark: { tone: [150, 162, 180], mix: 0.68, alpha: 0.78, core: 0.60, scale: 1.35 } },
+    'fog':             { light: { tone: [236, 236, 234], mix: 0.52, alpha: 0.60, core: 0.88, scale: 1.35 }, dark: { tone: [92, 104, 126],  mix: 0.62, alpha: 0.78, core: 0.60, scale: 1.35 } },
     'rainy':           { light: { tone: [138, 158, 190], mix: 0.36, alpha: 0.68, core: 0.66, scale: 1.08 }, dark: { tone: [40, 58, 92],    mix: 0.42, alpha: 0.78, core: 0.45, scale: 1.08 } },
     'pouring':         { light: { tone: [108, 128, 166], mix: 0.44, alpha: 0.70, core: 0.58, scale: 1.10 }, dark: { tone: [30, 44, 74],    mix: 0.50, alpha: 0.80, core: 0.40, scale: 1.10 } },
     'lightning':       { light: { tone: [120, 128, 168], mix: 0.44, alpha: 0.68, core: 0.62, scale: 1.10 }, dark: { tone: [40, 46, 80],    mix: 0.46, alpha: 0.76, core: 0.45, scale: 1.10 } },
@@ -53,24 +121,32 @@ const _HAZE_TUNING = Object.freeze({
     'default':         { light: { tone: [232, 236, 242], mix: 0.16, alpha: 0.70, core: 1.00, scale: 1.00 }, dark: { tone: [56, 78, 120],   mix: 0.22, alpha: 0.80, core: 0.75, scale: 1.00 } },
 });
 const WEATHER_TUNING = Object.freeze({
-    'sunny':           { icon: 'mdi:weather-sunny',            precipitation: null,    lightning: false, sunVisibility: 1.00, sunSaturation: 1.00, cloudDensity: 0.00, cloudDarkness: 0.00, cloudSpeed: 1.0, softClouds: 'fair', starCount: 800, starOpacity: 1.00 },
-    'clear-night':     { icon: 'mdi:weather-night',            precipitation: null,    lightning: false, sunVisibility: 1.00, sunSaturation: 1.00, cloudDensity: 0.00, cloudDarkness: 0.00, cloudSpeed: 0.6, softClouds: 'fair', starCount: 800, starOpacity: 1.00 },
-    'partlycloudy':    { icon: 'mdi:weather-partly-cloudy',    precipitation: null,    lightning: false, sunVisibility: 0.78, sunSaturation: 0.85, cloudDensity: 0.30, cloudDarkness: 0.20, cloudSpeed: 1.0, softClouds: 'scattered', starCount: 450, starOpacity: 0.70 },
-    'cloudy':          { icon: 'mdi:weather-cloudy',           precipitation: null,    lightning: false, sunVisibility: 0.42, sunSaturation: 0.50, cloudDensity: 0.60, cloudDarkness: 0.55, cloudSpeed: 1.0, softClouds: 'overcast', starCount: 300, starOpacity: 0.50 },
-    'windy':           { icon: 'mdi:weather-windy',            precipitation: null,    lightning: false, sunVisibility: 0.60, sunSaturation: 0.68, cloudDensity: 0.50, cloudDarkness: 0.12, cloudSpeed: 3.2, softClouds: 'windy', starCount: 500, starOpacity: 0.80 },
-    'windy-variant':   { icon: 'mdi:weather-windy-variant',    precipitation: null,    lightning: false, sunVisibility: 0.85, sunSaturation: 0.90, cloudDensity: 0.55, cloudDarkness: 0.18, cloudSpeed: 3.2, softClouds: 'windy', starCount: 600, starOpacity: 0.80 },
-    'fog':             { icon: 'mdi:weather-fog',              precipitation: null,    lightning: false, sunVisibility: 0.26, sunSaturation: 0.12, cloudDensity: 0.00, cloudDarkness: 0.42, cloudSpeed: 0.5, softClouds: 'fog', starCount: 250, starOpacity: 0.35 },
-    'rainy':           { icon: 'mdi:weather-rainy',            precipitation: 'rain',  lightning: false, sunVisibility: 0.34, sunSaturation: 0.45, cloudDensity: 0.60, cloudDarkness: 0.60, cloudSpeed: 1.35, softClouds: 'overcast', starCount:   0, starOpacity: 0.00 },
-    'pouring':         { icon: 'mdi:weather-pouring',          precipitation: 'pour',  lightning: false, sunVisibility: 0.20, sunSaturation: 0.30, cloudDensity: 0.77, cloudDarkness: 0.82, cloudSpeed: 1.6, softClouds: 'overcast', starCount:   0, starOpacity: 0.00 },
-    'lightning':       { icon: 'mdi:weather-lightning',        precipitation: 'storm', lightning: true,  sunVisibility: 0.30, sunSaturation: 0.40, cloudDensity: 0.30, cloudDarkness: 0.72, cloudSpeed: 1.8, softClouds: 'overcast', starCount:   0, starOpacity: 0.00 },
-    'lightning-rainy': { icon: 'mdi:weather-lightning-rainy',  precipitation: 'storm', lightning: true,  sunVisibility: 0.24, sunSaturation: 0.35, cloudDensity: 0.77, cloudDarkness: 0.78, cloudSpeed: 1.8, softClouds: 'overcast', starCount:   0, starOpacity: 0.00 },
-    'snowy':           { icon: 'mdi:weather-snowy',            precipitation: 'snow',  lightning: false, sunVisibility: 0.38, sunSaturation: 0.30, cloudDensity: 0.30, cloudDarkness: 0.35, cloudSpeed: 0.8, softClouds: 'overcast', starCount: 600, starOpacity: 0.40 },
-    'snowy-rainy':     { icon: 'mdi:weather-snowy-rainy',      precipitation: 'sleet', lightning: false, sunVisibility: 0.30, sunSaturation: 0.35, cloudDensity: 0.30, cloudDarkness: 0.60, cloudSpeed: 1.3, softClouds: 'overcast', starCount: 450, starOpacity: 0.30 },
-    'hail':            { icon: 'mdi:weather-hail',             precipitation: 'hail',  lightning: false, sunVisibility: 0.30, sunSaturation: 0.40, cloudDensity: 0.30, cloudDarkness: 0.70, cloudSpeed: 1.5, softClouds: 'overcast', starCount: 350, starOpacity: 0.45 },
-    'exceptional':     { icon: 'mdi:weather-sunny',            precipitation: null,    lightning: false, sunVisibility: 1.00, sunSaturation: 1.00, cloudDensity: 0.00, cloudDarkness: 0.00, cloudSpeed: 0.6, softClouds: 'fair', starCount: 800, starOpacity: 1.00 },
-    'default':         { icon: 'mdi:weather-cloudy',           precipitation: null,    lightning: false, sunVisibility: 0.85, sunSaturation: 0.90, cloudDensity: 0.30, cloudDarkness: 0.30, cloudSpeed: 1.0, softClouds: 'scattered', starCount: 800, starOpacity: 0.80 },
+    'sunny':           { icon: 'mdi:weather-sunny',            precipitation: null,    lightning: false, sunVisibility: 1.00, sunSaturation: 1.00, cloudDensity: 0.00, cloudDarkness: 0.00, cloudSpeed: 1.0, mist: null, starCount: 800, starOpacity: 1.00 },
+    'clear-night':     { icon: 'mdi:weather-night',            precipitation: null,    lightning: false, sunVisibility: 1.00, sunSaturation: 1.00, cloudDensity: 0.00, cloudDarkness: 0.00, cloudSpeed: 0.6, mist: null, starCount: 800, starOpacity: 1.00 },
+    'partlycloudy':    { icon: 'mdi:weather-partly-cloudy',    precipitation: null,    lightning: false, sunVisibility: 0.78, sunSaturation: 0.85, cloudDensity: 0.30, cloudDarkness: 0.20, cloudSpeed: 1.0, mist: 'scattered', starCount: 450, starOpacity: 0.70 },
+    'cloudy':          { icon: 'mdi:weather-cloudy',           precipitation: null,    lightning: false, sunVisibility: 0.42, sunSaturation: 0.50, cloudDensity: 0.60, cloudDarkness: 0.55, cloudSpeed: 1.0, mist: 'overcast', starCount: 300, starOpacity: 0.50 },
+    'windy':           { icon: 'mdi:weather-windy',            precipitation: null,    lightning: false, sunVisibility: 0.60, sunSaturation: 0.68, cloudDensity: 0.50, cloudDarkness: 0.12, cloudSpeed: 3.2, mist: 'scattered', starCount: 500, starOpacity: 0.80 },
+    'windy-variant':   { icon: 'mdi:weather-windy-variant',    precipitation: null,    lightning: false, sunVisibility: 0.85, sunSaturation: 0.90, cloudDensity: 0.55, cloudDarkness: 0.18, cloudSpeed: 3.2, mist: 'scattered', starCount: 600, starOpacity: 0.80 },
+    'fog':             { icon: 'mdi:weather-fog',              precipitation: null,    lightning: false, sunVisibility: 0.26, sunSaturation: 0.12, cloudDensity: 0.00, cloudDarkness: 0.42, cloudSpeed: 0.5, mist: 'fog', starCount: 250, starOpacity: 0.35 },
+    'rainy':           { icon: 'mdi:weather-rainy',            precipitation: 'rain',  lightning: false, sunVisibility: 0.34, sunSaturation: 0.45, cloudDensity: 0.60, cloudDarkness: 0.60, cloudSpeed: 1.35, mist: 'overcast', starCount:   0, starOpacity: 0.00 },
+    'pouring':         { icon: 'mdi:weather-pouring',          precipitation: 'pour',  lightning: false, sunVisibility: 0.20, sunSaturation: 0.30, cloudDensity: 0.77, cloudDarkness: 0.82, cloudSpeed: 1.6, mist: 'overcast', starCount:   0, starOpacity: 0.00 },
+    'lightning':       { icon: 'mdi:weather-lightning',        precipitation: 'storm', lightning: true,  sunVisibility: 0.30, sunSaturation: 0.40, cloudDensity: 0.30, cloudDarkness: 0.72, cloudSpeed: 1.8, mist: 'overcast', starCount:   0, starOpacity: 0.00 },
+    'lightning-rainy': { icon: 'mdi:weather-lightning-rainy',  precipitation: 'storm', lightning: true,  sunVisibility: 0.24, sunSaturation: 0.35, cloudDensity: 0.77, cloudDarkness: 0.78, cloudSpeed: 1.8, mist: 'overcast', starCount:   0, starOpacity: 0.00 },
+    'snowy':           { icon: 'mdi:weather-snowy',            precipitation: 'snow',  lightning: false, sunVisibility: 0.38, sunSaturation: 0.30, cloudDensity: 0.30, cloudDarkness: 0.35, cloudSpeed: 0.8, mist: 'overcast', starCount: 600, starOpacity: 0.40 },
+    'snowy-rainy':     { icon: 'mdi:weather-snowy-rainy',      precipitation: 'sleet', lightning: false, sunVisibility: 0.30, sunSaturation: 0.35, cloudDensity: 0.30, cloudDarkness: 0.60, cloudSpeed: 1.3, mist: 'overcast', starCount: 450, starOpacity: 0.30 },
+    'hail':            { icon: 'mdi:weather-hail',             precipitation: 'hail',  lightning: false, sunVisibility: 0.30, sunSaturation: 0.40, cloudDensity: 0.30, cloudDarkness: 0.70, cloudSpeed: 1.5, mist: 'overcast', starCount: 350, starOpacity: 0.45 },
+    'exceptional':     { icon: 'mdi:weather-sunny',            precipitation: null,    lightning: false, sunVisibility: 1.00, sunSaturation: 1.00, cloudDensity: 0.00, cloudDarkness: 0.00, cloudSpeed: 0.6, mist: null, starCount: 800, starOpacity: 1.00 },
+    'default':         { icon: 'mdi:weather-cloudy',           precipitation: null,    lightning: false, sunVisibility: 0.85, sunSaturation: 0.90, cloudDensity: 0.30, cloudDarkness: 0.30, cloudSpeed: 1.0, mist: 'scattered', starCount: 800, starOpacity: 0.80 },
 });
 const _weatherTuning = (state) => WEATHER_TUNING[state] || WEATHER_TUNING.default;
+const _WIND_UNITS_MS = Object.freeze({ 'm/s': 1, 'km/h': 1 / 3.6, 'mph': 0.44704, 'kn': 0.514444, 'kt': 0.514444, 'ft/s': 0.3048 });
+const _windToMs = (value, unit) => {
+    const v = parseFloat(value), u = String(unit || '').trim();
+    if (!Number.isFinite(v) || v < 0) return null;
+    if (/^(bft|beaufort)$/i.test(u)) return 0.836 * Math.pow(v, 1.5);
+    const k = _WIND_UNITS_MS[u] || _WIND_UNITS_MS[u.toLowerCase()];
+    return k ? v * k : null;
+};
 const SUN_PALETTE = Object.freeze({
     noon:    { core: [255, 255, 255], inner: [255, 250, 240], mid: [255, 237, 200], edge: [255, 219, 158], glowInner: [255, 200, 124], glowOuter: [255, 238, 210] },
     horizon: { core: [255, 246, 222], inner: [255, 214, 148], mid: [255, 171, 92],  edge: [245, 137, 60],  glowInner: [240, 120, 55],  glowOuter: [252, 176, 110] }
@@ -109,29 +185,27 @@ const BUILTIN_ICONS = Object.freeze({
     'hail':            '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" fill="currentColor" fill-opacity="0.08"/><path d="M16 14v2" stroke-opacity="0.8"><animate attributeName="stroke-opacity" values="0.8;0.3;0.8" dur="0.8s" repeatCount="indefinite"/></path><path d="M8 14v2" stroke-opacity="0.8"><animate attributeName="stroke-opacity" values="0.8;0.3;0.8" dur="0.8s" begin="0.3s" repeatCount="indefinite"/></path><circle cx="16" cy="20" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="18;20;19.2;20" dur="1s" repeatCount="indefinite"/></circle><circle cx="8" cy="20" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="18;20;19.2;20" dur="1s" begin="0.35s" repeatCount="indefinite"/></circle><path d="M12 16v2" stroke-opacity="0.8"><animate attributeName="stroke-opacity" values="0.8;0.3;0.8" dur="0.8s" begin="0.15s" repeatCount="indefinite"/></path><circle cx="12" cy="22" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="20;22;21.2;22" dur="1s" begin="0.2s" repeatCount="indefinite"/></circle>',
     'lightning':       '<path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973" fill="currentColor" fill-opacity="0.08"/><path d="m13 12-3 5h4l-3 5" stroke-width="1.75"><animate attributeName="stroke-opacity" values="1;1;0.15;1;1;1;0.1;0.8;1;1;1;1;0.12;1" dur="4s" repeatCount="indefinite"/></path>',
     'lightning-rainy': '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" fill="currentColor" fill-opacity="0.06"><animate attributeName="fill-opacity" values="0.06;0.06;0.2;0.06;0.06;0.06;0.15;0.06" dur="3.5s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values="1;1;0.2;1;1;1;0.15;1" dur="3.5s" repeatCount="indefinite"/></path>',
-    'partlycloudy':    '<g stroke-opacity="0.5"><animate attributeName="stroke-opacity" values="0.5;0.7;0.5" dur="3s" repeatCount="indefinite"/><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/></g><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><g><animateTransform attributeName="transform" type="translate" values="0,0;0.5,0;0,0;-0.5,0;0,0" dur="7s" repeatCount="indefinite"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" fill="currentColor" fill-opacity="0.08"/></g>',
+    'partlycloudy':    '<g class="rays" stroke-opacity="0.5"><animate attributeName="stroke-opacity" values="0.5;0.7;0.5" dur="3s" repeatCount="indefinite"/><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/></g><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><g><animateTransform attributeName="transform" type="translate" values="0,0;0.5,0;0,0;-0.5,0;0,0" dur="7s" repeatCount="indefinite"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" fill="currentColor" fill-opacity="0.08"/></g>',
     'partlycloudy-night': '<path d="M18.376 14.512a6 6 0 0 0 3.461-4.127c.148-.625-.659-.97-1.248-.714a4 4 0 0 1-5.259-5.26c.255-.589-.09-1.395-.716-1.248a6 6 0 0 0-4.594 5.36" fill="currentColor" fill-opacity="0.12"><animate attributeName="fill-opacity" values="0.06;0.22;0.06" dur="4s" repeatCount="indefinite"/></path><g><animateTransform attributeName="transform" type="translate" values="0,0;0.5,0;0,0;-0.5,0;0,0" dur="7s" repeatCount="indefinite"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" fill="currentColor" fill-opacity="0.08"/></g>',
     'pouring':         '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" fill="currentColor" fill-opacity="0.08"/><path d="m9.2 22 3-7" stroke-opacity="0.7"><animate attributeName="stroke-opacity" values="0.7;0.2;0.7" dur="0.7s" repeatCount="indefinite"/></path><path d="m9 13-3 7" stroke-opacity="0.7"><animate attributeName="stroke-opacity" values="0.7;0.2;0.7" dur="0.7s" begin="0.25s" repeatCount="indefinite"/></path><path d="m17 13-3 7" stroke-opacity="0.7"><animate attributeName="stroke-opacity" values="0.7;0.2;0.7" dur="0.7s" begin="0.5s" repeatCount="indefinite"/></path>',
     'rainy':           '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" fill="currentColor" fill-opacity="0.08"/><path d="M16 14v6" stroke-dasharray="3 2"><animate attributeName="stroke-dashoffset" values="0;-5" dur="1s" repeatCount="indefinite"/></path><path d="M8 14v6" stroke-dasharray="3 2"><animate attributeName="stroke-dashoffset" values="0;-5" dur="1s" begin="0.35s" repeatCount="indefinite"/></path><path d="M12 16v6" stroke-dasharray="3 2"><animate attributeName="stroke-dashoffset" values="0;-5" dur="1s" begin="0.7s" repeatCount="indefinite"/></path>',
     'snowy':           '<g><animateTransform attributeName="transform" type="rotate" values="0 12 12;360 12 12" dur="12s" repeatCount="indefinite"/><path d="m10 20-1.25-2.5L6 18"/><path d="M10 4 8.75 6.5 6 6"/><path d="m14 20 1.25-2.5L18 18"/><path d="m14 4 1.25 2.5L18 6"/><path d="m17 21-3-6h-4"/><path d="m17 3-3 6 1.5 3"/><path d="M2 12h6.5L10 9"/><path d="m20 10-1.5 2 1.5 2"/><path d="M22 12h-6.5L14 15"/><path d="m4 10 1.5 2L4 14"/><path d="m7 21 3-6-1.5-3"/><path d="m7 3 3 6h4"/></g>',
     'snowy-rainy':     '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" fill="currentColor" fill-opacity="0.08"/><circle cx="8" cy="15.5" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="15;16.5;15" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/></circle><circle cx="8" cy="19.5" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="19;20.5;19" dur="2.2s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="2.2s" begin="0.6s" repeatCount="indefinite"/></circle><circle cx="12" cy="17.5" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="17;18.5;17" dur="1.8s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="1.8s" begin="0.3s" repeatCount="indefinite"/></circle><circle cx="12" cy="21.5" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="21;22.5;21" dur="2.4s" begin="0.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="2.4s" begin="0.9s" repeatCount="indefinite"/></circle><circle cx="16" cy="15.5" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="15;16.5;15" dur="2.1s" begin="0.45s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="2.1s" begin="0.45s" repeatCount="indefinite"/></circle><circle cx="16" cy="19.5" r="0.5" fill="currentColor" stroke="none"><animate attributeName="cy" values="19;20.5;19" dur="1.9s" begin="0.75s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.4;1" dur="1.9s" begin="0.75s" repeatCount="indefinite"/></circle>',
-    'sunny':           '<g><animateTransform attributeName="transform" type="rotate" values="0 12 12;360 12 12" dur="30s" repeatCount="indefinite"/><circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.1"><animate attributeName="fill-opacity" values="0.1;0.18;0.1" dur="3s" repeatCount="indefinite"/><animate attributeName="r" values="4;4.25;4" dur="3s" repeatCount="indefinite"/></circle><g stroke-opacity="1"><animate attributeName="stroke-opacity" values="1;0.6;1" dur="3s" repeatCount="indefinite"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></g></g>',
+    'sunny':           '<g><animateTransform attributeName="transform" type="rotate" values="0 12 12;360 12 12" dur="30s" repeatCount="indefinite"/><circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.1"><animate attributeName="fill-opacity" values="0.1;0.18;0.1" dur="3s" repeatCount="indefinite"/><animate attributeName="r" values="4;4.25;4" dur="3s" repeatCount="indefinite"/></circle><g class="rays" stroke-opacity="1"><animate attributeName="stroke-opacity" values="1;0.6;1" dur="3s" repeatCount="indefinite"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></g></g>',
     'windy':           '<path d="M12.8 19.6A2 2 0 1 0 14 16H2" stroke-dasharray="22" stroke-dashoffset="0"><animate attributeName="stroke-dashoffset" values="0;-3;0" dur="2.5s" repeatCount="indefinite"/></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" stroke-dasharray="26" stroke-dashoffset="0"><animate attributeName="stroke-dashoffset" values="0;-4;0" dur="3s" begin="0.3s" repeatCount="indefinite"/></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2" stroke-dasharray="18" stroke-dashoffset="0"><animate attributeName="stroke-dashoffset" values="0;-3;0" dur="2s" begin="0.6s" repeatCount="indefinite"/></path>',
     'windy-variant':   '<path d="M10 2v8" stroke-opacity="0.5"/><path d="M12.8 21.6A2 2 0 1 0 14 18H2" stroke-dasharray="22" stroke-dashoffset="0"><animate attributeName="stroke-dashoffset" values="0;-3;0" dur="2.5s" repeatCount="indefinite"/></path><path d="M17.5 10a2.5 2.5 0 1 1 2 4H2" stroke-dasharray="26" stroke-dashoffset="0"><animate attributeName="stroke-dashoffset" values="0;-4;0" dur="3s" begin="0.3s" repeatCount="indefinite"/></path><g stroke-opacity="0.5"><animate attributeName="stroke-opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/><path d="m6 6 4 4 4-4"/></g>',
-    'exceptional':     '<g><animateTransform attributeName="transform" type="rotate" values="0 12 12;360 12 12" dur="30s" repeatCount="indefinite"/><circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.1"><animate attributeName="fill-opacity" values="0.1;0.18;0.1" dur="3s" repeatCount="indefinite"/><animate attributeName="r" values="4;4.25;4" dur="3s" repeatCount="indefinite"/></circle><g stroke-opacity="1"><animate attributeName="stroke-opacity" values="1;0.6;1" dur="3s" repeatCount="indefinite"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></g></g>',
+    'exceptional':     '<g><animateTransform attributeName="transform" type="rotate" values="0 12 12;360 12 12" dur="30s" repeatCount="indefinite"/><circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.1"><animate attributeName="fill-opacity" values="0.1;0.18;0.1" dur="3s" repeatCount="indefinite"/><animate attributeName="r" values="4;4.25;4" dur="3s" repeatCount="indefinite"/></circle><g class="rays" stroke-opacity="1"><animate attributeName="stroke-opacity" values="1;0.6;1" dur="3s" repeatCount="indefinite"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></g></g>',
     'default':         '<g><animateTransform attributeName="transform" type="translate" values="0,0;0.6,0;0,0;-0.6,0;0,0" dur="6s" repeatCount="indefinite"/><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" fill="currentColor" fill-opacity="0.08"/></g>'
 });
 const WeatherEffects = (() => {
     const RAIN = Object.freeze({
-        drizzle: { perContainer: 3.4,  min: 10, max: 42,  vy: [220, 400], width: [0.60, 1.15], lean: 0.10, alpha: [0.25, 0.55], lenBase: [5.5, 13] },
-        rain:    { perContainer: 10.5, min: 26, max: 118, vy: [380, 700], width: [0.66, 1.65], lean: 0.17, alpha: [0.45, 0.75], lenBase: [7.5, 19.5] },
-        pour:    { perContainer: 14.0, min: 34, max: 150, vy: [440, 800], width: [0.72, 1.80], lean: 0.20, alpha: [0.50, 0.82], lenBase: [8.5, 21.5] },
-        storm:   { perContainer: 12.0, min: 30, max: 135, vy: [420, 760], width: [0.68, 1.70], lean: 0.22, alpha: [0.48, 0.78], lenBase: [8.5, 20.5] }
+        rain:    { perContainer: 10.5, min: 26, max: 118, rate: 4,   dia: [0.5, 3.2], lean: 0.15, alpha: 0.85 },
+        pour:    { perContainer: 14,   min: 34, max: 150, rate: 25,  dia: [0.6, 4.5], lean: 0.18, alpha: 0.9 },
+        storm:   { perContainer: 12,   min: 30, max: 135, rate: 15,  dia: [0.6, 4.5], lean: 0.22, alpha: 0.9 }
     });
     const SNOW = Object.freeze({ perContainer: 15.0, min: 40, max: 150, vy: [12, 55], dia: [1.2, 22.0], alpha: [0.25, 0.75] });
     const HAIL = Object.freeze({ perContainer: 4.5, min: 12, max: 45, vy: [450, 1050], dia: [1.5, 14.0], alpha: [0.45, 0.90] });
     const COLORS = Object.freeze({
-        rain: { light: { core: [48, 66, 98], head: [92, 116, 156] }, dark: { core: [150, 178, 224], head: [240, 246, 255] } },
         flake: { light: { core: [255, 255, 255], edge: [230, 240, 255] }, dark: { core: [255, 255, 255], edge: [208, 224, 250] } },
         hail: { light: { hi: [255, 255, 255], body: [230, 240, 255] }, dark: { hi: [244, 248, 255], body: [198, 214, 242] } }
     });
@@ -144,46 +218,7 @@ const WeatherEffects = (() => {
         if (c) return c;
         c = document.createElement('canvas');
         const ctx = c.getContext('2d');
-        if (kind === 'streak') {
-            const W = 16, H = 128;
-            c.width = W; c.height = H;
-            const col = schemeDark ? COLORS.rain.dark : COLORS.rain.light;
-            const mid = _mix(col.core, col.head, 0.55);
-            const g = ctx.createLinearGradient(0, 0, 0, H);
-            if (schemeDark) {
-                g.addColorStop(0, _rgba(col.core, 0));
-                g.addColorStop(0.30, _rgba(col.core, 0.16));
-                g.addColorStop(0.62, _rgba(col.core, 0.42));
-                g.addColorStop(0.86, _rgba(mid, 0.70));
-                g.addColorStop(0.965, _rgba(col.head, 1.0));
-                g.addColorStop(1, _rgba(col.head, 0));
-            } else {
-                g.addColorStop(0, _rgba(col.core, 0));
-                g.addColorStop(0.42, _rgba(col.core, 0.14));
-                g.addColorStop(0.70, _rgba(col.core, 0.40));
-                g.addColorStop(0.88, _rgba(mid, 0.72));
-                g.addColorStop(0.965, _rgba(col.head, 0.98));
-                g.addColorStop(1, _rgba(col.head, 0));
-            }
-            ctx.fillStyle = g;
-            ctx.fillRect(0, 0, W, H);
-            const hx = ctx.createLinearGradient(0, 0, W, 0);
-            hx.addColorStop(0.00, 'rgba(0,0,0,0)');
-            hx.addColorStop(0.42, 'rgba(0,0,0,0.55)');
-            hx.addColorStop(0.50, 'rgba(0,0,0,1)');
-            hx.addColorStop(0.58, 'rgba(0,0,0,0.55)');
-            hx.addColorStop(1.00, 'rgba(0,0,0,0)');
-            ctx.globalCompositeOperation = 'destination-in';
-            ctx.fillStyle = hx;
-            ctx.fillRect(0, 0, W, H);
-            ctx.globalCompositeOperation = 'lighter';
-            const spec = ctx.createRadialGradient(W / 2, H * 0.95, 0, W / 2, H * 0.95, W * 0.5);
-            spec.addColorStop(0, _rgba(col.head, 0.9));
-            spec.addColorStop(0.6, _rgba(col.head, 0.28));
-            spec.addColorStop(1, _rgba(col.head, 0));
-            ctx.fillStyle = spec;
-            ctx.fillRect(0, H * 0.86, W, H * 0.14);
-        } else if (kind === 'flake') {
+        if (kind === 'flake') {
             const S = 32;
             c.width = S; c.height = S;
             const col = schemeDark ? COLORS.flake.dark : COLORS.flake.light;
@@ -220,23 +255,29 @@ const WeatherEffects = (() => {
         _sprites.set(key, c);
         return c;
     }
+    const _loaders = new Map();
     function _imgLoader(src) {
+        if (_loaders.has(src)) return _loaders.get(src);
         let img = null, started = false;
-        return () => {
+        const get = () => {
             if (!started) {
                 started = true;
-                const i = new Image();
-                i.onload = () => { img = i; };
-                i.src = src;
+                Promise.resolve(typeof src === 'function' ? src() : src).then((url) => {
+                    const i = new Image();
+                    i.onload = () => { img = i; };
+                    i.src = url;
+                }).catch(() => {});
             }
             return img;
         };
+        _loaders.set(src, get);
+        return get;
     }
-    const _getCloudImg = _imgLoader(CLOUD_SPRITE);
-    const _getSoftImg = _imgLoader(CLOUD_SOFT);
-    const _getBirdImg = _imgLoader(BIRD_SHEET);
+    const _getCloudImg = _imgLoader(() => import('./image-assets-clouds.js').then((m) => m.CLOUD_SPRITE));
+    const _getMistImg = _imgLoader(() => import('./image-assets-mist.js').then((m) => m.CLOUD_MIST));
+    const _getBirdImg = _imgLoader(() => import('./image-assets-birds.js').then((m) => m.BIRD_SHEET));
     const _getBalloonImg = _imgLoader(BALLOON_SHEET);
-    const _getPlaneImg = _imgLoader(PLANE_SHEET);
+    const _getPlaneImg = _imgLoader(() => import('./image-assets-planes.js').then((m) => m.PLANE_SHEET));
     const _sizeScale = (w, h) => 0.65 + 0.35 * Math.max(0.8, Math.min(1.8, Math.sqrt(w * h) / 380));
     function _cloudSprite(src, top, bot, res) {
         const iw = src.naturalWidth || src.width;
@@ -325,51 +366,51 @@ const WeatherEffects = (() => {
         { size: 150, bright: 0.96, alpha: 0.78, speed: 0.006, count: 4, stretch: 0.14, res: 1 },
         { size: 250, bright: 1.00, alpha: 0.92, speed: 0.015, count: 2, stretch: 0.10, res: 1.5 },
     ]);
-    const SOFT_BAND = CLOUD_BANDS.length;
-    const SOFT_SHADE = 0.15;
-    const SOFT_LAYOUTS = Object.freeze({
-        fair: [
-            { size: 24, alpha: 0.50, speed: -0.0008, count: 1, y: [0.24, 0.40], x: [-0.2, 1.2] },
-            { size: 34, alpha: 0.65, speed: 0.0022, count: 1, y: [0.56, 0.76], x: [-0.1, 1.1] },
-        ],
-        scattered: [
-            { size: 48, alpha: 0.85, speed: -0.0024, count: 2, y: [0.02, 0.26], x: [-0.2, 1.2] },
-            { size: 100, alpha: 0.60, speed: 0.0100, count: 1, y: [0.86, 0.96], front: true },
-        ],
-        windy: [
-            { size: 48, alpha: 0.85, speed: -0.0060, count: 2, y: [0.02, 0.26], x: [-0.2, 1.2] },
-            { size: 100, alpha: 0.60, speed: 0.0200, count: 1, y: [0.86, 0.96], front: true },
-        ],
-        overcast: [
-            { size: 60, alpha: 0.90, speed: -0.0016, count: 3, y: [0.02, 0.24], x: [-0.3, 1.3] },
-            { size: 100, alpha: 0.72, speed: 0.0100, count: 1, y: [0.86, 0.96], front: true },
-        ],
-        fog: [
-            { size: 60, alpha: 0.55, speed: 0.0040, count: 3, y: [0.16, 0.34], x: [-0.3, 1.3] },
-            { size: 80, alpha: 0.70, speed: -0.0050, count: 3, y: [0.46, 0.64], x: [-0.4, 1.4] },
-            { size: 100, alpha: 0.85, speed: 0.0070, count: 2, y: [0.78, 0.94], x: [-0.2, 1.2] },
-        ],
+    const MIST_TONE = Object.freeze({ at: [0.25, 0.36, 0.6], lift: [0.13, 0.11, 0.1], keep: [1, 1, 0.92], tint: [[-0.005, -0.02], [-0.005, -0.02], [0, -0.004]], top: 0.985, room: 0.06, shade: 0.05, dark: 0.6 });
+    const MIST = Object.freeze({
+        scattered: { alpha: 0.85, speed: 1, gap: [0.34, 0.9], disc: 0.9, ceiling: 0.49 },
+        overcast: { alpha: 1, speed: 1, gap: [0.3, 0.9], disc: 0.8, ceiling: 0.49 },
+        fog: { alpha: 1, speed: 1.5, gap: [0.2, 0.62], disc: 0.5, ceiling: 0.53 },
     });
-    const _softLayout = (tuning) => SOFT_LAYOUTS[tuning.softClouds] || [];
-    const _cloudAtlas = { img: null, soft: null, srcs: null, bands: new Map() };
-    function _cloudBandSprites(img, soft, state, schemeDark, backgroundRGB) {
-        if (!(img.naturalWidth || img.width) || !(soft.naturalWidth || soft.width)) return null;
-        const a = _cloudAtlas;
-        const key = `${state}|${schemeDark}|${backgroundRGB}`;
-        if (a.img !== img || a.soft !== soft) { a.img = img; a.soft = soft; a.srcs = _cloudVariantSources(img); a.bands.clear(); }
-        let bands = a.bands.get(key);
-        if (bands) return bands;
-        const pal = _cloudPalette(state, schemeDark, backgroundRGB);
-        const cl = v => Math.max(0, Math.min(255, Math.round(v)));
-        bands = CLOUD_BANDS.map(d => {
-            const top = pal.top.map(v => cl(v * d.bright));
-            const bot = pal.bot.map(v => cl(v * d.bright));
-            return a.srcs.map(s => _cloudSprite(s, top, bot, d.res));
+    const MIST_LAYERS = Object.freeze([
+        { size: 1, count: 3, speed: 0.005, alpha: 0.7, lift: 0.55, y: [0.2, 0.8] },
+        { size: 1.3, count: 3, speed: 0.011, alpha: 0.85, lift: 0.8, y: [0.25, 0.75] },
+        { size: 2.2, count: 2, speed: 0.024, alpha: 0.6, lift: 1, y: [0.3, 0.7] },
+    ]);
+    const _windDrift = (ms) => Math.max(0.4, Math.min(4, (ms + 4.5) / 7.5));
+    const _cloudAtlas = new WeakMap(), _cloudSources = new WeakMap();
+    function _cached(own, atlas, img, key, build) {
+        if (own.sprites && own.sprites.img === img && own.sprites.key === key) return own.sprites.v;
+        let m = atlas.get(img);
+        if (!m) atlas.set(img, m = new Map());
+        let v = m.get(key);
+        if (!v) { if (m.size >= 4) m.clear(); m.set(key, v = build()); }
+        own.sprites = { img, key, v };
+        return v;
+    }
+    function _fit(img, max) {
+        const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = max / Math.max(w, h);
+        if (k >= 1) return img;
+        const c = document.createElement('canvas');
+        c.width = Math.round(w * k); c.height = Math.round(h * k);
+        const cx = c.getContext('2d');
+        cx.imageSmoothingQuality = 'high';
+        cx.drawImage(img, 0, 0, c.width, c.height);
+        return c;
+    }
+    function _cloudBandSprites(own, img, state, schemeDark, backgroundRGB) {
+        if (!(img.naturalWidth || img.width)) return null;
+        return _cached(own, _cloudAtlas, img, `${state}|${schemeDark}|${backgroundRGB}`, () => {
+            let srcs = _cloudSources.get(img);
+            if (!srcs) _cloudSources.set(img, srcs = _cloudVariantSources(_fit(img, 512)));
+            const pal = _cloudPalette(state, schemeDark, backgroundRGB);
+            const cl = v => Math.max(0, Math.min(255, Math.round(v)));
+            return CLOUD_BANDS.map(d => {
+                const top = pal.top.map(v => cl(v * d.bright));
+                const bot = pal.bot.map(v => cl(v * d.bright));
+                return srcs.map(src => _cloudSprite(src, top, bot, d.res));
+            });
         });
-        bands.push([_cloudSprite(soft, pal.top, _mix(pal.bot, pal.shadow, SOFT_SHADE), 1)]);
-        if (a.bands.size >= 4) a.bands.clear();
-        a.bands.set(key, bands);
-        return bands;
     }
     const BIRD_SHEET_SPEC = Object.freeze({ cells: 13, flapFrames: 12, glideCell: 12, sub: 3, cell: 176, ax: 0.54, ay: 0.52 });
     const BIRD_ACTIVITY = Object.freeze({
@@ -383,20 +424,19 @@ const WeatherEffects = (() => {
         { px: [26, 38], alpha: 0.95, weight: 0.22, hz: [2.0, 2.7], glide: [1.4, 3.4] },
     ]);
     const BIRD_MAX_PX = 36;
-    const _birdAtlas = { img: null, cells: new Map() };
-    function _birdCells(img, state, schemeDark, night, backgroundRGB, s) {
+    const _birdAtlas = new WeakMap();
+    function _birdCells(own, img, state, schemeDark, night, backgroundRGB, s) {
         if (!(img.naturalWidth || img.width)) return null;
-        const key = `${state}|${schemeDark}|${night}|${backgroundRGB}|${s}`;
-        if (_birdAtlas.img !== img) { _birdAtlas.img = img; _birdAtlas.cells.clear(); }
-        let cells = _birdAtlas.cells.get(key);
-        if (cells) return cells;
+        return _cached(own, _birdAtlas, img, `${state}|${schemeDark}|${night}|${backgroundRGB}|${s}`, () => _birdSheet(img, state, schemeDark, night, backgroundRGB, s));
+    }
+    function _birdSheet(img, state, schemeDark, night, backgroundRGB, s) {
         const pal = _cloudPalette(state, schemeDark, backgroundRGB);
         const spec = BIRD_SHEET_SPEC, src = spec.cell, cs = Math.min(src, Math.ceil(BIRD_MAX_PX * s));
         const fc = spec.flapFrames * spec.sub;
         const lift = (schemeDark || night)
             ? 'rgba(150,174,216,0.28)'
             : `rgba(${pal.top[0]},${pal.top[1]},${pal.top[2]},0.12)`;
-        cells = [];
+        const cells = [];
         for (let i = 0; i <= fc; i++) {
             const c = document.createElement('canvas');
             c.width = cs; c.height = cs;
@@ -415,8 +455,6 @@ const WeatherEffects = (() => {
             }
             cells.push(_tintLift(c, pal.top, pal.bot, lift));
         }
-        if (_birdAtlas.cells.size >= 4) _birdAtlas.cells.clear();
-        _birdAtlas.cells.set(key, cells);
         return cells;
     }
     function _weightedPick(tiers) {
@@ -487,7 +525,7 @@ const WeatherEffects = (() => {
         }
         if (st.list.length === 0) return;
         const img = _getBirdImg();
-        const cells = img && _birdCells(img, st.state, env.schemeDark, !!env.night, env.backgroundRGB, s);
+        const cells = img && _birdCells(st, img, st.state, env.schemeDark, !!env.night, env.backgroundRGB, s);
         const spec = BIRD_SHEET_SPEC, fc = spec.flapFrames * spec.sub;
         ctx.imageSmoothingQuality = 'high';
         for (let i = st.list.length - 1; i >= 0; i--) {
@@ -631,13 +669,12 @@ const WeatherEffects = (() => {
     });
     const _planeActivity = (state) => { const v = PLANE_ACTIVITY[state]; return v === undefined ? 1 : v; };
     const PLANE_MAX_PX = 15, PLANE_TRAIL = 1.2, PLANE_VAPOR = [[1, 1.3, 0.16, 0.3], [0.7, 0.55, 0.3, 0.12], [0.4, 0.2, 0.85, 0.03]];
-    const _planeAtlas = { img: null, cells: new Map() };
-    function _planeCells(img, state, schemeDark, backgroundRGB, s) {
+    const _planeAtlas = new WeakMap();
+    function _planeCells(own, img, state, schemeDark, backgroundRGB, s) {
         if (!(img.naturalWidth || img.width)) return null;
-        const key = `${state}|${schemeDark}|${backgroundRGB}|${s}`;
-        if (_planeAtlas.img !== img) { _planeAtlas.img = img; _planeAtlas.cells.clear(); }
-        let cells = _planeAtlas.cells.get(key);
-        if (cells) return cells;
+        return _cached(own, _planeAtlas, img, `${state}|${schemeDark}|${backgroundRGB}|${s}`, () => _planeSheet(img, state, schemeDark, backgroundRGB, s));
+    }
+    function _planeSheet(img, state, schemeDark, backgroundRGB, s) {
         const spec = PLANE_SHEET_SPEC, pal = _cloudPalette(state, schemeDark, backgroundRGB);
         const ch = Math.min(spec.cellH, Math.ceil(PLANE_MAX_PX * s)), cw = Math.round(ch * spec.cellW / spec.cellH);
         const cell = (i) => {
@@ -648,15 +685,12 @@ const WeatherEffects = (() => {
             cx.drawImage(img, i * spec.cellW, 0, spec.cellW, spec.cellH, 0, 0, cw, ch);
             return c;
         };
-        cells = {
+        return {
             body: schemeDark
                 ? _tintLift(cell(1), [255, 255, 255], [255, 255, 255], _rgba(pal.top, 0.3))
                 : _tintLift(cell(0), pal.top, pal.bot, _rgba(pal.top, 0.1)),
             windows: cell(2), beacon: cell(3), strobe: cell(4), nav: [cell(5), cell(6)], trail: pal.top,
         };
-        if (_planeAtlas.cells.size >= 4) _planeAtlas.cells.clear();
-        _planeAtlas.cells.set(key, cells);
-        return cells;
     }
     function _spawnPlane(st, w, h) {
         const r = Math.random, k = r(), dir = r() < 0.5 ? -1 : 1;
@@ -685,7 +719,7 @@ const WeatherEffects = (() => {
         }
         if (!st.list.length) return;
         const img = _getPlaneImg();
-        const cells = img && _planeCells(img, st.state, env.schemeDark, env.backgroundRGB, s);
+        const cells = img && _planeCells(st, img, st.state, env.schemeDark, env.backgroundRGB, s);
         if (!cells) return;
         const spec = PLANE_SHEET_SPEC, lit = env.schemeDark || !!env.night, tc = cells.trail;
         const fl = (tau) => tau < 0 ? 0 : tau < dt ? 1 : Math.max(0, 1 - (tau - dt) / 0.08);
@@ -718,7 +752,8 @@ const WeatherEffects = (() => {
         ctx.setTransform(s, 0, 0, s, 0, 0);
         ctx.globalAlpha = 1;
     }
-    const _hasClouds = (state) => { const t = state ? _weatherTuning(state) : null; return !!t && (t.cloudDensity > 0 || _softLayout(t).length > 0); };
+    const _hasClouds = (state) => !!state && _weatherTuning(state).cloudDensity > 0;
+    const _hasMist = (state) => !!state && !!MIST[_weatherTuning(state).mist];
     const _briOf = (filter) => { const m = /brightness\(([\d.]+)\)/.exec(filter || ''); return m ? parseFloat(m[1]) : 1; };
     const _lumOf = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
     function _cloudPalette(state, schemeDark, backgroundRGB) {
@@ -736,7 +771,7 @@ const WeatherEffects = (() => {
             const silver = tint(baseL * 0.92, 0.86, 0.94, 1.14);
             const steel = tint(baseL * 0.74, 0.68, 0.80, 1.24);
             const blueShadow = mix(steel, [22, 40, 78], 0.34 + 0.30 * darkness).map(Math.round);
-            return { top: silver.map(Math.round), bot: blueShadow, shadow: blueShadow };
+            return { top: silver.map(Math.round), bot: blueShadow };
         }
         const white = [255, 255, 255];
         const skyGrey = [Math.round((bg[0] + 250) / 2 * 0.97), Math.round((bg[1] + 250) / 2 * 0.98), Math.round((bg[2] + 252) / 2)];
@@ -746,7 +781,7 @@ const WeatherEffects = (() => {
         const dark2 = (0.30 + 0.62 * darkness) * 0.55;
         const top = mix(white, skyGrey, dark1).map(Math.round);
         const bot = mix(white, shadowTarget, dark2).map(Math.round);
-        return { top, bot, shadow: slate };
+        return { top, bot };
     }
     function _buildCloudField(tuning, seed) {
         const cover = Math.min(1, tuning.cloudDensity);
@@ -756,49 +791,173 @@ const WeatherEffects = (() => {
             { x: 0.72 - rnd() * 0.18, y: 0.2 + rnd() * 0.6 },
         ];
         const inHole = (x, y) => holes.some(hl => (x - hl.x) ** 2 + (y - hl.y) ** 2 < 0.09);
-        const behind = [], hard = [], front = [];
-        let softIndex = 0;
-        const place = (bands, soft, scale) => {
-            for (let band = 0; band < bands.length; band++) {
-                const d = bands[band];
-                const n = Math.round(d.count * scale);
-                let placed = 0, tries = 0;
-                while (placed < n && tries < n * 5) {
-                    tries++;
-                    const x = d.x ? d.x[0] + (placed + rnd() * 0.6) / n * (d.x[1] - d.x[0]) : rnd();
-                    const y = d.y ? d.y[0] + rnd() * (d.y[1] - d.y[0]) : 0.12 + rnd() * 0.76;
-                    if (!soft && inHole(x, y) && rnd() < 0.95) continue;
-                    placed++;
-                    (soft ? (d.front ? front : behind) : hard).push({
-                        band: soft ? SOFT_BAND : band,
-                        x,
-                        y,
-                        size: d.size * (0.82 + rnd() * 0.36),
-                        variant: soft ? 0 : (rnd() * CLOUD_VARIANTS) | 0,
-                        flip: soft ? softIndex++ % 2 === 1 : rnd() < 0.5,
-                        rot: soft ? 0 : (rnd() - 0.5) * 0.1,
-                        stretch: soft ? 1 : 1 + (rnd() - 0.5) * 2 * d.stretch,
-                        alpha: d.alpha * (0.9 + rnd() * 0.2),
-                        speed: d.speed * (0.85 + rnd() * 0.3),
-                        bobPh: rnd() * Math.PI * 2,
-                        bobAmp: 0.004 + rnd() * 0.006,
-                        bobF: 0.05 + band * 0.03,
-                    });
-                }
+        const puffs = [];
+        for (let band = 0; band < CLOUD_BANDS.length; band++) {
+            const d = CLOUD_BANDS[band];
+            const n = Math.round(d.count * (0.55 + 0.45 * cover));
+            let placed = 0, tries = 0;
+            while (placed < n && tries < n * 5) {
+                tries++;
+                const x = rnd();
+                const y = 0.12 + rnd() * 0.76;
+                if (inHole(x, y) && rnd() < 0.95) continue;
+                placed++;
+                puffs.push({
+                    band,
+                    x,
+                    y,
+                    size: d.size * (0.82 + rnd() * 0.36),
+                    variant: (rnd() * CLOUD_VARIANTS) | 0,
+                    flip: rnd() < 0.5,
+                    rot: (rnd() - 0.5) * 0.1,
+                    stretch: 1 + (rnd() - 0.5) * 2 * d.stretch,
+                    alpha: d.alpha * (0.9 + rnd() * 0.2),
+                    speed: d.speed * (0.85 + rnd() * 0.3),
+                    bobPh: rnd() * Math.PI * 2,
+                    bobAmp: 0.004 + rnd() * 0.006,
+                    bobF: 0.05 + band * 0.03,
+                });
             }
-        };
-        if (cover > 0) place(CLOUD_BANDS, false, 0.55 + 0.45 * cover);
-        place(_softLayout(tuning), true, 1);
-        return { puffs: behind.concat(hard, front), density: tuning.cloudDensity, layout: tuning.softClouds };
+        }
+        return { puffs, key: tuning.cloudDensity };
+    }
+    const _mistSprites = new Map();
+    function _mistSprite(img, gap) {
+        const key = gap.join();
+        if (_mistSprites.has(key)) return _mistSprites.get(key);
+        const src = _fit(img, 512), c = Object.assign(document.createElement('canvas'), { width: src.width, height: src.height });
+        const x = c.getContext('2d', { willReadFrequently: true });
+        x.drawImage(src, 0, 0);
+        const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+        for (let i = 0; i < p.length; i += 4) {
+            const u = Math.max(0, Math.min(1, (p[i + 3] / 255 - gap[0]) / (gap[1] - gap[0])));
+            p[i] = p[i + 1] = p[i + 2] = 255;
+            p[i + 3] = Math.round(255 * u * u * (3 - 2 * u));
+        }
+        x.putImageData(d, 0, 0);
+        _mistSprites.set(key, c);
+        return c;
+    }
+    function _buildMistField(tuning, seed) {
+        const look = MIST[tuning.mist], rnd = _mulberry32(seed || 1), puffs = [];
+        MIST_LAYERS.forEach((layer, i) => {
+            for (let n = 0; n < layer.count; n++) {
+                puffs.push({
+                    layer: i,
+                    size: layer.size * (0.9 + rnd() * 0.2),
+                    x: (n + 0.35 + rnd() * 0.3) / layer.count,
+                    y: layer.y[0] + rnd() * (layer.y[1] - layer.y[0]),
+                    rot: rnd() * Math.PI * 2,
+                    speed: layer.speed * (0.85 + rnd() * 0.3) * look.speed,
+                    alpha: layer.alpha * look.alpha * (0.9 + rnd() * 0.2),
+                    ph: rnd() * Math.PI * 2,
+                });
+            }
+        });
+        return { puffs, key: tuning.mist };
+    }
+    const _lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const _enc = (v) => { v = Math.max(0, Math.min(1, v)); return Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)); };
+    function _toOklab(rgb) {
+        const [r, g, b] = rgb.map(_lin);
+        const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+        return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+    }
+    function _fromOklab([L, a, b]) {
+        const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+        return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s].map(_enc);
+    }
+    function _rainTone(bg) {
+        const [L, a, b] = _toOklab(bg), lift = L < 0.6;
+        return _fromOklab([lift ? Math.min(0.97, L + 0.34) : Math.max(0.2, L - 0.4), a * 0.3, b * 0.3 - 0.02]);
+    }
+    function _rainSprite(inst, bg) {
+        if (inst.rainBg !== bg) { const rgb = _rainTone(bg); inst.rainBg = bg; inst.rainSprite = [_streakSprite(rgb, false), _streakSprite(rgb, true)]; }
+        return inst.rainSprite;
+    }
+    function _streakSprite(rgb, soft) {
+        const key = `streak|${rgb}|${soft ? 'soft' : 'sharp'}`;
+        let c = _sprites.get(key);
+        if (c) return c;
+        c = Object.assign(document.createElement('canvas'), { width: 8, height: 64 });
+        const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 64), hx = x.createLinearGradient(0, 0, 8, 0);
+        for (const [at, v] of [[0, 0], [0.18, 0.55], [0.5, 0.85], [0.88, 1], [1, 0]]) g.addColorStop(at, _rgba(rgb, v));
+        for (const [at, v] of soft ? [[0, 0], [0.3, 0.45], [0.5, 1], [0.7, 0.45], [1, 0]] : [[0, 0.2], [0.25, 0.9], [0.5, 1], [0.75, 0.9], [1, 0.2]]) hx.addColorStop(at, `rgba(0,0,0,${v})`);
+        x.fillStyle = g; x.fillRect(0, 0, 8, 64);
+        x.globalCompositeOperation = 'destination-in'; x.fillStyle = hx; x.fillRect(0, 0, 8, 64);
+        _sprites.set(key, c);
+        return c;
+    }
+    function _mistLayers(sprite, bg, ceiling) {
+        const T = MIST_TONE, base = _toOklab(bg), [L, a, b] = base, i = L < T.at[1] ? 0 : 1, u = Math.max(0, Math.min(1, (L - T.at[i]) / (T.at[i + 1] - T.at[i]))), lighter = L + T.room <= T.top;
+        const at = (k) => k[i] + (k[i + 1] - k[i]) * u, keep = lighter ? at(T.keep) : T.keep[2], tint = [0, 1].map((c) => at(T.tint.map((v) => v[c])));
+        const Lm = lighter ? Math.min(L + at(T.lift), T.top, ceiling && L < T.dark ? Math.max(L + T.room / 2, ceiling) : 1) : L - T.shade;
+        const top = [Lm, a * keep + tint[0], b * keep + tint[1]];
+        return MIST_LAYERS.map((layer) => {
+            const c = Object.assign(document.createElement('canvas'), { width: sprite.width, height: sprite.height }), x = c.getContext('2d');
+            x.drawImage(sprite, 0, 0);
+            x.globalCompositeOperation = 'source-in';
+            x.fillStyle = `rgb(${_fromOklab(base.map((v, n) => v + (top[n] - v) * layer.lift)).join(',')})`;
+            x.fillRect(0, 0, c.width, c.height);
+            return c;
+        });
+    }
+    function _mistFrame(inst, ctx, img, w, h, s, dt, t, env, wind, nearCtx) {
+        const sprite = _mistSprite(img, MIST[inst.mist.key].gap), bg = env.mistRGB || env.backgroundRGB;
+        const ceiling = env.dark ? MIST[inst.mist.key].ceiling : 0;
+        if (!inst.mistTone || inst.mistTone.bg !== bg || inst.mistTone.ceiling !== ceiling || inst.mistTone.sprite !== sprite) inst.mistTone = { bg, ceiling, sprite, layers: _mistLayers(sprite, bg, ceiling) };
+        const layers = inst.mistTone.layers;
+        const big = Math.max(w, h) * inst.mistSize, ar = sprite.height / sprite.width, amt = inst.mistDensity;
+        const cw = Math.ceil(w / 2), ch = Math.ceil(h / 2), ms = 0.5;
+        for (const p of inst.mist.puffs) {
+            const span = MIST_LAYERS[p.layer].y;
+            p.pw = p.size * big * (1 + 0.08 * Math.sin(t * 0.05 + p.ph));
+            p.x += p.speed * wind * w * dt / (w + p.pw);
+            if (p.x >= 1) { p.x -= 1; p.y = span[0] + Math.random() * (span[1] - span[0]); p.rot = Math.random() * Math.PI * 2; }
+        }
+        const near = nearCtx ? MIST_LAYERS.length - 1 : MIST_LAYERS.length;
+        for (const [target, key, inFront] of nearCtx ? [[ctx, 'mistCanvas', false], [nearCtx, 'mistNearCanvas', true]] : [[ctx, 'mistCanvas', false]]) {
+            const mc = inst[key] || (inst[key] = document.createElement('canvas'));
+            if (mc.width !== cw || mc.height !== ch) { mc.width = cw; mc.height = ch; }
+            const m = mc.getContext('2d');
+            m.setTransform(1, 0, 0, 1, 0, 0);
+            m.clearRect(0, 0, cw, ch);
+            m.imageSmoothingEnabled = true;
+            m.imageSmoothingQuality = 'high';
+            for (const p of inst.mist.puffs) {
+                if ((p.layer >= near) !== inFront) continue;
+                m.globalAlpha = Math.min(1, p.alpha * amt * (1 + 0.15 * Math.sin(t * 0.07 + p.ph * 1.3)));
+                m.setTransform(ms, 0, 0, ms, (p.x * (w + p.pw) - p.pw / 2) * ms, p.y * h * ms);
+                m.rotate(p.rot);
+                m.drawImage(layers[p.layer], -p.pw / 2, -p.pw * ar / 2, p.pw, p.pw * ar);
+            }
+            m.setTransform(1, 0, 0, 1, 0, 0);
+            m.globalAlpha = 1;
+            if (env.disc && env.disc.clear > 0) {
+                const mx = env.disc.x * ms, my = env.disc.y * ms, mr = env.disc.r * ms, glow = m.createRadialGradient(mx, my, mr, mx, my, mr * 1.5);
+                glow.addColorStop(0, `rgba(0,0,0,${MIST[inst.mist.key].disc * env.disc.clear})`);
+                glow.addColorStop(1, 'rgba(0,0,0,0)');
+                m.globalCompositeOperation = 'destination-out';
+                m.fillStyle = glow;
+                m.fillRect(mx - mr * 1.5, my - mr * 1.5, mr * 3, mr * 3);
+                m.globalCompositeOperation = 'source-over';
+            }
+            target.setTransform(1, 0, 0, 1, 0, 0);
+            target.globalAlpha = 1;
+            target.drawImage(mc, 0, 0, cw * 2 * s, ch * 2 * s);
+            target.setTransform(s, 0, 0, s, 0, 0);
+        }
     }
     const _lerp = (a, b, t) => a + (b - a) * t;
     const _count = (t, area) => Math.max(t.min, Math.min(t.max, Math.round(area / 10000 * t.perContainer)));
     function _buildRain(t, area, scale) {
-        const n = Math.max(4, Math.round(_count(t, area) * scale));
+        const n = Math.max(4, Math.round(_count(t, area) * scale)), lam = 4.1 * Math.pow(t.rate, -0.21);
         const arr = new Array(n);
         for (let i = 0; i < n; i++) {
-            const z = Math.pow(Math.random(), 1.35);
-            arr[i] = { z, x: Math.random(), y: Math.random(), vy: _lerp(t.vy[0], t.vy[1], z * z) * (0.92 + Math.random() * 0.16), sd: Math.random() };
+            const z = Math.random(), k = 0.4 + 0.6 * z, near = z > 0.95 ? 2.4 : 1;
+            const d = Math.min(t.dia[1], Math.max(t.dia[0], -Math.log(Math.random() * Math.random() * Math.random() + 1e-9) / lam));
+            const v = Math.max(1, 9.65 - 10.3 * Math.exp(-0.6 * d));
+            arr[i] = { z, x: Math.random(), y: Math.random(), sd: Math.random(), vy: v * k * 120, lean: Math.sqrt(5.5 / v), w: Math.max(1, d * 0.7 * k) * near, soft: near > 1 ? 1 : 0, a: t.alpha * (0.75 + 0.25 * k) / (near > 1 ? 2 : 1) };
         }
         arr.sort((a, b) => a.z - b.z);
         return arr;
@@ -872,7 +1031,7 @@ const WeatherEffects = (() => {
         c.width = w; c.height = h;
         return c;
     }
-    function _buildStarField(count, W, H, seed) {
+    function _buildStarField(count, W, H, seed, k) {
         const c = _offscreen(W, H);
         const ctx = c.getContext('2d', { alpha: true });
         if (!ctx) return c;
@@ -883,7 +1042,7 @@ const WeatherEffects = (() => {
             const key = `${rgb[0]},${rgb[1]},${rgb[2]}|${qA}`;
             let b = batches.get(key);
             if (!b) { b = { rgb, alpha: qA, pts: [] }; batches.set(key, b); }
-            b.pts.push(x, y, r);
+            b.pts.push(x, y, r * k);
         };
         const tinyCount = Math.floor(count * 1.1);
         const smallCount = Math.floor(count * 0.35);
@@ -919,9 +1078,9 @@ const WeatherEffects = (() => {
             const rgb = _starColor(rnd());
             put(rgb, alpha, x, y, r);
             if (i % 8 === 0) {
-                const glowR = r * 3.0;
+                const glowR = r * 3.0 * k;
                 ctx.globalAlpha = alpha * 0.12;
-                const g = ctx.createRadialGradient(x, y, r * 0.5, x, y, glowR);
+                const g = ctx.createRadialGradient(x, y, r * 0.5 * k, x, y, glowR);
                 g.addColorStop(0, _rgba(rgb, 1));
                 g.addColorStop(0.4, _rgba(rgb, 0.2));
                 g.addColorStop(1, _rgba(rgb, 0));
@@ -938,7 +1097,7 @@ const WeatherEffects = (() => {
             for (let j = 0; j < n; j++) {
                 let r = 0.5 + rnd() * 0.5;
                 if (j % 8 === 0) r *= 1.8;
-                put(STARS.palette[1], 0.30 + rnd() * 0.20, cx + (rnd() - 0.5) * 25, cy + (rnd() - 0.5) * 18, Math.min(r, STARS.maxRadius));
+                put(STARS.palette[1], 0.30 + rnd() * 0.20, cx + (rnd() - 0.5) * 25 * k, cy + (rnd() - 0.5) * 18 * k, Math.min(r, STARS.maxRadius));
             }
         }
         for (const b of batches.values()) {
@@ -1010,7 +1169,7 @@ const WeatherEffects = (() => {
         const W = Math.max(1, Math.round(w * s)), H = Math.max(1, Math.round(h * s));
         const fieldKey = `${st.count}|${W}|${H}`;
         if (st.fieldKey !== fieldKey) {
-            st.field = _buildStarField(st.count, W, H, inst.wp);
+            st.field = _buildStarField(st.count, W, H, inst.wp, s / 2);
             st.fieldKey = fieldKey;
         }
         const dpr = Math.min(s, STARS.heroDprCap);
@@ -1026,7 +1185,7 @@ const WeatherEffects = (() => {
         for (const hero of st.heroes) {
             const a = t * hero.sp + hero.ph;
             const twinkle = Math.sin(a) + Math.sin(a * 2.7) * 0.5 + Math.sin(a * 0.4) * 0.3;
-            const size = hero.size * (1 + twinkle * 0.35);
+            const size = hero.size * (1 + twinkle * 0.15);
             const op = Math.min(1, Math.max(0, hero.brightness * (1 + twinkle * 0.40))) * st.opacity;
             if (op < 0.05) continue;
             const px = hero.x * w, py = hero.y * h;
@@ -1036,7 +1195,7 @@ const WeatherEffects = (() => {
             ctx.globalAlpha = Math.min(1, op * 1.1);
             ctx.fillStyle = '#fff';
             ctx.beginPath();
-            ctx.arc(px, py, size * 0.75, 0, Math.PI * 2);
+            ctx.arc(px, py, size * 0.45, 0, Math.PI * 2);
             ctx.fill();
         }
         ctx.globalCompositeOperation = 'source-over';
@@ -1044,22 +1203,31 @@ const WeatherEffects = (() => {
         ctx.globalAlpha = 1;
     }
     function create() {
-        return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
+        return { key: null, rainKey: null, rain: null, snow: null, hail: null, cloud: null, mist: null, stars: null, birds: null, balloon: null, planes: null, area: 0, wp: Math.random() * 100, flash: null };
     }
-    function set(inst, key, w, h, weatherState, stars, birds, balloon, planes) {
+    function set(inst, key, w, h, scene) {
+        const { weatherState, stars, birds, balloon, planes, speed, cloudImage, mistState, wind, mistDensity, mistSize } = scene;
         const area = Math.max(1, w * h);
+        inst.wind = Number.isFinite(wind) ? wind : null;
+        inst.mistDensity = mistDensity || 1;
+        inst.mistSize = mistSize || 1;
         const grow = inst.area > 0 ? Math.abs(area - inst.area) / inst.area : 1;
         const sizeChanged = grow >= 0.22;
-        const tuning = _hasClouds(weatherState) ? _weatherTuning(weatherState) : null;
-        if (!tuning) {
-            inst.cloud = null;
-        } else if (!inst.cloud || inst.cloud.state !== weatherState) {
-            if (!inst.cloud || inst.cloud.density !== tuning.cloudDensity || inst.cloud.layout !== tuning.softClouds) inst.cloud = _buildCloudField(tuning, inst.wp);
-            inst.cloud.speed = tuning.cloudSpeed;
-            inst.cloud.state = weatherState;
-            _getCloudImg();
-            _getSoftImg();
-        }
+        inst.speed = speed || 1;
+        inst.cloudImg = (cloudImage && _imgLoader(cloudImage)) || _getCloudImg;
+        const field = (cur, state, seed, build, load) => {
+            if (!state) return null;
+            if (cur && cur.state === state) return cur;
+            const tuning = _weatherTuning(state), next = build(tuning, seed);
+            if (!cur || cur.key !== next.key) cur = next;
+            cur.speed = tuning.cloudSpeed;
+            cur.state = state;
+            load();
+            return cur;
+        };
+        inst.cloud = field(inst.cloud, weatherState, inst.wp, _buildCloudField, inst.cloudImg);
+        inst.mist = field(inst.mist, mistState, inst.wp + 1, _buildMistField, _getMistImg);
+        if (!inst.mist) inst.mistCanvas = inst.mistNearCanvas = null;
         const starCount = stars ? stars.count : 0;
         if (starCount <= 0) {
             inst.stars = null;
@@ -1106,7 +1274,7 @@ const WeatherEffects = (() => {
         const fl = inst.flash || (inst.flash = { next: t + 1.5 + Math.random() * 2.5, age: -1, puffs: null });
         if (fl.age < 0) {
             if (t < fl.next) return null;
-            const big = inst.cloud.puffs.filter(p => p.band >= 1 && p.band < SOFT_BAND);
+            const big = inst.cloud.puffs.filter(p => p.band >= 1);
             if (!big.length) return null;
             const anchor = big[(Math.random() * big.length) | 0];
             fl.puffs = big.filter(p => (p.x - anchor.x) ** 2 + (p.y - anchor.y) ** 2 < 0.04).slice(0, 3);
@@ -1141,10 +1309,9 @@ const WeatherEffects = (() => {
         }
         return brightness > 0.01 ? { puffs: fl.puffs, brightness } : null;
     }
-    function frame(inst, ctx, w, h, s, dt, t, env, starCtx) {
-        const activeEffects = !!inst.key || !!inst.cloud || !!inst.stars || !!inst.birds || !!inst.balloon || !!inst.planes;
-        ctx.setTransform(s, 0, 0, s, 0, 0);
-        ctx.clearRect(0, 0, w, h);
+    function frame(inst, ctx, w, h, s, dt, t, env, starCtx, nearCtx) {
+        const activeEffects = !!inst.key || !!inst.cloud || !!inst.mist || !!inst.stars || !!inst.birds || !!inst.balloon || !!inst.planes;
+        for (const c of nearCtx ? [ctx, nearCtx] : [ctx]) { c.setTransform(s, 0, 0, s, 0, 0); c.clearRect(0, 0, w, h); }
         if (!activeEffects) {
             if (starCtx) { starCtx.setTransform(s, 0, 0, s, 0, 0); starCtx.clearRect(0, 0, w, h); }
             return false;
@@ -1153,18 +1320,22 @@ const WeatherEffects = (() => {
             const sc = starCtx || ctx;
             if (starCtx) { starCtx.setTransform(s, 0, 0, s, 0, 0); starCtx.clearRect(0, 0, w, h); }
             _drawStars(inst, sc, w, h, s, t, dt);
-            if (env.moon) {
-                sc.setTransform(s, 0, 0, s, 0, 0);
+            if (env.moon && env.moon.lit) {
+                const k = env.moon.r / 50;
+                sc.setTransform(s * k, 0, 0, s * k, s * (env.moon.x - env.moon.r), s * (env.moon.y - env.moon.r));
                 sc.globalCompositeOperation = 'destination-out';
-                sc.beginPath();
-                sc.arc(env.moon.x, env.moon.y, env.moon.r, 0, Math.PI * 2);
-                sc.fill();
+                sc.fillStyle = '#000';
+                sc.fill(env.moon.lit);
                 sc.globalCompositeOperation = 'source-over';
+                sc.setTransform(s, 0, 0, s, 0, 0);
             }
         } else if (starCtx) {
             starCtx.setTransform(s, 0, 0, s, 0, 0); starCtx.clearRect(0, 0, w, h);
         }
         const wp = inst.wp;
+        const windGoal = inst.wind != null ? _windDrift(inst.wind) : ((inst.cloud && inst.cloud.speed) || (inst.mist && inst.mist.speed) || 1);
+        inst.windF = inst.windF == null ? windGoal : inst.windF + (windGoal - inst.windF) * Math.min(1, dt * 0.5);
+        const windF = inst.windF;
         const gust = 0.72 + 0.22 * Math.sin(t * 0.21 + wp) + 0.13 * Math.sin(t * 0.53 + wp * 1.7);
         const drift = Math.sin(t * 0.16 + wp * 0.6) + 0.4 * Math.sin(t * 0.41 + wp);
         const topF = h * 0.16, botY = h * 1.02, botF = h * 0.12;
@@ -1178,91 +1349,84 @@ const WeatherEffects = (() => {
         const span = w * 1.3, sx = -w * 0.15;
         if (inst.planes) _planesFrame(inst, ctx, w, h, s, dt, t, env);
         if (inst.balloon) _balloonFrame(inst, ctx, w, h, s, dt, t, env);
-        if (inst.cloud && inst.cloud.puffs.length) {
-            const cImg = _getCloudImg(), sImg = _getSoftImg();
-            const bands = cImg && sImg && _cloudBandSprites(cImg, sImg, inst.cloud.state, env.schemeDark, env.backgroundRGB);
-            if (bands) {
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-                const wind = (0.9 + 0.4 * gust) * inst.cloud.speed;
-                const opAmt = env.schemeDark ? 1.08 : 1;
-                const scale = Math.max(1, Math.min(2.4, Math.sqrt(w * h) / 300));
-                const drawPuff = (p, alpha) => {
-                    const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
-                    const ph = p.size * scale, pw = ph * ar * p.stretch;
-                    const cx = p.x * w;
-                    const cy = p.y * h + Math.sin(t * p.bobF + p.bobPh) * p.bobAmp * h;
-                    ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * opAmt * boost(cx, cy));
-                    ctx.setTransform(s, 0, 0, s, cx * s, cy * s);
-                    if (p.rot) ctx.rotate(p.rot);
-                    if (p.flip) ctx.scale(-1, 1);
-                    ctx.drawImage(sp, -pw / 2, -ph / 2, pw, ph);
-                };
-                for (const p of inst.cloud.puffs) {
-                    const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
-                    const pw = p.size * scale * ar * p.stretch;
-                    p.x += p.speed * wind * dt;
-                    if (p.x * w - pw / 2 > w) p.x -= (w + pw) / w;
-                    else if (p.x * w + pw / 2 < 0) p.x += (w + pw) / w;
-                    drawPuff(p, null);
-                }
-                const flash = _advanceFlash(inst, t, dt);
-                if (flash) {
-                    ctx.globalCompositeOperation = 'lighter';
-                    for (const p of inst.cloud.puffs) if (p.band < SOFT_BAND) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
-                    for (const fp of flash.puffs) drawPuff(fp, flash.brightness * 0.55);
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-                ctx.setTransform(s, 0, 0, s, 0, 0);
-                ctx.globalAlpha = 1;
+        const wind = (0.9 + 0.4 * gust) * windF, mistImg = inst.mist && _getMistImg();
+        if (mistImg) _mistFrame(inst, ctx, mistImg, w, h, s, dt, t, env, wind, nearCtx);
+        const cloudImg = inst.cloud && inst.cloud.puffs.length && inst.cloudImg(), bands = cloudImg && _cloudBandSprites(inst.cloud, cloudImg, inst.cloud.state, env.schemeDark, env.backgroundRGB);
+        if (bands) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            const scale = Math.max(1, Math.min(2.4, Math.sqrt(w * h) / 300));
+            const drawPuff = (p, alpha) => {
+                const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
+                const ph = p.size * scale, pw = ph * ar * p.stretch;
+                const cx = p.x * w;
+                const cy = p.y * h + Math.sin(t * p.bobF + p.bobPh) * p.bobAmp * h;
+                ctx.globalAlpha = alpha != null ? alpha : Math.min(0.95, p.alpha * (env.schemeDark ? 1.08 : 1) * boost(cx, cy));
+                ctx.setTransform(s, 0, 0, s, cx * s, cy * s);
+                if (p.rot) ctx.rotate(p.rot);
+                if (p.flip) ctx.scale(-1, 1);
+                ctx.drawImage(sp, -pw / 2, -ph / 2, pw, ph);
+            };
+            for (const p of inst.cloud.puffs) {
+                const sp = bands[p.band][p.variant], ar = sp.width / sp.height;
+                const pw = p.size * scale * ar * p.stretch;
+                p.x += p.speed * wind * dt;
+                if (p.x * w - pw / 2 > w) p.x -= (w + pw) / w;
+                else if (p.x * w + pw / 2 < 0) p.x += (w + pw) / w;
+                drawPuff(p, null);
             }
+            const flash = _advanceFlash(inst, t, dt);
+            if (flash) {
+                ctx.globalCompositeOperation = 'lighter';
+                for (const p of inst.cloud.puffs) drawPuff(p, flash.brightness * p.alpha * (env.schemeDark ? 0.3 : 0.14));
+                for (const fp of flash.puffs) drawPuff(fp, flash.brightness * 0.55);
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            ctx.setTransform(s, 0, 0, s, 0, 0);
+            ctx.globalAlpha = 1;
+        }
+        if (nearCtx) {
+            ctx.setTransform(s, 0, 0, s, 0, 0);
+            ctx.globalAlpha = 1;
+            nearCtx.imageSmoothingEnabled = ctx.imageSmoothingEnabled;
+            nearCtx.imageSmoothingQuality = ctx.imageSmoothingQuality;
+            ctx = nearCtx;
         }
         if (inst.birds) _birdsFrame(inst, ctx, w, h, s, dt, t, env, gust);
+        const fall = dt * inst.speed;
         if (inst.rain && inst.rain.length) {
-            const recipe = RAIN[inst.rainKey];
-            const sp = _sprite('streak', env.schemeDark);
-            const lean = recipe.lean * gust;
-            const stretch = Math.min(dt, 1 / 24);
-            const maxLen = h * 0.22;
-            ctx.setTransform(s, 0, s * lean, s, 0, 0);
-            const dark = env.schemeDark;
-            ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
-            const aCap = dark ? 0.62 : 0.95;
+            const recipe = RAIN[inst.rainKey], sp = _rainSprite(inst, env.backgroundRGB);
+            const wind = (inst.wind != null ? Math.min(0.4, 0.05 + 0.03 * inst.wind) : recipe.lean) * gust;
+            const shutter = Math.max(dt, 1 / 16) * inst.speed, maxLen = h * 0.24;
             for (const p of inst.rain) {
-                p.y += p.vy * dt / h;
-                p.x += p.vy * lean * 0.9 * dt / span;
+                const lean = wind * p.lean;
+                p.y += p.vy * fall / h;
+                p.x += p.vy * lean * fall / span;
                 let y = p.y * (h + 40) - 20;
-                if (y > h + 24) { p.y = (Math.random() * -0.22); p.x = Math.random(); p.sd = Math.random(); y = p.y * (h + 40) - 20; }
+                if (y > h + 24) { p.y = Math.random() * -0.22; p.x = Math.random(); p.sd = Math.random(); y = p.y * (h + 40) - 20; }
                 if (p.x > 1) p.x -= 1; else if (p.x < 0) p.x += 1;
                 const x = sx + p.x * span;
-                let a;
-                if (dark) {
-                    const focus = 0.30 + 0.70 * p.z;
-                    const glint = 0.55 + 0.90 * (p.sd * p.sd);
-                    a = _lerp(recipe.alpha[0], recipe.alpha[1], p.z) * focus * glint;
-                } else {
-                    a = (0.55 + 0.45 * p.z) * (0.85 + 0.30 * p.sd);
-                }
+                let a = p.a * (0.8 + 0.4 * p.sd * p.sd);
                 if (y < topF) a *= Math.max(0, y / topF);
                 else if (y > botY - botF) a *= Math.max(0, (botY - y) / botF);
                 if (a <= 0.004) continue;
                 a *= boost(x, y);
-                const len = Math.min(maxLen, (_lerp(recipe.lenBase[0], recipe.lenBase[1], p.z) + p.vy * stretch) * (0.72 + 0.55 * p.z));
-                const dw = _lerp(recipe.width[0], recipe.width[1], p.z) * (0.70 + 0.85 * p.z);
-                ctx.globalAlpha = Math.min(aCap, a);
-                ctx.drawImage(sp, x - lean * y - dw / 2, y - len, dw, len);
+                const len = Math.min(maxLen, p.vy * shutter + p.w * 2);
+                ctx.globalAlpha = Math.min(0.9, a);
+                ctx.setTransform(s, 0, s * lean, s, s * (x - lean * y), 0);
+                ctx.drawImage(sp[p.soft], -p.w / 2, y - len, p.w, len);
             }
-            ctx.globalCompositeOperation = 'source-over';
+            ctx.setTransform(s, 0, 0, s, 0, 0);
         }
         if (inst.hail && inst.hail.length) {
             const sp = _sprite('hail', env.schemeDark);
-            const tr = _sprite('streak', env.schemeDark);
-            const stretch = Math.min(dt, 1 / 24);
+            const tr = _rainSprite(inst, env.backgroundRGB)[1];
+            const stretch = Math.min(dt, 1 / 24) * inst.speed;
             const lean = 0.07 * gust;
             ctx.setTransform(s, 0, s * lean, s, 0, 0);
             for (const p of inst.hail) {
-                p.y += p.vy * dt / h;
-                p.x += p.vy * lean * 0.9 * dt / span;
+                p.y += p.vy * fall / h;
+                p.x += p.vy * lean * 0.9 * fall / span;
                 let y = p.y * (h + 40) - 20;
                 if (y > h + 24) { p.y = (Math.random() * -0.22); p.x = Math.random(); y = p.y * (h + 40) - 20; }
                 if (p.x > 1) p.x -= 1; else if (p.x < 0) p.x += 1;
@@ -1287,8 +1451,8 @@ const WeatherEffects = (() => {
             ctx.setTransform(s, 0, 0, s, 0, 0);
             const wind = drift * 7;
             for (const p of inst.snow) {
-                p.y += p.vy * dt / h;
-                p.x += wind * (0.4 + p.z * 0.6) * dt / span;
+                p.y += p.vy * fall / h;
+                p.x += wind * (0.4 + p.z * 0.6) * fall / span;
                 let y = p.y * (h + 24) - 12;
                 if (y > h + 14) { p.y = Math.random() * -0.12; p.x = Math.random(); p.ph = Math.random() * Math.PI * 2; y = p.y * (h + 24) - 12; }
                 if (p.x > 1) p.x -= 1; else if (p.x < 0) p.x += 1;
@@ -1307,12 +1471,13 @@ const WeatherEffects = (() => {
         ctx.setTransform(s, 0, 0, s, 0, 0);
         return true;
     }
-    return Object.freeze({ hasClouds: _hasClouds, birdActivity: _birdActivity, balloonActivity: _balloonActivity, planeActivity: _planeActivity, create, set, frame });
+    return Object.freeze({ hasClouds: _hasClouds, hasMist: _hasMist, birdActivity: _birdActivity, balloonActivity: _balloonActivity, planeActivity: _planeActivity, create, set, frame });
 })();
 const ESCAPE_MAP = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
 const escapeHtml = (v) => String(v).replace(/["&<>]/g, c => ESCAPE_MAP[c]);
 const _CSS_STRIP = /["'<>;{}\\]|\/\*|\*\/|@|url\s*\(|expression\s*\(/gi;
 const cssValue = (v) => String(v).replace(/[\u0000-\u001F\u007F]/g, '').replace(_CSS_STRIP, '');
+const _freeContainer = (c) => !c.custom_cards && String(c.position || '').toLowerCase() === 'custom';
 const _ALIGN_CLASSES = new Set(['start', 'center', 'end', 'spread']);
 const _BUTTON_STYLES = new Set(['vertical', 'split']);
 const JUSTIFY_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly' });
@@ -1320,6 +1485,8 @@ const _SAFE_JUSTIFY = new Set(['center', 'flex-end']);
 const ALIGN_MAP = Object.freeze({ start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch', baseline: 'baseline' });
 const FORECAST_CACHE = new Map();
 const FORECAST_CACHE_MAX = 50;
+const WEATHER_MEDIA_EXTS = Object.freeze(['', '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.mp4']);
+const WEATHER_MEDIA_FOUND = new Map();
 const _FORECAST_UNIT_MAP = { temperature: 'temperature_unit', templow: 'temperature_unit', wind_speed: 'wind_speed_unit', precipitation: 'precipitation_unit', pressure: 'pressure_unit', visibility: 'visibility_unit', dew_point: 'temperature_unit' };
 const _FORECAST_UNIT_FALLBACK = { humidity: '%', precipitation_probability: '%', cloud_coverage: '%', wind_bearing: '°', uv_index: '' };
 function collectConditionEntities(conditions) {
@@ -1339,11 +1506,36 @@ function normalizeLength(v) {
     if (!s) return '';
     return s.split(/\s+/).map(tok => {
         if (!tok) return tok;
-        if (tok === '0') return '0';
+        if (tok === '0') return '0px';
         return /^[+-]?(\d+\.?\d*|\.\d+)$/.test(tok) ? tok + 'px' : tok;
     }).join(' ');
 }
 function cssLength(v) { return cssValue(normalizeLength(v)); }
+function splitCss(v) {
+    const out = [];
+    let depth = 0, cur = '';
+    for (const ch of v) {
+        depth += ch === '(' ? 1 : ch === ')' ? -1 : 0;
+        if (!depth && /\s/.test(ch)) { if (cur) out.push(cur); cur = ''; } else cur += ch;
+    }
+    return cur ? [...out, cur] : out;
+}
+const _BUILTIN_IMAGES = { home: () => import('./image-assets-home.js').then((m) => m.HOME_IMAGE), 'old-home': OLD_HOME_IMAGE, 'demo-home-image': OLD_HOME_IMAGE };
+const _builtinLoaded = new Map(), _builtinPending = new Map();
+function _builtinImage(src) {
+    if (!Object.prototype.hasOwnProperty.call(_BUILTIN_IMAGES, src)) return undefined;
+    const b = _BUILTIN_IMAGES[src];
+    if (typeof b === 'string') return b;
+    return _builtinLoaded.has(src) ? _builtinLoaded.get(src) : null;
+}
+function _loadBuiltinImage(src) {
+    if (!_builtinPending.has(src)) _builtinPending.set(src, _BUILTIN_IMAGES[src]().then((svg) => { _builtinLoaded.set(src, svg); }, () => { _builtinLoaded.set(src, ''); }));
+    return _builtinPending.get(src);
+}
+function _dayNightState(state, night) {
+    if (night && (state === 'sunny' || state === 'exceptional')) return 'clear-night';
+    return !night && state === 'clear-night' ? 'sunny' : state;
+}
 function _elBoxStyle(el) {
     let s = '';
     if (el && el.margin !== undefined && el.margin !== '') s += `;margin:${cssLength(el.margin)}`;
@@ -1354,6 +1546,7 @@ function gaugeDefs(o, p) {
     const arr = Array.isArray(o[p + 'values']) ? o[p + 'values'].filter(v => v && typeof v === 'object') : [];
     return arr.length ? arr : [{}];
 }
+const SUN_PATH = 'M0,1C.042,1,.083,.946,.125,.854C.167,.761,.208,.631,.25,.5C.292,.369,.333,.239,.375,.146C.417,.054,.458,0,.5,0C.542,0,.583,.054,.625,.146C.667,.239,.708,.369,.75,.5C.792,.631,.833,.761,.875,.854C.917,.946,.958,1,1,1';
 const GAUGE_REF = /^[a-z_]+\.[a-z0-9_]+$/, GAUGE_NUMS = ['min', 'max', 'width', 'height', 'arc', 'start', 'marker_size', 'marker_icon_size', 'range_from', 'range_to'];
 function gaugeRefs(o, p) {
     return gaugeDefs(o, p).concat(GAUGE_NUMS.filter(k => GAUGE_REF.test(o[p + k])).map(k => ({ entity: o[p + k] })));
@@ -1361,7 +1554,7 @@ function gaugeRefs(o, p) {
 const isTime = v => typeof v === 'string' && v.includes(':');
 function gaugeNum(v, hass) {
     if (!isTime(v)) return parseFloat(v);
-    const d = new Date(v), [h, m] = (isNaN(d) ? v : d.toLocaleTimeString('en-GB', { timeZone: hass.locale.time_zone === 'server' ? hass.config.time_zone : undefined })).split(':');
+    const d = new Date(v), [h, m] = (isNaN(d) ? v : d.toLocaleTimeString('en-GB', { timeZone: hass.locale.time_zone === 'server' ? serverZone(hass) : undefined })).split(':');
     return +h + m / 60;
 }
 function iconSourceValue(hass, button, el) {
@@ -1397,9 +1590,20 @@ function pickThreshold(thresholds, value) {
     for (const t of sorted) { if (num >= parseFloat(t.value)) color = t.color; }
     return color;
 }
-function forecastFilterPast(raw, daily) {
-    const now = new Date(), cut = daily ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() : now.getTime();
-    return raw.filter(f => Date.parse(f.datetime) >= cut);
+const ZONES = new Map();
+function serverZone(hass) {
+    const zone = hass.config.time_zone;
+    if (!ZONES.has(zone)) { try { new Intl.DateTimeFormat('en', { timeZone: zone }); ZONES.set(zone, zone); } catch (_e) { ZONES.set(zone, undefined); } }
+    return ZONES.get(zone);
+}
+const wallParts = (hass, t) => Object.fromEntries(dateFormat(hass, { hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }, 'en').formatToParts(t).map(p => [p.type, p.value]));
+function dayKey(hass, t) {
+    const n = wallParts(hass, t);
+    return Date.UTC(n.year, n.month - 1, n.day);
+}
+function forecastFilterPast(raw, daily, hass) {
+    const now = Date.now(), today = daily ? dayKey(hass, now) : '';
+    return raw.filter(f => { const t = Date.parse(f.datetime); return t >= now || (daily && Number.isFinite(t) && dayKey(hass, t) >= today); });
 }
 function forecastFingerprint(forecast) {
     if (!forecast || !forecast.length) return '';
@@ -1412,15 +1616,33 @@ function numberFormat(locale, precision) {
     const nf = locale.number_format;
     return new Intl.NumberFormat(nf === 'system' ? undefined : NUMBER_LOCALES[nf] || locale.language, { maximumFractionDigits: precision, minimumFractionDigits: 0, useGrouping: nf !== 'none' });
 }
-function dateFormat(hass, options) {
-    const l = hass.locale, tf = l.time_format;
-    if (options.hour) options.hourCycle = (tf === '12' || tf === '24' ? tf === '12' : new Date('January 1, 2023 22:00:00').toLocaleString(tf === 'language' ? l.language : undefined).includes('10')) ? 'h12' : 'h23';
-    if (l.time_zone === 'server') options.timeZone = hass.config.time_zone;
-    return new Intl.DateTimeFormat(l.language, options);
+const _HOUR_CYCLES = new Map(), _DATE_FORMATS = new Map();
+function dateFormat(hass, options, language = hass.locale.language) {
+    const l = hass.locale, tf = l.time_format, cycleKey = `${tf}|${l.language}`;
+    if (options.hour && !options.hourCycle) {
+        if (!_HOUR_CYCLES.has(cycleKey)) _HOUR_CYCLES.set(cycleKey, (tf === '12' || tf === '24' ? tf === '12' : new Date('January 1, 2023 22:00:00').toLocaleString(tf === 'language' ? l.language : undefined).includes('10')) ? 'h12' : 'h23');
+        options.hourCycle = _HOUR_CYCLES.get(cycleKey);
+    }
+    if (l.time_zone === 'server') options.timeZone = serverZone(hass);
+    const key = `${language}|${JSON.stringify(options)}`;
+    if (!_DATE_FORMATS.has(key)) _DATE_FORMATS.set(key, new Intl.DateTimeFormat(language, options));
+    return _DATE_FORMATS.get(key);
 }
 function forecastLabel(dt, daily, hass) {
-    return dateFormat(hass, daily ? { weekday: 'short' } : { hour: 'numeric', minute: '2-digit' }).format(new Date(dt));
+    const date = new Date(dt), options = daily ? { weekday: 'short' } : { hour: 'numeric', minute: '2-digit' }, format = dateFormat(hass, options);
+    return options.hourCycle === 'h12' && dateFormat(hass, { minute: 'numeric' }, 'en').format(date) === '0' ? dateFormat(hass, { hour: 'numeric' }).format(date) : format.format(date);
 }
+const DATE_CODE = /%(-?)([aAbBdmyYHIMSp])/g, DATE_NAMES = { a: { weekday: 'short' }, A: { weekday: 'long' }, b: { month: 'short' }, B: { month: 'long' } };
+const isDatePattern = v => typeof v === 'string' && v.search(DATE_CODE) >= 0;
+function strftime(hass, dt, format) {
+    if (!dt || !isDatePattern(format)) return '';
+    const date = new Date(dt), n = wallParts(hass, date);
+    const numbers = { d: n.day, m: n.month, y: n.year.slice(-2), Y: n.year, H: n.hour, I: String(n.hour % 12 || 12).padStart(2, '0'), M: n.minute, S: n.second, p: n.hour < 12 ? 'AM' : 'PM' };
+    return format.replace(DATE_CODE, (_, flag, c) => DATE_NAMES[c] ? dateFormat(hass, { calendar: 'gregory', ...DATE_NAMES[c] }).format(date) : flag ? numbers[c].replace(/^0/, '') : numbers[c]);
+}
+const Z = Object.freeze({ ...Object.fromEntries(['sky', 'pictures', 'layer-sky', 'stars', 'sun', 'pictures-front', 'layer-back', 'weather', 'layer-middle', 'near', 'tint', 'edge', 'layer-base'].map((name, i, all) => [name, i - all.length])), free: 10 });
+const CONTAINER_LAYERS = Object.freeze(['sky', 'back', 'middle', 'base', 'front']);
+const containerLayer = (c) => { const v = String((c && c.layer) || '').toLowerCase(); return CONTAINER_LAYERS.includes(v) ? v : 'front'; };
 let _sharedStyles = null;
 class WeatherCard extends HTMLElement {
     constructor() {
@@ -1439,6 +1661,7 @@ class WeatherCard extends HTMLElement {
         this._effectsH = 0;
         this._sunGlowVisibility = 0;
         this._sunGlowIsNight = false;
+        this._switches = {};
         this._sunsetF = 0;
         this._isAstroNight = false;
         this._schemeDark = false;
@@ -1482,6 +1705,7 @@ class WeatherCard extends HTMLElement {
                     w = entry.target.offsetWidth; h = entry.target.offsetHeight;
                 }
                 const changed = this._updateCanvasDimensions(w, h);
+                if (this._isAstroNight) this._drawMoon();
                 if (!this._initializationComplete) {
                     this._tryInitialize();
                 } else if (changed) {
@@ -1493,20 +1717,39 @@ class WeatherCard extends HTMLElement {
             this._intersectionObserver = new IntersectionObserver(this._boundVisibilityChange, { threshold: 0.01, rootMargin: '0px' });
         }
         this._observeRoot();
+        this._observeCurves(this.shadowRoot);
+        this._observeCorners(this.shadowRoot);
         document.addEventListener('visibilitychange', this._boundDocVisibility);
+        this._scheduleClockTick();
         if (this._hasReceivedFirstHass) { this._syncForecasts(); this._tryInitialize(); }
+    }
+    _scheduleClockTick() {
+        clearTimeout(this._clockTimer);
+        const step = this._showsTime() ? 6e4 : 9e5;
+        this._clockTimer = setTimeout(() => this._clockTick(), step - Date.now() % step + 1000);
+    }
+    _clockTick() {
+        this._lastSnapshot = null;
+        this._scheduleClockTick();
+        if (this._hass) this.hass = this._hass;
+    }
+    _showsTime() {
+        return !!this._containers && this._allButtons().some(b => !b.forecast && String(b.entity).startsWith('weather.') && Array.isArray(b.elements)
+            && b.elements.some(el => el && !el.entity && el.attribute === 'datetime' && /%-?[HIMSp]/.test(el.format)));
     }
     disconnectedCallback() {
         this._stopAnimation();
         if (this._resizeObserver) this._resizeObserver.disconnect();
         if (this._intersectionObserver) this._intersectionObserver.disconnect();
         if (this._marqueeObserver) this._marqueeObserver.disconnect();
+        if (this._cornerObserver) this._cornerObserver.disconnect();
         this._marqueeObserver = null;
         for (const unsub of this._forecastSubs.values()) { try { unsub(); } catch (_) {} }
         this._forecastSubs.clear();
         if (this._resizeDebounceTimer) {
             clearTimeout(this._resizeDebounceTimer); this._resizeDebounceTimer = null;
         }
+        clearTimeout(this._clockTimer); this._clockTimer = null;
         if (this._vertMeasureRaf != null) { cancelAnimationFrame(this._vertMeasureRaf); this._vertMeasureRaf = null; }
         this._pendingVertMeasure = null;
         this._isVisible = false;
@@ -1571,6 +1814,7 @@ class WeatherCard extends HTMLElement {
         this._applyConfigStyles();
         if (this._lastState) this._syncEffects(this._lastState);
         if (this._initializationComplete && this._isVisible) this._startAnimation();
+        if (this.isConnected) this._scheduleClockTick();
     }
     set hass(hass) {
         if (!hass || !this._config) return;
@@ -1581,6 +1825,11 @@ class WeatherCard extends HTMLElement {
         const sunId = cfg.sun_entity || 'sun.sun';
         const sunObj = hass.states[sunId] || null;
         const themeDark = !!(hass.themes && hass.themes.darkMode);
+        const rtl = !!(hass.translationMetadata && hass.translationMetadata.translations && (hass.translationMetadata.translations[hass.language || 'en'] || {}).isRTL);
+        if (rtl !== !!this._rtl) {
+            this._rtl = rtl;
+            this._applyConfigStyles();
+        }
         if (this._lastSnapshot
             && wObj === this._refW && sunObj === this._refSun
             && themeDark === this._themeDark
@@ -1591,7 +1840,7 @@ class WeatherCard extends HTMLElement {
         this._refButtonEntities = refs;
         const isAstroNight = !!sunObj && (sunObj.state || '').toLowerCase() === 'below_horizon';
         const colorMode = (cfg.color_mode || 'sun').toLowerCase();
-        if (colorMode !== 'theme' && !sunObj) this._warnMissingSun();
+        if (colorMode === 'sun' && !sunObj) this._warnMissingSun();
         const schemeDark = WeatherCard._schemeDarkFromColorMode(colorMode, themeDark, isAstroNight);
         const hasAstroNightChanged = this._isAstroNight !== isAstroNight;
         const hasSchemeDarkChanged = this._schemeDark !== schemeDark;
@@ -1600,6 +1849,8 @@ class WeatherCard extends HTMLElement {
         this._themeDark = themeDark;
         this._updateSunMoon(sunObj, wObj);
         const wEntity = wObj || FALLBACK_WEATHER;
+        const wAttrs = wEntity.attributes || {};
+        this._windMs = _windToMs(wAttrs.wind_speed, wAttrs.wind_speed_unit);
         const botSig = allButtons.map(s => {
             if (!s.entity) return '';
             let sig;
@@ -1614,14 +1865,9 @@ class WeatherCard extends HTMLElement {
             }
             if (Array.isArray(s.elements)) {
                 for (const el of s.elements) {
-                    if (!el) continue;
-                    if (el.type === 'text' && el.entity) {
-                        const te = hass.states[el.entity];
-                        if (te) sig += `|tx:${el.attribute ? (te.attributes[el.attribute] != null ? te.attributes[el.attribute] : '') : te.state}`;
-                    } else if (el.type === 'icon' && (el.entity || el.attribute)) {
-                        const ie = hass.states[el.entity || s.entity];
-                        if (ie) sig += `|ic:${el.attribute ? (ie.attributes[el.attribute] != null ? ie.attributes[el.attribute] : '') : ie.state}`;
-                    }
+                    if (!el || (el.type !== 'text' && el.type !== 'icon') || !(el.entity || el.attribute)) continue;
+                    const ee = hass.states[el.entity || s.entity];
+                    if (ee) sig += `|${el.type}:${el.attribute ? (ee.attributes[el.attribute] != null ? ee.attributes[el.attribute] : '') : ee.state}`;
                 }
             }
             for (const def of s._gaugeDefs) {
@@ -1647,14 +1893,13 @@ class WeatherCard extends HTMLElement {
             themeDark,
             botSig,
             containerVisSig,
-            locale: `${l.language}|${l.number_format}|${l.time_format}|${l.time_zone}`
+            wind: this._windMs,
+            locale: `${l.language}|${l.number_format}|${l.time_format}|${l.time_zone === 'server' ? hass.config.time_zone : l.time_zone}`
         };
         if (this._lastSnapshot && !this._hasSnapshotChanged(this._lastSnapshot, snapshot)) return;
         this._lastSnapshot = snapshot;
-        let weatherState = (wEntity.state || 'default').toLowerCase();
-        if (isAstroNight && weatherState === 'sunny') weatherState = 'clear-night';
-        if (!isAstroNight && weatherState === 'clear-night') weatherState = 'sunny';
-        if (weatherState === 'exceptional' && isAstroNight) weatherState = 'clear-night';
+        const weatherState = _dayNightState((wEntity.state || 'default').toLowerCase(), isAstroNight);
+        this._weatherState = weatherState;
         this._updateSchemeStyles(weatherState);
         this._updateTextElements(hass, weatherState);
         this._updateWeatherBackground(weatherState, schemeDark);
@@ -1684,15 +1929,17 @@ class WeatherCard extends HTMLElement {
         if (!customElements.get("origami-weather-editor")) {
             await import("./origami-weather-editor.js");
         }
-        return document.createElement("origami-weather-editor");
+        return Object.assign(document.createElement("origami-weather-editor"), { migrate: WeatherCard._migrateConfig });
     }
-    static getStubConfig(hass) {
+    static async getStubConfig(hass) {
+        const { buildStubConfig } = await import('./layout-presets.js');
         return buildStubConfig(hass);
     }
     static _migrateConfig(config) {
-        if (!('sun_moon_enabled' in config)) return config;
-        const { sun_moon_enabled: sunMoonEnabled, ...rest } = config;
-        return sunMoonEnabled === false ? { sun_enabled: false, moon_enabled: false, ...rest } : rest;
+        let c = config;
+        if ('sun_moon_enabled' in c) { const { sun_moon_enabled: on, ...rest } = c; c = on === false ? { sun_enabled: false, moon_enabled: false, ...rest } : rest; }
+        if ('sun_moon_size' in c) { const { sun_moon_size: size, ...rest } = c; c = { sun_size: size, moon_size: size, ...rest }; }
+        return c;
     }
     getCardSize() { return 4; }
     getGridOptions() {
@@ -1769,7 +2016,7 @@ class WeatherCard extends HTMLElement {
         const lat = Number(this._hass?.config?.latitude) * D, dec = -23.44 * D * Math.cos(2 * Math.PI * ((now - new Date(now.getFullYear(), 0, 1)) / 864e5 + 10) / 365);
         const rise = Math.acos(Math.max(-1, Math.min(1, Math.sin(dec) / Math.cos(lat)))) / D, south = lat > dec;
         const light = up ? Math.max(0, Math.min(1, (tuning.sunVisibility - 0.45) / 0.55)) * Math.min(1, elev / 4) : 0;
-        for (const [k, v] of [['x', Math.sin(az)], ['y', Math.cos(az)], ['shadow', up ? Math.min(3, 1 / Math.tan(elev * D)) : 0], ['light', light], ['path-start', south ? rise : 360 - rise], ['path', south ? 360 - 2 * rise : 2 * rise]]) this._cssVar(els.root, `--origami-sun-${k}`, Number.isFinite(v) ? v.toFixed(3) : '', `sun-${k}`);
+        for (const [k, v] of [['x', Math.sin(az)], ['y', Math.cos(az)], ['shadow', up ? Math.min(3, 1 / Math.tan(elev * D)) : 0], ['light', light], ['path-start', south ? rise : 360 - rise], ['path', south ? 360 - 2 * rise : 2 * rise], ['day', sunValid ? WeatherCard._sunDay(sun.attributes, up)[1] : NaN]]) this._cssVar(els.root, `--origami-sun-${k}`, Number.isFinite(v) ? v.toFixed(3) : '', `sun-${k}`);
         this._sunsetF = (sunValid && !isAstroNight && Number.isFinite(elev))
             ? Math.max(0, Math.min(1, 1 - Math.abs(elev - 6) / 16))
             : 0;
@@ -1783,8 +2030,9 @@ class WeatherCard extends HTMLElement {
             return;
         }
         const t = Number.isFinite(elev) ? Math.min(1, Math.max(0, isAstroNight ? -elev / 24 : elev / 60)) : 0.5;
-        const yFixed = cfg.sun_moon_y != null && cfg.sun_moon_y !== '';
-        const y = yFixed ? Math.min(100, Math.max(0, parseFloat(cfg.sun_moon_y) || 0)) : Math.round((100 - t * 86) * 2) / 2;
+        const yAt = (v) => isNaN(v) && !/^-?[\d.]+\s*%$/.test(v) && CSS.supports('top', cssValue(v)) ? cssValue(v) : `${Math.min(100, Math.max(0, parseFloat(v) || 0))}%`;
+        const ys = cfg.sun_moon_y != null && cfg.sun_moon_y !== '' ? splitCss(String(cfg.sun_moon_y).trim()) : [];
+        const y = ys.length === 2 ? `calc(${yAt(ys[0])} + (${yAt(ys[1])} - ${yAt(ys[0])}) * ${Math.round(t * 100) / 100})` : ys.length ? yAt(ys.join(' ')) : `${Math.round((100 - t * 86) * 2) / 2}%`;
         const x = cfg.sun_moon_x === 'dynamic' ? Math.round((7 + WeatherCard._pathProgress(sun.attributes || {}, isAstroNight) * 86) * 2) / 2 : null;
         const warm = isAstroNight ? 0 : Math.round(Math.pow(1 - t, 1.6) * 20) / 20;
         this._sunGlowVisibility = tuning.sunVisibility;
@@ -1793,6 +2041,9 @@ class WeatherCard extends HTMLElement {
         const sig = `${isAstroNight ? 'night' : 'day'}|${x ?? ''}|${y}|${weatherState}|${warm}|${this._schemeDark ? 'd' : 'l'}|${phase}`;
         if (this._sunMoonSig === sig) return;
         this._sunMoonSig = sig;
+        const flip = this._sunMoonNight !== isAstroNight;
+        this._sunMoonNight = isAstroNight;
+        if (flip) els.sunMoonLayer.classList.add('no-glide');
         if (!this._sunMoonActive) {
             this._sunMoonActive = true;
             els.root.classList.add('has-sun-moon');
@@ -1800,16 +2051,18 @@ class WeatherCard extends HTMLElement {
         els.sunMoon.classList.toggle('is-astro-night', isAstroNight);
         const rays = isAstroNight ? 0 : WeatherCard._rayStrength(tuning, t);
         els.root.classList.toggle('has-sun-rays', rays > 0);
-        const st = els.sunMoonLayer.style;
+        const st = els.sunMoonLayer.style, size = isAstroNight ? cfg.moon_size : cfg.sun_size;
+        if (size == null || size === '') st.removeProperty('--origami-sun-moon-size');
+        else st.setProperty('--origami-sun-moon-size', cssLength(size));
         if (x == null) st.removeProperty('--origami-sun-moon-x');
         else st.setProperty('--origami-sun-moon-x', `${x}%`);
-        st.setProperty('--origami-sun-moon-y', `${y}%`);
+        st.setProperty('--origami-sun-moon-y', y);
+        if (flip) { getComputedStyle(els.sunMoonLayer).getPropertyValue('--origami-sun-moon-y'); els.sunMoonLayer.classList.remove('no-glide'); }
         st.setProperty('--origami-sun-moon-glow-opacity', String(tuning.sunVisibility));
         st.setProperty('--origami-sun-rays-opacity', String(rays));
         st.opacity = String(tuning.sunVisibility);
         if (isAstroNight) {
             this._applyMoonPhase(phase);
-            this._loadMoonImage();
             st.setProperty('--origami-moon-phase-glow', String(Math.round(Math.sin(phase * Math.PI) * 100) / 100));
         } else {
             const c = WeatherCard._sunPalette(warm, tuning.sunSaturation);
@@ -1841,6 +2094,12 @@ class WeatherCard extends HTMLElement {
         const low = 0.48 + 0.38 * (1 - Math.max(0, Math.min(1, t)));
         return Math.round(Math.min(1, vis * low) * 100) / 100;
     }
+    static _sunDay(a, up) {
+        const day = 864e5, now = Date.now(), set = Date.parse(a.next_setting);
+        let noon = Date.parse(a.next_noon);
+        if (noon - now > day / 2) noon -= day;
+        return [0.5 + (now - noon) / day, set - noon > 1.5 * day ? +!!up : 2 * ((set - noon) % day) / day];
+    }
     static _pathProgress(attrs, isAstroNight) {
         const now = Date.now(), end = Date.parse(isAstroNight ? attrs.next_rising : attrs.next_setting);
         let mid = Date.parse(isAstroNight ? attrs.next_midnight : attrs.next_noon);
@@ -1849,7 +2108,7 @@ class WeatherCard extends HTMLElement {
         return half > 0 ? Math.min(1, Math.max(0, 0.5 + (now - mid) / (2 * half))) : 0.5;
     }
     static _schemeDarkFromColorMode(colorMode, themeIsDark, isAstroNight) {
-        return colorMode === 'theme' ? themeIsDark : isAstroNight;
+        return colorMode === 'theme' ? themeIsDark : colorMode === 'dark' || (colorMode !== 'light' && isAstroNight);
     }
     static _sunPalette(warm, saturation) {
         const wash = 1 - saturation;
@@ -1867,14 +2126,22 @@ class WeatherCard extends HTMLElement {
     _applyMoonPhase(p) {
         if (this._moonPhaseApplied === p) return;
         this._moonPhaseApplied = p;
-        const litPath = this._elements?.moonLitPath;
-        if (!litPath) return;
         const lit = WeatherCard._moonLitPath(p);
-        litPath.setAttribute('d', lit || '');
+        this._moonLit = lit ? new Path2D(lit) : null;
+        this._drawMoon();
     }
-    _loadMoonImage() {
-        const img = this._elements?.moonImage;
-        if (img && !img.hasAttribute('href')) img.setAttribute('href', MOON_SURFACE);
+    _drawMoon() {
+        const cv = this._elements && this._elements.moonCanvas, p = this._moonPhaseApplied;
+        if (!cv || p == null) return;
+        const size = Math.min(320, Math.round(cv.clientWidth * (window.devicePixelRatio || 1))), key = `${p}|${size}`;
+        if (!size || this._moonKey === key) return;
+        this._moonKey = key;
+        _moonPhoto().then((photo) => {
+            if (!photo || this._moonKey !== key) return;
+            cv.width = cv.height = size;
+            const last = _moonImageData.last;
+            cv.getContext('2d').putImageData(last && last.key === key ? last.data : (_moonImageData.last = { key, data: _moonImageData(photo, size, p) }).data, 0, 0);
+        });
     }
     static _moonPhase() { return (Date.now() - 947182440000) / 2551442877 % 1; }
     static _moonLitPath(p) {
@@ -1887,19 +2154,27 @@ class WeatherCard extends HTMLElement {
         const innerSweep = (k > 0) === waxing ? 0 : 1;
         return `M 50 2 A 48 48 0 0 ${outerSweep} 50 98 A ${rx} 48 0 0 ${innerSweep} 50 2 Z`;
     }
+    _isNightAt(when) {
+        const a = (this._refSun && this._refSun.attributes) || {};
+        const rising = Date.parse(a.next_rising), setting = Date.parse(a.next_setting), day = 864e5;
+        const t = Date.parse(when), ahead = t - Date.now();
+        if (!Number.isFinite(t) || !Number.isFinite(rising) || !Number.isFinite(setting)) return null;
+        const at = ahead >= day ? t - Math.floor(ahead / day) * day : t;
+        return setting < rising ? at >= setting && at < rising : at < rising || at >= setting;
+    }
     _warnMissingSun() {
         if (this._sunWarned) return;
         this._sunWarned = true;
         console.warn('Origami Weather: color_mode "sun" requires a sun entity. Tried sun.sun but it was not found; falling back to light. Set sun_entity if your sun entity has a custom ID.');
     }
     _resolveSensorValue(hass, entityId, attribute) {
-        let formatted = 'N/A', haFormatted = false, rawNumeric = null;
+        let formatted = 'N/A', haFormatted = false, rawNumeric = null, date;
         const sensor = hass.states[entityId];
         if (sensor && attribute) {
-            const raw = sensor.attributes[attribute];
+            const own = attribute === 'last_changed' || attribute === 'last_updated', raw = own ? sensor[attribute] : sensor.attributes[attribute];
             if (raw !== undefined && raw !== null) {
-                formatted = hass.formatEntityAttributeValue(sensor, attribute);
-                haFormatted = true; rawNumeric = raw;
+                formatted = own ? raw : hass.formatEntityAttributeValue(sensor, attribute);
+                haFormatted = !own; rawNumeric = raw;
             }
         } else if (sensor) {
             formatted = hass.formatEntityState(sensor);
@@ -1908,10 +2183,8 @@ class WeatherCard extends HTMLElement {
         if (typeof rawNumeric === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(rawNumeric)) {
             const d = new Date(rawNumeric);
             if (!isNaN(d)) {
-                const now = new Date(), day = 86400000;
-                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const targetStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                const dayDiff = Math.round((targetStart - todayStart) / day);
+                date = d;
+                const now = new Date(), day = 86400000, dayDiff = Math.round((dayKey(hass, d) - dayKey(hass, now)) / day);
                 const timePart = dateFormat(hass, { hour: 'numeric', minute: '2-digit' }).format(d);
                 if (dayDiff === 0 || (d > now && d - now < day)) {
                     formatted = timePart;
@@ -1922,7 +2195,7 @@ class WeatherCard extends HTMLElement {
                 }
             }
         }
-        return { formatted, sensor, haFormatted, rawNumeric };
+        return { formatted, sensor, haFormatted, rawNumeric, date };
     }
     _syncForecasts() {
         if (!(this._hass && this._hass.connection)) return;
@@ -1957,20 +2230,21 @@ class WeatherCard extends HTMLElement {
         const pending = () => {};
         this._forecastSubs.set(key, pending);
         hass.connection.subscribeMessage(
-            (msg) => this._onForecastData(key, msg.forecast != null ? msg.forecast : [], type === 'daily'),
+            (msg) => this._onForecastData(key, msg.forecast != null ? msg.forecast : []),
             { type: 'weather/subscribe_forecast', forecast_type: type, entity_id: entity }
         ).then(unsub => {
             if (!this.isConnected || this._forecastSubs.get(key) !== pending) { unsub(); return; }
             this._forecastSubs.set(key, unsub);
         }).catch(() => {
             if (this._forecastSubs.get(key) === pending) this._forecastSubs.delete(key);
+            if (!this._forecastData.has(key)) this._onForecastData(key, []);
         });
     }
-    _onForecastData(key, raw, daily) {
-        const processed = forecastFilterPast(raw, daily), fp = forecastFingerprint(processed);
+    _onForecastData(key, list) {
+        const fp = forecastFingerprint(list);
         const _existing = this._forecastData.get(key);
         if (_existing && _existing.fp === fp) return;
-        const entry = { processed, fp };
+        const entry = { list, fp };
         this._forecastData.set(key, entry);
         this._lastSnapshot = null;
         FORECAST_CACHE.set(key, entry);
@@ -1980,47 +2254,63 @@ class WeatherCard extends HTMLElement {
         }
         this.hass = this._hass;
     }
+    _forecastList(hass, entity, type) {
+        const cached = this._forecastData.get(`${entity}|${type}`), minute = Math.floor(Date.now() / 60000);
+        if (cached && cached.pastAt !== minute) Object.assign(cached, { pastAt: minute, past: forecastFilterPast(cached.list, type === 'daily', hass) });
+        return cached && cached.past;
+    }
     _resolveForecastValue(hass, button) {
         const type = button.forecast === 'hourly' ? 'hourly' : 'daily';
         const offset = Math.max(0, parseInt(button.forecast_offset, 10) || 0);
-        const _forecastEntry = this._forecastData.get(`${button.entity}|${type}`);
-        const forecast = _forecastEntry && _forecastEntry.processed;
-        if (!forecast || !forecast.length) return { formatted: '', condition: null, datetime: null, loading: true };
-        const entry = forecast[Math.min(offset, forecast.length - 1)];
+        const missing = { formatted: 'N/A', condition: null, datetime: null };
+        const st = hass.states[button.entity], sf = st && st.attributes ? Number(st.attributes.supported_features) : NaN;
+        if (Number.isFinite(sf) && !(sf & (type === 'hourly' ? 2 : 1))) return missing;
+        const forecast = this._forecastList(hass, button.entity, type);
+        if (!forecast) return { formatted: '', condition: null, datetime: null, loading: true };
+        if (!forecast.length) return missing;
+        if (offset >= forecast.length) return { formatted: '', condition: null, datetime: null, none: true };
+        const entry = forecast[offset];
         let label = entry.condition || '—';
         if (entry.condition && typeof hass.localize === 'function') label = hass.localize(`component.weather.entity_component._.state.${entry.condition}`) || label;
         return { formatted: label, condition: entry.condition, datetime: entry.datetime, entry };
     }
     _reshapeValue(hass, r, txt, hasFormat, unitEntity, unitAttr) {
+        if (r.rawNumeric == null) return { value: r.formatted, unit: '' };
+        const custom = strftime(hass, r.date, txt.format);
+        if (custom) return { value: custom, unit: '' };
         let value = r.formatted, unit = hasFormat ? txt.format : '';
-        const numeric = r.rawNumeric != null && isFinite(parseFloat(r.rawNumeric));
+        if (r.date) return { value, unit };
+        if (isDatePattern(txt.format) && (r.rawNumeric === 'unknown' || r.rawNumeric === 'unavailable')) return { value, unit: '' };
+        const numeric = isFinite(parseFloat(r.rawNumeric));
         if (txt.precision !== undefined && numeric) {
             value = this._formatNumber(r.rawNumeric, this._getForecastFormat(hass.locale, txt.precision));
             if (!hasFormat && r.haFormatted) unit = this._extractUnit(hass, unitEntity, unitAttr);
-        } else if (txt.fancy_unit === true && r.haFormatted && r.rawNumeric != null) {
+        } else if (txt.fancy_unit === true && r.haFormatted) {
             value = this._formatNumber(r.rawNumeric);
             if (!hasFormat) unit = this._extractUnit(hass, unitEntity, unitAttr);
-        } else if (hasFormat && r.haFormatted && r.rawNumeric != null) {
+        } else if (hasFormat && r.haFormatted) {
             value = this._formatNumber(r.rawNumeric);
         }
         return { value, unit };
     }
     _resolveButtonText(hass, button, txt, ctx) {
-        const hasFormat = txt.format !== undefined;
+        const hasFormat = txt.format != null;
         const tight = hasFormat || txt.fancy_unit === true;
         if (txt.entity) {
             const r = this._resolveSensorValue(hass, txt.entity, txt.attribute);
             const { value, unit } = this._reshapeValue(hass, r, txt, hasFormat, txt.entity, txt.attribute);
             return { value, unit, tight, sig: `e:${txt.entity}|${txt.attribute || ''}|${txt.precision ?? ''}|${value}${unit}` };
         }
-        if (txt.text !== undefined && txt.text !== '') {
+        if (txt.text != null && txt.text !== '') {
             const value = String(txt.text);
             return { value, unit: hasFormat ? txt.format : '', tight: true, sig: `t:${value}|${hasFormat ? txt.format : ''}` };
         }
         if (txt.attribute) {
             if (ctx.isForecast) {
-                if (!ctx.forecastEntry) return { value: '', unit: '', tight: true, sig: 'forecast:loading' };
+                if (!ctx.forecastEntry) return { value: ctx.formatted, unit: '', tight: true, sig: `forecast:loading|${ctx.formatted}` };
                 if (txt.attribute === 'datetime') {
+                    const custom = strftime(hass, ctx.forecastDatetime, txt.format);
+                    if (custom) return { value: custom, unit: '', tight: true, sig: `forecast:datetime|${custom}` };
                     const value = ctx.forecastDatetime ? forecastLabel(ctx.forecastDatetime, button.forecast !== 'hourly', hass) : '';
                     return { value, unit: hasFormat ? txt.format : '', tight: true, sig: `forecast:datetime|${value}` };
                 }
@@ -2040,6 +2330,10 @@ class WeatherCard extends HTMLElement {
                     }
                 }
                 return { value, unit, tight: hasFormat || txt.fancy_unit === true, sig: `forecast:${txt.attribute}|${value}${unit}` };
+            }
+            if (txt.attribute === 'datetime' && String(button.entity).startsWith('weather.')) {
+                const now = new Date(), custom = strftime(hass, now, txt.format), value = custom || forecastLabel(now, true, hass);
+                return { value, unit: !custom && hasFormat ? txt.format : '', tight: true, sig: `today|${value}` };
             }
             const r = this._resolveSensorValue(hass, button.entity, txt.attribute);
             const { value, unit } = this._reshapeValue(hass, r, txt, hasFormat, button.entity, txt.attribute);
@@ -2080,7 +2374,7 @@ class WeatherCard extends HTMLElement {
         switch (c.condition) {
             case 'state': {
                 if (!c.entity) return true;
-                const stateObj = hass.states[c.entity];
+                const stateObj = this._entityState(hass, c.entity);
                 if (!stateObj) return false;
                 const val = stateObj.state;
                 if (c.state != null) {
@@ -2126,6 +2420,32 @@ class WeatherCard extends HTMLElement {
                 return true;
         }
     }
+    _entityState(hass, id) {
+        if (!String(id).startsWith('origami.')) return hass.states[id];
+        if (!(id in this._switches) && this._config.remember_switches === true) { try { this._switches[id] = localStorage.getItem(`origami-weather:${id}`) || 'off'; } catch (_e) { } }
+        return { state: this._switches[id] || 'off' };
+    }
+    _flipSwitch(action) {
+        const id = action && action.action === 'toggle' ? String(action.entity || '') : '';
+        if (!id.startsWith('origami.')) return false;
+        const on = String(action.state || 'on'), next = this._entityState(this._hass, id).state === on ? 'off' : on;
+        this._switches[id] = next;
+        if (this._config.remember_switches === true) { try { localStorage.setItem(`origami-weather:${id}`, next); } catch (_e) { } }
+        this._lastSnapshot = null;
+        if (this._hass) this.hass = this._hass;
+        return true;
+    }
+    _showGroup(el, show) {
+        const shown = el.style.display !== 'none' && !el.classList.contains('faded');
+        const fade = this._config.visibility_fade === true && el._origamiSeen;
+        el._origamiSeen = true;
+        if (show === shown) return;
+        clearTimeout(el._origamiHide);
+        if (!fade) { el.classList.remove('faded'); el.style.display = show ? '' : 'none'; return; }
+        if (show && el.style.display === 'none') { el.classList.add('faded'); el.style.display = ''; void el.offsetWidth; }
+        el.classList.toggle('faded', !show);
+        if (!show) el._origamiHide = setTimeout(() => { el.style.display = 'none'; }, 350);
+    }
     _conditionNumber(hass, spec, fallbackEntity) {
         if (spec == null) return NaN;
         if (typeof spec !== 'object') return parseFloat(spec);
@@ -2134,14 +2454,16 @@ class WeatherCard extends HTMLElement {
         if (!stateObj) return NaN;
         if (spec.forecast) {
             const type = spec.forecast === 'hourly' ? 'hourly' : 'daily';
-            const cached = this._forecastData.get(`${entity}|${type}`);
-            const list = cached && cached.processed;
+            const list = this._forecastList(hass, entity, type);
             if (!list || !list.length) return NaN;
             const offset = Math.max(0, parseInt(spec.forecast_offset, 10) || 0);
             const entry = list[Math.min(offset, list.length - 1)];
             return entry ? parseFloat(entry[spec.attribute]) : NaN;
         }
         return parseFloat(spec.attribute ? stateObj.attributes[spec.attribute] : stateObj.state);
+    }
+    _containerShown(container, hass) {
+        return container.hide !== true && this._checkButtonVisibility(container, hass);
     }
     _checkButtonVisibility(button, hass) {
         return !Array.isArray(button.visibility) || !button.visibility.length || button.visibility.every(c => this._evaluateCondition(c, hass));
@@ -2153,7 +2475,7 @@ class WeatherCard extends HTMLElement {
     static _buildStyles() {
         return `
             :host { display: block; width: 100%; position: relative; background: transparent !important; --_dash-bg: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); }
-            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; border-width: var(--origami-card-border-width, var(--ha-card-border-width, 0px)); border-style: solid; border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0)); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--_dash-bg); --_button-no-bg-shadow: none; }
+            #card-root { position: relative; width: 100%; height: 100%; z-index: var(--origami-stack-order, 1); overflow: hidden; overflow: clip; background: transparent; display: block; transform: translateZ(0); contain: layout style paint; --_radius: var(--origami-card-border-radius, var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px))); --_button-radius: min(calc(var(--_radius) - 5px), 10px); border-radius: var(--_radius); box-shadow: var(--ha-card-box-shadow, none); background-color: transparent; outline: var(--origami-card-border-width, var(--ha-card-border-width, 0px)) solid var(--ha-card-border-color, var(--divider-color, #e0e0e0)); outline-offset: calc(-1 * var(--origami-card-border-width, var(--ha-card-border-width, 0px))); box-sizing: border-box; --_origami-button-shadow: var(--_origami-shadow); --_text-bg: var(--_dash-bg); --_button-no-bg-shadow: none; }
             #card-root.clickable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
             #card-root.clickable:active { transform: scale(0.98); transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1); }
             #card-root.clickable:not(:active) { transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
@@ -2162,17 +2484,18 @@ class WeatherCard extends HTMLElement {
             #card-root.theme-mismatch { --_text-bg: var(--_scheme-bg); --ha-card-background: var(--_text-bg); --primary-text-color: var(--origami-text-color); --secondary-text-color: color-mix(in srgb, var(--origami-text-color) 70%, transparent); }
             #card-root.has-custom-shadow { --_origami-shadow: var(--origami-shadow, var(--_origami-shadow-preset)); }
             #card-root:not(.has-custom-shadow) { --_origami-shadow: var(--origami-shadow, none); }
-            #card-root.no-card-frame { border-radius: 0; box-shadow: none; border-width: 0; }
+            #card-root.no-card-frame { border-radius: 0; box-shadow: none; outline: none; }
             #card-root.bg-ha-card { background-color: var(--_text-bg); }
             #card-root.bg-custom-color { background-color: var(--origami-card-bg-color, var(--_text-bg)); }
             :host(.full-width) { --origami-fw-gap: var(--origami-full-width-margin, var(--ha-view-sections-column-gap, var(--column-gap, 32px))); width: calc(100% + 2 * var(--origami-fw-gap)); max-width: none; }
-            #card-root.edge-fade::before { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; background: linear-gradient(to bottom, var(--origami-edge-fade-color, var(--primary-background-color, #111)) 0%, transparent var(--origami-edge-fade-size, 10%), transparent calc(100% - var(--origami-edge-fade-size, 10%)), var(--origami-edge-fade-color, var(--primary-background-color, #111)) 100%); }
-            #card-root::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; background: var(--origami-gradient, none); }
+            #card-root.edge-fade::before { content: ""; position: absolute; inset: 0; z-index: ${Z.edge}; pointer-events: none; border-radius: inherit; background: linear-gradient(to bottom, var(--origami-edge-fade-color, var(--primary-background-color, #111)) 0%, transparent var(--origami-edge-fade-size, 10%), transparent calc(100% - var(--origami-edge-fade-size, 10%)), var(--origami-edge-fade-color, var(--primary-background-color, #111)) 100%); }
+            #card-root::after { content: ""; position: absolute; inset: 0; z-index: ${Z.tint}; pointer-events: none; border-radius: inherit; background: var(--origami-gradient, none); }
             #card-root:is(.has-default-bg, .has-weather-bg)::after { background-color: color-mix(in srgb, var(--_dash-bg) var(--origami-bg-blend, 0%), transparent); }
-            #weather-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
+            #weather-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.pictures}; display: none; overflow: hidden; overflow: clip; }
             #weather-bg > img, #weather-bg > video { display: block; width: 100%; height: 100%; object-fit: cover; border: none; outline: none; filter: brightness(var(--origami-bg-brightness, 1)) saturate(var(--origami-bg-saturation, 1)) blur(var(--origami-bg-blur, 0px)) var(--_origami-dark-theme-filter, ); }
             #card-root.has-weather-bg #weather-bg { display: block; }
-            #default-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; display: none; overflow: hidden; overflow: clip; }
+            #card-root.image-front #weather-bg { z-index: ${Z['pictures-front']}; }
+            #default-bg { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.sky}; display: none; overflow: hidden; overflow: clip; }
             #sky-base { position: absolute; inset: 0; border-radius: inherit; }
             #card-root.scheme-light #sky-base { background: var(--origami-default-bg-light, linear-gradient(125deg, #bdd8ee 0%, #d3e6f2 55%, #e4f0f7 100%)); }
             #card-root.scheme-dark #sky-base { background: var(--origami-default-bg-dark, linear-gradient(125deg, #0b1830 0%, #10203c 55%, #152a4c 100%)); }
@@ -2192,8 +2515,11 @@ class WeatherCard extends HTMLElement {
             @keyframes wbkO1 { 0%, 100% { opacity: 0.82; } 45% { opacity: 1; } }
             @keyframes wbkO2 { 0%, 100% { opacity: 1; } 55% { opacity: 0.78; } }
             @keyframes wbkO3 { 0%, 100% { opacity: 0.88; } 40% { opacity: 1; } 72% { opacity: 0.8; } }
-            #card-root.has-default-bg #default-bg { display: block; }
-            #sun-moon-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 2; overflow: hidden; overflow: clip; display: none; }
+            #card-root:is(.has-default-bg, .haze-only) #default-bg { display: block; }
+            #card-root.haze-only #sky-base { display: none; }
+            #sun-moon-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: ${Z.sun}; overflow: hidden; overflow: clip; display: none; transition: --origami-sun-moon-x 2s ease-in-out, --origami-sun-moon-y 2s ease-in-out; }
+            #sun-moon-layer.no-glide { transition: none; }
+            @media (prefers-reduced-motion: reduce) { #sun-moon-layer { transition: none; } }
             #card-root.has-sun-moon #sun-moon-layer { display: block; }
             #sun-moon { position: absolute; z-index: 1; left: var(--origami-sun-moon-x, 50%); top: clamp(calc(var(--origami-sun-moon-size, 80px) / 2 + 6px), var(--origami-sun-moon-y, 100%), 100%); width: var(--origami-sun-moon-size, 80px); height: var(--origami-sun-moon-size, 80px); transform: translate(-50%, -50%); }
             #sun-moon .sun, #sun-moon .moon { position: absolute; inset: 0; }
@@ -2216,15 +2542,13 @@ class WeatherCard extends HTMLElement {
             #sun-moon .sun-disc { position: absolute; inset: 0; border-radius: 50%;
                 background:
                     radial-gradient(circle at 50% 50%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 40%),
-                    radial-gradient(circle at 50% 50%,
+                    radial-gradient(circle closest-side at 50% 50%,
                         var(--origami-sun-core) 0%,
-                        var(--origami-sun-core) 24%,
-                        var(--origami-sun-inner) 34%,
-                        color-mix(in srgb, var(--origami-sun-inner) 82%, transparent) 44%,
-                        color-mix(in srgb, var(--origami-sun-mid) 42%, transparent) 54%,
-                        color-mix(in srgb, var(--origami-sun-mid) 22%, transparent) 64%,
-                        color-mix(in srgb, var(--origami-sun-edge) 11%, transparent) 75%,
-                        color-mix(in srgb, var(--origami-sun-edge) 5%, transparent) 86%,
+                        var(--origami-sun-core) 34%,
+                        var(--origami-sun-inner) 48%,
+                        color-mix(in srgb, var(--origami-sun-inner) 82%, transparent) 62%,
+                        color-mix(in srgb, var(--origami-sun-mid) 42%, transparent) 76%,
+                        color-mix(in srgb, var(--origami-sun-edge) 18%, transparent) 90%,
                         transparent 100%); }
             #sun-moon .sun-disc::before { content: ""; position: absolute; inset: 18% -80%; border-radius: 50%; mix-blend-mode: screen; opacity: 0.5;
                 background: radial-gradient(ellipse at 50% 50%, rgba(255,250,238,0.5) 0%, rgba(255,244,220,0.16) 38%, rgba(255,244,220,0) 70%);
@@ -2246,10 +2570,9 @@ class WeatherCard extends HTMLElement {
                     transparent 100%);
                 animation: wbkMoonGlow 14s ease-in-out infinite; }
             #card-root.scheme-light #sun-moon .moon-glow { --_moon-glow: rgba(190,208,234,0.34); }
-            #sun-moon .moon-disc { position: absolute; inset: 0; width: 100%; height: 100%; }
-            #sun-moon .moon-image { filter: brightness(1.6) contrast(1.35) saturate(0.1) sepia(0.12); mix-blend-mode: luminosity; opacity: 0.88; }
-            #card-root.scheme-light #sun-moon .moon-image { filter: brightness(2.0) contrast(1.2) saturate(0.08) sepia(0.15); opacity: 0.72; }
-            #card-root.scheme-light #sun-moon .moon-surface { fill-opacity: 0.90; }
+            #sun-moon .moon-disc { position: absolute; inset: -5%; width: 110%; height: 110%; }
+            #sun-moon .moon-disc { filter: drop-shadow(0 0 calc(var(--origami-sun-moon-size, 80px) * 0.05) rgba(232, 238, 255, 0.45)) drop-shadow(0 0 calc(var(--origami-sun-moon-size, 80px) * 0.24) rgba(214, 228, 255, 0.42)); }
+            #card-root.scheme-light #sun-moon .moon-disc { opacity: 0.92; }
             #sun-moon .moon { opacity: 0; }
             #sun-moon.is-astro-night .sun { opacity: 0; }
             #sun-moon.is-astro-night .moon { opacity: 1; }
@@ -2292,7 +2615,8 @@ class WeatherCard extends HTMLElement {
             #card-root.scheme-dark #sun-rays::before, #card-root.scheme-dark #sun-rays::after { mix-blend-mode: screen; }
             #card-root.scheme-dark { --origami-sun-ray-shine: rgba(178,204,248,0.14); }
             @keyframes wbkRayShine { 0%, 100% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.35); } 50% { opacity: calc(var(--origami-sun-rays-opacity, 0) * 0.9); } }
-            #content-layer { position: relative; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; z-index: 5; }
+            #content-layer { position: relative; display: flex; flex-direction: var(--origami-content-direction, column); justify-content: var(--origami-content-align, flex-start); align-items: var(--origami-content-align-items, stretch); padding: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); box-sizing: border-box; pointer-events: none; overflow: visible; }
+            #content-layer.has-cq { container-type: inline-size; }
             #content-layer.direction-row { flex-wrap: wrap; }
             #content-layer.direction-row > .buttons-group, #content-layer.direction-row > .cards-group { flex: 1 1 0; min-width: 0; }
             #content-layer > .buttons-group.has-custom-width, #content-layer > .cards-group.has-custom-width { flex: 0 0 auto; width: var(--origami-container-width); align-self: auto; }
@@ -2300,13 +2624,14 @@ class WeatherCard extends HTMLElement {
             #free-layer > .buttons-group.free-positioned.has-row-horizontal-scroll:not(.has-custom-width) { width: 100%; }
             #card-root.fixed-height #content-layer { position: absolute; inset: 0; height: 100%; }
             #card-root.fixed-height { --_origami-vscroll-fill: calc(100% - var(--_origami-pad-v, var(--origami-card-padding, 16px)) * 2); }
-            #free-layer { position: absolute; inset: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); pointer-events: none; box-sizing: border-box; overflow: visible; z-index: 6; container-type: size; }
+            #free-layer { position: absolute; inset: var(--_origami-pad-v, var(--origami-card-padding, 16px)) var(--_origami-pad-h, var(--origami-card-padding, 16px)); pointer-events: none; box-sizing: border-box; overflow: visible; container-type: size; }
             #free-layer > .buttons-group.free-positioned { position: absolute; max-width: 100%; }
+            #free-layer > .buttons-group { z-index: ${Z.free}; }
             #free-layer > .buttons-group.free-positioned.has-custom-width { width: var(--origami-container-width); }
-            .buttons-group { pointer-events: auto; min-width: 0; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
+            .buttons-group { pointer-events: none; min-width: 0; box-sizing: border-box; padding: var(--origami-container-padding, 0); margin: var(--origami-container-margin, 0); }
             .buttons-group.has-image { display: grid; }
             .buttons-group.has-image > * { grid-area: 1 / 1; min-width: 0; }
-            .group-image { width: 100%; height: auto; }
+            .group-image { width: 100%; height: auto; pointer-events: auto; }
             #card-root:not(.scheme-dark) .group-image.dark, #card-root.scheme-dark .group-image.light { display: none; }
             .buttons-row, .group-image { color: var(--origami-text-color); }
             .buttons-row.has-free { position: relative; }
@@ -2317,19 +2642,19 @@ class WeatherCard extends HTMLElement {
             #card-root.fixed-height .buttons-group.has-row-vertical-scroll.has-vscroll-cap { display: flex; flex-direction: column; max-height: 100%; min-height: 0; }
             #card-root.fixed-height .buttons-group.has-row-vertical-scroll.has-vscroll-cap > .buttons-row { min-height: 0; }
             .buttons-group.grouped { border-radius: var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)); }
-            .buttons-group.grouped.with-bg { --_bg: var(--origami-container-bg-color, var(--origami-bottom-bg-color, var(--_text-bg))); background: var(--_bg); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-group-shadow, var(--_origami-shadow)); }
+            .buttons-group.grouped.with-bg { pointer-events: auto; --_bg: var(--origami-container-bg-color, var(--origami-bottom-bg-color, var(--_text-bg))); background: var(--_bg); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-group-shadow, var(--_origami-shadow)); }
             :where(.buttons-group.grouped, .button).with-bg.blurred { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .buttons-group.grouped.with-bg > .buttons-row .button.with-bg { background: none; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 0; padding: var(--origami-buttons-padding, 0); }
             .buttons-row.has-separator:not(.row-grid) > .button { position: relative; overflow: visible; }
             .buttons-row.has-separator:not(.row-grid) > .button + .button::before { content: ""; position: absolute; pointer-events: none; top: 0; bottom: 0; inset-inline-start: calc((var(--origami-bottom-gap, 8px) / -2) - (var(--origami-separator-width, 2px) / 2)); width: var(--origami-separator-width, 2px); background: var(--origami-separator-color, color-mix(in srgb, currentColor 10%, transparent)); }
             .buttons-row.has-separator:not(.row-grid).row-vertical-scroll > .button + .button::before { top: calc((var(--origami-bottom-gap, 8px) / -2) - (var(--origami-separator-width, 2px) / 2)); bottom: auto; left: 0; right: 0; inset-inline-start: 0; width: auto; height: var(--origami-separator-width, 2px); }
-            .buttons-row { font-size: var(--origami-bottom-font-size, 16px); font-weight: var(--origami-bottom-font-weight, 500); display: flex; align-items: var(--origami-row-align, center); gap: var(--origami-bottom-gap, 8px); width: 100%; box-sizing: border-box; pointer-events: auto; border-radius: inherit; }
+            .buttons-row { font-size: var(--origami-bottom-font-size, 16px); font-weight: var(--origami-bottom-font-weight, 500); display: flex; align-items: var(--origami-row-align, center); gap: var(--origami-bottom-gap, 8px); width: 100%; box-sizing: border-box; pointer-events: none; border-radius: inherit; }
             .buttons-row.row-wrap { flex-wrap: wrap; justify-content: var(--origami-row-justify, flex-start); }
-            .buttons-row.row-horizontal-scroll { justify-content: var(--origami-row-justify, flex-start); flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; height: 100%; overflow-anchor: none; scroll-snap-type: x proximity; scrollbar-width: none; pointer-events: auto; }
+            .buttons-row.row-horizontal-scroll { pointer-events: auto; justify-content: var(--origami-row-justify, flex-start); flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; height: 100%; overflow-anchor: none; scroll-snap-type: x proximity; scrollbar-width: none; }
             .buttons-row.row-horizontal-scroll::-webkit-scrollbar { display: none; }
             .buttons-row.row-horizontal-scroll.has-visible-count { display: grid; grid-auto-flow: column; grid-auto-columns: var(--origami-button-basis); scroll-snap-type: x mandatory; }
             .buttons-row.row-horizontal-scroll.has-visible-count > .button { width: 100%; scroll-snap-align: start; }
-            .buttons-row.row-vertical-scroll { justify-content: var(--origami-row-justify, flex-start); align-items: var(--origami-row-align, stretch); flex-direction: column; flex-wrap: nowrap; overflow-y: auto; overflow-x: hidden; height: 100%; max-height: var(--origami-row-max-height, none); overflow-anchor: none; scroll-snap-type: y proximity; scrollbar-width: none; pointer-events: auto; }
+            .buttons-row.row-vertical-scroll { pointer-events: auto; justify-content: var(--origami-row-justify, flex-start); align-items: var(--origami-row-align, stretch); flex-direction: column; flex-wrap: nowrap; overflow-y: auto; overflow-x: hidden; height: 100%; max-height: var(--origami-row-max-height, none); overflow-anchor: none; scroll-snap-type: y proximity; scrollbar-width: none; }
             .buttons-row.row-vertical-scroll::-webkit-scrollbar { display: none; }
             .buttons-row.row-vertical-scroll.has-visible-count { scroll-snap-type: y mandatory; }
             .buttons-row.row-vertical-scroll.has-visible-count > .button { flex: 0 0 auto; scroll-snap-align: start; }
@@ -2361,34 +2686,36 @@ class WeatherCard extends HTMLElement {
             .buttons-row.align-start > .button.format-vertical:not(.align-start, .align-center, .align-end, .align-spread) { align-items: flex-start; text-align: start; }
             .buttons-row.align-end > .button.format-vertical:not(.align-start, .align-center, .align-end, .align-spread) { align-items: flex-end; text-align: end; }
             .buttons-row.has-visible-count > .button.format-vertical { align-content: center; }
-            .button { display: flex; flex-direction: row; align-items: center; row-gap: var(--origami-button-gap, 6px); column-gap: var(--origami-button-gap, 0.40em); flex-wrap: nowrap; flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box; scroll-snap-align: start; padding: var(--origami-buttons-padding, 0); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
+            .button { display: flex; flex-direction: row; align-items: center; row-gap: var(--origami-button-gap, 6px); column-gap: var(--origami-button-gap, 0.40em); flex-wrap: nowrap; flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box; scroll-snap-align: start; padding: var(--origami-buttons-padding, 0); cursor: pointer; pointer-events: auto; -webkit-tap-highlight-color: transparent; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1); }
             .button:active { transform: scale(0.94); opacity: 0.75; transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.12s cubic-bezier(0.2, 0, 0.2, 1); }
             .button .button-icon { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: var(--weather-icon-padding, 0); }
             .button .button-icon ha-icon,
             .button .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.1em); opacity: 0.9; }
             .button .button-icon svg.weather-icon { display: block; width: var(--weather-icon-size, 1.1em); height: var(--weather-icon-size, 1.1em); opacity: 0.9; }
+            @media (max-resolution: 1.49dppx) { svg.weather-icon .rays { stroke-width: 2; } }
             .button .button-icon img.custom-bottom-icon { display: block; height: var(--weather-icon-size, 1.1em); width: var(--weather-icon-size, 1.1em); object-fit: contain; }
-            .button .button-text { flex: 0 1 auto; min-width: 0; max-width: 100%; line-height: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: var(--_button-no-bg-shadow, none); padding-block: 0.1em; margin-block: -0.1em; }
+            .button .button-text { flex: 0 1 auto; min-width: 0; max-width: 100%; line-height: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: var(--_button-no-bg-shadow, none); padding: 0.1em 0.06em; margin: -0.1em -0.06em; }
             .button .button-text:empty { display: none; }
             .button .button-text.marquee-host { flex: 1 1 auto; }
             .button .button-text .fancy-unit { font-size: 0.55em; font-weight: 500; opacity: 0.7; vertical-align: baseline; position: relative; top: -0.45em; margin-left: 3px; }
             .button.icon-only { column-gap: 0; row-gap: 0; }
-            .button.with-bg { --_bg: var(--origami-bottom-bg-color, var(--_text-bg)); background: var(--_bg); padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
+            .button.with-bg { --_bg: var(--origami-bottom-bg-color, var(--_text-bg)); background: var(--_bg); padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, var(--_button-radius)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
             .button.with-bg.blurred { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .button:is(.with-bg, .has-bg-image) .button-text { text-shadow: none; }
-            .button.has-bg-image { padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); overflow: hidden; background-image: var(--origami-button-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; }
+            .button.has-bg-image { padding: var(--origami-buttons-padding, 5px 10px); text-shadow: none; border-radius: var(--origami-bottom-bg-radius, var(--_button-radius)); align-items: center; border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); overflow: hidden; background-image: var(--origami-button-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; }
             .button.button-round.has-bg-image { border-radius: 999px; }
-            #weather-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: 3; display: none; }
-            #card-root.has-weather-effects #weather-effects { display: block; }
-            #card-root:is(.has-default-bg, .has-weather-bg) :is(#sun-moon-layer, #weather-effects) { filter: var(--_origami-dark-theme-filter, none); }
-            #star-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: 2; display: none; }
+            #weather-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.weather}; display: none; }
+            #weather-near { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.near}; display: none; }
+            #card-root.has-weather-effects #weather-effects, #card-root.has-weather-effects.has-near-canvas #weather-near { display: block; }
+            #card-root:is(.has-default-bg, .has-weather-bg) :is(#sun-moon-layer, #weather-effects, #weather-near) { filter: var(--_origami-dark-theme-filter, none); }
+            #star-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; z-index: ${Z.stars}; display: none; }
             #card-root.has-star-canvas #star-canvas { display: block; }
             .button.has-tint { position: relative; }
             .button.has-tint::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--origami-button-tint); opacity: 0.18; pointer-events: none; z-index: 0; }
             .button.has-tint > * { position: relative; z-index: 1; }
-            .button.format-vertical { flex-direction: column; align-items: center; text-align: center; row-gap: var(--origami-button-gap, 6px); flex-wrap: nowrap; }
+            .button.format-vertical { flex-direction: column; align-items: center; justify-content: center; text-align: center; row-gap: var(--origami-button-gap, 6px); flex-wrap: nowrap; }
             .button.format-split > .button-stack { display: flex; flex-direction: column; row-gap: var(--origami-button-gap, 6px); flex: 1 1 0; min-width: 0; }
-            .button.format-vertical .button-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); }
+            .button.format-vertical .button-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, var(--_button-radius)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); }
             .button.format-vertical .button-icon ha-icon,
             .button.format-vertical .button-icon ha-state-icon { --mdc-icon-size: var(--weather-icon-size, 1.6em); }
             .button.format-vertical .button-icon img.custom-bottom-icon { height: var(--weather-icon-size, 1.6em); width: var(--weather-icon-size, 1.6em); }
@@ -2402,7 +2729,7 @@ class WeatherCard extends HTMLElement {
             .button.align-center.format-vertical { align-items: center; text-align: center; }
             .button.align-end.format-vertical { align-items: flex-end; text-align: end; }
             .button.no-icon-bg .button-icon, .button .button-icon.el-no-icon-bg { background: none !important; border: none !important; box-shadow: none !important; aspect-ratio: unset !important; border-radius: 0 !important; overflow: visible !important; padding: var(--weather-icon-padding, 0) !important; }
-            .button.has-icon-bg .button-icon, .button .button-icon.el-icon-bg { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, calc(var(--_radius) - 5px)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); align-self: stretch; }
+            .button.has-icon-bg .button-icon, .button .button-icon.el-icon-bg { aspect-ratio: 1; overflow: visible; border-radius: var(--origami-icon-bg-radius, calc(var(--origami-bottom-bg-radius, var(--_button-radius)) - var(--origami-icon-bg-inset, 3px))); padding: var(--weather-icon-padding, 4px); align-self: stretch; }
             .button.has-icon-bg:not(.with-bg) .button-icon, .button:not(.with-bg) .button-icon.el-icon-bg { background: var(--_bg, var(--origami-bottom-bg-color, var(--_text-bg))); border: var(--origami-bg-border, var(--ha-card-border-width, 1px) solid var(--_text-bg-border, transparent)); box-shadow: var(--_origami-button-shadow); }
             .button.has-icon-bg:not(.with-bg).blurred .button-icon { backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--origami-bottom-bg-filter, blur(10px)); }
             .button.has-icon-bg.with-bg .button-icon, .button.with-bg .button-icon.el-icon-bg { background: var(--origami-icon-bg-color, color-mix(in srgb, var(--ha-card-background, var(--card-background-color, var(--primary-background-color))) 20%, transparent)); border: none; box-shadow: var(--_origami-button-shadow); }
@@ -2413,18 +2740,22 @@ class WeatherCard extends HTMLElement {
             .button-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; scroll-snap-align: start; }
             .gauge-track, .gauge-fill, .gauge-range, .gauge-marker { position: absolute; pointer-events: none; }
             .gauge-track { background: currentColor; opacity: 0.10; }
+            #card-root.visibility-fade .buttons-group { transition: opacity 0.35s ease; }
+            #card-root.visibility-fade .buttons-group.faded { opacity: 0; pointer-events: none; }
+            @media (prefers-reduced-motion: reduce) { #card-root.visibility-fade .buttons-group { transition: none; } }
             .gauge-fill, .gauge-marker { background: var(--origami-gauge-color); transition: --origami-gauge-pos 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
             .gauge-range { background: color-mix(in srgb, currentColor 18%, transparent); }
             .gauge-marker { width: var(--origami-marker-size); height: var(--origami-marker-size); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.10); transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 2; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
             @keyframes gauge-marker-in { from { opacity: 0; } }
-            .gauge-marker ha-icon { --mdc-icon-size: var(--origami-marker-icon-size, calc(var(--origami-marker-size) * 0.66)); display: flex; }
+            .gauge-marker > * { --mdc-icon-size: var(--origami-marker-icon-size, calc(var(--origami-marker-size) * 0.66)); width: var(--mdc-icon-size); height: var(--mdc-icon-size); display: flex; object-fit: contain; }
             .button-ring-gauge { --_ring: radial-gradient(farthest-side, transparent calc(100% - var(--origami-gauge-w) - 0.5px), #000 calc(100% - var(--origami-gauge-w))); --_from: from var(--origami-gauge-start, 0deg); --_arc: var(--origami-gauge-arc, 1turn); position: absolute; inset: 0; pointer-events: none; }
-            .button-ring-gauge > :not(.gauge-marker) { --_seg: #000 var(--_arc), transparent 0; inset: 0; border-radius: 50%; -webkit-mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring); mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring); -webkit-mask-composite: source-in; mask-composite: intersect; }
+            .button-ring-gauge > :not(.gauge-marker) { --_seg: #000 var(--_arc), transparent 0; inset: 0; border-radius: 50%; -webkit-mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring), var(--_gaps, linear-gradient(#000 0 0)); mask: conic-gradient(var(--_from), var(--_seg)), var(--_ring), var(--_gaps, linear-gradient(#000 0 0)); -webkit-mask-composite: source-in; mask-composite: intersect; }
             .button-ring-gauge > .gauge-fill { --_seg: #000 calc(var(--origami-gauge-pos) * var(--_arc)), transparent 0; background-image: conic-gradient(var(--_from), var(--origami-gauge-stops)); }
             .button-ring-gauge > .gauge-range { --_seg: transparent calc(var(--origami-range-from) * var(--_arc)), #000 0 calc(var(--origami-range-to) * var(--_arc)), transparent 0; }
             .button-ring-gauge > .gauge-marker { --_a: calc(var(--origami-gauge-pos) * var(--_arc) + var(--origami-gauge-start, 0deg)); left: 50%; top: 0; width: 0; height: 50%; box-shadow: none; transform: rotate(var(--_a)); transform-origin: bottom; }
-            .button-ring-gauge > .gauge-marker::before, .button-ring-gauge > .gauge-marker ha-icon { position: absolute; left: 0; top: calc(var(--origami-gauge-w) / 2); transform: translate(-50%, -50%) rotate(calc(-1 * var(--_a))); }
+            .button-ring-gauge > .gauge-marker::before, .button-ring-gauge > .gauge-marker > * { position: absolute; left: 0; top: calc(var(--origami-gauge-w) / 2); transform: translate(-50%, -50%) rotate(calc(-1 * var(--_a))); }
             .button-ring-gauge > .gauge-marker::before { content: ''; width: var(--origami-marker-size); height: var(--origami-marker-size); border-radius: 50%; background: var(--origami-gauge-color); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.10); }
+            .button-ring-gauge > .gauge-marker.gap::before { background: none; box-shadow: none; }
             .button-ring-gauge > .gauge-marker.needle::before { top: calc((var(--origami-gauge-w) + var(--origami-marker-size)) / 2); bottom: 0; width: 1px; height: auto; border-radius: 0; box-shadow: none; transform: translateX(-50%); }
             .button-ring-wrap > .button { margin: var(--origami-ring-gap, 3px); z-index: 1; }
             .buttons-row.row-grid > .button-ring-wrap > .button,
@@ -2435,9 +2766,20 @@ class WeatherCard extends HTMLElement {
             .button-bar > .gauge-fill { background-image: linear-gradient(to right, var(--origami-gauge-stops)); clip-path: inset(0 calc(100% - var(--origami-gauge-pos) * 100%) 0 0 round var(--_r)); }
             .button-bar > .gauge-range { left: calc(var(--origami-range-from) * 100%); right: calc(100% - var(--origami-range-to) * 100%); }
             .button-bar > .gauge-marker { top: 50%; left: calc(var(--origami-gauge-pos) * (100% - var(--origami-marker-size)) + var(--origami-marker-size) / 2); }
+            .button-bar.shape-sun, .button-bar.shape-curve { flex: 1 1 auto; min-height: 40px; border-radius: 0; }
+            .button-bar.shape-sun > :not(.gauge-marker, .gauge-horizon) { inset: calc(3 * var(--_in) - 100%) var(--_in); height: auto; transform: none; border-radius: 0; -webkit-mask: var(--_curve) 0 0 / 100% 100% no-repeat; mask: var(--_curve) 0 0 / 100% 100% no-repeat; }
+            .button-bar.shape-sun > .gauge-track { opacity: 0.35; }
+            .button-bar > .gauge-horizon { position: absolute; top: calc(var(--_in) + (1 - cos(var(--origami-sun-day, 0.5) * 0.5turn)) / 2 * (100% - 2 * var(--_in))); height: 0; transform: none; border-radius: 0; border-top: 1px dashed currentColor; opacity: 0.35; pointer-events: none; }
+            .button-bar.shape-sun > .gauge-marker { left: calc(var(--_in) + var(--origami-gauge-pos) * (100% - 2 * var(--_in))); top: calc(var(--_in) + (1 + cos(var(--origami-gauge-pos) * 1turn)) / 2 * (100% - 2 * var(--_in))); }
+            .button-bar.shape-curve > .gauge-marker { left: 50%; top: calc(var(--_in) + (1 - var(--origami-gauge-pos)) * (100% - 2 * var(--_in))); transition: none; }
+            .button-bar.shape-curve > .gauge-marker.gap { background: none; box-shadow: none; }
+            .button-bar.shape-curve > .gauge-marker.bare { visibility: hidden; }
+            .buttons-row.has-curve { position: relative; isolation: isolate; }
+            .gauge-curve { position: absolute; inset-inline-start: 0; top: 0; z-index: -1; overflow: visible; fill: none; stroke-linecap: round; pointer-events: none; -webkit-mask: var(--_holes); mask: var(--_holes); -webkit-mask-composite: source-in; mask-composite: intersect; animation: gauge-marker-in 0.4s ease 0.3s backwards; }
             .button.button-bar-type { flex-wrap: wrap; }
             .button.button-bar-type.format-vertical { flex-wrap: nowrap; }
-            .button.button-bar-type.format-vertical .button-bar { align-self: stretch; }
+            .button.button-bar-type.format-vertical .button-bar { align-self: stretch; width: auto; }
+            .button.button-bar-type .button-bar.has-len { width: min(var(--origami-bar-len), 100%); align-self: auto; }
             .button.button-loading { position: relative; }
             .button.button-loading .button-icon,
             .button.button-loading .button-text,
@@ -2460,7 +2802,7 @@ class WeatherCard extends HTMLElement {
             .marquee-host.is-animating .marquee-track { animation: marquee var(--origami-marquee-duration, 20s) linear infinite; }
             .marquee-host.marquee-rtl .marquee-track { animation-direction: reverse; }
             @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-            .cards-group { pointer-events: auto; align-self: stretch; box-sizing: border-box; }
+            .cards-group { pointer-events: none; align-self: stretch; box-sizing: border-box; }
             .cards-row { display: flex; flex-wrap: wrap; gap: 8px; pointer-events: none; }
             .cards-row > * { pointer-events: auto; }
             #card-root.is-offscreen :is(.marquee-track, .haze-layer, .sun-glow, .moon-glow), #card-root.is-offscreen .sun-disc::before, #card-root.is-offscreen .sun-disc::after, #card-root.is-offscreen #sun-moon-layer::before { animation-play-state: paused; }
@@ -2474,13 +2816,14 @@ class WeatherCard extends HTMLElement {
         }
         this.shadowRoot.adoptedStyleSheets = [_sharedStyles, this._userCss = new CSSStyleSheet()];
         const root = document.createElement('div'); root.id = 'card-root';
-        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><svg class="moon-disc" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="wbk-moon-surface" cx="38%" cy="34%" r="78%"><stop offset="0%" stop-color="#eef0f4"/><stop offset="45%" stop-color="#dce0e8"/><stop offset="100%" stop-color="#b8bcc6"/></radialGradient><clipPath id="wbk-moon-lit"><path class="moon-lit-path" d=""/></clipPath></defs><g clip-path="url(#wbk-moon-lit)"><circle class="moon-surface" cx="50" cy="50" r="48" fill="url(#wbk-moon-surface)"/><image class="moon-image" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid slice"/></g></svg></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
+        root.innerHTML = `<div id="default-bg"><div id="sky-base"></div><div class="sky-haze"><div class="haze-layer h1"></div><div class="haze-layer h2"></div><div class="haze-layer h3"></div></div></div><div id="weather-bg"></div><canvas id="star-canvas"></canvas><div id="sun-moon-layer"><div id="sun-moon"><div class="sun"><div class="sun-glow"></div><div class="sun-disc"></div></div><div class="moon"><div class="moon-glow"></div><canvas class="moon-disc" aria-hidden="true"></canvas></div></div><div id="sun-rays"></div></div><canvas id="weather-effects"></canvas><canvas id="weather-near"></canvas><div id="content-layer"></div><div id="free-layer"></div>`;
         this.shadowRoot.append(root);
         const q = (sel) => root.querySelector(sel);
         const contentLayer = q('#content-layer');
         contentLayer.addEventListener('click', (e) => this._handleButtonClick(e));
         const freeLayer = q('#free-layer');
         freeLayer.addEventListener('click', (e) => this._handleButtonClick(e));
+        this._moonKey = null;
         this._elements = {
             root,
             contentLayer,
@@ -2488,10 +2831,10 @@ class WeatherCard extends HTMLElement {
             weatherBg: q('#weather-bg'),
             sunMoonLayer: q('#sun-moon-layer'),
             sunMoon: q('#sun-moon'),
-            moonLitPath: q('.moon-lit-path'),
-            moonImage: q('.moon-image'),
+            moonCanvas: q('.moon-disc'),
             defaultBg: q('#default-bg'),
             effectsCanvas: q('#weather-effects'),
+            nearCanvas: q('#weather-near'),
             starCanvas: q('#star-canvas'),
             buttonContainerEls: [],
         };
@@ -2569,17 +2912,19 @@ class WeatherCard extends HTMLElement {
         root.classList.add(cls);
         this._prevWeatherClass = cls;
     }
+    _nightColors() {
+        return /^(dark|light)$/i.test(this._config.color_mode || '') ? this._isAstroNight : this._schemeDark;
+    }
     _resolveCardBackgroundColor(cfg) {
-        const dark = this._schemeDark, base = ((dark && cfg.background_color_dark) || cfg.background_color || '').toString().trim();
+        const dark = this._nightColors(), base = ((dark && cfg.background_color_dark) || cfg.background_color || '').toString().trim();
         const thresholds = Array.isArray(cfg.background_thresholds) ? cfg.background_thresholds : [];
         if (!thresholds.length || !this._hass) return base;
         const entity = cfg.background_threshold_entity;
-        if (!entity) return base;
-        const value = this._sensorValue(this._hass, entity, cfg.background_threshold_attribute);
+        const value = entity ? this._sensorValue(this._hass, entity, cfg.background_threshold_attribute) : this._weatherState;
         return pickThreshold(dark ? thresholds.map(t => ({ ...t, color: t.color_dark || t.color })) : thresholds, value) || base;
     }
     _applyConfigStyles() {
-        if (!this._elements || !this._elements.buttonContainerEls.length) return;
+        if (!this._elements) return;
         const cfg = this._config;
         const root = this._elements.root;
         this._cssVar(root, '--origami-card-padding', normalizeLength(cfg.card_padding || ''), '_prevCardPadding');
@@ -2593,9 +2938,10 @@ class WeatherCard extends HTMLElement {
         const cardFrame = cfg.card_frame !== false;
         root.classList.toggle('no-card-frame', !cardFrame);
         const bgMode = this._backgroundMode(cfg);
+        const cardColor = bgMode === 'color' || bgMode === 'images' ? cssValue(this._resolveCardBackgroundColor(cfg)) : '';
         root.classList.toggle('bg-ha-card', bgMode === 'card');
-        root.classList.toggle('bg-custom-color', bgMode === 'color');
-        this._cssVar(root, '--origami-card-bg-color', bgMode === 'color' ? cssValue(this._resolveCardBackgroundColor(cfg)) : '', '_prevCardBgColor');
+        root.classList.toggle('bg-custom-color', bgMode === 'color' || !!cardColor);
+        this._cssVar(root, '--origami-card-bg-color', cardColor, '_prevCardBgColor');
         const fw = cfg.full_width === true;
         this.classList.toggle('full-width', fw);
         const fwMargin = fw ? (cfg.full_width_margin || '').toString().trim() : '';
@@ -2622,7 +2968,11 @@ class WeatherCard extends HTMLElement {
         this._cssVar(root, '--origami-edge-fade-size', efSize ? normalizeLength(efSize) : '', '_prevEdgeFadeSize');
         this._cssVar(root, '--origami-gradient', cfg.gradient === true ? `${cfg.gradient_type === 'radial' ? `radial-gradient(at ${cfg.gradient_x ?? 50}% ${cfg.gradient_y ?? 50}%, ` : `linear-gradient(${cfg.gradient_angle ?? 180}deg, `}${cfg.gradient_color_1 || 'transparent'} ${cfg.gradient_stop_1 ?? 0}%, ${cfg.gradient_color_2 || 'transparent'} ${cfg.gradient_stop_2 ?? 100}%)` : '', '_prevGradient');
         root.classList.toggle('has-custom-shadow', cfg.shadow !== false);
-        root.classList.toggle('no-haze', cfg.background_haze === false);
+        const haze = bgMode === 'default' ? cfg.background_haze !== false : cfg.background_haze === true;
+        root.classList.toggle('no-haze', !haze);
+        root.classList.toggle('haze-only', haze && bgMode !== 'default');
+        root.classList.toggle('image-front', cfg.weather_image_front === true);
+        root.classList.toggle('visibility-fade', cfg.visibility_fade === true);
         this._cssVar(root, '--origami-shadow', (cfg.shadow_color || '').toString().trim(), '_prevShadow');
         const caKey = (cfg.content_align || '').toString().toLowerCase();
         const caVal = JUSTIFY_MAP[caKey] || '';
@@ -2633,35 +2983,37 @@ class WeatherCard extends HTMLElement {
         const caiKey = (cfg.content_align_items || '').toString().toLowerCase();
         const caiVal = ALIGN_MAP[caiKey] || '';
         this._cssVar(root, '--origami-content-align-items', caiVal || (isRow ? 'flex-start' : ''), '_prevContentAlignItems');
-        const sunMoonSize = cfg.sun_moon_size != null && cfg.sun_moon_size !== '' ? normalizeLength(cfg.sun_moon_size) : '';
         const sunMoonX = cfg.sun_moon_x != null && cfg.sun_moon_x !== '' && cfg.sun_moon_x !== 'dynamic' ? (isNaN(cfg.sun_moon_x) ? String(cfg.sun_moon_x).trim() : `${parseFloat(cfg.sun_moon_x)}%`) : '';
-        this._cssVar(root, '--origami-sun-moon-size', sunMoonSize, '_prevSunMoonSize');
-        this._cssVar(root, '--origami-sun-moon-x', sunMoonX, '_prevSunMoonX');
-        const padParts = cssLength(cfg.card_padding).split(' ');
-        this._cssVar(root, '--_origami-pad-v', padParts[0], '_prevPadV');
-        this._cssVar(root, '--_origami-pad-h', padParts[1] || padParts[0], '_prevPadH');
+        this._cssVar(root, '--origami-sun-moon-x', sunMoonX && this._rtl && bgMode !== 'images' ? `calc(100% - (${sunMoonX}))` : sunMoonX, '_prevSunMoonX');
+        const [padV = '', padH = padV] = splitCss(cssLength(cfg.card_padding));
+        this._cssVar(root, '--_origami-pad-v', padV, '_prevPadV');
+        this._cssVar(root, '--_origami-pad-h', padH, '_prevPadH');
+        if (this._cqFor !== this._containers) { this._cqFor = this._containers; this._hasCq = this._containers.some((c) => !_freeContainer(c) && /\dcq(w|h|i|b|min|max)\b/i.test(JSON.stringify(c))); }
+        this._elements.contentLayer.classList.toggle('has-cq', this._hasCq);
         if (!this._containerStyleCache) this._containerStyleCache = [];
         for (let ai = 0; ai < this._containers.length; ai++) {
             this._applyContainerStyles(ai, this._containers[ai]);
         }
     }
+    _placeContainer(container, group, placed) {
+        const host = _freeContainer(container) ? this._elements.freeLayer : this._elements.contentLayer;
+        const before = placed.has(host) ? placed.get(host).nextSibling : host.firstChild;
+        if (group !== before) host.insertBefore(group, before);
+        placed.set(host, group);
+    }
     _applyContainerStyles(ai, container) {
         const els = this._elements.buttonContainerEls[ai]; if (!els) return;
+        const layer = containerLayer(container);
+        els.group.style.zIndex = layer === 'front' ? '' : Z[`layer-${layer}`];
         if (container.custom_cards) return;
         const bt = els.row, cg = els.group;
         if (!this._containerStyleCache[ai]) this._containerStyleCache[ai] = {};
         const cache = this._containerStyleCache[ai];
-        const showBottom = container.hide !== true;
         const showBottomBg = container.background === true;
         const rowLayout = (container.layout || 'wrap').toString().toLowerCase();
         const isScrollLayout = rowLayout === 'horizontal-scroll' || rowLayout === 'vertical-scroll';
         const scrollFadeOn = container.scroll_fade === true && isScrollLayout;
         const blurred = container.blurred_background === true;
-        const configSig = `${showBottom}|${blurred}`;
-        if (cache.configSig !== configSig) {
-            cache.configSig = configSig;
-            bt.style.display = showBottom ? '' : 'none'; cg.style.display = showBottom ? '' : 'none';
-        }
         const cssVarContainer = (el, prop, val, cacheKey) => {
             if (cache[cacheKey] !== val) { cache[cacheKey] = val; if (val) el.style.setProperty(prop, cssValue(val)); else el.style.removeProperty(prop); }
         };
@@ -2670,6 +3022,7 @@ class WeatherCard extends HTMLElement {
             ['--origami-container-padding', 'padding', 'containerPad'],
             ['--origami-container-margin', 'margin', 'containerMargin'],
             ['--origami-container-bg-color', 'background_color', 'containerBgColor'],
+            ['--origami-bg-border', 'border', 'containerBorder'],
             ['--origami-bottom-gap', 'gap', 'buttonsGap'],
             ['--origami-button-gap', 'button_gap', 'buttonGap'],
             ['--weather-icon-size', 'button_icon_size', 'buttonIconWidth'],
@@ -2681,16 +3034,27 @@ class WeatherCard extends HTMLElement {
         }
         const containerShadow = container.shadow === false ? 'none' : '';
         cssVarContainer(cg, '--_origami-group-shadow', containerShadow, 'containerShadow');
+        const blurPx = parseFloat(container.background_blur);
+        cssVarContainer(cg, '--origami-bottom-bg-filter', Number.isFinite(blurPx) && blurPx >= 0 ? `blur(${blurPx}px)` : '', 'containerBlur');
         const customWidth = normalizeLength((container.custom_width || '').toString().trim());
         cssVarContainer(cg, '--origami-container-width', customWidth, 'containerWidth');
         if (cache.hasCustomWidth !== !!customWidth) { cache.hasCustomWidth = !!customWidth; cg.classList.toggle('has-custom-width', !!customWidth); }
         const image = (container.image || '').toString().trim(), imageDark = image && (container.image_dark || '').toString().trim();
-        if (cache.image !== `${image}|${imageDark}`) {
-            cache.image = `${image}|${imageDark}`;
-            for (const n of cg.querySelectorAll('.group-image')) n.remove();
-            const img = (src, mode) => src === 'demo-home-image' ? DEMO_HOME.replace('group-image', `group-image${mode}`) : `<img class="group-image${mode}" src="${escapeHtml(src)}">`;
-            if (image) cg.insertAdjacentHTML('afterbegin', img(image, imageDark && ' light') + (imageDark && img(imageDark, ' dark')));
-            cg.classList.toggle('has-image', !!image);
+        const imageKey = `${image}|${imageDark}`;
+        if (cache.image !== imageKey) {
+            const waiting = [image, imageDark].filter((s) => s && _builtinImage(s) === null);
+            if (waiting.length) {
+                if (cache.waiting !== imageKey) {
+                    cache.waiting = imageKey;
+                    Promise.all(waiting.map(_loadBuiltinImage)).then(() => { cache.waiting = null; this._lastSnapshot = null; this.hass = this._hass; });
+                }
+            } else {
+                cache.image = imageKey;
+                for (const n of cg.querySelectorAll('.group-image')) n.remove();
+                const img = (src, mode) => { const svg = _builtinImage(src); return svg === undefined ? `<img class="group-image${mode}" src="${escapeHtml(src)}">` : svg ? svg.replace('group-image', `group-image${mode}`) : ''; };
+                if (image) cg.insertAdjacentHTML('afterbegin', img(image, imageDark && ' light') + (imageDark && img(imageDark, ' dark')));
+                cg.classList.toggle('has-image', !!image);
+            }
         }
         const free = freeStyle(container), freeSig = String(free);
         if (cache.freeSig !== freeSig) {
@@ -2782,9 +3146,10 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         cssVarContainer(cg, '--origami-row-align', aiVal, 'alignItems');
     }
     _updateTextElements(hass, weatherState = 'default') {
-        if (!this._elements || !this._elements.buttonContainerEls.length) return;
+        if (!this._elements) return;
         this._syncButtonContainerDOM();
         this._applyConfigStyles();
+        if (!this._elements.buttonContainerEls.length) return;
         const numKey = `${hass.locale.language}|${hass.locale.number_format}`;
         if (this._numFmtLang !== numKey) {
             this._numFmtLang = numKey;
@@ -2792,17 +3157,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
         if (!this._containerRenderCache) this._containerRenderCache = [];
         let anyRowRebuilt = false;
-        const allRendered = [];
+        const allRendered = [], placed = new Map();
         for (let ai = 0; ai < this._containers.length; ai++) {
             const container = this._containers[ai];
             const els = this._elements.buttonContainerEls[ai]; if (!els) continue;
-            const containerVisible = this._checkButtonVisibility(container, hass);
-            els.group.style.display = containerVisible ? '' : 'none';
-            if (!containerVisible) continue;
-            if (container.custom_cards) {
-                if (els.group.parentNode !== this._elements.contentLayer) this._elements.contentLayer.appendChild(els.group);
-                continue;
-            }
+            this._placeContainer(container, els.group, placed);
+            const containerVisible = this._containerShown(container, hass);
+            this._showGroup(els.group, containerVisible);
+            if (!containerVisible || container.custom_cards) continue;
             const bt = els.row;
             const showBottomBg = container.background === true;
             const buttonFormat = (container.button_style || '').toLowerCase();
@@ -2822,12 +3184,12 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 ac.lastLocStr = rowSig;
                 bt.innerHTML = rendered.map(r => r.html).join('');
                 this._animateGauges(bt, `a${ai}`);
+                bt.classList.remove('has-curve');
+                this._observeCurves(bt);
+                this._observeCorners(bt);
                 if (hasVis && rowLayout === 'vertical-scroll') this._scheduleVerticalMeasure(ai);
                 anyRowRebuilt = true;
             }
-            const isFreeContainer = (container.position || '').toString().toLowerCase() === 'custom';
-            const targetLayer = isFreeContainer ? this._elements.freeLayer : this._elements.contentLayer;
-            if (els.group.parentNode !== targetLayer) targetLayer.appendChild(els.group);
         }
         if (anyRowRebuilt) {
             this._nativeIconCache = null;
@@ -2854,7 +3216,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     }
     _animateGauges(root, prefix) {
         const prev = this._gaugePrev || (this._gaugePrev = new Map()), queue = [];
-        for (const g of root.querySelectorAll('[data-gauge]')) g.querySelectorAll('.gauge-fill, .gauge-marker').forEach((el, i) => {
+        for (const g of root.querySelectorAll('[data-gauge]:not(.shape-curve)')) g.querySelectorAll('.gauge-fill, .gauge-marker').forEach((el, i) => {
             const key = `${prefix}${g.dataset.gauge}:${i}`, from = prev.get(key), target = el.style.getPropertyValue('--origami-gauge-pos');
             if (from !== undefined) el.style.animation = 'none';
             el.style.setProperty('--origami-gauge-pos', from || '0');
@@ -2863,26 +3225,91 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         });
         if (queue.length) requestAnimationFrame(() => requestAnimationFrame(() => { for (const [el, t] of queue) el.style.setProperty('--origami-gauge-pos', t); }));
     }
-    _buildGauge(o, p, valueOf) {
+    _observeCorners(root) {
+        const obs = this._cornerObserver ||= new ResizeObserver(es => {
+            for (const e of es) {
+                if (!e.target.isConnected) { obs.unobserve(e.target); continue; }
+                const box = e.borderBoxSize && e.borderBoxSize[0], side = box ? Math.min(box.inlineSize, box.blockSize) : Math.min(e.target.offsetWidth, e.target.offsetHeight);
+                const radius = `min(var(--_radius), ${Math.round(side * 0.7) / 2}px)`;
+                if (side > 0 && e.target.style.getPropertyValue('--_button-radius') !== radius) e.target.style.setProperty('--_button-radius', radius);
+            }
+        });
+        for (const b of root.querySelectorAll('.button.with-bg, .button.has-bg-image')) obs.observe(b, { box: 'border-box' });
+    }
+    _observeCurves(root) {
+        const obs = this._curveObserver ||= new ResizeObserver(es => {
+            const rows = new Set();
+            for (const e of es) { const r = e.target.closest('.buttons-row'); if (!r) obs.unobserve(e.target); else if (r.isConnected) rows.add(r); }
+            for (const r of rows) this._drawCurves(r);
+        });
+        for (const b of root.querySelectorAll('.shape-curve')) obs.observe(b);
+    }
+    _drawCurves(row) {
+        const bars = [...row.querySelectorAll('.shape-curve')].filter(b => b.offsetWidth), lines = new Map(), holes = [], pos = [];
+        if (!bars.length) return;
+        let svg = row.querySelector(':scope > .gauge-curve');
+        if (!svg) { row.insertAdjacentHTML('beforeend', '<svg class="gauge-curve"></svg>'); svg = row.lastElementChild; }
+        row.classList.add('has-curve');
+        svg.setAttribute('width', 0);
+        svg.setAttribute('height', 0);
+        const w = row.scrollWidth;
+        svg.setAttribute('width', w);
+        svg.setAttribute('height', row.scrollHeight);
+        const box = svg.getBoundingClientRect(), k = box.width ? w / box.width : 1;
+        for (const el of new Set(bars.map(b => b.dataset.gauge.split('-')[1]))) {
+            const group = bars.filter(b => b.dataset.gauge.split('-')[1] === el), vs = group.flatMap(b => [...b.children].map(m => +m.dataset.v)), cs = getComputedStyle(group[0]);
+            const lo = +(group[0].dataset.min ?? Math.min(...vs)), hi = +(group[0].dataset.max ?? Math.max(...vs)), stroke = `stroke:${cs.getPropertyValue('--origami-gauge-color')};stroke-width:${cs.getPropertyValue('--origami-gauge-w')}`;
+            for (const b of group) {
+                const r = b.getBoundingClientRect(), pad = parseFloat(b.style.getPropertyValue('--_in')), x = (r.left + r.width / 2 - box.left) * k, top = (r.top - box.top) * k, h = r.height * k;
+                for (const m of b.children) {
+                    const t = hi > lo ? Math.min(1, Math.max(0, (m.dataset.v - lo) / (hi - lo))) : 0.5, y = top + pad + (1 - t) * (h - 2 * pad), key = `${el}:${m.dataset.line}`, runs = lines.get(key) || [], run = runs.at(-1);
+                    if (run && Math.abs(top - run.top) < h / 2) run.pts.push([x, y]); else lines.set(key, [...runs, { top, stroke, pts: [[x, y]] }]);
+                    if (m.classList.contains('gap')) holes.push([x, y, m.offsetWidth / 2 + 1.5]);
+                    pos.push([m, t]);
+                }
+            }
+        }
+        const path = (p) => {
+            const h = p.slice(1).map((q, i) => q[0] - p[i][0]), s = h.map((d, i) => (p[i + 1][1] - p[i][1]) / d), f = v => Math.round(v * 10) / 10;
+            const m = p.map((_, i) => { const a = s[i - 1] ?? s[i], b = s[i] ?? a, ha = h[i - 1] ?? h[i], hb = h[i] ?? ha; return (Math.sign(a) + Math.sign(b)) * Math.min(Math.abs(a), Math.abs(b), Math.abs(a * hb + b * ha) / (ha + hb) / 2); });
+            return p.map(([x, y], i) => i ? `C${f(p[i - 1][0] + h[i - 1] / 3)},${f(p[i - 1][1] + m[i - 1] * h[i - 1] / 3)} ${f(x - h[i - 1] / 3)},${f(y - m[i] * h[i - 1] / 3)} ${f(x)},${f(y)}` : `M${f(x)},${f(y)}`).join('');
+        };
+        const html = [...lines.values()].flat().filter(r => r.pts.length > 1).map(r => `<path d="${path(r.pts)}" style="${r.stroke}"/>`).join('');
+        for (const [m, t] of pos) m.style.setProperty('--origami-gauge-pos', t.toFixed(4));
+        if (!html) { row.classList.remove('has-curve'); return svg.remove(); }
+        svg.style.setProperty('--_holes', holes.map(([x, y, r]) => `radial-gradient(circle at ${x.toFixed(1)}px ${y.toFixed(1)}px, transparent ${r}px, #000 ${r + 0.5}px)`).join(', ') || 'none');
+        svg.innerHTML = html;
+    }
+    _buildGauge(o, p, valueOf, iconOf) {
         const num = v => gaugeNum(v, this._hass), raw = Object.fromEntries(GAUGE_NUMS.map(k => [k, GAUGE_REF.test(o[p + k]) ? valueOf({ entity: o[p + k] }) : o[p + k]]));
         const n = Object.fromEntries(GAUGE_NUMS.map(k => [k, num(raw[k])])), defs = gaugeDefs(o, p), raws = defs.map(valueOf), clock = [raw.min, raw.max, ...raws].some(isTime);
         const arc = n.arc > 0 && n.arc < 360 ? n.arc : 360, w = n[p === 'ring_' ? 'width' : 'height'] || 4, ms = n.marker_size > 0 ? n.marker_size : w;
         const min = n.min || 0, span = clock ? (n.max - min + 24) % 24 || 24 : (n.max || 100) - min || 1, max = min + span, near = x => clock ? x - 24 * Math.round((x - min - span / 2) / 24) : x;
-        const values = defs.map((def, i) => ({ def, value: near(num(raws[i])), size: parseFloat(def.marker_size ?? ms) })), v0 = values[0].value;
+        const values = defs.map((def, i) => ({ def, i, value: near(num(raws[i])), size: parseFloat(def.marker_size ?? ms) })), v0 = values[0].value;
         const at = v => isNaN(v) ? 0 : Math.max(0, Math.min(1, (v - min) / span)), pct = v => `${(at(v) * arc / 360 * 100).toFixed(1)}%`;
         const mode = o[p + 'threshold_mode'] || 'solid', ts = (Array.isArray(o[p + 'thresholds']) ? o[p + 'thresholds'] : []).filter(t => t.color).map(t => [near(num(t.value)), t.color]).filter(t => !isNaN(t[0])).sort((a, b) => a[0] - b[0]);
         const stops = mode === 'solid' ? '' : ts.map(([v, c], i) => `${cssValue(c)} ${pct(v)}${mode === 'segments' ? ` ${pct(ts[i + 1] ? ts[i + 1][0] : max)}` : ''}`).join(', ');
         const color = (mode === 'solid' && ts.filter(t => t[0] <= v0).pop()?.[1]) || (o[p + 'color'] && o[p + 'color'] !== 'auto' && o[p + 'color']) || 'var(--primary-color, #03a9f4)';
-        const needle = o[p + 'needle'] === true, marked = needle || values.length > 1 || o[p + 'marker'] === true || o[p + 'fill'] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
+        const shape = p === 'bar_' && ['curve', 'sun'].includes(o.bar_shape) ? o.bar_shape : '', needle = o[p + 'needle'] === true, marked = shape === 'curve' || (shape === 'sun' && o[p + 'marker'] !== false) || needle || values.length > 1 || o[p + 'marker'] === true || o[p + 'fill'] === false, rf = near(n.range_from), rt = near(n.range_to), ra = at(Math.min(rf, rt)), rb = at(Math.max(rf, rt));
         const style = [`--origami-gauge-w:${w}px`, `--origami-gauge-color:${cssValue(color)}`];
         if (n.marker_icon_size > 0) style.push(`--origami-marker-icon-size:${n.marker_icon_size}px`);
         if (n.start) style.push(`--origami-gauge-start:${n.start}deg`);
         if (arc < 360) style.push(`--origami-gauge-arc:${arc}deg`);
-        let html = '<div class="gauge-track"></div>';
-        if (o[p + 'fill'] !== false) html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ''}"></div>`;
-        if (rb > ra) html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + 'range_color'] ? `;background:${cssValue(o[p + 'range_color'])}` : ''}"></div>`;
-        if (marked) html += values.filter(v => v.size).map(({ def: d, value, size }) => `<div class="gauge-marker${needle ? ' needle' : ''}" style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? `<ha-icon icon="${escapeHtml(d.marker_icon)}"></ha-icon>` : ''}</div>`).join('');
-        return { style: style.join(';'), html, overflow: marked && values.some(v => v.size > w) };
+        const gaps = p === 'ring_' && marked ? values.filter(v => v.def.marker_gap === true && v.size && !isNaN(v.value)).map(({ value, size }) => {
+            const a = (at(value) * arc + (n.start || 0)) * Math.PI / 180, r = size / 2 + 1.5, d = `(50% - ${w / 2}px)`;
+            return `radial-gradient(circle at calc(50% + ${Math.sin(a).toFixed(4)} * ${d}) calc(50% - ${Math.cos(a).toFixed(4)} * ${d}), transparent ${r}px, #000 ${r + 0.5}px)`;
+        }) : [];
+        if (gaps.length) style.push(`--_gaps:${gaps.join(', ')}`);
+        const len = p === 'bar_' && parseFloat(o.bar_width) > 0 ? cssLength(o.bar_width) : '';
+        if (len) style.push(`--origami-bar-len:${len}`);
+        if (shape) style.push(`--_in:${Math.max(w, ...values.map(v => v.size || 0)) / 2}px`);
+        if (shape === 'sun') style.push(`--_curve:url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -1 1 3" preserveAspectRatio="none"><path d="${SUN_PATH}" fill="none" stroke="#000" stroke-width="${w}" vector-effect="non-scaling-stroke"/></svg>`)}')`);
+        let html = shape === 'curve' ? '' : shape === 'sun' ? '<div class="gauge-horizon"></div><div class="gauge-track"></div>' : '<div class="gauge-track"></div>';
+        if (o[p + 'fill'] !== false && shape !== 'curve') html += `<div class="gauge-fill" style="--origami-gauge-pos:${at(v0).toFixed(4)}${stops ? `;--origami-gauge-stops:${stops}` : ''}"></div>`;
+        if (rb > ra && shape !== 'curve') html += `<div class="gauge-range" style="--origami-range-from:${ra.toFixed(4)};--origami-range-to:${rb.toFixed(4)}${o[p + 'range_color'] ? `;background:${cssValue(o[p + 'range_color'])}` : ''}"></div>`;
+        if (marked) html += values.filter(v => v.size && !isNaN(v.value)).map(({ def: d, i, value, size }) => `<div class="gauge-marker${needle ? ' needle' : ''}${d.marker_gap === true && (p === 'ring_' || shape === 'curve') ? ' gap' : ''}${shape === 'curve' && o.bar_marker === false ? ' bare' : ''}"${shape === 'curve' ? ` data-v="${value}" data-line="${i}"` : ''} style="--origami-gauge-pos:${at(value).toFixed(4)};--origami-marker-size:${size}px${d.marker_color ? `;--origami-gauge-color:${cssValue(d.marker_color)}` : ''}${d.marker_icon_color ? `;color:${cssValue(d.marker_icon_color)}` : ''}">${d.marker_icon ? iconOf(d.marker_icon) : ''}</div>`).join('');
+        const data = shape === 'curve' ? ['min', 'max'].filter(k => !isNaN(n[k])).map(k => ` data-${k}="${n[k]}"`).join('') : '';
+        return { style: style.join(';'), html, len, shape, data, overflow: !shape && marked && values.some(v => v.size > w) };
     }
     _buildIconElement(el, resolved, color) {
         const styleParts = color ? [`color:${cssValue(color)}`] : [];
@@ -2911,9 +3338,11 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const r = this._resolveSensorValue(hass, entity, attribute);
         return r.rawNumeric != null ? r.rawNumeric : r.formatted;
     }
-    _resolveGaugeValue(hass, button, def, ctx) {
-        return def.value ?? (ctx.isForecast && !def.entity ? (ctx.forecastEntry || {})[def.attribute || ctx.forecastTextAttr]
-            : this._sensorValue(hass, def.entity || button.entity, def.entity || def.attribute ? def.attribute : button.attribute));
+    _resolveGaugeValue(hass, button, def, ctx, gauge) {
+        if (def.value != null) return def.value;
+        if (ctx.isForecast && !def.entity) return (ctx.forecastEntry || {})[def.attribute || ctx.forecastTextAttr];
+        const id = def.entity || button.entity, attr = def.entity || def.attribute ? def.attribute : button.attribute, sun = gauge && !attr && String(id).startsWith('sun.') && hass.states[id];
+        return sun ? Math.round(WeatherCard._sunDay(sun.attributes)[0] * 1440) / 14.4 : this._sensorValue(hass, id, attr);
     }
     _buttonIconInner(iconStrategy, iconValue) {
         if (iconStrategy === 'native') return '<ha-state-icon></ha-state-icon>';
@@ -2953,7 +3382,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 sensorObj: null, iconStrategy: 'static', iconValue, primaryResolved: null,
                 formatted: f.formatted, isForecast: true,
                 forecastCondition: f.condition, forecastDatetime: f.datetime,
-                forecastLoading: !!f.loading, forecastEntry: f.entry || null, forecastTextAttr,
+                forecastLoading: !!f.loading, forecastNone: !!f.none, forecastEntry: f.entry || null, forecastTextAttr,
             };
         }
         const primaryResolved = this._resolveSensorValue(hass, button.entity, button.attribute);
@@ -2982,8 +3411,9 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const isRingType = button.type === 'ring';
         const {
             sensorObj, iconStrategy, iconValue, formatted, primaryResolved,
-            isForecast, forecastCondition, forecastDatetime, forecastLoading, forecastEntry, forecastTextAttr,
+            isForecast, forecastCondition, forecastDatetime, forecastLoading, forecastNone, forecastEntry, forecastTextAttr,
         } = this._resolveButtonData(button, hass, textEls);
+        if (forecastNone) return skip(`none-${idx}`, true);
         const resolveIconEl = (el) => {
             const ownIcon = iconSourceValue(hass, button, el) || el.icon;
             const configIcon = ownIcon || (iconStrategy === 'native' ? '' : iconValue);
@@ -2992,21 +3422,25 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             const configPath = el.icon_path || ((configIcon === 'weather' || (!ownIcon && !configIcon)) && this._config && this._config.icon_path ? this._config.icon_path : '');
             if (!configIcon) return { strategy: strat0, value: val0 };
             const live = !isForecast || !!el.entity;
-            const resolvedBase = (configIcon === 'weather') ? (!live && forecastCondition ? forecastCondition : weatherState) : configIcon;
+            if (configIcon === 'weather' && !live && !forecastCondition) return { strategy: 'static', value: iconValue };
+            const hourly = !live && button.forecast === 'hourly';
+            const night = configIcon !== 'weather' ? null : live ? this._isAstroNight : hourly ? this._isNightAt(forecastDatetime) : null;
+            let resolvedBase = (configIcon === 'weather') ? (!live && forecastCondition ? forecastCondition : weatherState) : configIcon;
+            if (hourly && night !== null) resolvedBase = _dayNightState(resolvedBase, night);
             if (configPath) {
                 const basePath = configPath.endsWith('/') ? configPath : configPath + '/';
                 const ext = resolvedBase.includes('.') ? '' : '.svg';
                 return { strategy: 'image', value: `${basePath}${resolvedBase}${ext}` };
             }
             if (configIcon === 'weather' && BUILTIN_ICONS[resolvedBase]) {
-                return { strategy: 'builtin', value: (live && this._isAstroNight && BUILTIN_ICONS[`${resolvedBase}-night`]) ? `${resolvedBase}-night` : resolvedBase };
+                return { strategy: 'builtin', value: night && BUILTIN_ICONS[`${resolvedBase}-night`] ? `${resolvedBase}-night` : resolvedBase };
             }
             return { strategy: 'static', value: (configIcon === 'weather') ? _weatherTuning(resolvedBase).icon : configIcon };
         };
         const marqueeSpeed = Math.max(5, parseFloat(button.marquee_speed) || 30);
         const marqueeRtl = button.marquee_rtl === true, width = (button.width || '').toString().trim(), height = (button.height || '').toString().trim();
         const textCtx = { isForecast, forecastEntry, forecastDatetime, forecastTextAttr, formatted, primaryResolved };
-        const gauge = (o, p) => this._buildGauge(o, p, def => this._resolveGaugeValue(hass, button, def, textCtx));
+        const gauge = (o, p) => this._buildGauge(o, p, def => this._resolveGaugeValue(hass, button, def, textCtx, true), icon => { const r = resolveIconEl({ icon }); return this._buttonIconInner(r.strategy, r.value); });
         const threshold = (o, def) => Array.isArray(o.color_thresholds) && o.color_thresholds.length ? pickThreshold(o.color_thresholds, this._resolveGaugeValue(hass, button, def, textCtx)) : '';
         const parts = [];
         const push = (html, icon) => { const last = parts[parts.length - 1]; if (!icon && last && !last.icon) last.html += html; else parts.push({ html, icon }); };
@@ -3022,7 +3456,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
                 push(this._buildIconElement(el, r, threshold(el, el) || el.color), true);
             } else if (el.type === 'bar') {
                 const g = gauge(el, 'bar_');
-                push(`<div class="button-bar" data-gauge="${idx}-${barCount++}" style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
+                push(`<div class="button-bar${g.len ? ' has-len' : ''}${g.shape ? ` shape-${g.shape}` : ''}" data-gauge="${idx}-${barCount++}"${g.data} style="${g.style}${_elBoxStyle(el)}">${g.html}</div>`);
                 barOverflow = barOverflow || g.overflow;
             }
         }
@@ -3074,6 +3508,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (button.text_shadow === true) inlineStyles.push('--_button-no-bg-shadow:var(--_button-shadow-avail)');
         const effectiveButtonShadow = (button.shadow !== undefined ? button.shadow : containerCtx.button_shadow) !== false;
         if (!effectiveButtonShadow || containerScrollable) inlineStyles.push('--_origami-button-shadow:none');
+        else if (button.shadow_color) inlineStyles.push(`--_origami-button-shadow:${cssValue(button.shadow_color)}`);
         const buttonAlignClass = _ALIGN_CLASSES.has(button.align) ? button.align : '';
         if (buttonAlignClass) classes.push(`align-${buttonAlignClass}`);
         if (button.button_round === true) classes.push('button-round');
@@ -3117,16 +3552,19 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (this._weatherBgState === weatherState && this._weatherBgSchemeDark === useDarkScheme) return;
         this._weatherBgState = weatherState;
         this._weatherBgSchemeDark = useDarkScheme;
-        const folder = basePath.endsWith('/') ? basePath : basePath + '/';
-        const exts = ['', '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.mp4'];
+        const path = basePath.endsWith('/') ? basePath : basePath + '/', own = !/^(\/|\.|[a-z][\w+.-]*:)/i.test(path);
+        const folder = own ? new URL(path, import.meta.url).href : path;
+        const type = String(cfg.weather_image_type || '').trim().replace(/^\./, ''), found = WEATHER_MEDIA_FOUND.get(folder);
+        const exts = type ? [`.${type}`] : found === undefined ? WEATHER_MEDIA_EXTS : [found, ...WEATHER_MEDIA_EXTS.filter(e => e !== found)];
         container.innerHTML = '';
         const probeId = this._weatherBgProbeId = (this._weatherBgProbeId || 0) + 1;
-        this._probeWeatherMedia(container, root, folder, weatherState, exts, 0, probeId);
+        this._probeWeatherMedia(container, root, folder, weatherState, exts, 0, probeId, own ? new URL(import.meta.url).search : '');
     }
-    _probeWeatherMedia(container, root, folder, state, exts, idx, probeId) {
+    _probeWeatherMedia(container, root, folder, state, exts, idx, probeId, query) {
         if (this._weatherBgProbeId !== probeId) return;
         if (idx >= exts.length) {
             root.classList.remove('has-weather-bg');
+            this._syncEffectColors();
             const wasActive = this._weatherBgActive;
             this._weatherBgActive = false;
             if (wasActive) {
@@ -3134,16 +3572,18 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             }
             return;
         }
-        const url = `${folder}${state}${exts[idx]}`;
+        const url = `${folder}${state}${exts[idx]}${query}`;
         const apply = (el) => {
             if (this._weatherBgProbeId !== probeId) return;
+            WEATHER_MEDIA_FOUND.set(folder, exts[idx]);
             container.innerHTML = '';
             container.appendChild(el);
             root.classList.add('has-weather-bg');
+            this._syncEffectColors();
             this._weatherBgActive = true;
             this._startAnimation();
         };
-        if (exts[idx] === '.mp4') {
+        if (/^\.(mp4|webm)$/i.test(exts[idx])) {
             const video = document.createElement('video');
             video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
             video.setAttribute('muted', '');
@@ -3152,14 +3592,14 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             video.onerror = () => {
                 video.onloadeddata = null; video.onerror = null;
                 video.removeAttribute('src');
-                this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId);
+                this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId, query);
             };
         } else {
             const img = new Image();
             img.onload = () => { img.onerror = null; apply(img); };
             img.onerror = () => {
                 img.onload = null;
-                this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId);
+                this._probeWeatherMedia(container, root, folder, state, exts, idx + 1, probeId, query);
             };
             img.src = url;
         }
@@ -3192,6 +3632,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const themeFilter = this._themeDark && !schemeDark && cfg.dark_theme_adaptation !== false ? _DARK_THEME_FILTER : '';
         this._cssVar(this._elements.root, '--_origami-dark-theme-filter', themeFilter, '_prevDarkThemeFilter');
         if (this._backgroundMode() !== 'default') {
+            this._skyFilter = '';
             if (this._weatherFilterSig) { defaultBg.style.removeProperty('filter'); this._weatherFilterSig = null; }
             return;
         }
@@ -3206,17 +3647,20 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
             : '';
         const bri = cfg.bg_brightness != null && String(cfg.bg_brightness) !== '' ? `brightness(${cfg.bg_brightness})` : '';
         const sat = cfg.bg_saturation != null && String(cfg.bg_saturation) !== '' ? `saturate(${cfg.bg_saturation})` : '';
+        this._skyFilter = [weatherFilter, sunsetFilter, bri, sat].join(' ');
         defaultBg.style.filter = [weatherFilter, sunsetFilter, bri, sat, themeFilter].filter(Boolean).join(' ');
     }
     _updateHazeStyles(weatherState, schemeDark) {
         const root = this._elements?.root;
-        if (!root || this._backgroundMode() !== 'default') return;
+        if (!root) return;
         const scheme = schemeDark ? 'dark' : 'light';
         const sig = `${weatherState}|${scheme}`;
         if (this._hazeStyleSig === sig) return;
         this._hazeStyleSig = sig;
         const ht = (_HAZE_TUNING[weatherState] || _HAZE_TUNING.default)[scheme];
         const pal = _HAZE_PALETTE[scheme];
+        const weight = pal.reduce((sum, p) => sum + p.c[3], 0);
+        this._hazeTone = [0, 1, 2].map((i) => pal.reduce((sum, p) => sum + (p.c[i] + (ht.tone[i] - p.c[i]) * ht.mix) * p.c[3], 0) / weight);
         const toned = (c, aMul) => {
             const ch = i => Math.round(c[i] + (ht.tone[i] - c[i]) * ht.mix);
             return `rgba(${ch(0)},${ch(1)},${ch(2)},${Math.min(1, c[3] * aMul).toFixed(3)})`;
@@ -3358,14 +3802,15 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
     _handleDocVisibility() {
         if (document.hidden) {
             this._stopAnimation();
-        } else if (this._isVisible) {
-            this._startAnimation();
+        } else {
+            if (this._isVisible) this._startAnimation();
+            this._clockTick();
         }
     }
     _handleTap(e) {
         e.stopPropagation();
         const cfg = this._config;
-        if (!cfg || !cfg.card_tap_action || cfg.card_tap_action.action === 'none') return;
+        if (!cfg || !cfg.card_tap_action || cfg.card_tap_action.action === 'none' || this._flipSwitch(cfg.card_tap_action)) return;
         this.dispatchEvent(new CustomEvent('hass-action', { bubbles: true, composed: true, detail: { config: { entity: cfg.weather_entity, tap_action: cfg.card_tap_action }, action: 'tap' } }));
     }
     _handleButtonClick(e) {
@@ -3380,6 +3825,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (!button || !button.entity) return;
         e.stopPropagation();
         const tapAction = button.tap_action || { action: 'more-info' };
+        if (this._flipSwitch(tapAction)) return;
         this.dispatchEvent(new CustomEvent('hass-action', { bubbles: true, composed: true, detail: { config: { entity: button.entity, tap_action: tapAction }, action: 'tap' } }));
     }
     _tryInitialize() {
@@ -3428,6 +3874,11 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         } else if (!this._effectsCtx) {
             this._effectsCtx = canvas.getContext('2d');
         }
+        if (els.nearCanvas) {
+            const nc = els.nearCanvas, nw = this._nearUsed ? cw : 0, nh = this._nearUsed ? ch : 0;
+            if (nc.width !== nw || nc.height !== nh) { nc.width = nw; nc.height = nh; }
+            this._nearCtx = this._nearUsed ? nc.getContext('2d') : null;
+        }
         if (els.starCanvas) {
             const sc = els.starCanvas;
             const starResized = sc.width !== cw || sc.height !== ch;
@@ -3452,20 +3903,27 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         const tuning = _weatherTuning(weatherState);
         const recipe = (on && cfg.precipitation_effects !== false && tuning.precipitation) || null;
         const cloudState = (on && cfg.cloud_effects !== false && WeatherEffects.hasClouds(weatherState)) ? weatherState : null;
+        const mistOn = typeof cfg.mist_effects === 'boolean' ? cfg.mist_effects : cfg.cloud_effects !== false;
+        const mistState = (on && mistOn && WeatherEffects.hasMist(weatherState)) ? weatherState : null;
         const starsOn = on && cfg.night_sky_effects !== false && this._isAstroNight && tuning.starCount > 0 && tuning.starOpacity > 0;
         const stars = starsOn ? { count: tuning.starCount, opacity: tuning.starOpacity } : null;
+        const factor = (key, max = 4) => { const v = parseFloat(cfg[key]); return Number.isFinite(v) ? Math.max(0.25, Math.min(max, v)) : 1; };
         const actor = (kind, allowed) => {
             const activity = (on && allowed && cfg[`${kind}_effects`] !== false) ? WeatherEffects[`${kind}Activity`](weatherState) : 0;
-            return activity > 0 ? { activity, state: weatherState, density: Math.max(0.25, Math.min(4, parseFloat(cfg[`${kind}_density`]) || 1)) } : null;
+            return activity > 0 ? { activity, state: weatherState, density: factor(`${kind}_density`) } : null;
         };
         const birds = actor('bird', !this._schemeDark), balloon = actor('balloon', true), planes = actor('plane', true);
-        const active = !!recipe || !!cloudState || !!stars || !!birds || !!balloon || !!planes;
+        const active = !!recipe || !!cloudState || !!mistState || !!stars || !!birds || !!balloon || !!planes;
+        const hass = this._hass;
+        this._syncEffectColors();
+        this._nearUsed = !!hass && (this._containers || []).some((c) => containerLayer(c) === 'middle' && this._containerShown(c, hass));
+        els.root.classList.toggle('has-near-canvas', this._nearUsed);
         if (active && !this._sizeEffectsCanvas()) {
             this._effectsActive = false;
             els.root.classList.remove('has-weather-effects');
             return;
         }
-        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, cloudState, stars, birds, balloon, planes);
+        WeatherEffects.set(this._effects, recipe, els.root.clientWidth, els.root.clientHeight, { weatherState: cloudState, stars, birds, balloon, planes, speed: factor('precipitation_speed'), cloudImage: String(cfg.cloud_image_path || '').trim(), mistState, wind: this._windMs, mistDensity: factor('mist_density', 2), mistSize: factor('mist_size', 2) });
         this._effectsActive = active;
         els.root.classList.toggle('has-weather-effects', active);
         els.root.classList.toggle('has-star-canvas', !!stars);
@@ -3480,29 +3938,28 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         }
         let moon = null;
         if (this._sunMoonActive && this._isAstroNight) {
-            moon = { x: cx, y: cy, r: sunSize / 2 };
+            moon = { x: cx, y: cy, r: sunSize * 0.55, lit: this._moonLit };
         }
-        return { schemeDark: this._schemeDark, glow, moon, night: this._isAstroNight, backgroundRGB: this._backgroundColor(this._schemeDark) };
+        const disc = this._sunMoonActive ? { x: cx, y: cy, r: sunSize * (this._isAstroNight ? 0.55 : 0.5), clear: this._isAstroNight ? (this._moonLit ? 1 : 0) : Math.min(1, this._sunGlowVisibility) } : null;
+        const dark = /^(color|images)$/.test(this._backgroundMode()) ? this._nightColors() : this._schemeDark;
+        return { schemeDark: this._schemeDark, glow, moon, disc, night: this._isAstroNight, dark, backgroundRGB: this._effectsBg, mistRGB: this._mistBg };
     }
-    _backgroundColor(schemeDark) {
-        const key = schemeDark ? 'dark' : 'light';
-        if (this._backgroundColorCache && this._backgroundColorCache.key === key) return this._backgroundColorCache.v;
-        let v = schemeDark ? [16, 33, 61] : [209, 229, 242];
-        try {
-            const sky = this._elements?.root?.querySelector('#sky-base');
-            if (sky) {
-                const bg = getComputedStyle(sky).backgroundImage || '';
-                const hexes = bg.match(/#([0-9a-f]{6})/gi);
-                const rgbs = bg.match(/rgba?\([^)]+\)/gi);
-                let r = 0, g = 0, b = 0, cnt = 0;
-                const add = (cr, cg, cb) => { r += cr; g += cg; b += cb; cnt++; };
-                if (hexes) for (const hx of hexes) { const n = hx.slice(1); add(parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)); }
-                if (rgbs) for (const rs of rgbs) { const p = rs.replace(/rgba?\(|\)/g, '').split(',').map(Number); if (p.length >= 3) add(p[0], p[1], p[2]); }
-                if (cnt) v = [Math.round(r / cnt), Math.round(g / cnt), Math.round(b / cnt)];
-            }
-        } catch (_) {}
-        this._backgroundColorCache = { key, v };
-        return v;
+    _syncEffectColors() {
+        const root = this._elements.root, bg = this._backgroundColor();
+        if (String(bg) !== String(this._effectsBg)) this._effectsBg = bg;
+        const pictures = root.classList.contains('has-weather-bg'), toward = pictures ? [128, 128, 128] : !root.classList.contains('no-haze') && this._hazeTone;
+        const mistBg = _filterRGB(toward ? bg.map((v, i) => v + (toward[i] - v) * (pictures ? 0.2 : 0.4)) : bg, this._skyFilter);
+        if (String(mistBg) !== String(this._mistBg)) this._mistBg = mistBg;
+    }
+    _backgroundColor() {
+        const root = this._elements.root, c = _cssRGBA(getComputedStyle(root).backgroundColor);
+        const page = c[3] < 1 && this._backgroundMode() !== 'default' && !root.classList.contains('has-weather-bg') && _cssRGBA(getComputedStyle(this).getPropertyValue('--primary-background-color'));
+        if (page && page[3] >= 0.5) return c.slice(0, 3).map((v, i) => Math.round(v * c[3] + page[i] * (1 - c[3])));
+        if (c[3] >= 0.5) return c.slice(0, 3);
+        const sky = getComputedStyle(root.querySelector('#sky-base')), solid = _cssRGBA(sky.backgroundColor);
+        const stops = ((sky.backgroundImage || '').match(/#[0-9a-f]{3,8}\b|(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^)]*\)/gi) || []).map(_cssRGBA).filter((v) => v[3] > 0);
+        if (stops.length) return [0, 1, 2].map((i) => Math.round(stops.reduce((sum, v) => sum + v[i], 0) / stops.length));
+        return solid[3] >= 0.5 ? solid.slice(0, 3) : this._schemeDark ? [16, 33, 61] : [209, 229, 242];
     }
     _drawEffects(now) {
         const ctx = this._effectsCtx, els = this._elements;
@@ -3511,7 +3968,7 @@ ${sel} > .button:nth-child(-n+${cols})::after { content: none; }`;
         if (!w || !h) return;
         const dt = Math.max(0.001, Math.min(0.05, (now - this._lastEffectsTime) * 0.001));
         this._lastEffectsTime = now;
-        const alive = WeatherEffects.frame(this._effects, ctx, w, h, this._effectsScale, dt, now * 0.001, this._effectsEnv(), this._starCtx);
+        const alive = WeatherEffects.frame(this._effects, ctx, w, h, this._effectsScale, dt, now * 0.001, this._effectsEnv(), this._starCtx, this._nearUsed ? this._nearCtx : null);
         if (!alive) {
             this._effectsActive = false;
             els.root.classList.remove('has-weather-effects');

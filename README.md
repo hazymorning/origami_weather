@@ -8,6 +8,8 @@
 
 <br>
 
+<img alt="Five Origami Weather cards: a paper landscape, a classic forecast, a night sky with the moon, a house in the snow and a sunny sky with birds" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.webp">
+
 Origami Weather is a weather card for Home Assistant with a builder approach. It can be a visual, animated weather card, a classic info-rich one, or something completely different. It comes with several ready-made layouts, but every part can be changed or mixed and matched freely.
 
 [![Open Origami Weather in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=hazymorning&repository=origami_weather)
@@ -42,6 +44,11 @@ Without the Marketplace or HACS, copy everything in `dist` from the [latest rele
 
 ## Layouts
 
+<details>
+<summary><b>Show the ready-made layouts</b></summary>
+
+<br>
+
 ### Diorama
 
 <img width="800" alt="The Diorama layout on a partly cloudy day and a partly cloudy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
@@ -73,6 +80,8 @@ A little house that reacts to the sun and the weather, made for dashboards about
 A detailed weather overview for a larger spot on the dashboard.
 
 <sub>The screenshots use the Montserrat font. The [Origami](https://github.com/hazymorning/origami#get-started) README explains how to add it to Home Assistant.</sub>
+
+</details>
 
 ## More
 

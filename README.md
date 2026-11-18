@@ -64,9 +64,9 @@ A drawn house with the temperature outside and in each room, and the wind on a c
 
 ### Panel
 
-<img width="800" alt="The Panel layout with the condition, today's high and low and a large temperature, six tiles for wind, humidity, UV index, chance of rain, air pressure and the last update, and the next hours below, with the sun on a partly cloudy day in light mode and the moon on a clear night in dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
+<img width="800" alt="The Panel layout with the condition, today's high and low and a large temperature, six tiles for wind, humidity, UV index, chance of rain, air pressure and the last update, and the next hours below, on a partly cloudy day in light mode and a clear night in dark mode" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/panel.webp">
 
-A detailed overview for a larger spot on the dashboard. The condition and today's high and low are on the left, the temperature is on the right, and the sun or the moon sits between them. Six tiles show the wind, humidity, UV index, chance of rain, air pressure and the time of the last update, with the next hours below. It uses the theme's card background, so it fits right in with other cards.
+A detailed overview for a larger spot on the dashboard. The condition and today's high and low are on the left, with a large temperature on the right. Six tiles show the wind, humidity, UV index, chance of rain, air pressure and the time of the last update, with the next hours below. It uses the theme's card background, so it fits right in with other cards.
 
 <sub>The screenshots use the Montserrat font. The [Origami](https://github.com/hazymorning/origami#get-started) README explains how to add it to Home Assistant.</sub>
 

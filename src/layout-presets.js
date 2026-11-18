@@ -456,12 +456,14 @@ const PANEL_CONFIG = Object.freeze({
     card_padding: '20px',
     content_direction: 'row',
     content_align: 'between',
+    sun_enabled: false,
+    moon_enabled: false,
     sun_size: 32,
     moon_size: 32,
     sun_moon_y: '78px 66px',
     cloud_effects: false,
     mist_effects: true,
-    mist_density: 0.5,
+    mist_density: 0.65,
     night_sky_effects: false,
     bird_effects: false,
     balloon_effects: false,
@@ -471,13 +473,14 @@ const PANEL_CONFIG = Object.freeze({
         {
             name: 'Now',
             custom_width: '60%',
-            gap: '6px',
+            padding: '4px',
+            gap: '8px',
             buttons: [
                 {
                     name: 'Condition',
                     entity: PRESET_ENTITY_TOKEN,
                     width: '100%',
-                    elements: [text({ size: '24px', weight: '600', color: PRIMARY, overflow: 'wrap' })]
+                    elements: [text({ size: '22px', weight: '700', color: PRIMARY, overflow: 'wrap' })]
                 },
                 {
                     name: 'High and low',
@@ -497,13 +500,14 @@ const PANEL_CONFIG = Object.freeze({
         {
             name: 'Temperature',
             custom_width: '40%',
+            padding: '4px',
             justify_content: 'end',
             buttons: [
                 {
                     name: 'Temperature',
                     entity: PRESET_ENTITY_TOKEN,
                     attribute: 'temperature',
-                    elements: [text({ size: '62px', weight: '700', precision: 0, format: '\u00b0', color: PRIMARY, margin: '-0.216em -0.09em -0.164em 0' })]
+                    elements: [text({ size: '56px', weight: '700', precision: 0, format: '\u00b0', color: PRIMARY, margin: '-0.216em -0.09em -0.164em 0' })]
                 }
             ]
         },
@@ -518,7 +522,7 @@ const PANEL_CONFIG = Object.freeze({
             custom_width: '100%',
             layout: 'horizontal-scroll',
             scroll_count: 5,
-            margin: '26px 0 0',
+            margin: '28px 0 8px',
             button_style: 'vertical',
             button_gap: '12px',
             button_text_size: '12px',

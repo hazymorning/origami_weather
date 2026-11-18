@@ -25,7 +25,7 @@ button_containers:
       - entity: sensor.wind_speed
 ```
 
-A container can show an image with `image`, as wide as the container. Its buttons sit on top of it, and [free positioning](#buttons) puts each one exactly where it belongs, like room temperatures on a floor plan. `image_dark` shows a different image while the card is in dark mode, and `image: demo-home-image` is the house from the Home layout.
+A container can show an image with `image`, as wide as the container. Its buttons sit on top of it, and [free positioning](#buttons) puts each one exactly where it belongs, like room temperatures on a floor plan. `image_dark` shows a different image while the card is in dark mode, `image: home` is the house from the Home layout, and `image: old-home` the plain house of earlier versions. Cards that still say `demo-home-image` keep that plain house.
 
 ```yaml
 button_containers:
@@ -49,6 +49,34 @@ button_containers:
 ```
 
 Each embedded card takes `custom_width` and `custom_height` if it needs a size of its own.
+
+Containers and buttons can have a `name`. The card doesn't show it, but the visual editor lists them by it, which helps in a layout with many of them.
+
+Containers sit in front of the sky and everything that moves in it. `layer` moves a container further back.
+
+- `layer: base` keeps it in front of the weather, but behind the containers without a `layer`.
+- `layer: back` puts it behind the weather, so clouds, mist, rain, snow, birds and planes pass in front of it.
+- `layer: middle` puts it into the weather, with planes, clouds and most of the mist behind it, and birds, rain, snow and the nearest layer of mist in front of it. The house of the Home layout sits there.
+- `layer: sky` puts it behind the sun, the moon and the stars as well, right in front of the sky and its pictures. Pictures with `weather_image_front` are in front of it too.
+
+```yaml
+button_containers:
+  - image: home
+    layer: middle
+```
+
+On the same layer, a container further down the list sits in front of the ones above it, and a container with `position: custom` in front of the others. From back to front, the card draws
+
+1. the color and haze of the sky, and the background pictures
+2. containers with `layer: sky`
+3. the stars, the sun and the moon, and pictures with `weather_image_front`
+4. containers with `layer: back`
+5. planes, balloons, mist and clouds
+6. containers with `layer: middle`
+7. birds, rain, hail and snow, and the nearest layer of mist while a container with `layer: middle` is shown
+8. the `gradient`, `bg_blend` and `edge_fade`
+9. containers with `layer: base`
+10. all other containers
 
 ### Buttons
 
@@ -78,6 +106,32 @@ buttons:
 
 State, numeric state, screen size, user, and `and`/`or`/`not` conditions are supported. A `numeric_state` condition can read an `attribute` instead of the state, or a forecast entry with `forecast: daily` or `hourly` plus `forecast_offset`. With several conditions, all of them have to pass. Visibility also works at the container level.
 
+**Switches.** A card can also show and hide things on a tap, without a helper in Home Assistant. It has its own switches, named like entities with `origami.` in front, and each one starts off. A `toggle` tap action flips one, and a `state` condition reads it like any other entity:
+
+```yaml
+card_tap_action:
+  action: toggle
+  entity: origami.details
+button_containers:
+  - visibility:
+      - condition: state
+        entity: origami.details
+        state: "on"
+```
+
+A switch can also hold a name instead of on and off, like tabs. With `state: hours` on the `toggle`, a tap sets the switch to `hours`, or back to `off` when it already is, and containers that check `state: hours` show only then. Buttons that share one switch open one view at a time.
+
+```yaml
+tap_action:
+  action: toggle
+  entity: origami.view
+  state: hours
+```
+
+Only this card knows its switches, so automations and other cards don't see them. `visibility_fade: true` fades containers in and out when they appear or disappear, and `remember_switches: true` keeps the switches as they were on this device after a reload. Remembered switches are kept by name, so cards that use the same name share them. The Sky layout is built like that: a tap shows the next days over the whole card.
+
+**Missing values.** Weather services don't all send the same things. A value the service doesn't send prints `N/A`, and the button stays where it is. Only forecast entries past the last one the service sends are left out, see [Forecasts](#forecasts).
+
 **Free positioning.** Any button can be taken out of the normal flow and placed freely inside its container:
 
 ```yaml
@@ -90,7 +144,7 @@ buttons:
     background: true
 ```
 
-Containers can be placed freely on the card the same way. Offsets and sizes inside free-positioned containers can use container query units (`cqw`, `cqh`, `cqmin`), which are relative to the card instead of the screen. That way the whole arrangement scales along with the card.
+Containers can be placed freely on the card the same way. Offsets and sizes inside free-positioned containers can use container query units (`cqw`, `cqh`, `cqmin`), which are relative to the card instead of the screen. That way the whole arrangement scales along with the card. In the other containers, `cqw` works as well, for sizes that follow the card's width.
 
 ### Elements
 
@@ -123,7 +177,7 @@ All three types take `margin` and `padding`, which is the usual way to nudge one
 
 **Icon elements** take `icon`, `icon_path`, `icon_size`, `icon_padding`, `icon_background`, `icon_background_color`, `color` and `color_thresholds`. Leave `icon` empty and the entity's own icon is used. Set `icon: weather` for the animated icon that matches the current weather.
 
-**Bar elements** are horizontal gauges. They take `bar_min`, `bar_max`, `bar_height`, `bar_color`, `bar_threshold_mode` and `bar_thresholds`. A bar uses the button's own value, unless `bar_values` names another one.
+**Bar elements** are horizontal gauges. They take `bar_min`, `bar_max`, `bar_height`, `bar_width`, `bar_color`, `bar_threshold_mode` and `bar_thresholds`. A bar uses the button's own value, unless `bar_values` names another one. It runs across the whole button, or as far as `bar_width` says.
 
 ```yaml
 buttons:
@@ -140,7 +194,9 @@ buttons:
 
 ### Forecasts
 
-Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today/now, `1` is tomorrow/next hour, and so on. A text element with `attribute: datetime` prints the matching label (day name or time). With `icon: weather` on an icon element, the icon matches the forecasted condition.
+Set `forecast` to `daily` or `hourly` on a button to show forecast data. Use `forecast_offset` to pick the entry: `0` is today or the next hour, `1` is tomorrow or the hour after, and so on. A text element with `attribute: datetime` prints the matching label (day name or time), and [date codes](#dates) in its `format` change what that label says. With `icon: weather` on an icon element, the icon matches the forecasted condition, and the hours between sunset and sunrise get the same night icons as the current weather at night.
+
+A button whose `forecast_offset` lies past the last entry the weather service sends is not drawn. A row can therefore hold 24 hours and show as many as there are, like the Panel layout does. On a weather entity without that kind of forecast the buttons stay and print `N/A`.
 
 ```yaml
 buttons:
@@ -154,6 +210,31 @@ buttons:
         attribute: temperature
         format: "°"
 ```
+
+### Dates
+
+A forecast's `datetime` and timestamps like the sun's `next_rising` print a short label, a day name or a time. On a weather button without `forecast`, `datetime` gives today's date. Put date codes into `format` to print the date in that pattern instead.
+
+```yaml
+elements:
+  - type: text
+    attribute: datetime
+    format: "%a, %d"
+```
+
+This prints `Thu, 12`. The codes are the ones Home Assistant templates use.
+
+| Code | Prints |
+| :--- | :--- |
+| `%a` `%A` | Day name, short and long. |
+| `%b` `%B` | Month name, short and long. |
+| `%d` `%m` | Day of the month and month as numbers, like `05` and `11`. |
+| `%y` `%Y` | Year, like `26` and `2026`. |
+| `%H` `%I` | Hour on the 24-hour and on the 12-hour clock. |
+| `%M` `%S` | Minute and second. |
+| `%p` | `AM` or `PM`. |
+
+Day and month names are in the Home Assistant language. A `-` after the percent sign drops the leading zero, so `%-d` prints `5`. A `format` without a code is still glued to the end of the label. With codes for the time, today's date on a weather button is a clock that moves on every minute.
 
 ### Gauges
 
@@ -207,7 +288,31 @@ A ring doesn't have to be a full circle. `ring_start` rotates where it begins, i
 
 `ring_needle: true` turns the markers into needles that point from the center, like a compass or a clock hand. A value can also be a fixed number with `value` instead of reading an entity, which is handy for a mark that never moves. The compass in the Home layout is built like that.
 
-Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset. The Arc layout is built exactly like that.
+Values don't have to be numbers either. Times work too, both a plain `06:32` and a full timestamp, and the gauge then wraps around a 24 hour clock. The numeric gauge options like `ring_min`, `bar_max` or `ring_range_from` can be an entity ID instead of a fixed number, so the ends of a gauge can follow something like today's sunrise and sunset.
+
+A gauge on the sun entity without an attribute shows where the sun is in its day, from 0 at midnight over 50 at noon to 100 at the next midnight.
+
+`bar_shape` bends a bar. `bar_shape: sun` turns a bar on the sun entity into the sun's path through the day, a curve that rises to noon and sinks to midnight, with the horizon as a dashed line. The marker is the sun unless `bar_marker` is `false`, and the fill is the part of the day that has passed. `bar_shape: curve` turns the bars of a row into one smooth line: every value is a point in the middle of its button, and the curve bars of neighboring buttons join up, like a temperature graph across a forecast. The row shares one scale from its lowest to its highest value, unless `bar_min` and `bar_max` set it, and a second entry in `bar_values` draws a second line, such as the lows under the highs. The line takes `bar_color` and `bar_height` and runs behind the texts and icons, so a faint curve also works as a quiet background, like in the Classic and Sky layouts. The markers keep their own colors and icons, `marker_icon: weather` puts the weather of that day or hour into the marker, and `marker_gap: true` leaves a little space around the marker instead of a background behind it, like the days of the Sky layout. `bar_marker: false` leaves only the line. A curved bar fills the height its button gives it, at least 40px.
+
+```yaml
+buttons:
+  - entity: weather.home
+    forecast: daily
+    forecast_offset: 0
+    style: vertical
+    elements:
+      - type: text
+        attribute: datetime
+        format: "%a"
+      - type: bar
+        bar_shape: curve
+        bar_height: 2px
+        bar_values:
+          - attribute: temperature
+            marker_size: 28px
+            marker_icon: weather
+  # the same button again with forecast_offset 1, 2, 3 ...
+```
 
 Any button or icon element can also use `color_thresholds` to tint itself based on a value, with no gauge involved. An icon reads its own entity or attribute if it has one, otherwise the button's value. The value doesn't have to be a number here, a state like `on` or `home` works too.
 
@@ -238,14 +343,16 @@ icon_path: /local/weather-icons/
 | :--- | :--- | :--- | :--- |
 | `weather_entity` | `string` | — | **Required.** The weather entity the card follows, for the sky, the effects, the pictures and the tap on the card. |
 | `card_height` | `string` | `200px` | Height of the card. Numbers are treated as px. `auto` fills available height in grid layouts, `content` sizes to fit the content, `square` makes it as tall as it is wide. |
-| `card_padding` | `string` | `16px` | Inner padding around the content. |
+| `card_padding` | `string` | `16px` | Inner padding around the content. One value, or two for top and bottom, then left and right. CSS variables like `var(--ha-space-4)` work too. |
 | `card_offset` | `string` | — | Shifts the card via CSS margin. Useful when layering cards. |
 | `full_width` | `boolean` | `false` | Lets the card bleed past the column gutter so it runs edge to edge in a sections view. |
 | `full_width_margin` | `string` | *column gap* | How far it bleeds on each side. Only used with `full_width`. |
 | `content_direction` | `string` | `column` | Set to `row` to lay out containers horizontally instead of vertically. |
 | `content_align` | `string` | — | How containers are spread along the card: `start`, `center`, `end`, `between`, `around`, `evenly`. |
 | `content_align_items` | `string` | — | How containers line up across the card: `start`, `center`, `end`, `stretch`, `baseline`. |
-| `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. |
+| `card_tap_action` | `object` | — | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/) for the card background. A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons), or sets it to its `state`. |
+| `visibility_fade` | `boolean` | `false` | Containers fade in and out when their visibility changes. |
+| `remember_switches` | `boolean` | `false` | The card's switches keep their state on this device after a reload. Cards that use the same switch name share it. |
 | `icon_path` | `string` | — | Folder of custom SVG weather icons, used by every `icon: weather` element that doesn't set its own path. |
 | `css` | `string` | — | Custom CSS, applied inside the card, for small changes without card-mod. |
 
@@ -253,7 +360,7 @@ icon_path: /local/weather-icons/
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows `sun_entity`, `theme` follows the HA theme. When the card doesn't match the theme, embedded cards and theme colors inside the card follow the card. |
+| `color_mode` | `string` | `sun` | Whether the card uses its light or dark colors. `sun` follows `sun_entity`, `theme` follows the HA theme, and `dark` or `light` keep the card in one of them. With `dark` and `light`, `background_color_dark` and `color_dark` are used at night. When the card doesn't match the theme, embedded cards and theme colors inside the card follow the card. |
 | `dark_theme_adaptation` | `boolean` | `true` | Darkens and saturates the sky, background images, sun and effects a bit while the HA theme is dark but the card is in light mode. Only used with `background_mode: default` or `images`, and does nothing with `color_mode: theme` since the card is dark then anyway. |
 | `card_frame` | `boolean` | `true` | Set to `false` to drop the rounded corners and border of the card itself. |
 | `edge_fade` | `boolean` | `false` | Fades the top and bottom edge of the card into the dashboard background. |
@@ -263,23 +370,25 @@ icon_path: /local/weather-icons/
 
 ### Sun and moon
 
-The card renders a sun during the day and a moon at night, positioned within the background. The moon shows the current phase, which the card works out on its own.
+The card renders a sun during the day and a moon at night, positioned within the background. When the position changes, they glide to the new one. The moon shows the current phase, which the card works out on its own.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `sun_entity` | `string` | `sun.sun` | Drives the day/night cycle and the height of the sun in the background. Only needed when the sun entity has a different ID. |
 | `sun_enabled` | `boolean` | `true` | Show or hide the sun. |
 | `moon_enabled` | `boolean` | `true` | Show or hide the moon. |
-| `sun_moon_size` | `string` | `80px` | Size of the sun/moon element. |
-| `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, and a CSS length works too. With `dynamic`, the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. |
-| `sun_moon_y` | `string` | — | Vertical position, as a percentage from the top, clamped to 0-100. When unset it follows the sun's elevation. |
+| `sun_size` | `string` | `80px` | Diameter of the sun. |
+| `moon_size` | `string` | `80px` | Diameter of the moon. |
+| `sun_moon_x` | `string` | `50%` | Horizontal position. A bare number is read as a percentage, and a CSS length works too. With `dynamic`, the sun travels from left to right between sunrise and sunset, with the moon doing the same over the night. In right-to-left languages a fixed position counts from the right, so the sun or the moon mirrors with the layout, except over background pictures. |
+| `sun_moon_y` | `string` | — | Vertical position from the top. A bare number is read as a percentage, clamped to 0-100, and a CSS length works too. When unset it follows the sun's elevation. With two values, like `110px 30px`, it still follows the elevation, from the first value at the horizon to the second high in the sky. |
 
-The old `sun_moon_enabled` is converted to the two separate toggles automatically and a leftover `moon_phase_entity` is simply ignored, so existing configs keep working.
+The old `sun_moon_enabled` and `sun_moon_size` are converted to the separate toggles and sizes automatically and a leftover `moon_phase_entity` is simply ignored, so existing configs keep working.
 
 ### Container options
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
+| `name` | `string` | — | A name for the container in the visual editor's list. The card doesn't show it. |
 | `buttons` | `list` | — | The buttons inside this container. |
 | `custom_cards` | `list` | — | Embed HA cards instead of buttons. Use this or `buttons`, not both. |
 | `layout` | `string` | `wrap` | How buttons are arranged: `wrap`, `horizontal-scroll`, `vertical-scroll`, `grid`. |
@@ -287,19 +396,21 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `scroll_count` | `number` | — | Buttons visible at once in a scroll layout. Enables snap scrolling. |
 | `scroll_fade` | `boolean` | `false` | Soft fade at both ends of a scroll layout. The fade at an end disappears once the scroll reaches that end. Doesn't combine with `button_blurred_background`. |
 | `scroll_fade_size` | `string` | `24px` | How far that fade reaches in. |
-| `row_height` | `string` | — | Fixed height for a container using `horizontal-scroll` or `vertical-scroll`. |
+| `row_height` | `string` | — | Fixed height for a container using `horizontal-scroll` or `vertical-scroll`, padding included. `100%` fills the card, for a container with `position: custom`. |
 | `align` | `string` | `start` | Button alignment: `start`, `center`, `end`, `spread`. |
 | `justify_content` | `string` | — | How buttons spread along the row: `start`, `center`, `end`, `between`, `around`, `evenly`. These are short keys, not raw CSS values. |
 | `align_items` | `string` | — | How buttons line up across the row: `start`, `center`, `end`, `stretch`, `baseline`. Short keys again. |
 | `gap` | `string` | — | Space between buttons. |
 | `padding` | `string` | — | Inner padding of the container. |
 | `margin` | `string` | — | Outer margin of the container. |
+| `border` | `string` | — | Border of the container's background and of its buttons, like `none` or `1px solid white`. |
 | `custom_width` | `string` | — | Fixed width for this container. Useful in `content_direction: row` layouts. |
-| `image` | `string` | — | Image shown in the container, as wide as the container, with the buttons on top. `demo-home-image` shows the house from the Home layout. |
+| `image` | `string` | — | Image shown in the container, as wide as the container, with the buttons on top. `home` shows the house from the Home layout, `old-home` the plain house of earlier versions. |
 | `image_dark` | `string` | — | Image shown instead while the card is in dark mode. Only used with `image`. |
 | `background` | `boolean` | `false` | Add a background behind the buttons. |
 | `background_color` | `string` | — | Custom background color. |
 | `blurred_background` | `boolean` | `false` | Frosted glass effect on the container background. |
+| `background_blur` | `number` | `10` | How strongly the frosted glass blurs what's behind it, in pixels. Also applies to blurred buttons in the container, and takes the place of `--origami-bottom-bg-filter` there. |
 | `grouped` | `boolean` | `false` | Wrap buttons into a single shared background. Requires `background: true`. |
 | `separator` | `boolean` | `false` | Thin divider between buttons. Works on its own, `grouped` is not required. In a `grid` layout it draws both row and column dividers, in `vertical-scroll` it draws horizontal ones. |
 | `shadow` | `boolean` | — | Set to `false` to remove shadow from this container. |
@@ -320,16 +431,18 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
 | `position_y` | `string` | `0` | Vertical offset from anchor. |
+| `layer` | `string` | `front` | How far back the container sits among the sky and the weather. `sky`, `back`, `middle`, `base` or `front`, as [Containers](#containers) explains. |
 
 ### Button options
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
+| `name` | `string` | — | A name for the button in the visual editor's list. The card doesn't show it. |
 | `entity` | `string` | — | **Required.** Any sensor, binary_sensor, or weather entity. |
-| `attribute` | `string` | — | Read a specific attribute instead of the state. |
+| `attribute` | `string` | — | Read a specific attribute instead of the state. `last_updated` and `last_changed` give the time the entity last updated or changed. |
 | `elements` | `list` | — | What the button contains. See [Elements](#elements). |
 | `type` | `string` | — | Set to `ring` for a circular gauge around the button. |
-| `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`, `split`). |
+| `style` | `string` | — | Override the container's `button_style` for this button (`inline`, `vertical`, `split`). A `vertical` button that is taller than its content keeps the content in the middle. |
 | `text_size` | `string` | — | Text size for this button. |
 | `text_shadow` | `boolean` | `false` | Keep the text shadow even when the button has no background. |
 | `inner_gap` | `string` | — | Gap between icon and text. |
@@ -344,6 +457,7 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `blurred_background` | `boolean` | — | Override the container's blur setting. |
 | `button_round` | `boolean` | `false` | Fully rounded pill shape. |
 | `shadow` | `boolean` | — | Set to `false` to remove the shadow from this button. |
+| `shadow_color` | `string` | — | Replaces the shadow of this button's background with a custom CSS box-shadow. |
 | `width` | `string` | — | Button width. Required for scrolling text. |
 | `height` | `string` | — | Button height. |
 | `padding` | `string` | — | Inner padding. |
@@ -353,10 +467,10 @@ The old `sun_moon_enabled` is converted to the two separate toggles automaticall
 | `color_threshold_attribute` | `string` | — | Attribute to read for the tint value. |
 | `marquee_speed` | `number` | `30` | Scroll speed in px/s for text elements using `overflow: marquee`. |
 | `marquee_rtl` | `boolean` | `false` | Reverse the scroll direction. |
-| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). |
+| `tap_action` | `object` | `more-info` | Standard HA [tap action](https://www.home-assistant.io/dashboards/actions/). A `toggle` with `entity: origami.<name>` flips one of the card's [switches](#buttons), or sets it to its `state`. |
 | `visibility` | `list` | — | Standard HA [visibility conditions](https://www.home-assistant.io/dashboards/conditional/#conditions). |
 | `forecast` | `string` | — | `daily` or `hourly`. |
-| `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` = today/now, `1` = next, etc. |
+| `forecast_offset` | `number` | `0` | Which forecast entry to show. `0` is today or the next hour, `1` the one after, and so on. Past the last entry the weather service sends, the button is not drawn. |
 | `position` | `string` | — | Set to `custom` to detach the button and place it freely inside its container. |
 | `position_anchor` | `string` | `top-left` | Anchor point for free positioning. |
 | `position_x` | `string` | `0` | Horizontal offset from anchor. |
@@ -371,9 +485,9 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `entity` | `string` | — | Read from a different entity than the button. |
-| `attribute` | `string` | — | Read a specific attribute. |
+| `attribute` | `string` | — | Read a specific attribute. `last_updated` and `last_changed` show the time the entity last updated or changed. |
 | `text` | `string` | — | A fixed string instead of a value. |
-| `format` | `string` | — | Glued to the end of the value, usually a unit. |
+| `format` | `string` | — | Glued to the end of the value, usually a unit. On a date it can be a pattern with [date codes](#dates). |
 | `precision` | `number` | — | Decimal places. |
 | `size` | `string` | — | Font size. |
 | `weight` | `string` | — | Font weight. This also drives opacity: light weights are drawn faded, heavy ones fully opaque. Not when `color` is set. |
@@ -404,12 +518,14 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | :--- | :--- | :--- | :--- |
 | `bar_min` | `number` | `0` | Minimum of the range. This and `bar_max` can also be a time or an entity ID, see [Gauges](#gauges). |
 | `bar_max` | `number` | `100` | Maximum of the range. |
-| `bar_height` | `string` | `4px` | Height of the bar. |
+| `bar_shape` | `string` | `straight` | `straight`, `curve` or `sun`, see [Gauges](#gauges). |
+| `bar_height` | `string` | `4px` | Height of the bar, or the thickness of its line when it is curved. |
+| `bar_width` | `string` | *full width* | Length of the bar, never wider than the button. A bar with its own length lines up like the other elements. |
 | `bar_color` | `string` | — | Color of the filled part. |
 | `bar_threshold_mode` | `string` | `solid` | `solid`, `segments`, or `gradient`. |
 | `bar_thresholds` | `list` | — | List of `{ value, color }` entries. |
 | `bar_values` | `list` | — | The values shown on the bar. Without it the bar uses the button's own value. |
-| `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. |
+| `bar_marker` | `boolean` | `false` | Show the marker when the bar has one value. With several values the markers are always there. A curve or a sun path has markers unless this is `false`. |
 | `bar_fill` | `boolean` | `true` | Set to `false` to draw only the track and the markers, no fill. |
 | `bar_marker_size` | `string` | *bar height* | Size of the markers. Anything larger than the bar sticks out on both sides. |
 | `bar_marker_icon_size` | `string` | *two thirds of the marker* | Size of the icon inside a marker. |
@@ -428,8 +544,9 @@ Every entry in a button's `elements` list needs a `type`, which is `text`, `icon
 | `value` | `number` | — | A fixed value instead of reading one. |
 | `marker_size` | `string` | *gauge marker size* | Size of this marker. `0` hides it. |
 | `marker_color` | `string` | — | Color of the marker. |
-| `marker_icon` | `string` | — | Icon drawn inside the marker. |
+| `marker_icon` | `string` | — | Icon drawn inside the marker. `weather` draws the current weather, or the forecast of that day or hour. |
 | `marker_icon_color` | `string` | — | Color of that icon. |
+| `marker_gap` | `boolean` | `false` | Leaves a gap in a ring or a curve around the marker, so its icon sits on the background, like the N of a compass. |
 
 ### Ring gauge
 
@@ -465,14 +582,16 @@ The old `gauge_entity` and `gauge_attribute` are converted to a `ring_values` en
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `background_mode` | `string` | `default` | `default` for the animated sky, `images` for custom background pictures or videos, `card` for the plain Home Assistant card background, `color` for a custom color, `none` for a transparent card. |
-| `background_color` | `string` | — | The color of the card. Only used with `background_mode: color`. |
-| `background_color_dark` | `string` | — | Color used instead while the card is in dark mode. |
-| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. Add `color_dark` to an entry for dark mode. |
-| `background_threshold_entity` | `string` | — | Entity the thresholds read from. |
+| `background_color` | `string` | — | The color of the card. Used with `background_mode: color`, and around the pictures with `images`. |
+| `background_color_dark` | `string` | — | Color used instead while the card is in dark mode, or at night with `color_mode: dark` or `light`. |
+| `background_thresholds` | `list` | — | List of `{ value, color }` entries that swap that color as a value rises. `value` can also be a text state like `on` instead of a number. Add `color_dark` to an entry for dark mode, or for the night with `color_mode: dark` or `light`. |
+| `background_threshold_entity` | `string` | — | Entity the thresholds read from. Without it, they follow the card's weather, so each `value` can be a condition like `rainy`. |
 | `background_threshold_attribute` | `string` | — | Attribute to read for the threshold value. |
-| `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. Part of the `default` sky, so it has no effect in the other modes. |
-| `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. |
-| `weather_image_path_dark` | `string` | — | Second folder used after sunset. Falls back to `weather_image_path`. |
+| `background_haze` | `boolean` | `true` | The drifting color haze that shifts with the weather. On by default with the `default` sky. In the other modes it is off unless set to `true`. |
+| `weather_image_path` | `string` | — | Folder of images or videos named after weather conditions. Used when `background_mode: images`. A folder that starts with neither `/`, `.` nor an address like `https://` is looked up in the card's own folder, like `diorama/light/` for the pictures that come with the card. |
+| `weather_image_path_dark` | `string` | — | Second folder, used while the card is in dark mode, which `color_mode` decides. Falls back to `weather_image_path`. |
+| `weather_image_type` | `string` | — | File type of those pictures, like `webp`. Without it, the card tries the usual types one after another until one loads. |
+| `weather_image_front` | `boolean` | `false` | Draws the pictures in front of the sun, the moon and the stars. Where a picture is transparent, they show through, so they can set behind the hills of a landscape. |
 
 **Layers drawn on top**
 
@@ -481,7 +600,12 @@ These run on top of every background, including `images` and `none`.
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `precipitation_effects` | `boolean` | `true` | Rain, downpour, thunderstorms, snow, sleet and hail particles. |
-| `cloud_effects` | `boolean` | `true` | The drifting cloud layer. Even clear skies get a few soft ones, and fog is drawn with them as well. |
+| `precipitation_speed` | `number` | `1` | How fast they fall, between `0.25` and `4`. |
+| `cloud_effects` | `boolean` | `true` | The drifting clouds, in three layers of different size and speed. There are none on clear days and in fog, where the mist takes over. |
+| `cloud_image_path` | `string` | — | A picture of a single cloud, like `/local/cloud.png`, that the clouds are drawn with instead of the built-in one. A PNG or WebP with a transparent background works best. |
+| `mist_effects` | `boolean` | same as `cloud_effects` | Three layers of mist that drift behind the clouds with the wind. While a container with `layer: middle` is shown, the near layer drifts in front of it. The far layer is small and slow and the near one large and quicker, with gaps between the patches where the sky shows through. There is mist whenever there are clouds, rain or snow, denser in fog, and none on clear days. The mist takes its color from the background behind it: a lighter shade of a dark sky, a paler version of a light sky, and a soft shade on a white card. It thins out around the sun and the moon, so they still shine through, though less so in fog. It works with or without the clouds. |
+| `mist_density` | `number` | `1` | How thick the mist is, between `0.25` and `2`. |
+| `mist_size` | `number` | `1` | How big the patches of mist and the gaps between them are, between `0.25` and `2`. |
 | `night_sky_effects` | `boolean` | `true` | Stars at night, with the occasional shooting star or comet. Thinned out when it's cloudy. |
 | `bird_effects` | `boolean` | `true` | Birds crossing the sky. Fewer of them in rain, snow and fog, none in thunderstorms or hail. Not shown while the card is in dark mode. |
 | `bird_density` | `number` | `1` | How many birds, between `0.25` and `4`. |
@@ -490,7 +614,9 @@ These run on top of every background, including `images` and `none`.
 | `plane_effects` | `boolean` | `true` | Planes crossing the sky, trailing contrails, with lights at night. Fewer of them in bad weather, none in thunderstorms, hail, fog or pouring rain. |
 | `plane_density` | `number` | `1` | How many planes, between `0.25` and `4`. |
 
-The sun and moon sit in this group too. Their options are under [Sun and moon](#sun-and-moon).
+The clouds and the mist drift with the wind speed of the weather entity. They move slowly on a calm day and faster in a storm, but never stand quite still. The rain follows the same wind: it falls almost straight down on a calm day and slants more the stronger the wind. Without a wind speed, everything moves as fast as the weather suggests.
+
+The sun and moon sit in this group too. Their options are under [Sun and moon](#sun-and-moon). Containers can sit between these layers, as [Containers](#containers) explains.
 
 **Treatments over the whole thing**
 
@@ -499,8 +625,8 @@ The sun and moon sit in this group too. Their options are under [Sun and moon](#
 | `bg_brightness` | `number` | `1` | Brightness multiplier (e.g. `0.8` to darken). Applies to the animated sky and to background images. |
 | `bg_saturation` | `number` | `1` | Saturation multiplier (e.g. `0` for grayscale). Applies to both as well. |
 | `bg_blur` | `number` | — | Blur in pixels. Only applies to image backgrounds. |
-| `bg_blend` | `number` | `0` | Mixes the theme's card color over the animated sky or the images, from `0` to `100`. Tones the background down. |
-| `gradient` | `boolean` | `false` | A gradient over the background, the sun and the effects, under the content. Works with every `background_mode`. |
+| `bg_blend` | `number` | `0` | Mixes the theme's card color over the animated sky or the images, from `0` to `100`. Tones the background down, along with containers on the `sky`, `back` and `middle` layers. |
+| `gradient` | `boolean` | `false` | A gradient over the background, the sun and the effects, under the content. Containers on the `sky`, `back` and `middle` layers are under it too. Works with every `background_mode`. |
 | `gradient_type` | `string` | `linear` | `linear` or `radial`. |
 | `gradient_angle` | `number` | `180` | Direction of a linear gradient in degrees. `180` runs from top to bottom. |
 | `gradient_x` | `number` | `50` | Horizontal center of a radial gradient, in percent. |
@@ -540,7 +666,7 @@ These are for theming. None of them are needed to use the card. They change the 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
 | `--origami-card-border-radius` | `--ha-card-border-radius`, or `12px` | Corner radius of the card. |
-| `--origami-card-border-width` | `--ha-card-border-width`, or `0px` | Border thickness of the card. |
+| `--origami-card-border-width` | `--ha-card-border-width`, or `0px` | Border thickness of the card. The border lies on top of the card's own background, so a see-through border color never shows the dashboard behind the card. |
 | `--origami-stack-order` | `1` | The card's z-index. Handy for cards stacked with `card_offset`. |
 | `--origami-edge-fade-color` | `--primary-background-color` | The color `edge_fade` fades into. Set it when the card sits on something other than the dashboard background. |
 
@@ -549,8 +675,8 @@ These are for theming. None of them are needed to use the card. They change the 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
 | `--origami-bg-border` | `1px solid transparent` | Border on those backgrounds. Takes a full CSS border value. |
-| `--origami-bottom-bg-radius` | card radius minus 5px | Corner radius of container and button backgrounds. |
-| `--origami-bottom-bg-filter` | `blur(10px)` | The filter used by `blurred_background`. |
+| `--origami-bottom-bg-radius` | card radius minus 5px on containers, and on buttons 35% of their height or width, whichever is smaller, but no more than the card radius | Corner radius of container and button backgrounds. |
+| `--origami-bottom-bg-filter` | `blur(10px)` | The filter used by `blurred_background`. In a container with `background_blur`, a plain blur of that size takes its place. |
 | `--origami-icon-bg-radius` | button radius minus the inset | Corner radius of icon backgrounds. |
 | `--origami-icon-bg-inset` | `3px` | How much rounder the icon background is than the button around it. |
 

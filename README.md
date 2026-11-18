@@ -6,10 +6,6 @@
 <a href="https://github.com/hazymorning?tab=repositories&q=origami"><img alt="Origami suite" src="https://img.shields.io/badge/Origami-Suite-F6F4F1?labelColor=181715&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiNGNkY0RjEiIHN0cm9rZS13aWR0aD0iMiIvPjxwb2x5Z29uIHBvaW50cz0iMjEsMyAyMSwyMSAzLDIxIiBmaWxsPSIjRjZGNEYxIi8%2BPC9zdmc%2B"></a>
 </div>
 
-<br>
-
-<img alt="A placeholder for the picture at the top, a gray card with a question mark" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.webp">
-
 Origami Weather is a weather card for Home Assistant with a builder approach. It can be a visual, animated weather card, a classic info-rich one, or something completely different. It comes with several ready-made layouts, but every part can be changed or mixed and matched freely.
 
 Behind the content is an animated sky that follows the actual weather. The sun and the moon move with the time of day, clouds and mist drift with the wind, and it rains or snows on the card when it does outside. The content itself is built from containers, buttons, texts, icons and bars, and they can show any entity in Home Assistant, not just the weather.

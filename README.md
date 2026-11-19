@@ -51,7 +51,8 @@ Without the Marketplace or HACS, copy everything in `dist` from the [latest rele
 
 <br>
 
-> **Ready to use.** Pick the one you like under **Layouts** in the card's editor, and your card looks just like it does here.
+> [!NOTE]
+> You don't have to build these yourself. Just pick the one you like in the card's editor and your card will look like this.
 
 ### Diorama
 

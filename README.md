@@ -44,6 +44,8 @@ Without the Marketplace or HACS, copy everything in `dist` from the [latest rele
 
 ## Layouts
 
+All of these layouts are ready to use. Just pick one in the cards editor.
+
 <img alt="Five Origami Weather cards: a paper landscape, a classic forecast, a house in the rain, a night sky with the moon and a detailed panel in fog" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.webp">
 
 <details>
@@ -84,9 +86,6 @@ A detailed weather overview for a larger spot on the dashboard.
 <sub>The screenshots use the Montserrat font. The [Origami](https://github.com/hazymorning/origami#get-started) README explains how to add it to Home Assistant.</sub>
 
 </details>
-
-> [!NOTE]
-> **You don't have to build these yourself.** Just pick the one you like in the card's editor.
 
 ## More
 

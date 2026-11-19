@@ -47,7 +47,7 @@ Without the Marketplace or HACS, copy everything in `dist` from the [latest rele
 <img alt="Five Origami Weather cards: a paper landscape, a classic forecast, a house in the rain, a night sky with the moon and a detailed panel in fog" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/hero.webp">
 
 > [!NOTE]
-> You don't have to build these yourself. Just pick the one you like in the card's editor and your card will look like this.
+> **You don't have to build these yourself.** Just pick the one you like in the card's editor.
 
 <details>
 <summary><b>Show the ready-made layouts</b></summary>

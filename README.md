@@ -51,6 +51,8 @@ Without the Marketplace or HACS, copy everything in `dist` from the [latest rele
 
 <br>
 
+> **Ready to use.** Pick the one you like under **Layouts** in the card's editor, and your card looks just like it does here.
+
 ### Diorama
 
 <img width="800" alt="The Diorama layout on a partly cloudy day and a windy night" src="https://raw.githubusercontent.com/hazymorning/origami_weather/main/images/diorama.webp">
